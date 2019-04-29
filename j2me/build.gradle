@@ -1,21 +1,14 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.intellij' version '0.4.8'
-}
-
-sourceCompatibility = 1.8
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    id 'org.jetbrains.intellij'
 }
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    version '2019.1'
     plugins 'java-i18n', 'properties'
     updateSinceUntilBuild false
+}
+
+publishPlugin {
+    token System.getenv("PUBLISH_PLUGIN_TOKEN")
 }

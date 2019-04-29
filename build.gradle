@@ -1,0 +1,18 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.intellij' version '0.4.8'
+}
+
+allprojects {
+    repositories {
+        mavenCentral()
+    }
+
+    sourceCompatibility = 1.8
+
+    version "192.0"
+
+    intellij {
+        version '2019.1'
+    }
+}
