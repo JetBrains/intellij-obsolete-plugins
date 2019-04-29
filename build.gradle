@@ -11,7 +11,7 @@ allprojects {
     sourceCompatibility = 1.8
 
     String buildNumber = System.getenv("BUILD_NUMBER")
-    version "192." + (buildNumber.isEmpty() ? "0" : buildNumber)
+    version "192." + (buildNumber == null || buildNumber.isEmpty() ? "0" : buildNumber)
 
     intellij {
         version '2019.1'
