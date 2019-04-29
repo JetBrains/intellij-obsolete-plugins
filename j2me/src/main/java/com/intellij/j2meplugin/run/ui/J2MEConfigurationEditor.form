@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.intellij.j2meplugin.run.ui.J2MERunConfigurationEditor.EditorPanel">
+  <grid id="5510f" binding="myWholePanel" layout-manager="GridLayoutManager" row-count="4" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="0" left="0" bottom="0" right="0"/>
+    <constraints>
+      <xy x="18" y="268" width="629" height="342"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <component id="f1858" class="com.intellij.openapi.ui.LabeledComponent" binding="myModule">
+        <constraints>
+          <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="1" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <componentClass value="javax.swing.JComboBox"/>
+          <labelInsets top="0" left="0" bottom="0" right="0"/>
+          <labelLocation value="West"/>
+          <text resource-bundle="messages/ExecutionBundle" key="application.configuration.use.classpath.and.jdk.of.module.label"/>
+        </properties>
+      </component>
+      <component id="62a02" class="com.intellij.openapi.ui.LabeledComponent" binding="myProgramParameters">
+        <constraints>
+          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <labelLocation value="West"/>
+          <text resource-bundle="com/intellij/j2meplugin/J2MEBundle" key="run.configuration.emulator.parameters"/>
+        </properties>
+      </component>
+      <xy id="175db" binding="myChoosenEmulatorSettingsPlace" layout-manager="XYLayout" hgap="-1" vgap="-1">
+        <margin top="0" left="0" bottom="0" right="0"/>
+        <constraints>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children/>
+      </xy>
+      <grid id="6cf28" binding="myConfigurationPanel" layout-manager="GridLayoutManager" row-count="2" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="0" left="0" bottom="0" right="0"/>
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="28d9e" class="javax.swing.JRadioButton" binding="myUseOTA">
+            <constraints>
+              <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text resource-bundle="com/intellij/j2meplugin/J2MEBundle" key="run.configuration.ota"/>
+            </properties>
+          </component>
+          <grid id="65496" layout-manager="GridLayoutManager" row-count="3" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
+            <constraints>
+              <grid row="1" column="0" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <grid id="ea684" binding="myOTAPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+                <constraints>
+                  <grid row="2" column="0" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <clientProperties>
+                  <BorderFactoryClass class="java.lang.String" value="com.intellij.ui.IdeBorderFactory$PlainSmallWithIndent"/>
+                </clientProperties>
+                <border type="etched" title-resource-bundle="com/intellij/j2meplugin/J2MEBundle" title-key="run.configuration.ota.settings"/>
+                <children/>
+              </grid>
+              <grid id="597f7" binding="myClassPanel" layout-manager="GridBagLayout">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <clientProperties>
+                  <BorderFactoryClass class="java.lang.String" value="com.intellij.ui.IdeBorderFactory$PlainSmallWithIndent"/>
+                </clientProperties>
+                <border type="etched" title-resource-bundle="com/intellij/j2meplugin/J2MEBundle" title-key="run.configuration.class.settings.title"/>
+                <children>
+                  <component id="d0e14" class="com.intellij.openapi.ui.TextFieldWithBrowseButton" binding="myClass">
+                    <constraints>
+                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                      <gridbag weightx="1.0" weighty="0.0"/>
+                    </constraints>
+                    <properties/>
+                  </component>
+                  <component id="e9ecc" class="javax.swing.JLabel" binding="myClassLabel">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                      <gridbag top="0" left="5" bottom="0" right="0" weightx="0.0" weighty="0.0"/>
+                    </constraints>
+                    <properties>
+                      <text resource-bundle="com/intellij/j2meplugin/J2MEBundle" key="klass.common.label"/>
+                    </properties>
+                  </component>
+                  <grid id="5cdf2" binding="myUserOptionsPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+                    <constraints>
+                      <grid row="1" column="0" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                      <gridbag top="10" left="5" bottom="0" right="0" weightx="0.0" weighty="1.0"/>
+                    </constraints>
+                    <properties/>
+                    <border type="none"/>
+                    <children/>
+                  </grid>
+                </children>
+              </grid>
+              <grid id="44175" binding="myJadPanel" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                <margin top="0" left="5" bottom="0" right="0"/>
+                <constraints>
+                  <grid row="1" column="0" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="c514d" class="com.intellij.openapi.ui.TextFieldWithBrowseButton" binding="myJad">
+                    <constraints>
+                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                        <preferred-size width="250" height="-1"/>
+                      </grid>
+                    </constraints>
+                    <properties/>
+                  </component>
+                  <component id="1266e" class="javax.swing.JLabel" binding="myJadLabel">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text value=""/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+            </children>
+          </grid>
+          <component id="7a986" class="javax.swing.JRadioButton" binding="myUseClasses">
+            <constraints>
+              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text resource-bundle="com/intellij/j2meplugin/J2MEBundle" key="klass.common"/>
+            </properties>
+          </component>
+          <component id="15c07" class="javax.swing.JRadioButton" binding="myUseJad">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value=""/>
+            </properties>
+          </component>
+          <hspacer id="f1d2f">
+            <constraints>
+              <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+          </hspacer>
+        </children>
+      </grid>
+    </children>
+  </grid>
+  <buttonGroups>
+    <group name="start">
+      <member id="28d9e"/>
+      <member id="7a986"/>
+      <member id="15c07"/>
+    </group>
+  </buttonGroups>
+</form>

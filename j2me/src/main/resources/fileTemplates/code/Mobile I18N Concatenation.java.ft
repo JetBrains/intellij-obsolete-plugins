@@ -1,0 +1,1 @@
+${RESOURCE_BUNDLE}.getMessage("${PROPERTY_KEY}", new Object[]{${PARAMETERS}})

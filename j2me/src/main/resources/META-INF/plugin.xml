@@ -1,0 +1,55 @@
+<!--
+  ~ Copyright 2000-2019 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
+  -->
+
+<idea-plugin>
+  <name>J2ME</name>
+  <id>J2ME</id>
+  <vendor>JetBrains</vendor>
+  <resource-bundle>com.intellij.j2meplugin.J2MEBundle</resource-bundle>
+  <depends>com.intellij.java-i18n</depends>
+  <idea-version since-build="192.1"/>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <antBuildGen implementation="com.intellij.j2meplugin.compiler.ant.ChunkBuildJ2MEExtension"/>
+    <java-i18n.resourceBundleManager implementation="com.intellij.j2meplugin.i18n.MobileResourceBundleManager"/>
+    <createFromTemplateActionReplacer implementation="com.intellij.j2meplugin.i18n.CreateMobileResourcePackActionReplacer"/>
+    <moduleService serviceInterface="com.intellij.j2meplugin.module.settings.doja.DOJASettings"
+                   serviceImplementation="com.intellij.j2meplugin.module.settings.doja.DOJASettings"/>
+    <moduleService serviceInterface="com.intellij.j2meplugin.module.settings.midp.MIDPSettings"
+                   serviceImplementation="com.intellij.j2meplugin.module.settings.midp.MIDPSettings"/>
+    <configurationType implementation="com.intellij.j2meplugin.run.J2MEConfigurationType"/>
+    <configurationProducer implementation="com.intellij.j2meplugin.run.J2MEConfigurationProducer"/>
+    <moduleType id="J2ME_MODULE" implementationClass="com.intellij.j2meplugin.module.J2MEModuleType" classpathProvider="true"/>
+    <moduleExtension implementation="com.intellij.j2meplugin.module.J2MEModuleExtension"/>
+    <directoryIndexExcludePolicy implementation="com.intellij.j2meplugin.module.ExcludeExplodedDirectoryPolicy"/>
+    <roots.watchedRootsProvider implementation="com.intellij.j2meplugin.module.ExplodedDirectoryWatchedRootProvider"/>
+    <intentionAction>
+      <className>com.intellij.j2meplugin.module.intentions.EditModuleSettingsIntentionAction</className>
+    </intentionAction>
+    <localInspection groupPath="Java" language="JAVA" shortName="MissedExecutable" bundle="com.intellij.j2meplugin.J2MEBundle"
+                     key="executable.class.misconfiguration.display.name" groupKey="j2me.plugin.inspection.group" enabledByDefault="true"
+                     level="WARNING" implementationClass="com.intellij.j2meplugin.codeInspection.MissedExecutableInspection"/>
+    <sdkType implementation="com.intellij.j2meplugin.emulator.MobileSdk"/>
+    <createFromTemplateHandler implementation="com.intellij.j2meplugin.i18n.CreateMobileResourcePackHandler" order="first"/>
+    <refactoring.elementListenerProvider implementation="com.intellij.j2meplugin.module.J2MERefactoringListenerProvider"/>
+    <moduleConfigurationEditorProvider implementation="com.intellij.j2meplugin.module.J2MEModuleEditorsProvider"/>
+    <projectService serviceInterface="com.intellij.j2meplugin.i18n.ResourceBeansContainer"
+                    serviceImplementation="com.intellij.j2meplugin.i18n.ResourceBeansContainer"/>
+
+    <moduleService serviceImplementation="com.intellij.j2meplugin.module.J2MEModuleProperties"/>
+  </extensions>
+  
+  <extensions defaultExtensionNs="J2ME.com.intellij">
+    <applicationType implementation="com.intellij.j2meplugin.module.settings.doja.DOJAApplicationType"/>
+    <applicationType implementation="com.intellij.j2meplugin.module.settings.midp.MIDPApplicationType"/>
+    <emulatorType implementation="com.intellij.j2meplugin.emulator.midp.nokia.NokiaEmulatorType"/>
+    <emulatorType implementation="com.intellij.j2meplugin.emulator.midp.uei.UnifiedEmulatorType"/>
+    <emulatorType implementation="com.intellij.j2meplugin.emulator.midp.wtk.WTKEmulatorType"/>
+    <emulatorType implementation="com.intellij.j2meplugin.emulator.doja.DOJAEmulatorType"/>
+  </extensions>
+  <extensionPoints>
+    <extensionPoint name="com.intellij.emulatorType" interface="com.intellij.j2meplugin.emulator.EmulatorType"/>
+    <extensionPoint name="com.intellij.applicationType" interface="com.intellij.j2meplugin.module.settings.MobileApplicationType"/>
+  </extensionPoints>
+</idea-plugin>

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.intellij.j2meplugin.emulator.ui.MobileDefaultApiEditor">
+  <grid id="f6e" binding="myMIDPPanel" row-count="4" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="2" left="0" bottom="2" right="0"/>
+    <constraints>
+      <xy x="4" y="142" width="831" height="103"/>
+      <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="3"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <component id="b9d26" class="javax.swing.JLabel">
+        <constraints>
+          <xy x="259" y="57" width="76" height="14"/>
+          <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0"/>
+        </constraints>
+        <properties>
+          <text resource-bundle="com/intellij/j2meplugin/J2MEBundle" key="emulator.profile.version"/>
+        </properties>
+      </component>
+      <component id="298b5" class="javax.swing.JLabel">
+        <constraints>
+          <xy x="259" y="83" width="308" height="14"/>
+          <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0"/>
+        </constraints>
+        <properties>
+          <text resource-bundle="com/intellij/j2meplugin/J2MEBundle" key="emulator.configuration.version"/>
+        </properties>
+      </component>
+      <component id="8e7db" class="javax.swing.JTextField" binding="myProfile">
+        <constraints>
+          <xy x="577" y="54" width="75" height="20"/>
+          <grid row="2" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="1">
+            <preferred-size width="75" height="-1"/>
+          </grid>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="573e7" class="javax.swing.JTextField" binding="myConfiguration">
+        <constraints>
+          <xy x="577" y="80" width="75" height="20"/>
+          <grid row="3" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="1">
+            <preferred-size width="75" height="-1"/>
+          </grid>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="6123c" class="javax.swing.JRadioButton" binding="myCustomConfigs">
+        <constraints>
+          <xy x="0" y="66" width="249" height="22"/>
+          <grid row="2" column="0" row-span="2" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0"/>
+        </constraints>
+        <properties>
+          <text resource-bundle="com/intellij/j2meplugin/J2MEBundle" key="emulator.custom.profile.configuration.versions"/>
+        </properties>
+      </component>
+      <component id="38744" class="javax.swing.JRadioButton" binding="myDefaultConfigs">
+        <constraints>
+          <xy x="0" y="14" width="249" height="22"/>
+          <grid row="0" column="0" row-span="2" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0"/>
+        </constraints>
+        <properties>
+          <text resource-bundle="com/intellij/j2meplugin/J2MEBundle" key="emulator.default.profile.configuration.versions"/>
+        </properties>
+      </component>
+      <component id="b287d" class="javax.swing.JLabel" binding="myDefaultProfile">
+        <constraints>
+          <xy x="577" y="12" width="0" height="0"/>
+          <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0"/>
+        </constraints>
+        <properties>
+          <text value=""/>
+        </properties>
+      </component>
+      <component id="bc188" class="javax.swing.JLabel" binding="myDefaultConfig">
+        <constraints>
+          <xy x="577" y="38" width="0" height="0"/>
+          <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0"/>
+        </constraints>
+        <properties>
+          <text value=""/>
+        </properties>
+      </component>
+      <component id="ffb77" class="javax.swing.JLabel">
+        <constraints>
+          <xy x="259" y="5" width="76" height="14"/>
+          <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0"/>
+        </constraints>
+        <properties>
+          <text resource-bundle="com/intellij/j2meplugin/J2MEBundle" key="emulator.profile.version"/>
+        </properties>
+      </component>
+      <component id="9dd49" class="javax.swing.JLabel">
+        <constraints>
+          <xy x="259" y="31" width="111" height="14"/>
+          <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0"/>
+        </constraints>
+        <properties>
+          <text resource-bundle="com/intellij/j2meplugin/J2MEBundle" key="emulator.configuration.version"/>
+        </properties>
+      </component>
+      <hspacer id="31109">
+        <constraints>
+          <xy x="652" y="33" width="179" height="11"/>
+          <grid row="1" column="3" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1"/>
+        </constraints>
+      </hspacer>
+    </children>
+  </grid>
+</form>

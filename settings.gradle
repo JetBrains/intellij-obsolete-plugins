@@ -1,0 +1,2 @@
+rootProject.name = 'intellij-obsolete-plugins'
+include 'j2me'

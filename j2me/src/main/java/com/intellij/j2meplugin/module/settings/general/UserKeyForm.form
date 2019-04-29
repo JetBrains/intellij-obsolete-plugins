@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.intellij.j2meplugin.module.settings.general.UserKeysConfigurable">
+  <grid id="a95c" binding="myWholePanel" layout-manager="GridLayoutManager" row-count="6" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="0" left="0" bottom="0" right="0"/>
+    <constraints>
+      <xy x="112" y="194" width="365" height="190"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <grid id="50c42" binding="myTablePlace" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="0" left="0" bottom="0" right="0"/>
+        <constraints>
+          <grid row="1" column="0" row-span="5" col-span="1" vsize-policy="3" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false">
+            <minimum-size width="40" height="-1"/>
+            <preferred-size width="160" height="40"/>
+          </grid>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children/>
+      </grid>
+      <vspacer id="96cee">
+        <constraints>
+          <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+        </constraints>
+      </vspacer>
+      <component id="3f178" class="javax.swing.JButton" binding="myAddButton">
+        <constraints>
+          <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text resource-bundle="com/intellij/j2meplugin/J2MEBundle" key="j2me.add"/>
+        </properties>
+      </component>
+      <component id="71f04" class="javax.swing.JButton" binding="myRemoveButton">
+        <constraints>
+          <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text resource-bundle="com/intellij/j2meplugin/J2MEBundle" key="j2me.remove"/>
+        </properties>
+      </component>
+      <component id="be9c" class="javax.swing.JButton" binding="myMoveUpButton">
+        <constraints>
+          <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text resource-bundle="com/intellij/j2meplugin/J2MEBundle" key="j2me.move.up"/>
+        </properties>
+      </component>
+      <component id="59a34" class="javax.swing.JButton" binding="myMoveDownButton">
+        <constraints>
+          <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text resource-bundle="com/intellij/j2meplugin/J2MEBundle" key="j2me.move.down"/>
+        </properties>
+      </component>
+      <component id="e329b" class="com.intellij.ui.TitledSeparator">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="7" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text resource-bundle="com/intellij/j2meplugin/J2MEBundle" key="module.settings.user.defined.settings.title"/>
+        </properties>
+      </component>
+    </children>
+  </grid>
+</form>
