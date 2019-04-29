@@ -5,6 +5,7 @@
 <idea-plugin>
   <name>J2ME</name>
   <id>J2ME</id>
+  <description>Supports building Java Micro Edition (J2ME) applications</description>
   <vendor>JetBrains</vendor>
   <resource-bundle>com.intellij.j2meplugin.J2MEBundle</resource-bundle>
   <depends>com.intellij.java-i18n</depends>
