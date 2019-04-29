@@ -1,6 +1,11 @@
 plugins {
     id 'java'
+    id 'org.jetbrains.kotlin.jvm' version '1.3.31'
     id 'org.jetbrains.intellij' version '0.4.8'
+}
+
+intellij {
+    version 'IU-2019.1.1'
 }
 
 allprojects {
@@ -12,8 +17,4 @@ allprojects {
 
     String buildNumber = System.getenv("BUILD_NUMBER")
     version "192." + (buildNumber == null || buildNumber.isEmpty() ? "0" : buildNumber)
-
-    intellij {
-        version '2019.1'
-    }
 }

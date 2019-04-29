@@ -1,2 +1,3 @@
 rootProject.name = 'intellij-obsolete-plugins'
-include 'j2me'
+include 'j2me', 'JsTestDriver:common', 'JsTestDriver:rt', 'JsTestDriver:plugin'
+

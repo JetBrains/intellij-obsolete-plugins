@@ -1,0 +1,30 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.kotlin.jvm'
+    id 'org.jetbrains.intellij'
+}
+
+intellij {
+    pluginName 'JsTestDriver'
+    version 'IU-2019.1.1'
+    plugins 'JavaScriptLanguage', 'yaml', 'coverage', 'JavaScriptDebugger', 'CSS'
+    updateSinceUntilBuild false
+}
+
+publishPlugin {
+    token System.getenv("PUBLISH_PLUGIN_TOKEN")
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = '1.8'
+}
+
+prepareSandbox {
+    logger.info("")
+}
+
+dependencies {
+    compile files('../lib/jstestdriver-core/JsTestDriver-1.3.5-patched.jar')
+    compile project(':JsTestDriver:common')
+    compile project(':JsTestDriver:rt')
+}
