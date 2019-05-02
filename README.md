@@ -7,3 +7,4 @@ Starting with IntelliJ IDEA 2019.2, we've moved a number of plugins out of the m
 This repository includes the following plugins:
   * [J2ME](https://plugins.jetbrains.com/plugin/12318-j2me)
   * [JsTestDriver](https://plugins.jetbrains.com/plugin/4468-jstestdriver-plugin)
+  * [Struts 1.x](https://plugins.jetbrains.com/plugin/110-struts-1-x/)
