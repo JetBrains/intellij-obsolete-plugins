@@ -19,10 +19,6 @@ compileKotlin {
     kotlinOptions.jvmTarget = '1.8'
 }
 
-prepareSandbox {
-    logger.info("")
-}
-
 dependencies {
     compile files('../lib/jstestdriver-core/JsTestDriver-1.3.5-patched.jar')
     compile project(':JsTestDriver:common')

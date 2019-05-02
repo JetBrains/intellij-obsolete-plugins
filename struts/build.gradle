@@ -7,4 +7,8 @@ plugins {
 intellij {
     version 'IU-2019.1'
     plugins 'properties', 'java-i18n', 'jsp', 'JavaEE', 'JavaScriptLanguage', 'CSS', 'PersistenceSupport', 'DatabaseTools', 'struts2'
+}    updateSinceUntilBuild false
+
+publishPlugin {
+    token System.getenv("PUBLISH_PLUGIN_TOKEN")
 }

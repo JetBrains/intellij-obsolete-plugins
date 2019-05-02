@@ -5,6 +5,7 @@
   <id>StrutsAssistant</id>
   <name>Struts 1.x</name>
   <version>191</version>
+  <idea-version since-build="192.1"/>
 
   <description>Enables Struts support, including Web Flow Diagrams, Structure Tree, Properties Table, Wizards and much more.
     Supports Code Completion/Navigation/Lookup/Refactoring for Struts, Validation and Tiles configuration files. (Unbundled)
