@@ -2,7 +2,7 @@
 
 <idea-plugin>
 
-  <id>StrutsAssistant</id>
+  <id>Struts Assistant</id>
   <name>Struts 1.x</name>
   <version>191</version>
   <idea-version since-build="192.1"/>
