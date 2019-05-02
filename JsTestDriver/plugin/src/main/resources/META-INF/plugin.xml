@@ -17,6 +17,7 @@
   <name>JSTestDriver Plugin</name>
   <description>Allows running, debugging JavaScript unit tests and measure test coverage.</description>
   <vendor>Google, JetBrains</vendor>
+  <idea-version since-build="192.1"/>
 
   <depends>com.intellij.modules.lang</depends>
   <depends>JavaScript</depends>
