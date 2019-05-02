@@ -1,0 +1,25 @@
+/**
+*  Created by Struts Assistant.
+*  Date: ${DATE}  Time: ${TIME}
+*/
+
+#if (${PACKAGE_NAME} && ${PACKAGE_NAME} != "")
+package ${PACKAGE_NAME};
+
+#end
+import org.apache.struts.action.*;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+public class ${Name} extends ${Base} {
+
+    public ActionForward execute(ActionMapping mapping,
+                                 ActionForm form,
+                                 HttpServletRequest request,
+                                 HttpServletResponse response)
+            throws Exception {
+
+        return mapping.findForward("");
+    }
+}

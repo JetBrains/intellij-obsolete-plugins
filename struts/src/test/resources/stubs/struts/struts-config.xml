@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE struts-config PUBLIC
+    "-//Apache Software Foundation//DTD Struts Configuration 1.2//EN"
+    "http://struts.apache.org/dtds/struts-config_1_2.dtd">
+
+<struts-config>
+
+  <form-beans>
+    <form-bean name="wrongType" type="x"/>
+    <form-bean name="dynaBean" type="org.apache.struts.action.DynaActionForm">
+      <form-property name="formProperty" type="formType"/>
+    </form-bean>
+  </form-beans>
+
+  <global-forwards>
+    <forward name="servletForward" path="/mapping">
+    </forward>
+  </global-forwards>
+
+  <action-mappings>
+    <action path="/login" type="x" name="loginForm" parameter="parameter">
+      <forward name="forwardName" path="forwardPath"/>
+    </action>
+  </action-mappings>
+
+  <controller inputForward="true" processorClass="org.apache.struts.tiles.TilesRequestProcessor">
+    <set-property property="myProperty" value="myValue"/>
+  </controller>
+
+  <plug-in className="org.apache.struts.tiles.TilesPlugin">
+    <set-property property="definitions-config" value="/WEB-INF/tiles-defs.xml"/>
+  </plug-in>
+
+</struts-config>

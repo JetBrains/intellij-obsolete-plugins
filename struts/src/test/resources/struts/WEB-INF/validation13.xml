@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE form-validation PUBLIC
+  "-//Apache Software Foundation//DTD Commons Validator Rules Configuration 1.3.0//EN"
+  "http://jakarta.apache.org/commons/dtds/validator_1_3_0.dtd">
+
+
+<form-validation>
+    <formset>
+      <form name="loginForm">
+        <field property="username" depends="required,my,byte,<error descr="Cannot resolve validator 'notExistingRule'">notExistingRule</error>">
+          <arg position="1" name="<error descr="Arg with such name already exists">intRange</error>" key="${var:min}" resource="false"/>
+          <arg position="2" name="<error descr="Arg with such name already exists">intRange</error>" key="${var:max}" resource="false"/>
+        </field>
+      </form>
+    </formset>
+</form-validation>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE struts-config PUBLIC
+          "-//Apache Software Foundation//DTD Struts Configuration 1.2//EN"
+          "http://struts.apache.org/dtds/struts-config_1_2.dtd">
+
+<struts-config>
+
+    <form-beans>
+      <form-bean name="wrongType" type="org.apache.struts.validator.<error>DynaValidator</error>"/>
+
+        <form-bean name="loginForm" type="org.apache.struts.validator.DynaValidatorForm">
+        </form-bean>
+
+    </form-beans>
+
+  <global-forwards>
+    <forward name="servletForward" path="/mapping"/>
+    <forward name="wrongServletForward" path="<error>/wrongMapping</error>"/>
+
+    <forward name="login" path="/do/login"/>
+    <forward name="wrongLogin" path="/do/<error>loginn</error>"/>
+    <forward name="wrongLoginLogin" path="/do/<error>do/loginn</error>"/>
+    <forward name="complex" path="/do/lo/complex"/>
+
+  </global-forwards>
+
+    <action-mappings>
+      <action path="/login" type="<error>LoginAction</error>" name="loginForm"/>
+      <action path="/lo/complex" type="<error>LoginAction</error>" name="loginForm"/>
+    </action-mappings>
+
+    <controller processorClass="org.apache.struts.tiles.TilesRequestProcessor"/>
+
+    <plug-in className="org.apache.struts.tiles.TilesPlugin">
+        <set-property property="definitions-config" value="/WEB-INF/tiles-defs.xml"/>
+    </plug-in>
+
+    <plug-in className="org.apache.struts.validator.ValidatorPlugIn">
+        <set-property property="pathnames" value="/WEB-INF/validator-rules.xml,/WEB-INF/validation.xml"/>
+    </plug-in>
+</struts-config>

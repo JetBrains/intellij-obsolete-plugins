@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE struts-config PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 1.2//EN"
+        "http://struts.apache.org/dtds/struts-config_1_2.dtd">
+
+<struts-config>
+
+  <global-forwards>
+    <forward name="action" path="/some<caret>Name.do?param"/>
+  </global-forwards>
+  <action-mappings>
+    <action path="/someName"/>
+  </action-mappings>
+</struts-config>

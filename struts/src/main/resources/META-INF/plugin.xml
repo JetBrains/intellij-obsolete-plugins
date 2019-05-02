@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<idea-plugin>
+
+  <id>StrutsAssistant</id>
+  <name>Struts 1.x</name>
+  <version>191</version>
+
+  <description>Enables Struts support, including Web Flow Diagrams, Structure Tree, Properties Table, Wizards and much more.
+    Supports Code Completion/Navigation/Lookup/Refactoring for Struts, Validation and Tiles configuration files. (Unbundled)
+  </description>
+
+  <category>Web/JavaEE Technologies</category>
+  <depends>com.intellij.properties</depends>
+  <depends>com.intellij.java-i18n</depends>
+  <depends>com.intellij.jsp</depends>
+  <depends>com.intellij.javaee</depends>
+  <depends optional="true" config-file="struts-js.xml">JavaScript</depends>
+  <vendor>JetBrains</vendor>
+
+  <extensionPoints>
+    <extensionPoint interface="com.intellij.struts.TilesModelProvider" qualifiedName="com.intellij.struts.tilesModelProvider"/>
+  </extensionPoints>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <facetType implementation="com.intellij.struts.facet.StrutsFacetType"/>
+    <framework.detector implementation="com.intellij.struts.facet.StrutsFacetType$StrutsFrameworkDetector"/>
+    <javaee.web.customServletReferenceProvider implementation="com.intellij.struts.inplace.reference.path.ActionWebPathsProvider"/>
+    <fileEditorProvider implementation="com.intellij.struts.diagram.DiagramEditorProvider"/>
+    <fileTemplateGroup implementation="com.intellij.struts.StrutsFileTemplateGroupFactory"/>
+
+    <facet.toolWindow
+        id="Struts Assistant" icon="StrutsApiIcons.Toolwindow"
+        anchor="left" canCloseContents="false"
+        facetIdList="struts"
+        factoryClass="com.intellij.struts.toolwindow.StrutsToolWindowFactory"/>
+
+    <dom.fileMetaData implementation="com.intellij.struts.dom.StrutsDomFileDescription" rootTagName="struts-config" stubVersion="0"/>
+    <dom.fileMetaData implementation="com.intellij.struts.dom.TilesDomFileDescription" rootTagName="tiles-definitions" stubVersion="0"/>
+    <dom.fileMetaData implementation="com.intellij.struts.dom.ValidatorDomFileDescription" rootTagName="form-validation"/>
+
+    <gotoSymbolContributor implementation="com.intellij.struts.inplace.gotosymbol.GoToActionSymbolProvider"/>
+    <gotoSymbolContributor implementation="com.intellij.struts.inplace.gotosymbol.GoToActionFormSymbolProvider"/>
+    <gotoSymbolContributor implementation="com.intellij.struts.inplace.gotosymbol.GoToDefinitionSymbolProvider"/>
+    <gotoSymbolContributor implementation="com.intellij.struts.inplace.gotosymbol.GoToForwardSymbolProvider"/>
+
+    <psi.referenceContributor implementation="com.intellij.struts.inplace.reference.StrutsReferenceContributor"/>
+
+    <iconProvider implementation="com.intellij.struts.StrutsIconProvider"/>
+
+    <projectService serviceImplementation="com.intellij.struts.StrutsProjectComponent"/>
+
+    <applicationService serviceInterface="com.intellij.struts.StrutsManager"
+                        serviceImplementation="com.intellij.struts.psi.StrutsManagerImpl"/>
+    <applicationService serviceImplementation="com.intellij.struts.config.StrutsConfiguration"/>
+
+    <compiler.inspectionValidator implementation="com.intellij.struts.highlighting.StrutsValidator"/>
+    <compiler.inspectionValidator implementation="com.intellij.struts.highlighting.TilesValidator"/>
+    <compiler.inspectionValidator implementation="com.intellij.struts.highlighting.ValidationValidator"/>
+
+    <annotator language="JAVA" implementationClass="com.intellij.struts.inplace.gutter.StrutsClassAnnotator"/>
+    <annotator language="XML" implementationClass="com.intellij.struts.highlighting.syntax.StrutsSyntaxAnnotator"/>
+    <annotator language="XML" implementationClass="com.intellij.struts.highlighting.syntax.TilesSyntaxAnnotator"/>
+    <annotator language="XML" implementationClass="com.intellij.struts.highlighting.syntax.ValidatorSyntaxAnnotator"/>
+
+    <multiHostInjector implementation="com.intellij.struts.inplace.inject.TilesELInjector"/>
+
+    <frameworkSupport implementation="com.intellij.struts.facet.StrutsFrameworkSupportProvider"/>
+
+    <projectService serviceInterface="com.intellij.struts.core.PsiBeanPropertyCache"
+                    serviceImplementation="com.intellij.struts.core.PsiBeanPropertyCache"/>
+
+    <renameInputValidator implementation="com.intellij.struts.ActionRenameInputValidator"/>
+
+    <standardResourceProvider implementation="com.intellij.struts.StrutsResourceProvider"/>
+    <defaultLiveTemplatesProvider implementation="com.intellij.struts.StrutsResourceProvider"/>
+
+    <localInspection language="XML" groupPath="Struts" shortName="StrutsInspection" applyToDialects="false"
+                     displayName="Struts Model" groupName="Struts 1" enabledByDefault="true"
+                     level="ERROR" implementationClass="com.intellij.struts.highlighting.StrutsInspection"/>
+    <localInspection language="XML" groupPath="Struts" shortName="StrutsTilesInspection" applyToDialects="false"
+                     displayName="Tiles" groupName="Struts 1" enabledByDefault="true"
+                     level="ERROR" implementationClass="com.intellij.struts.highlighting.TilesInspection"/>
+    <localInspection language="XML" groupPath="Struts" shortName="StrutsValidatorInspection" applyToDialects="false"
+                     displayName="Struts Validator" groupName="Struts 1" enabledByDefault="true"
+                     level="ERROR" implementationClass="com.intellij.struts.highlighting.ValidatorInspection"/>
+    <localInspection language="XML" groupPath="Struts" shortName="StrutsValidatorFormInspection" applyToDialects="false"
+                     displayName="Struts Validator Form" groupName="Struts 1" enabledByDefault="true"
+                     level="ERROR" implementationClass="com.intellij.struts.inplace.inspections.ValidatorFormInspection"/>
+
+    <dom.converter interfaceClass="com.intellij.struts.dom.converters.StrutsPathReferenceConverter"
+                   implementationClass="com.intellij.struts.dom.converters.StrutsPathReferenceConverterImpl"/>
+
+
+    <library.type implementation="com.intellij.tiles.library.TilesLibraryType"/>
+  </extensions>
+
+  <actions>
+    <action id="Struts.Generate.Actions.Group" class="com.intellij.struts.inplace.generate.StrutsGenerateActionsGroup" text="Generate">
+      <add-to-group anchor="last" group-id="GenerateGroup"/>
+    </action>
+
+    <!--
+        <group id="StrutsClasses">
+
+          <separator/>
+          <action id="NewActionClass"
+                  class="com.intellij.struts.actions.NewActionClass"
+                  text="Action Class..."
+                  description="Create new Struts Action class"
+                  icon="/com/intellij/struts/icons/action-class.png">
+          </action>
+
+          <action id="NewFormClass"
+                  class="com.intellij.struts.actions.NewFormClass"
+                  text="ActionForm Class..."
+                  description="Create new Struts ActionForm class"
+                  icon="/com/intellij/struts/icons/form-class.png">
+          </action>
+                <action id="NewJSPPage"
+                        class="com.intellij.struts.actions.NewJspAction"
+                        text="Struts Jsp..."
+                        description="Create new Struts ActionForm class"
+                        icon="/com/intellij/struts/icons/new-page.png">
+                </action>
+          <add-to-group group-id="NewGroup" anchor="last"/>
+        </group>
+    -->
+    <!--
+        <group id="StrutsTreePopup" >
+            <reference id="DomElementsTreeView.GotoDomElementDeclarationAction"/>
+
+            <separator/>
+            <reference id="DomElementsTreeView.DeleteElement"/>
+        </group>
+
+        <group id="DomElementsTreeView.AddElements" class="com.intellij.struts.tree.AddDomElementActionGroup">
+          <add-to-group relative-to-action="DomElementsTreeView.DeleteElement" anchor="before" group-id="StrutsTreePopup"/>
+        </group>
+    -->
+  </actions>
+
+  <!--	<helpset file="saHelp.jar" path="/Help.hs"/> -->
+
+
+</idea-plugin>

@@ -1,0 +1,22 @@
+/**
+*  Created by Struts Assistant.
+*  Date: ${DATE}  Time: ${TIME}
+*/
+
+#if (${PACKAGE_NAME} && ${PACKAGE_NAME} != "")
+package ${PACKAGE_NAME};
+
+#end
+import org.apache.struts.action.ActionServlet;
+import org.apache.struts.config.ModuleConfig;
+
+import javax.servlet.ServletException;
+
+public class ${Name} implements ${Base} {
+
+    public void destroy() {
+    }
+
+    public void init(ActionServlet actionServlet, ModuleConfig moduleConfig) throws ServletException {
+    }
+}

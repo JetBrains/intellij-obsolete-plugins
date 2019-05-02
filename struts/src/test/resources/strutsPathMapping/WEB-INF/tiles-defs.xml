@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<!DOCTYPE tiles-definitions PUBLIC
+       "-//Apache Software Foundation//DTD Tiles Configuration 1.1//EN"
+       "http://struts.apache.org/dtds/tiles-config_1_1.dtd">
+
+<tiles-definitions>
+    <definition name="example">
+        <put name="header" type="page" value="/pages/login.jsp"/>
+    </definition>
+    <definition name="second" extends="example">
+        <put name="header"/>
+        <put name="footer"/>
+    </definition>
+    <definition name="third" extends="second">
+        <put name="footer"/>
+        <put name="header"/>
+    </definition>
+</tiles-definitions>

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE struts-config PUBLIC
+          "-//Apache Software Foundation//DTD Struts Configuration 1.2//EN"
+          "http://struts.apache.org/dtds/struts-config_1_2.dtd">
+
+<struts-config>
+
+  <data-sources>
+    <data-source type="org.apache.commons.dbcp.BasicDataSource">
+        <set-property property="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
+        <set-property property="url" value="jdbc:oracle:thin:@192.168.1.1:1521:LALA"/>
+    </data-source>
+
+    <data-source key="LALA" type="org.apache.commons.dbcp.BasicDataSource">
+        <set-property property="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
+        <set-property property="url" value="jdbc:oracle:thin:@192.168.1.1:1521:LALA"/>
+    </data-source>
+
+    <data-source key="BLABLA" type="org.apache.commons.dbcp.BasicDataSource">
+        <set-property property="driverClassName" value="com.ibm.db2.jcc.DB2Driver"/>
+        <set-property property="url" value="jdbc:db2://192.168.1.1:50000/blabla"/>
+    </data-source>
+
+  </data-sources>
+
+
+    <form-beans>
+      <form-bean name="notExistingType" type="org.apache.struts.validator.<error>DynaValidator</error>"/>
+
+        <form-bean name="loginForm" type="org.apache.struts.validator.DynaValidatorForm">
+          <form-property name="username" type="java.lang.String"/>
+          <form-property name="password" type="java.lang.String"/>          
+        </form-bean>
+
+      <form-bean name="myForm" type="MyForm"/>
+
+      <form-bean name="myValidatorForm" type="org.MyValidatorForm"/>
+      <form-bean name="myValidatorActionForm" type="org.MyValidatorActionForm"/>
+
+    </form-beans>
+
+  <global-exceptions>
+  </global-exceptions>
+                         
+  <global-forwards>
+    <forward name="servletForward" path="/mapping"/>
+    <forward name="wrongServletForward" path="<error>/wrongMapping</error>"/>
+    <forward name="tileForward" path="example"/>
+    <forward name="tilePatternForward" path="anythingAfterHereStartsPattern"/>
+    <forward name="emptyPath" path=<error>""</error>/>
+    <forward name="slash" path="/"/>
+    <forward name="pages" path="/WEB-INF/"/>
+    <forward name="global" path="http://google.com"/>
+  </global-forwards>
+
+    <action-mappings  type="org.apache.struts.config.SecureActionConfig">
+      <action path="/login" type="<error>LoginAction</error>" name="loginForm" input="<error>/index.jsp</error>"
+        forward="/index.jsp">
+        <!-- property from org.apache.struts.config.SecureActionConfig -->
+        <set-property property="secure" value="true"/>
+        <set-property property="name" value="true"/>
+        <set-property property="<error>notExisting</error>" value="true"/>
+      </action>
+      <action path="/my" type="<error>LoginAction</error>" name="myForm" input="servletForward?a=b"/>
+
+      <action path="/roles" roles="user,admin" input="local">
+        <forward name="local" path="/mapping"/>
+      </action>
+      <action path="/wrongroles" roles="user,<error>notExistingRole</error>,admin"/>
+      <action path="/asterisk" roles="*"/>
+      <action path="/myValidatorFormAction" name="myValidatorForm"/>
+      <action path="/myValidatorActionFormAction" name="myValidatorActionForm"/>
+      <action path=<error descr="Value must not be empty">""</error> name="myValidatorActionForm"/>
+      <action path= <error descr="There should be a space between attribute and previous attribute"></error><error descr="Attribute value expected">n</error>ame="myValidatorActionForm"/>
+
+    </action-mappings>
+
+  <controller processorClass="org.apache.struts.tiles.TilesRequestProcessor">
+    <set-property property="bufferSize" value="100000"/>
+    <set-property property="<error>wrongProperty</error>" value="100000"/>
+    <set-property property="inputForward" value="true"/>
+  </controller>
+
+  <message-resources parameter="<error>WrongMessageResources</error>"/>
+  <message-resources parameter="MessageResources"/>
+  <message-resources parameter="Custom factory parameter" factory="org.apache.struts.util.PropertyMessageResourcesFactory"/>
+
+    <plug-in className="org.apache.struts.tiles.TilesPlugin">
+        <set-property property="definitions-config" value="/WEB-INF/tiles-defs.xml"/>
+    </plug-in>
+
+    <plug-in className="org.apache.struts.validator.ValidatorPlugIn">
+        <set-property property="pathnames" value="
+          /WEB-INF/validator-rules.xml,
+          /WEB-INF/validation.xml,
+          /WEB-INF/validation13.xml"/>
+    </plug-in>
+</struts-config>

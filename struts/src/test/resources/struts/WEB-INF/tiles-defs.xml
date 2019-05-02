@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<!DOCTYPE tiles-definitions PUBLIC
+       "-//Apache Software Foundation//DTD Tiles Configuration 1.1//EN"
+       "http://struts.apache.org/dtds/tiles-config_1_1.dtd">
+
+<tiles-definitions>
+    <definition name="example">
+        <put name="header" type="page"/>
+    </definition>
+    <definition name="second" extends="example">
+        <put name="header"/>
+        <put name="footer"/>
+    </definition>
+  <definition name="third" extends="second">
+      <put name="footer"/>
+      <put name="header"/>
+  </definition>
+
+  <definition name="wrong" extends="<error>notExisting</error>">
+
+    <put name="valueWithSlashIsTemplate" value="/index.jsp"/>
+    <put name="valueWithSlashIsTemplateNotExistingPath" value="<error>/INVALID_VALUE.jsp</error>"/>
+
+    <put name="footer" type="definition" value="example"/>
+    <put name="footer1" type="definition" value="<error>notExisting</error>"/>
+    <put name="footer2" type="definition" value="<error>/index.jsp</error>"/>
+
+    <put name="header" type="page" value="/index.jsp"/>
+    <put name="pageNotExisting" type="page" value="<error>/INVALID_VALUE.jsp</error>"/>
+  </definition>
+
+  <definition name="anythingAfter*" extends="example"/>
+</tiles-definitions>

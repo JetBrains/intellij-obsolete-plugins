@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE struts-config PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 1.2//EN"
+        "http://struts.apache.org/dtds/struts-config_1_2.dtd">
+
+<struts-config>
+
+    <form-beans>
+        <form-bean name="anotherForm" type="org.apache.struts.validator.DynaValidatorForm">
+            <form-property type="java.lang.String" name="address"/>
+            <form-property type="java.lang.String" name="name"/>
+        </form-bean>
+    </form-beans>
+
+    <action-mappings>
+        <action path="/loanotherAction"
+                type="LoginAction"
+                input="/pages/login.jsp"
+                name="anotherForm"/>
+    </action-mappings>
+</struts-config>

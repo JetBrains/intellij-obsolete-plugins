@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<!DOCTYPE tiles-definitions PUBLIC
+    "-//Apache Software Foundation//DTD Tiles Configuration 2.0//EN"
+    "http://tiles.apache.org/dtds/tiles-config_2_0.dtd">
+
+<tiles-definitions>
+  <definition name="simpleDefinition"/>
+
+  <definition name="typeNotGivenTypeIsString">
+    <put-attribute name="imAString" value="true" type="object"/>
+  </definition>
+
+  <definition name="putListAttribute">
+    <put-list-attribute name="putListName">
+      <bean classtype="java.lang.String"/>
+      <item link="link" value="value"/>
+      <add-attribute type="definition" value="value"/>
+    </put-list-attribute>
+
+    <put-list-attribute name="putListAttributeErrors">
+      <bean classtype="<error descr="Cannot resolve class 'INVALID_VALUE'">INVALID_VALUE</error>"/>
+      <item link=<error descr="Value must not be empty">""</error> value=<error descr="Value must not be empty">""</error>/>
+      <add-attribute type="<error descr="Wrong attribute value">INVALID_VALUE</error>" value="value"/>
+    </put-list-attribute>
+  </definition>
+
+
+</tiles-definitions>

@@ -1,0 +1,5 @@
+deprecated: GlobalException.svg -> com.intellij.icons.AllIcons@/general/warning.svg; to be removed in IDEA 2020
+deprecated: MessageResources.svg -> com.intellij.icons.AllIcons@/fileTypes/any_type.svg; to be removed in IDEA 2020
+deprecated: validator/Constant.svg -> com.intellij.icons.AllIcons@/nodes/constant.svg; to be removed in IDEA 2020
+deprecated: validator/Global.svg -> com.intellij.icons.AllIcons@/nodes/ppWeb.svg; to be removed in IDEA 2020
+deprecated: validator/Msg.svg -> com.intellij.icons.AllIcons@/fileTypes/any_type.svg; to be removed in IDEA 2020

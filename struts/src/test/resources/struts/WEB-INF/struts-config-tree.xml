@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!DOCTYPE struts-config PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 1.2//EN"
+        "http://struts.apache.org/dtds/struts-config_1_2.dtd">
+
+
+<struts-config>
+
+    <form-beans>
+        <form-bean name="extended" type="ExtendedForm">
+            <form-property name="cccc" type="java.lang.String"/>
+            <form-property name="ddd" type="java.lang.String"/>
+        </form-bean>
+    </form-beans>
+    <global-forwards>
+        <forward name="1" path="/1.do"/>
+    </global-forwards>
+    <action-mappings>
+        <action path="/1" type="org.apache.struts.action.Action">
+            <forward name="a" path="/A.js"/>
+        </action>
+    </action-mappings>
+    <controller />
+    <message-resources parameter="MessageResources"/>
+    <plug-in className="org.apache.struts.action.SecurePlugIn">
+        <set-property property="enable" value="ddd"/>
+    </plug-in>
+</struts-config>

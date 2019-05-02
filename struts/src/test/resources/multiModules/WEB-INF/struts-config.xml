@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+        
+<!DOCTYPE struts-config PUBLIC
+  "-//Apache Software Foundation//DTD Struts Configuration 1.2//EN"
+  "http://struts.apache.org/dtds/struts-config_1_3.dtd">
+
+<struts-config>
+  <form-beans>
+    <form-bean name="form" type="MyForm"/>
+  </form-beans>
+
+  <global-forwards>
+    <forward name="rootForward" path="/root.jsp"/>
+  </global-forwards>
+  
+  <action-mappings>
+    <action path="/action" name="form">
+    </action>
+    <action path="/rootAction"/>
+  </action-mappings>
+</struts-config>

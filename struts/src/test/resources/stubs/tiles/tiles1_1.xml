@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<!DOCTYPE tiles-definitions PUBLIC
+    "-//Apache Software Foundation//DTD Tiles Configuration 1.1//EN"
+    "http://struts.apache.org/dtds/tiles-config_1_1.dtd">
+
+<tiles-definitions>
+  <definition name="parent">
+    <put name="header" type="string" value="parentValue"/>
+  </definition>
+  <definition name="child" extends="parent">
+    <put name="header" type="string" value="childValue"/>
+  </definition>
+</tiles-definitions>

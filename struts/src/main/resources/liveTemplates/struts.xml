@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templateSet group="struts">
+  <template id="struts-action-mapping" name="act" value="&lt;action path=&quot;/$NAME$&quot; type=&quot;$CLASS$&quot;&gt;&#10;    $END$&#10;&lt;/action&gt;&#10;" description="Action Mapping" toReformat="true" toShortenFQNames="false">
+    <variable name="CLASS" expression="complete()" defaultValue="" alwaysStopAt="true" />
+    <variable name="NAME" expression="complete()" defaultValue="" alwaysStopAt="true" />
+    <context>
+      <option name="JAVA_CODE" value="false" />
+      <option name="JAVA_COMMENT" value="false" />
+      <option name="JAVA_STRING" value="false" />
+      <option name="XML" value="true" />
+      <option name="HTML" value="false" />
+      <option name="JSP" value="false" />
+      <option name="COMPLETION" value="false" />
+      <option name="OTHER" value="false" />
+    </context>
+  </template>
+  <template id="struts-form-bean" name="fb" value="&lt;form-bean name=&quot;$NAME$&quot; type=&quot;$CLASS$&quot;&gt;&#10;    $END$&#10;&lt;/form-bean&gt;&#10;" description="Form Bean" toReformat="true" toShortenFQNames="false">
+    <variable name="CLASS" expression="complete()" defaultValue="" alwaysStopAt="true" />
+    <variable name="NAME" expression="complete()" defaultValue="" alwaysStopAt="true" />
+    <context>
+      <option name="JAVA_CODE" value="false" />
+      <option name="JAVA_COMMENT" value="false" />
+      <option name="JAVA_STRING" value="false" />
+      <option name="XML" value="true" />
+      <option name="HTML" value="false" />
+      <option name="JSP" value="false" />
+      <option name="COMPLETION" value="false" />
+      <option name="OTHER" value="false" />
+    </context>
+  </template>
+  <template id="struts-forward" name="gf" value="&lt;forward name=&quot;$NAME$&quot; path=&quot;/$PATH$&quot;/&gt;$END$&#10;" description="Forward" toReformat="true" toShortenFQNames="false">
+    <variable name="PATH" expression="complete()" defaultValue="" alwaysStopAt="true" />
+    <variable name="NAME" expression="complete()" defaultValue="" alwaysStopAt="true" />
+    <context>
+      <option name="JAVA_CODE" value="false" />
+      <option name="JAVA_COMMENT" value="false" />
+      <option name="JAVA_STRING" value="false" />
+      <option name="XML" value="true" />
+      <option name="HTML" value="false" />
+      <option name="JSP" value="false" />
+      <option name="COMPLETION" value="false" />
+      <option name="OTHER" value="false" />
+    </context>
+  </template>
+</templateSet>
+

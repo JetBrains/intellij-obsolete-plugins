@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<!DOCTYPE form-validation PUBLIC
+          "-//Apache Software Foundation//DTD Commons Validator Rules Configuration 1.1.3//EN"
+          "http://jakarta.apache.org/commons/dtds/validator_1_1_3.dtd">
+
+
+<form-validation>
+        <formset>
+			<form name="loginForm">
+				<field property="username" depends="required"/>
+			</form>
+
+            <form name="anotherForm">
+                <field property="address" depends="email"/>
+                <field property="name" depends="maxlength">
+                    <var><var-name>maxlength</var-name><var-value>5</var-value></var>
+                </field>
+            </form>
+        </formset>
+</form-validation>

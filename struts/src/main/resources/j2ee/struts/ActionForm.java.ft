@@ -1,0 +1,28 @@
+/**
+*  Created by Struts Assistant.
+*  Date: ${DATE}  Time: ${TIME}
+*/
+#if (${PACKAGE_NAME} && ${PACKAGE_NAME} != "")
+
+package ${PACKAGE_NAME};
+#end
+#if ((${RESET} && ${RESET} != "") || (${VALIDATE} && ${VALIDATE} != ""))
+
+import org.apache.struts.action.*;
+import javax.servlet.http.HttpServletRequest;
+#end
+
+public class ${Name} extends ${Base} {
+#if (${RESET} && ${RESET} != "")
+
+    public void reset(ActionMapping actionMapping, HttpServletRequest request) {
+		super.reset(actionMapping, request);
+	}
+#end
+#if (${VALIDATE} && ${VALIDATE} != "")
+        
+    public ActionErrors validate(ActionMapping actionMapping, HttpServletRequest request) {
+		return super.validate(actionMapping, request);
+	}
+#end
+}

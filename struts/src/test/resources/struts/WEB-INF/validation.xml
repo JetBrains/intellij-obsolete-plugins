@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<!DOCTYPE form-validation PUBLIC
+  "-//Apache Software Foundation//DTD Commons Validator Rules Configuration 1.1.3//EN"
+  "http://jakarta.apache.org/commons/dtds/validator_1_1_3.dtd">
+
+
+<form-validation>
+
+  <global>
+    <validator name="my" classname="java.util.List" method="" methodParams="" msg="errors.byte" depends="byte,date,<error>notExistingRule</error>">
+
+    </validator>    
+  </global>
+
+  <formset>
+    <form name="loginForm">
+      <field property="username" depends=" required,
+      my, byte  ,
+      <error>notExistingRule</error>">
+
+        <arg key="<error>myKey</error>" name="required"/>
+        <arg0 key="<error>myKey</error>" name="<error>notExistingRule</error>"/>
+
+        <msg key="<error>myKey</error>" name="<error>notExistingRule</error>"/>
+      </field>
+      <field property="notExistingProperty">
+
+      </field>
+    </form>
+    <form name="<error>notExistingForm</error>">
+    </form>
+
+    <form name="myForm">
+      <field property="username" depends="required">
+
+      </field>
+      <field property="<error>notExistingProperty</error>">
+
+      </field>
+
+      <field indexedListProperty="beansArray" property="<error>username</error>">
+
+      </field>
+      <field indexedListProperty="beansArray" property="field">
+
+      </field>
+      <field indexedListProperty="beansList" property="<error>username</error>">
+
+      </field>
+      <field indexedListProperty="beansList" property="field">
+
+      </field>
+    </form>
+
+    <form name="/myValidatorActionFormAction">
+      <field property="username" depends="required">
+
+      </field>
+      <field property="<error>notExistingProperty</error>">
+
+      </field>
+      <field indexedListProperty="beansArray" property="<error>username</error>">
+
+      </field>
+     </form>
+
+
+  </formset>
+</form-validation>

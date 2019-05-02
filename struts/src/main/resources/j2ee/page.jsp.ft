@@ -1,0 +1,17 @@
+<%--
+	Created by Struts Assistant.
+	Date: ${DATE}
+	Time: ${TIME}
+--%>
+
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+#foreach ($item in ${taglibs})
+<%@ taglib uri="${item.uri}" prefix="${item.prefix}" %>
+#end
+
+<html>
+    <head><title>Simple Struts Jsp Page</title></head>
+    <body>
+		Place your content here
+	</body>
+</html>

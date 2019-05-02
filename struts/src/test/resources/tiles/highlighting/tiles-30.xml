@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<!DOCTYPE tiles-definitions PUBLIC
+       "-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"
+       "http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
+
+<tiles-definitions>
+  <definition name="simpleDefinition"/>
+
+  <definition name="anyTemplateType" templateType="WhateverIWant"/>
+
+  <definition name="fromExpression" templateExpression="<inject descr="null">${templateExpression}</inject>"/>
+
+  <definition name="extendingDefinitionError" extends="<error descr="Cannot resolve Definition 'INVALID_VALUE'">INVALID_VALUE</error>"/>
+
+
+  <definition name="withInvalidPreparerClass" preparer="<error descr="Cannot resolve class 'INVALID_VALUE'">INVALID_VALUE</error>"/>
+
+
+  <definition name="withPutAttributeExpression">
+
+    <!-- EL -->
+    <put-attribute name="withExpression" expression="<inject descr="null">${expression}</inject>"/>
+    <put-attribute name="faultyExpression" expression="${<error descr="<expression> expected, got '%'">%</error>}"/>
+    <put-attribute name="doesNotStartWithDollarBrace" expression="notAnExpression"/>
+    <put-attribute name="expressionMustNotBeEmpty" expression=<error descr="Value must not be empty">""</error>/>
+
+    <!-- OGNL -->
+    <put-attribute name="withOgnlExpression" expression="OGNL:<inject descr="null">expression</inject>"/>
+    <put-attribute name="withOgnlExpressionError" expression="OGNL:<error descr="<expression> expected, got '%'">%</error>"/>
+
+  </definition>
+
+  <definition name="withAddAttributeExpression">
+    <put-list-attribute name="putListName">
+      <add-attribute type="string" expression="<inject descr="null">${expression}</inject>"/>
+    </put-list-attribute>
+  </definition>
+
+
+  <definition name="withPlaceholderReferences/*" template="/WEB-INF/layout/{1}_template.jsp">
+        <put-attribute name="attr1" value="testing {1}"/>
+        <put-attribute name="body1" value="/WEB-INF/views/{1}.jsp"/>
+  </definition>
+
+</tiles-definitions>

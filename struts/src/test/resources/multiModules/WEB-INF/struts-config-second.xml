@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+        
+<!DOCTYPE struts-config PUBLIC
+  "-//Apache Software Foundation//DTD Struts Configuration 1.2//EN"
+  "http://struts.apache.org/dtds/struts-config_1_3.dtd">
+
+<struts-config>
+  <form-beans>
+    <form-bean name="form" type="MySecondForm"/>
+  </form-beans>
+
+  <global-forwards>
+    <forward name="a" path="<error>/rootAction</error>.do"/>
+    <forward name="b" path="<error>/rootAction</error>.do" module="/second"/>
+    <forward name="c" path="/secondAction.do" module="/second"/>
+    <forward name="d" path="<error>/secondAction</error>.do" module="/"/>
+    <forward name="e" path="/secondAction.do"/>
+    <forward name="f" path="/secondAction.do" module="<error>/notExisting</error>"/>
+
+    <forward name="g" path="/second.jsp"/>
+    <forward name="secondForward" path="/second.jsp" module="/second"/>
+    <forward name="forward2" path="<error>/second.jsp</error>" module="/"/>
+    <forward name="forward3" path="<error>/root.jsp</error>" module="/second"/>
+    <forward name="forward4" path="<error>/root.jsp</error>"/>
+
+  </global-forwards>
+
+  <action-mappings>
+    <action path="/action" name="form">
+    </action>
+    <action path="/secondAction"/>
+
+  </action-mappings>
+</struts-config>

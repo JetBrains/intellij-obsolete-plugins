@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE form-validation PUBLIC
+  "-//Apache Software Foundation//DTD Commons Validator Rules Configuration ${dotted}//EN"
+  "http://jakarta.apache.org/commons/dtds/validator_${version}.dtd">
+
+
+<form-validation>
+</form-validation>

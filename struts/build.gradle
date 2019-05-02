@@ -1,0 +1,10 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.intellij'
+}
+
+// See https://github.com/JetBrains/gradle-intellij-plugin/
+intellij {
+    version 'IU-2019.1'
+    plugins 'properties', 'java-i18n', 'jsp', 'JavaEE', 'JavaScriptLanguage', 'CSS', 'PersistenceSupport', 'DatabaseTools'
+}
