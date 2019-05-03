@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<idea-plugin>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <spring.mvc.viewResolverFactory implementation="com.intellij.tiles.springMvc.TilesViewResolverFactory"/>
+    <struts.tilesModelProvider implementation="com.intellij.tiles.springMvc.MVCTilesModelProvider"/>
+
+    <spring.valueConverter implementation="com.intellij.tiles.springMvc.TilesConfigurerDefinitionsConverter"/>
+    <spring.resourceTypeProvider
+        implementation="com.intellij.tiles.springMvc.TilesConfigurerDefinitionsConverter$ResourceTypeProvider"/>
+
+    <psi.referenceContributor
+        language="JAVA"
+        implementation="com.intellij.tiles.springMvc.TilesConfigurerReferenceContributor"/>
+  </extensions>
+</idea-plugin>
+ 

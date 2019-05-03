@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<idea-plugin>
+
+  <extensions defaultExtensionNs="com.intellij">
+
+    <multiHostInjector implementation="com.intellij.tiles.struts2.TilesOgnlInjector"/>
+
+    <!-- Provide Tiles-model configured via StrutsTilesListener in web.xml -->
+    <struts.tilesModelProvider implementation="com.intellij.tiles.struts2.Struts2TilesModelProvider"/>
+
+    <!-- <result> for type="tiles" -->
+    <struts2.resultContributor
+        implementation="com.intellij.tiles.struts2.TilesResultContributor"/>
+  </extensions>
+
+</idea-plugin>

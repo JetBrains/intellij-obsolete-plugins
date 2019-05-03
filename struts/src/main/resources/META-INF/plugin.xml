@@ -3,7 +3,7 @@
 <idea-plugin>
 
   <id>Struts Assistant</id>
-  <name>Struts 1.x</name>
+  <name>Struts 1.x and Tiles</name>
   <version>191</version>
   <idea-version since-build="192.1"/>
 
@@ -17,6 +17,8 @@
   <depends>com.intellij.jsp</depends>
   <depends>com.intellij.javaee</depends>
   <depends optional="true" config-file="struts-js.xml">JavaScript</depends>
+  <depends optional="true" config-file="springMvc-tiles.xml">com.intellij.spring.mvc</depends>
+  <depends optional="true" config-file="struts2-tiles.xml">com.intellij.struts2</depends>
   <vendor>JetBrains</vendor>
 
   <extensionPoints>
