@@ -141,6 +141,20 @@
           <add-to-group relative-to-action="DomElementsTreeView.DeleteElement" anchor="before" group-id="StrutsTreePopup"/>
         </group>
     -->
+
+    <group id="PropertyInspectorActions" text="InspectorActions">
+      <group id="PropertyInspectorActions.CommonActions">
+        <action id="PropertyInspectorActions.AddProperty" class="com.intellij.designer.inspector.impl.actions.AddPropertyAction"
+                text="Add Property" use-shortcut-of="Generate"/>
+        <action id="PropertyInspectorActions.RemoveProperty" class="com.intellij.designer.inspector.impl.actions.RemovePropertyAction"
+                text="Remove Property" use-shortcut-of="$Delete"/>
+      </group>
+
+      <action id="PropertyInspectorActions.EditValue" class="com.intellij.designer.inspector.impl.actions.EditPropertyAction"
+              text="Edit Property">
+        <keyboard-shortcut first-keystroke="ENTER" keymap="$default"/>
+      </action>
+    </group>
   </actions>
 
   <!--	<helpset file="saHelp.jar" path="/Help.hs"/> -->
