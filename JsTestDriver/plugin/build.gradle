@@ -1,14 +1,12 @@
 plugins {
     id 'java'
     id 'org.jetbrains.kotlin.jvm'
-    id 'org.jetbrains.intellij'
 }
 
 intellij {
     pluginName 'JsTestDriver'
-    version 'IU-2019.1.1'
+    type 'IU'
     plugins 'JavaScriptLanguage', 'yaml', 'coverage', 'JavaScriptDebugger', 'CSS'
-    updateSinceUntilBuild false
 }
 
 publishPlugin {

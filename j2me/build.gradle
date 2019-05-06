@@ -1,14 +1,11 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.intellij'
 }
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
+    type 'IC'
     plugins 'java-i18n', 'properties'
-    version 'IC-2019.1.1'
-
-    updateSinceUntilBuild false
 }
 
 publishPlugin {
