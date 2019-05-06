@@ -20,6 +20,8 @@ subprojects {
         untilBuild ''
     }
 
+    buildSearchableOptions.enabled = false
+
     sourceCompatibility = 1.8
 
     String buildNumber = System.getenv("BUILD_NUMBER")
