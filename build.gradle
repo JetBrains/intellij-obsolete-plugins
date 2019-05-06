@@ -4,11 +4,13 @@ plugins {
     id 'org.jetbrains.intellij' version '0.4.8' apply false
 }
 
-subprojects {
+allprojects {
     repositories {
         mavenCentral()
     }
+}
 
+subprojects {
     apply plugin: 'org.jetbrains.intellij'
 
     intellij {
