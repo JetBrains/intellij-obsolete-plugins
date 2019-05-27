@@ -25,6 +25,7 @@ subprojects {
     buildSearchableOptions.enabled = false
 
     sourceCompatibility = 1.8
+    targetCompatibility = 1.8
 
     String buildNumber = System.getenv("BUILD_NUMBER")
     version "192." + (buildNumber == null || buildNumber.isEmpty() ? "0" : buildNumber)
