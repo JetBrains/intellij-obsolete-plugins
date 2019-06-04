@@ -64,7 +64,7 @@ public class J2MEConfigurationProducer extends JavaRuntimeConfigurationProducerB
 
   @Override
   protected RunnerAndConfigurationSettings findExistingByElement(Location location,
-                                                                 @NotNull List<RunnerAndConfigurationSettings> existingConfigurations,
+                                                                 @NotNull List<? extends RunnerAndConfigurationSettings> existingConfigurations,
                                                                  ConfigurationContext context) {
     final PsiClass aClass = getMobileExeClass(location.getPsiElement(), PsiManager.getInstance(location.getProject()));
     if (aClass != null) {
