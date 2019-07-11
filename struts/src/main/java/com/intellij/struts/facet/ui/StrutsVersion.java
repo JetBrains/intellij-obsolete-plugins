@@ -4,11 +4,12 @@
 
 package com.intellij.struts.facet.ui;
 
+import com.intellij.facet.ui.libraries.LibraryDownloadInfo;
 import com.intellij.facet.ui.libraries.LibraryInfo;
+import com.intellij.facet.ui.libraries.RemoteRepositoryInfo;
+import com.intellij.ide.IdeBundle;
 import org.jetbrains.annotations.NonNls;
-
-import static com.intellij.facet.ui.libraries.MavenLibraryUtil.createMavenJarInfo;
-import static com.intellij.facet.ui.libraries.MavenLibraryUtil.createSubMavenJarInfo;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Dmitry Avdeev
@@ -115,5 +116,22 @@ public enum StrutsVersion {
 
   public LibraryInfo getStrutsFaces() {
     return myStrutsFaces;
+  }
+
+  private static LibraryInfo createSubMavenJarInfo(@NonNls String project, @NonNls String jarName, @NonNls String version, @NonNls String... requiredClasses) {
+    return doCreateMavenJarInfo(jarName, version, project, requiredClasses);
+  }
+
+  private static LibraryInfo doCreateMavenJarInfo(final String jarName, final String version, final String downloadingPrefix,
+                                                final String... requiredClasses) {
+    RemoteRepositoryInfo MAVEN = new RemoteRepositoryInfo("maven", IdeBundle.message("maven.repository.presentable.name"), new String[]{
+        "https://repo1.maven.org/maven2/",
+    });
+    LibraryDownloadInfo downloadInfo = new LibraryDownloadInfo(MAVEN, downloadingPrefix + "/" + jarName + "/" + version + "/" + jarName + "-" + version + ".jar", jarName, ".jar");
+    return new LibraryInfo(jarName + ".jar", downloadInfo, requiredClasses);
+  }
+
+  private static LibraryInfo createMavenJarInfo(@NonNls String jarName, @NonNls String version, @NotNull @NonNls String... requiredClasses) {
+    return doCreateMavenJarInfo(jarName, version, jarName, requiredClasses);
   }
 }
