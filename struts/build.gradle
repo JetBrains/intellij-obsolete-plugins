@@ -5,7 +5,7 @@ plugins {
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
     type 'IU'
-    plugins 'properties', 'java-i18n', 'jsp', 'JavaEE', 'JavaScriptLanguage', 'CSS', 'PersistenceSupport', 'DatabaseTools', 'struts2', 'Spring', 'SpringMvc'
+    plugins 'java', 'properties', 'java-i18n', 'jsp', 'JavaEE', 'JavaScriptLanguage', 'CSS', 'PersistenceSupport', 'DatabaseTools', 'struts2', 'Spring', 'SpringMvc'
 }
 
 publishPlugin {

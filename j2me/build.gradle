@@ -5,7 +5,7 @@ plugins {
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
     type 'IC'
-    plugins 'java-i18n', 'properties'
+    plugins 'java', 'java-i18n', 'properties'
 }
 
 publishPlugin {
