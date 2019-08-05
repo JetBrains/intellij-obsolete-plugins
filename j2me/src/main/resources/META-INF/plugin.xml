@@ -8,6 +8,7 @@
   <description>Supports building Java Micro Edition (J2ME) applications</description>
   <vendor>JetBrains</vendor>
   <resource-bundle>com.intellij.j2meplugin.J2MEBundle</resource-bundle>
+  <depends>com.intellij.modules.java</depends>
   <depends>com.intellij.java-i18n</depends>
   <idea-version since-build="192.1"/>
 
