@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifacts>
+  <artifact version="1.0.0" name="Heroku client 1.0.0">
+    <item name="aopalliance-repackaged-2.5.0-b05.jar"
+          url="http://central.maven.org/maven2/org/glassfish/hk2/external/aopalliance-repackaged/2.5.0-b05/aopalliance-repackaged-2.5.0-b05.jar"
+          md5=""/>
+    <item name="commons-codec-1.10.jar" url="http://central.maven.org/maven2/commons-codec/commons-codec/1.10/commons-codec-1.10.jar"
+          md5=""/>
+    <item name="commons-logging-1.2.jar" url="http://central.maven.org/maven2/commons-logging/commons-logging/1.2/commons-logging-1.2.jar"
+          md5=""/>
+    <item name="heroku-api-0.30.jar" url="http://central.maven.org/maven2/com/heroku/api/heroku-api/0.30/heroku-api-0.30.jar" md5=""/>
+    <item name="hk2-api-2.5.0-b05.jar" url="http://central.maven.org/maven2/org/glassfish/hk2/hk2-api/2.5.0-b05/hk2-api-2.5.0-b05.jar"
+          md5=""/>
+    <item name="hk2-locator-2.5.0-b05.jar"
+          url="http://central.maven.org/maven2/org/glassfish/hk2/hk2-locator/2.5.0-b05/hk2-locator-2.5.0-b05.jar" md5=""/>
+    <item name="hk2-utils-2.5.0-b05.jar" url="http://central.maven.org/maven2/org/glassfish/hk2/hk2-utils/2.5.0-b05/hk2-utils-2.5.0-b05.jar"
+          md5=""/>
+    <item name="httpclient-4.4.jar" url="http://central.maven.org/maven2/org/apache/httpcomponents/httpclient/4.4/httpclient-4.4.jar"
+          md5=""/>
+    <item name="httpcore-4.4.jar" url="http://central.maven.org/maven2/org/apache/httpcomponents/httpcore/4.4/httpcore-4.4.jar" md5=""/>
+    <item name="javassist-3.20.0-GA.jar" url="http://central.maven.org/maven2/org/javassist/javassist/3.20.0-GA/javassist-3.20.0-GA.jar"
+          md5=""/>
+    <item name="javax.annotation-api-1.2.jar"
+          url="http://central.maven.org/maven2/javax/annotation/javax.annotation-api/1.2/javax.annotation-api-1.2.jar" md5=""/>
+    <item name="javax.inject-2.5.0-b05.jar"
+          url="http://central.maven.org/maven2/org/glassfish/hk2/external/javax.inject/2.5.0-b05/javax.inject-2.5.0-b05.jar" md5=""/>
+    <item name="javax.ws.rs-api-2.0.1.jar" url="http://central.maven.org/maven2/javax/ws/rs/javax.ws.rs-api/2.0.1/javax.ws.rs-api-2.0.1.jar"
+          md5=""/>
+    <item name="jersey-apache-connector-2.24.jar"
+          url="http://central.maven.org/maven2/org/glassfish/jersey/connectors/jersey-apache-connector/2.24/jersey-apache-connector-2.24.jar"
+          md5=""/>
+    <item name="jersey-client-2.24.jar"
+          url="http://central.maven.org/maven2/org/glassfish/jersey/core/jersey-client/2.24/jersey-client-2.24.jar" md5=""/>
+    <item name="jersey-common-2.24.jar"
+          url="http://central.maven.org/maven2/org/glassfish/jersey/core/jersey-common/2.24/jersey-common-2.24.jar" md5=""/>
+    <item name="osgi-resources-locator-1.0.1.jar"
+          url="http://central.maven.org/maven2/org/glassfish/hk2/osgi-resource-locator/1.0.1/osgi-resource-locator-1.0.1.jar" md5=""/>
+    <item name="jersey-json-1.19.4.jar" url="http://central.maven.org/maven2/com/sun/jersey/jersey-json/1.19.4/jersey-json-1.19.4.jar"
+          md5=""/>
+    <item name="jackson-core-2.5.4.jar"
+          url="http://central.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.5.4/jackson-core-2.5.4.jar" md5=""/>
+    <item name="jackson-core-asl-1.9.10.jar"
+          url="http://central.maven.org/maven2/org/codehaus/jackson/jackson-core-asl/1.9.10/jackson-core-asl-1.9.10.jar" md5=""/>
+    <item name="jackson-mapper-asl-1.9.10.jar"
+          url="http://central.maven.org/maven2/org/codehaus/jackson/jackson-mapper-asl/1.9.10/jackson-mapper-asl-1.9.10.jar" md5=""/>
+    <item name="jersey-multipart-1.19.4.jar"
+          url="http://central.maven.org/maven2/com/sun/jersey/contribs/jersey-multipart/1.19.4/jersey-multipart-1.19.4.jar" md5=""/>
+    <item name="jackson-jaxrs-json-provider-2.5.4.jar"
+          url="http://central.maven.org/maven2/com/fasterxml/jackson/jaxrs/jackson-jaxrs-json-provider/2.5.4/jackson-jaxrs-json-provider-2.5.4.jar"
+          md5=""/>
+    <item name="jersey-guava-2.24.jar"
+          url="http://central.maven.org/maven2/org/glassfish/jersey/bundles/repackaged/jersey-guava/2.24/jersey-guava-2.24.jar" md5=""/>
+    <item name="heroku-json-jersey-client-0.24.jar"
+          url="http://repo1.maven.org/maven2/com/heroku/api/heroku-json-jersey-client/0.24/heroku-json-jersey-client-0.24.jar" md5=""/>
+    <item name="jersey-media-json-jackson-2.24.jar"
+          url="http://central.maven.org/maven2/org/glassfish/jersey/media/jersey-media-json-jackson/2.24/jersey-media-json-jackson-2.24.jar"
+          md5=""/>
+    <item name="jersey-entity-filtering-2.24.jar"
+          url="http://central.maven.org/maven2/org/glassfish/jersey/ext/jersey-entity-filtering/2.24/jersey-entity-filtering-2.24.jar"
+          md5=""/>
+    <item name="jackson-jaxrs-base-2.5.4.jar"
+          url="http://central.maven.org/maven2/com/fasterxml/jackson/jaxrs/jackson-jaxrs-base/2.5.4/jackson-jaxrs-base-2.5.4.jar" md5=""/>
+    <item name="jackson-databind-2.5.4.jar"
+          url="http://central.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.5.4/jackson-databind-2.5.4.jar" md5=""/>
+    <item name="jackson-module-jaxb-annotations-2.5.4.jar"
+          url="http://central.maven.org/maven2/com/fasterxml/jackson/module/jackson-module-jaxb-annotations/2.5.4/jackson-module-jaxb-annotations-2.5.4.jar"
+          md5=""/>
+    <item name="jackson-annotations-2.5.4.jar"
+          url="http://central.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.5.4/jackson-annotations-2.5.4.jar" md5=""/>
+    <item name="heroku-deploy-2.0.0-RC1.jar"
+          url="http://central.maven.org/maven2/com/heroku/sdk/heroku-deploy/2.0.0-RC1/heroku-deploy-2.0.0-RC1.jar" md5=""/>
+    <item name="commons-io-2.6.jar" url="http://central.maven.org/maven2/commons-io/commons-io/2.6/commons-io-2.6.jar" md5=""/>
+    <item name="commons-compress-1.15.jar"
+          url="http://central.maven.org/maven2/org/apache/commons/commons-compress/1.15/commons-compress-1.15.jar" md5=""/>
+    <item name="org.eclipse.jgit-4.9.0.201710071750-r.jar"
+          url="http://central.maven.org/maven2/org/eclipse/jgit/org.eclipse.jgit/4.9.0.201710071750-r/org.eclipse.jgit-4.9.0.201710071750-r.jar"
+          md5=""/>
+    <item name="slf4j-api-1.7.22.jar" url="http://central.maven.org/maven2/org/slf4j/slf4j-api/1.7.22/slf4j-api-1.7.22.jar" md5=""/>
+    <item name="commons-lang3-3.6.jar" url="http://central.maven.org/maven2/org/apache/commons/commons-lang3/3.6/commons-lang3-3.6.jar"
+          md5=""/>
+
+  </artifact>
+</artifacts>

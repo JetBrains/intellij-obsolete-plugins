@@ -1,0 +1,6 @@
+<idea-plugin>
+  <extensions defaultExtensionNs="com.intellij">
+    <remoteServer.util.CloudDeploymentRuntimeProvider
+        implementation="com.intellij.javaee.heroku.cloud.HerokuArtifactDeploymentRuntimeProvider"/>
+  </extensions>
+</idea-plugin>

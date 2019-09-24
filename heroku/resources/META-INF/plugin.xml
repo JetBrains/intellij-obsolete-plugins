@@ -1,0 +1,45 @@
+<idea-plugin>
+  <name>Heroku</name>
+  <id>Heroku</id>
+  <depends>com.intellij.modules.vcs</depends>
+  <depends>com.intellij.modules.ultimate</depends>
+  <depends>Git4Idea</depends>
+  <depends optional="true">com.intellij.modules.java</depends>
+  <depends optional="true" config-file="javaee-specific.xml">com.intellij.javaee</depends>
+  <vendor>JetBrains</vendor>
+  <resource-bundle>resources.heroku</resource-bundle>
+  <category>Application Servers</category>
+  <description>
+      <![CDATA[
+      Allows configuring and using <a href="https://www.heroku.com/">Heroku</a> cloud application platform.
+        The following is available:
+        <ul>
+        <li>Dedicated run/debug configuration for Heroku cloud application platform.</li>
+        </ul>
+      ]]>
+   </description>
+  <!--suppress PluginXmlValidity -->
+  <change-notes>
+    <![CDATA[
+    <p>IDEA-175174 Support Heroku API v3 </p>
+    <p>IDEA-182093 Do not show Heroku API key in run config </p>
+    ]]>
+  </change-notes>
+  <extensions defaultExtensionNs="com.intellij">
+    <remoteServer.type implementation="com.intellij.javaee.heroku.cloud.HerokuCloudType"/>
+
+    <remoteServer.util.CloudDeploymentRuntimeProvider
+        implementation="com.intellij.javaee.heroku.cloud.HerokuModuleDeploymentRuntimeProvider"/>
+
+    <remoteServer.util.deploymentDetector implementation="com.intellij.javaee.heroku.cloud.HerokuDeploymentDetector"/>
+    <remoteServer.moduleBuilderContribution implementation="com.intellij.javaee.heroku.cloud.module.HerokuModuleBuilderContributionFactory"/>
+  </extensions>
+  <actions>
+    <group id="Heroku.RemoteServersViewPopup">
+      <action id="Heroku.RemoteServers.ShowContainerLog" class="com.intellij.javaee.heroku.cloud.action.ShowLogAction"
+              text="Show Log" description="Show log of the selected container"/>
+
+      <add-to-group group-id="RemoteServersViewPopup" anchor="last"/>
+    </group>
+  </actions>
+</idea-plugin>
