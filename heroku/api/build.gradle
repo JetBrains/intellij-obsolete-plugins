@@ -1,0 +1,13 @@
+plugins {
+    id 'java'
+}
+
+intellij {
+    type 'IU'
+}
+
+sourceSets{
+    main{
+        java.srcDirs project.files('src')
+    }
+}

@@ -1,0 +1,20 @@
+plugins {
+    id 'java'
+}
+
+intellij {
+    type 'IU'
+    plugins = ['java', 'JavaEE', 'remote-run', 'git4idea']
+}
+
+dependencies {
+    compile project(":heroku:api")
+    compile project(":heroku:impl")
+}
+
+sourceSets{
+    main{
+        java.srcDirs project.files('src')
+        resources.srcDirs project.files('resources')
+    }
+}
