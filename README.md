@@ -11,3 +11,4 @@ This repository includes the following plugins:
   * [JsTestDriver](https://plugins.jetbrains.com/plugin/4468-jstestdriver-plugin)
   * [Struts 1.x](https://plugins.jetbrains.com/plugin/110-struts-1-x/)
   * [Heroku integration](https://plugins.jetbrains.com/plugin/7605-heroku-integration)
+  * [RubyMotion support](https://plugins.jetbrains.com/plugin/10674-rubymotion-support)
