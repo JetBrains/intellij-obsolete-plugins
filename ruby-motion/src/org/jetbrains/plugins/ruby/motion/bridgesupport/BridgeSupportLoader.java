@@ -5,7 +5,7 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Consumer;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.plugins.ruby.motion.RubyMotionUtil;
+import org.jetbrains.plugins.ruby.motion.util.RubyMotionUtil;
 import org.jetbrains.plugins.ruby.utils.VirtualFileUtil;
 
 import java.util.*;

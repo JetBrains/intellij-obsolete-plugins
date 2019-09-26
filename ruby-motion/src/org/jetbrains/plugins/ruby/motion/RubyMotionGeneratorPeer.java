@@ -19,6 +19,7 @@ import com.intellij.facet.ui.ValidationResult;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.plugins.ruby.motion.ui.RubyMotionGeneratorTabBase;
 import org.jetbrains.plugins.ruby.motion.ui.RubyMotionSettingsHolder;
+import org.jetbrains.plugins.ruby.motion.util.RubyMotionUtil;
 import org.jetbrains.plugins.ruby.wizard.RubyGeneratorPeer;
 import org.jetbrains.plugins.ruby.wizard.RubyProjectSharedSettings;
 

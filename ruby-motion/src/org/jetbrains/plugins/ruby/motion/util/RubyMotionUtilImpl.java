@@ -1,5 +1,5 @@
 // Copyright 2000-2018 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
-package org.jetbrains.plugins.ruby.motion;
+package org.jetbrains.plugins.ruby.motion.util;
 
 import com.intellij.execution.filters.Filter;
 import com.intellij.execution.process.ProcessAdapter;
@@ -51,7 +51,7 @@ import java.util.Collection;
  * @author Dennis.Ushakov
  */
 public class RubyMotionUtilImpl extends RubyMotionUtil {
-  protected static final Key<ProjectType> PROJECT_TYPE = Key.create("ruby.motion.project.type");
+  public static final Key<ProjectType> PROJECT_TYPE = Key.create("ruby.motion.project.type");
 
   @Override
   @Contract("null -> false")

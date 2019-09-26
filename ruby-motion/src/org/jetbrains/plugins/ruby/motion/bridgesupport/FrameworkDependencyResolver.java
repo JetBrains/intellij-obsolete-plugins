@@ -20,7 +20,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.plugins.ruby.motion.RubyMotionUtil;
+import org.jetbrains.plugins.ruby.motion.util.RubyMotionUtil;
 import org.jetbrains.plugins.ruby.ruby.RubyUtil;
 
 import java.io.IOException;

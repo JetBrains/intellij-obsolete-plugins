@@ -24,6 +24,8 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.ruby.motion.bridgesupport.Class;
 import org.jetbrains.plugins.ruby.motion.bridgesupport.*;
 import org.jetbrains.plugins.ruby.motion.symbols.*;
+import org.jetbrains.plugins.ruby.motion.util.RubyMotionUtil;
+import org.jetbrains.plugins.ruby.motion.util.RubyMotionUtilImpl;
 import org.jetbrains.plugins.ruby.ruby.codeInsight.resolve.scope.RElementWithFQN;
 import org.jetbrains.plugins.ruby.ruby.codeInsight.symbols.RubySymbolProviderBase;
 import org.jetbrains.plugins.ruby.ruby.codeInsight.symbols.Type;

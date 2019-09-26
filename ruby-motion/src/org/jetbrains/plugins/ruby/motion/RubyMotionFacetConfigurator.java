@@ -22,6 +22,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.plugins.ruby.motion.facet.RubyMotionFacet;
 import org.jetbrains.plugins.ruby.motion.facet.RubyMotionFacetConfiguration;
 import org.jetbrains.plugins.ruby.motion.facet.RubyMotionFacetType;
+import org.jetbrains.plugins.ruby.motion.util.RubyMotionUtil;
+import org.jetbrains.plugins.ruby.motion.util.RubyMotionUtilExt;
 import org.jetbrains.plugins.ruby.remote.RubyRemoteInterpreterManager;
 import org.jetbrains.plugins.ruby.ruby.sdk.RubySdkType;
 import org.jetbrains.plugins.ruby.ruby.sdk.RubySdkUtil;

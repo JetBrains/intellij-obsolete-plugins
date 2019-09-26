@@ -21,6 +21,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.plugins.ruby.motion.util.RubyMotionUtil;
 import org.jetbrains.plugins.ruby.ruby.codeInsight.symbols.ImplicitRequireProvider;
 import org.jetbrains.plugins.ruby.utils.RubyVirtualFileScanner;
 import org.jetbrains.plugins.ruby.utils.VirtualFileUtil;

@@ -13,6 +13,8 @@ import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.ruby.motion.ui.RubyMotionSettingsHolder;
+import org.jetbrains.plugins.ruby.motion.util.RubyMotionUtil;
+import org.jetbrains.plugins.ruby.motion.util.RubyMotionUtilImpl;
 import org.jetbrains.plugins.ruby.ruby.RModuleUtil;
 import org.jetbrains.plugins.ruby.wizard.RubyFrameworkProjectGenerator;
 import org.jetbrains.plugins.ruby.wizard.RubyProjectSharedSettings;
@@ -53,7 +55,7 @@ public class RubyMotionGenerator extends RubyFrameworkProjectGenerator<RubyMotio
     module.putUserData(RubyMotionUtilImpl.PROJECT_TYPE, projectType);
     RubyMotionFacetConfigurator.configure(baseDir, module);
     StartupManager.getInstance(project).runWhenProjectIsInitialized(() -> {
-      ((RubyMotionUtilImpl)RubyMotionUtil.getInstance())
+      ((RubyMotionUtilImpl) RubyMotionUtil.getInstance())
         .generateApp(baseDir, module, ModuleRootManager.getInstance(module).getSdk(), projectType);
       RModuleUtil.getInstance().refreshRubyModuleTypeContent(module);
     });

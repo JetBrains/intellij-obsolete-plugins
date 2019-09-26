@@ -23,7 +23,7 @@ import com.intellij.util.PlatformUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.plugins.ruby.motion.RubyMotionBundle;
-import org.jetbrains.plugins.ruby.motion.RubyMotionUtilImpl;
+import org.jetbrains.plugins.ruby.motion.util.RubyMotionUtilImpl;
 import org.jetbrains.plugins.ruby.rails.facet.ui.wizard.ui.RubyFacetEditorTab;
 import org.jetbrains.plugins.ruby.remote.RubyRemoteInterpreterManager;
 import org.jetbrains.plugins.ruby.ruby.sdk.RubySdkType;

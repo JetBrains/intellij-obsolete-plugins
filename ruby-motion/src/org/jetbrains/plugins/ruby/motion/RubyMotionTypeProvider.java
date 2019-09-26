@@ -30,6 +30,8 @@ import org.jetbrains.plugins.ruby.motion.symbols.ConstantSymbol;
 import org.jetbrains.plugins.ruby.motion.symbols.FunctionSymbol;
 import org.jetbrains.plugins.ruby.motion.symbols.MotionClassSymbol;
 import org.jetbrains.plugins.ruby.motion.symbols.MotionSymbolUtil;
+import org.jetbrains.plugins.ruby.motion.util.RubyMotionUtil;
+import org.jetbrains.plugins.ruby.motion.util.RubyMotionUtilImpl;
 import org.jetbrains.plugins.ruby.ruby.codeInsight.AbstractRubyTypeProvider;
 import org.jetbrains.plugins.ruby.ruby.codeInsight.resolve.ResolveUtil;
 import org.jetbrains.plugins.ruby.ruby.codeInsight.resolve.scope.ScopeVariable;
