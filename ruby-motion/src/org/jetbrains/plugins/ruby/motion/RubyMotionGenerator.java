@@ -9,11 +9,9 @@ import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.platform.HideableProjectGenerator;
 import com.intellij.platform.ProjectGeneratorPeer;
-import icons.RubyIcons;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.plugins.ruby.RBundle;
 import org.jetbrains.plugins.ruby.motion.ui.RubyMotionSettingsHolder;
 import org.jetbrains.plugins.ruby.ruby.RModuleUtil;
 import org.jetbrains.plugins.ruby.wizard.RubyFrameworkProjectGenerator;
@@ -35,13 +33,13 @@ public class RubyMotionGenerator extends RubyFrameworkProjectGenerator<RubyMotio
   @Nls
   @Override
   public String getName() {
-    return RBundle.message("ruby.motion.wizard.tab.project.generator.title");
+    return RubyMotionBundle.message("ruby.motion.wizard.tab.project.generator.title");
   }
 
   @Nullable
   @Override
   public Icon getLogo() {
-    return RubyIcons.RubyMotion.RubyMotion;
+    return RubyMotionIcons.RubyMotion;
   }
 
   @Override

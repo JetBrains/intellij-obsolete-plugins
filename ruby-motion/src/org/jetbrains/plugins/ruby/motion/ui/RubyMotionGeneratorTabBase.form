@@ -31,7 +31,7 @@
         <properties>
           <horizontalAlignment value="10"/>
           <labelFor value="553d"/>
-          <text resource-bundle="org/jetbrains/plugins/ruby/RBundle" key="ruby.motion.wizard.tab.project.generator.project.type"/>
+          <text resource-bundle="messages/RubyMotionBundle" key="ruby.motion.wizard.tab.project.generator.project.type"/>
         </properties>
       </component>
     </children>

@@ -22,7 +22,7 @@ import com.intellij.ui.EnumComboBoxModel;
 import com.intellij.util.PlatformUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.plugins.ruby.RBundle;
+import org.jetbrains.plugins.ruby.motion.RubyMotionBundle;
 import org.jetbrains.plugins.ruby.motion.RubyMotionUtilImpl;
 import org.jetbrains.plugins.ruby.rails.facet.ui.wizard.ui.RubyFacetEditorTab;
 import org.jetbrains.plugins.ruby.remote.RubyRemoteInterpreterManager;
@@ -67,7 +67,7 @@ public class RubyMotionGeneratorTabBase extends RubyFacetEditorTab {
   @Nls
   @Override
   public String getDisplayName() {
-    return RBundle.message("ruby.motion.wizard.tab.project.generator.title");
+    return RubyMotionBundle.message("ruby.motion.wizard.tab.project.generator.title");
   }
 
   @Override
