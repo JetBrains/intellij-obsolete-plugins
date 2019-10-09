@@ -1,0 +1,18 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.kotlin.jvm'
+}
+
+// See https://github.com/JetBrains/gradle-intellij-plugin/
+intellij {
+    type 'IC'
+    plugins 'java'
+}
+
+publishPlugin {
+    token System.getenv("PUBLISH_PLUGIN_TOKEN")
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = '1.8'
+}

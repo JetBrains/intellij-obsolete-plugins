@@ -1,0 +1,14 @@
+<idea-plugin>
+    <name>Java Applets Support</name>
+    <id>com.intellij.applet</id>
+    <description>Supports building and running Java applets</description>
+    <vendor>JetBrains</vendor>
+    <resource-bundle>com.intellij.execution.AppletBundle</resource-bundle>
+    <depends>com.intellij.modules.java</depends>
+    <idea-version since-build="193.1"/>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <configurationType implementation="com.intellij.execution.applet.AppletConfigurationType"/>
+        <configurationProducer implementation="com.intellij.execution.applet.AppletConfigurationProducer"/>
+    </extensions>
+</idea-plugin>
