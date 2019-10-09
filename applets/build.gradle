@@ -16,3 +16,8 @@ publishPlugin {
 compileKotlin {
     kotlinOptions.jvmTarget = '1.8'
 }
+
+patchPluginXml {
+    sinceBuild '193.1'
+    untilBuild ''
+}
