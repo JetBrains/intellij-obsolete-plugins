@@ -1,0 +1,6 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij.plugins.watcher">
+        <consumer implementation="com.jetbrains.plugins.compass.watcher.CompassSassTaskConsumer"/>
+        <consumer implementation="com.jetbrains.plugins.compass.watcher.CompassScssTaskConsumer"/>
+    </extensions>
+</idea-plugin>

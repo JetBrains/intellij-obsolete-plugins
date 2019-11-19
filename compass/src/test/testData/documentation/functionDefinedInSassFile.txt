@@ -1,0 +1,5 @@
+@function -webkit()
+  @return 1
+
+div
+  $color: -webk<caret>it()

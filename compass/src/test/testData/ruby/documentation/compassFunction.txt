@@ -1,0 +1,4 @@
+div
+  $var: sp<caret>rite_has_selector();
+---
+Returns boolean <b><code><font color=#000066>if</font></code></b> sprite has the selector

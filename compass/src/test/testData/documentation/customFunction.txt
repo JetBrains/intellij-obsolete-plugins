@@ -1,0 +1,4 @@
+div
+  color: -webk<caret>it()
+---
+This is a shortcut for calling prefix(-webkit, $arg, ...).

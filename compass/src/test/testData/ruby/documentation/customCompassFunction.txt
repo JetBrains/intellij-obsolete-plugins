@@ -1,0 +1,4 @@
+div
+  color: -o<caret>()
+---
+This is a shortcut for calling prefix(-o, $arg, ...).

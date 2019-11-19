@@ -1,0 +1,35 @@
+<idea-plugin>
+    <name>Compass</name>
+    <id>com.jetbrains.plugins.compass</id>
+    <category>HTML/JavaScript Development</category>
+    <vendor>JetBrains</vendor>
+    <description><![CDATA[
+  Support for <a href="http://compass-style.org/">Compass</a> framework
+  ]]></description>
+    <depends>com.intellij.modules.lang</depends>
+    <depends>org.jetbrains.plugins.sass</depends>
+    <depends optional="true" config-file="compass-ruby.xml">org.jetbrains.plugins.ruby</depends>
+    <depends optional="true" config-file="compass-watcher.xml">com.intellij.plugins.watcher</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <projectConfigurable parentId="configurable.stylesheets"
+                             id="com.jetbrains.plugins.compass.CompassConfigurableProvider$1"
+                             displayName="Compass"
+                             provider="com.jetbrains.plugins.compass.CompassConfigurableProvider"
+                             nonDefaultProject="true"/>
+        <moduleService serviceImplementation="com.jetbrains.plugins.compass.CompassSettings"/>
+        <moduleService
+                serviceImplementation="com.jetbrains.plugins.compass.CompassImportPathRegistrationWatcherImpl"/>
+
+        <sass.extension implementation="com.jetbrains.plugins.compass.CompassSassExtension"/>
+        <postStartupActivity
+                implementation="com.jetbrains.plugins.compass.SassCompassExtensionStartupActivity"/>
+        <psi.fileReferenceHelper
+                implementation="com.jetbrains.plugins.compass.CompassFileReferenceHelper"/>
+    </extensions>
+
+    <projectListeners>
+        <listener class="com.jetbrains.plugins.compass.SassCompassExtensionStartupActivity$MyModuleListener"
+                  topic="com.intellij.openapi.project.ModuleListener"/>
+    </projectListeners>
+</idea-plugin>

@@ -1,0 +1,4 @@
+div
+  color: im<caret>age_height()
+---
+Returns the height of the image relative to the images directory
