@@ -7,8 +7,8 @@ intellij {
     plugins = ['java', 'org.jetbrains.plugins.ruby:2019.2.20190917', 'yaml']
 }
 
-dependencies{
-    testCompile files('lib/ruby-test-framework-192.7056.jar')
+dependencies {
+    testCompile files('../lib/ruby-test-framework-192.7056.jar')
 }
 
 sourceSets{
