@@ -1,0 +1,7 @@
+<idea-plugin>
+  <extensions defaultExtensionNs="com.intellij">
+      <generateAnt.packagingElementAntGenerator
+              forClass="org.jetbrains.android.compiler.artifact.AndroidFinalPackageElement"
+              implementationClass="com.intellij.compiler.ant.packaging.AndroidFinalPackageElementAntGenerator"/>
+  </extensions>
+</idea-plugin>

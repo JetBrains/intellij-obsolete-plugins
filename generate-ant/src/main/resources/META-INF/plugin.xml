@@ -1,0 +1,78 @@
+<idea-plugin>
+    <name>Ant Build Generation</name>
+    <id>com.intellij.antbuild</id>
+    <description>Supports generating an Ant build file out of an IntelliJ IDEA project</description>
+    <vendor>JetBrains</vendor>
+    <resource-bundle>com.intellij.compiler.ant.GenerateAntBundle</resource-bundle>
+    <depends>com.intellij.modules.java</depends>
+    <idea-version since-build="193.1"/>
+
+    <depends optional="true" config-file="generate-ant-devkit.xml">DevKit</depends>
+    <depends optional="true" config-file="generate-ant-android.xml">org.jetbrains.android</depends>
+    <depends optional="true" config-file="generate-ant-javaee.xml">com.intellij.javaee</depends>
+    <depends optional="true" config-file="generate-ant-gwt.xml">com.intellij.gwt</depends>
+    <depends optional="true" config-file="generate-ant-javafx.xml">org.jetbrains.plugins.javaFX</depends>
+    <depends optional="true" config-file="generate-ant-ant.xml">AntSupport</depends>
+    <depends optional="true" config-file="generate-ant-groovy.xml">org.intellij.groovy</depends>
+
+    <extensionPoints>
+        <extensionPoint qualifiedName="com.intellij.generateAnt.antBuildGen"
+                        interface="com.intellij.compiler.ant.ChunkBuildExtension"/>
+
+        <extensionPoint qualifiedName="com.intellij.generateAnt.antCustomCompiler"
+                        interface="com.intellij.compiler.ant.ChunkCustomCompilerExtension"/>
+
+        <extensionPoint qualifiedName="com.intellij.generateAnt.packagingElementAntGenerator"
+                        beanClass="com.intellij.openapi.util.ClassExtensionPoint">
+            <with attribute="implementationClass"
+                  implements="com.intellij.compiler.ant.packaging.PackagingElementAntGenerator"/>
+        </extensionPoint>
+    </extensionPoints>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <appStarter implementation="com.intellij.compiler.ant.GenerateAntMain"/>
+
+        <applicationService serviceInterface="com.intellij.compiler.ant.AntBuildTargetsFactory"
+                            serviceImplementation="com.intellij.compiler.ant.AntBuildTargetsFactoryImpl"/>
+
+        <generateAnt.packagingElementAntGenerator
+                forClass="com.intellij.packaging.impl.elements.ArchivePackagingElement"
+                implementationClass="com.intellij.compiler.ant.packaging.ArchivePackagingElementAntGenerator"/>
+        <generateAnt.packagingElementAntGenerator
+                forClass="com.intellij.packaging.elements.ComplexPackagingElement"
+                implementationClass="com.intellij.compiler.ant.packaging.ComplexPackagingElementAntGenerator"/>
+        <generateAnt.packagingElementAntGenerator
+                forClass="com.intellij.packaging.impl.elements.ExtractedDirectoryPackagingElement"
+                implementationClass="com.intellij.compiler.ant.packaging.ExtractedDirectoryPackagingElementAntGenerator"/>
+        <generateAnt.packagingElementAntGenerator
+                forClass="com.intellij.packaging.impl.elements.FileCopyPackagingElement"
+                implementationClass="com.intellij.compiler.ant.packaging.FileCopyPackagingElementAntGenerator"/>
+        <generateAnt.packagingElementAntGenerator
+                forClass="com.intellij.packaging.impl.elements.ProductionModuleOutputPackagingElement"
+                implementationClass="com.intellij.compiler.ant.packaging.ProductionModuleOutputPackagingElementAntGenerator"/>
+        <generateAnt.packagingElementAntGenerator
+                forClass="com.intellij.packaging.impl.elements.TestModuleOutputPackagingElement"
+                implementationClass="com.intellij.compiler.ant.packaging.TestModuleOutputPackagingElementAntGenerator"/>
+        <generateAnt.packagingElementAntGenerator
+                forClass="com.intellij.packaging.impl.elements.DirectoryCopyPackagingElement"
+                implementationClass="com.intellij.compiler.ant.packaging.DirectoryCopyPackagingElementAntGenerator"/>
+        <generateAnt.packagingElementAntGenerator
+                forClass="com.intellij.packaging.impl.elements.ArtifactPackagingElement"
+                implementationClass="com.intellij.compiler.ant.packaging.ArtifactPackagingElementAntGenerator"/>
+        <generateAnt.packagingElementAntGenerator
+                forClass="com.intellij.packaging.impl.elements.DirectoryPackagingElement"
+                implementationClass="com.intellij.compiler.ant.packaging.DirectoryPackagingElementAntGenerator"/>
+        <generateAnt.packagingElementAntGenerator
+                forClass="com.intellij.packaging.impl.elements.ArtifactRootElementImpl"
+                implementationClass="com.intellij.compiler.ant.packaging.ArtifactRootElemenAntGenerator"/>
+        <generateAnt.packagingElementAntGenerator
+                forClass="com.intellij.packaging.impl.elements.ProductionModuleSourcePackagingElement"
+                implementationClass="com.intellij.compiler.ant.packaging.ProductionModuleSourcePackagingElementAntGenerator"/>
+    </extensions>
+
+    <actions>
+        <action id="GenerateAntBuildFile" class="com.intellij.compiler.actions.GenerateAntBuildFileAction">
+            <add-to-group group-id="Java.BuildMenu" anchor="last"/>
+        </action>
+    </actions>
+</idea-plugin>

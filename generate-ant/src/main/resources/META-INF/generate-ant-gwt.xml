@@ -1,0 +1,9 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <generateAnt.antBuildGen implementation="com.intellij.gwt.ant.GwtBuildExtension" order="first"/>
+
+        <generateAnt.packagingElementAntGenerator
+                forClass="com.intellij.gwt.packaging.GwtCompilerOutputElement"
+                implementationClass="com.intellij.compiler.ant.packaging.GwtCompilerOutputElementAntGenerator"/>
+    </extensions>
+</idea-plugin>

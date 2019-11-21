@@ -1,0 +1,4 @@
+intellij {
+    type 'IU'
+    plugins 'java', 'devkit', 'android', 'javaee', 'GwtStudio', 'javaFX', 'ant', 'groovy'
+}
