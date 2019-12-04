@@ -76,9 +76,9 @@ public class TilesViewResolverFactory extends ViewResolverFactory {
 
   @NotNull
   @Override
-  public Set<ViewResolver> doCreate(@Nullable CommonSpringBean bean, SpringModel model) {
+  public ViewResolver doCreate(@Nullable CommonSpringBean bean, SpringModel model) {
     assert bean != null;
-    return Collections.singleton(new TilesViewResolver("TilesViewResolver[" + bean.getBeanName() + "]", model));
+    return new TilesViewResolver("TilesViewResolver[" + bean.getBeanName() + "]", model);
   }
 
   private static boolean isTilesViewClass(PsiClass psiClass) {

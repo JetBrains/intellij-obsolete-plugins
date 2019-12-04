@@ -7,11 +7,8 @@ package com.intellij.tiles.springMvc;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.pom.references.PomService;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.jsp.WebDirectoryElement;
 import com.intellij.spring.contexts.model.SpringModel;
 import com.intellij.spring.web.mvc.model.SpringMVCModel;
 import com.intellij.spring.web.mvc.views.ViewResolver;
@@ -19,7 +16,6 @@ import com.intellij.struts.StrutsPluginDomFactory;
 import com.intellij.struts.StrutsProjectComponent;
 import com.intellij.struts.TilesModel;
 import com.intellij.struts.dom.tiles.Definition;
-import com.intellij.struts.dom.tiles.Put;
 import com.intellij.struts.dom.tiles.TilesDefinitions;
 import com.intellij.util.xml.DomTarget;
 import icons.StrutsApiIcons;
@@ -62,37 +58,6 @@ public class TilesViewResolver extends ViewResolver {
     if (target == null) return null;
     
     return PomService.convertToPsi(target);
-  }
-
-  @Override
-  public PsiElement resolveFinalView(@NotNull PsiElement context, final String viewName, final SpringMVCModel springMVCModel) {
-    final Definition definition = findDefinition(viewName);
-    if (definition == null) return null;
-
-    return resolveDefinitionTarget(definition, springMVCModel);
-  }
-
-  @Nullable
-  private static PsiFile resolveDefinitionTarget(@NotNull Definition definition, SpringMVCModel context) {
-    List<Put> puts = definition.getAllPuts();
-    for (Put put : puts) {
-      Definition inner = put.getDefinition();
-      PsiFile directoryElement = resolveDefinitionTarget(inner, context);
-      if (directoryElement != null) {
-        return directoryElement;
-      }
-      String value = put.getValue();
-      if (StringUtil.isEmpty(value)) {
-        value = put.getAttributeValue().getStringValue();
-      }
-      if (StringUtil.isNotEmpty(value)) {
-        WebDirectoryElement webDirectoryElement = context.findWebDirectoryElement(value);
-        if (webDirectoryElement != null) {
-          return webDirectoryElement.getOriginalFile();
-        }
-      }
-    }
-    return null;
   }
 
   @Override

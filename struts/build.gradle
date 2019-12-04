@@ -5,6 +5,7 @@ plugins {
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
     type 'IU'
+    version '2019.3'
     plugins 'java', 'properties', 'java-i18n', 'jsp', 'JavaEE', 'JavaScriptLanguage', 'CSS', 'PersistenceSupport', 'DatabaseTools', 'struts2', 'Spring', 'SpringMvc'
 }
 
