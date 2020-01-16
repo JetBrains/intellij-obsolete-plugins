@@ -17,7 +17,7 @@
   <name>JSTestDriver Plugin</name>
   <description>Allows running, debugging JavaScript unit tests and measure test coverage.</description>
   <vendor>Google, JetBrains</vendor>
-  <idea-version since-build="192.1"/>
+  <idea-version since-build="201.1"/>
 
   <depends>com.intellij.modules.lang</depends>
   <depends>JavaScript</depends>
@@ -27,10 +27,6 @@
   <depends optional="true" config-file="jstd-coverage.xml">com.intellij.modules.coverage</depends>
 
   <depends optional="true" config-file="jstd-javascript-debugger.xml">JavaScriptDebugger</depends>
-
-  <extensions defaultExtensionNs="JavaScript">
-    <testFileStructureBuilderProvider implementation="com.google.jstestdriver.idea.assertFramework.jstd.JstdTestFileStructureBuilderProvider"/>
-  </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
     <fileTypeFactory implementation="com.google.jstestdriver.idea.config.JstdConfigFileTypeFactory"/>
@@ -51,7 +47,6 @@
         />
 
     <languageInjector implementation="com.google.jstestdriver.idea.assertFramework.jstd.JstdFixtureHtmlLanguageInjector"/>
-    <!--<codeInsight.lineMarkerProvider language="JavaScript" implementationClass="com.google.jstestdriver.idea.assertFramework.jstd.JstdAssertionFrameworkLineMarkerProvider"/>-->
     <implicitUsageProvider implementation="com.google.jstestdriver.idea.assertFramework.jstd.JstdImplicitUsageProvider"/>
   </extensions>
 

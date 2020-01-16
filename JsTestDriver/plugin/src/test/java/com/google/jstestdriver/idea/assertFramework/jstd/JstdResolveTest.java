@@ -1,13 +1,11 @@
 package com.google.jstestdriver.idea.assertFramework.jstd;
 
-import com.google.jstestdriver.idea.JstdTestRoot;
 import com.google.jstestdriver.idea.assertFramework.jstd.jsSrc.JstdDefaultAssertionFrameworkSrcMarker;
 import com.google.jstestdriver.idea.assertFramework.library.JstdLibraryUtil;
 import com.google.jstestdriver.idea.util.VfsUtils;
 import com.intellij.lang.javascript.library.JSLibraryManager;
 import com.intellij.lang.javascript.library.JSLibraryMappings;
 import com.intellij.lang.javascript.psi.JSFunction;
-import com.intellij.lang.javascript.psi.JSReferenceExpression;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.components.ServiceManager;
@@ -16,21 +14,15 @@ import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiPolyVariantReference;
-import com.intellij.psi.ResolveResult;
-import com.intellij.testFramework.ResolveTestCase;
+import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase;
 import com.intellij.util.ArrayUtil;
 import com.intellij.webcore.libraries.ScriptingLibraryManager;
 import com.intellij.webcore.libraries.ScriptingLibraryModel;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 
-/**
- * @author Sergey Simonchik
- */
-public class JstdResolveTest extends ResolveTestCase {
+public class JstdResolveTest extends CodeInsightFixtureTestCase {
 
   private static final boolean ADD_LIBRARY = true;
 
@@ -91,32 +83,10 @@ public class JstdResolveTest extends ResolveTestCase {
     });
   }
 
-  public void testResolveTestCaseFunction() throws Exception {
-    String fileText = "Test<ref>Case('', {});";
-    JSReferenceExpression ref = (JSReferenceExpression)configureByFileText(fileText, "sample.js");
-    final PsiElement resolved = doResolve(ref);
+  public void testResolveTestCaseFunction() {
+    String fileText = "Test<caret>Case('', {});";
+    myFixture.configureByText("sample.js", fileText);
+    final PsiElement resolved = myFixture.getElementAtCaret();
     assertTrue(resolved instanceof JSFunction);
   }
-
-  @Nullable
-  public static PsiElement doResolve(@NotNull PsiPolyVariantReference psiPolyVariantReference) {
-    ResolveResult[] resolveResults = psiPolyVariantReference.multiResolve(false);
-    for (ResolveResult resolveResult : resolveResults) {
-      PsiElement element = unwrapResolveResult(resolveResult);
-      if (element != null) {
-        return element;
-      }
-    }
-    return null;
-  }
-
-  @Nullable
-  private static PsiElement unwrapResolveResult(@NotNull ResolveResult resolveResult) {
-    PsiElement resolvedElement = resolveResult.getElement();
-    if (resolvedElement == null || !resolveResult.isValidResult()) {
-      return null;
-    }
-    return resolvedElement;
-  }
-
 }

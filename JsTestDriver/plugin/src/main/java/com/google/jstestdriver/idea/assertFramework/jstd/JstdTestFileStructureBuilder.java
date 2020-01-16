@@ -86,10 +86,11 @@ public class JstdTestFileStructureBuilder extends AbstractTestFileStructureBuild
   private static void addPrototypeTests(@NotNull JstdTestCaseStructure testCaseStructure,
                                         @NotNull String referenceName,
                                         @NotNull JSStatement refStatement) {
-    List<JSStatement> statements = JsPsiUtils.listStatementsInExecutionOrderNextTo(refStatement);
+    List<JSStatement> statements = JsPsiUtils.listStatementsInExecutionOrder((JSFile)refStatement.getContainingFile());
     for (JSStatement statement : statements) {
       JSExpressionStatement expressionStatement = ObjectUtils.tryCast(statement, JSExpressionStatement.class);
-      if (expressionStatement != null) {
+      if (expressionStatement != null &&
+          refStatement.getTextRange().getStartOffset() < expressionStatement.getTextRange().getStartOffset()) {
         JSAssignmentExpression assignmentExpr = ObjectUtils.tryCast(expressionStatement.getExpression(), JSAssignmentExpression.class);
         if (assignmentExpr != null) {
           JSDefinitionExpression wholeLeftDefExpr = ObjectUtils.tryCast(assignmentExpr.getLOperand(), JSDefinitionExpression.class);

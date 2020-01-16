@@ -114,7 +114,7 @@ public class JstdConfigFileCompletionContributor extends CompletionContributor {
     PsiElement element = parameters.getPosition();
     YAMLDocument yamlDocument = ObjectUtils.tryCast(element.getParent(), YAMLDocument.class);
     if (yamlDocument == null) {
-      yamlDocument = JsPsiUtils.getVerifiedHierarchyHead(
+      yamlDocument = getVerifiedHierarchyHead(
         element.getParent(),
         new Class[]{YAMLKeyValue.class},
         YAMLDocument.class
@@ -135,7 +135,7 @@ public class JstdConfigFileCompletionContributor extends CompletionContributor {
                                                               @NotNull CompletionResultSet result,
                                                               @NotNull BipartiteString caretBipartiteElementText) {
     PsiElement element = parameters.getPosition();
-    YAMLKeyValue keyValue = JsPsiUtils.getVerifiedHierarchyHead(
+    YAMLKeyValue keyValue = getVerifiedHierarchyHead(
       element.getParent(),
       new Class[]{
         YAMLSequenceItem.class,
@@ -151,6 +151,16 @@ public class JstdConfigFileCompletionContributor extends CompletionContributor {
         addPathCompletions(result, caretBipartiteElementText, basePath, false);
       }
     }
+  }
+
+  public static <K> K getVerifiedHierarchyHead(PsiElement psiElement, Class<?>[] hierarchyClasses, Class<K> headHierarchyClass) {
+    for (Class<?> clazz : hierarchyClasses) {
+      if (!clazz.isInstance(psiElement)) {
+        return null;
+      }
+      psiElement = psiElement.getParent();
+    }
+    return ObjectUtils.tryCast(psiElement, headHierarchyClass);
   }
 
   @Nullable

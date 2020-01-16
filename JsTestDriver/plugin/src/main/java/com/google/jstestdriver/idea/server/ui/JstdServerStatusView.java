@@ -9,6 +9,7 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.util.Ref;
+import com.intellij.ui.JBColor;
 import com.intellij.ui.PopupHandler;
 import com.intellij.ui.SideBorder;
 import com.intellij.util.PlatformIcons;
@@ -44,7 +45,7 @@ public class JstdServerStatusView {
     panel.setBorder(BorderFactory.createEmptyBorder(3, 7, 5, 12));
     JPanel wrap = new JPanel(new BorderLayout(0, 0));
     wrap.add(panel, BorderLayout.CENTER);
-    wrap.setBorder(new SideBorder(UIUtil.getBorderColor(), SideBorder.BOTTOM));
+    wrap.setBorder(new SideBorder(JBColor.border(), SideBorder.BOTTOM));
     myRoot = wrap;
   }
 

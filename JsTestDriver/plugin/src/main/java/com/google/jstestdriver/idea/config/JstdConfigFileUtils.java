@@ -30,6 +30,7 @@ import com.intellij.patterns.VirtualFilePattern;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.tree.IElementType;
 import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -104,11 +105,11 @@ public class JstdConfigFileUtils {
     final Ref<Integer> endOffsetRef = Ref.create(null);
     sequence.acceptChildren(new PsiElementVisitor() {
       @Override
-      public void visitElement(PsiElement element) {
-        if (JsPsiUtils.isElementOfType(
-          element,
-          YAMLTokenTypes.TEXT, YAMLTokenTypes.SCALAR_DSTRING, YAMLTokenTypes.SCALAR_STRING
-        )) {
+      public void visitElement(@NotNull PsiElement element) {
+        IElementType elementType = element.getNode().getElementType();
+        if (elementType == YAMLTokenTypes.TEXT ||
+            elementType == YAMLTokenTypes.SCALAR_DSTRING ||
+            elementType == YAMLTokenTypes.SCALAR_STRING) {
           UnquotedText unquotedText = new UnquotedText(element);
           TextRange usefulTextRange = unquotedText.getUnquotedDocumentTextRange();
           if (startOffsetRef.isNull()) {
