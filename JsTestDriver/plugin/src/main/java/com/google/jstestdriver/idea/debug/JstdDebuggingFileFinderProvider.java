@@ -10,6 +10,7 @@ import com.google.jstestdriver.idea.rt.util.JstdConfigParsingUtils;
 import com.google.jstestdriver.idea.server.JstdServer;
 import com.google.jstestdriver.model.BasePaths;
 import com.intellij.execution.ExecutionException;
+import com.intellij.javascript.debugger.DebuggableFileFinder;
 import com.intellij.javascript.debugger.RemoteDebuggingFileFinder;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.text.StringUtil;
@@ -40,7 +41,7 @@ public class JstdDebuggingFileFinderProvider {
     BiMap<String, VirtualFile> mappings = HashBiMap.create();
     addAllRemoteUrlMappings(resolvedConfiguration.getTests(), mappings);
     addAllRemoteUrlMappings(resolvedConfiguration.getFilesList(), mappings);
-    return new RemoteDebuggingFileFinder(mappings, null);
+    return new RemoteDebuggingFileFinder(mappings, (DebuggableFileFinder) null);
   }
 
   @NotNull

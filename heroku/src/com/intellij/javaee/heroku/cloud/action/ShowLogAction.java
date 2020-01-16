@@ -4,7 +4,7 @@ import com.intellij.javaee.heroku.cloud.HerokuApplicationRuntime;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
-import com.intellij.remoteServer.impl.runtime.ui.ServersToolWindowContent;
+import com.intellij.remoteServer.impl.runtime.ui.RemoteServersDeploymentManager;
 import com.intellij.remoteServer.impl.runtime.ui.tree.DeploymentNode;
 import com.intellij.remoteServer.impl.runtime.ui.tree.ServersTreeNodeSelector;
 import org.jetbrains.annotations.NotNull;
@@ -24,13 +24,13 @@ public class ShowLogAction extends DumbAwareAction {
         Project project = e.getProject();
         if (project == null) return;
 
-        ServersTreeNodeSelector selector = e.getData(ServersToolWindowContent.KEY);
+        ServersTreeNodeSelector selector = RemoteServersDeploymentManager.getNodeSelector(e);
         if (selector == null) return;
 
         DeploymentNode node = getDeploymentTarget(e);
         HerokuApplicationRuntime applicationRuntime = getApplicationRuntime(node, HerokuApplicationRuntime.class);
         if (applicationRuntime == null) return;
 
-        applicationRuntime.showLog(project, createLogSelector(selector, node, LOG_NAME));
+        applicationRuntime.showLog(project, createLogSelector(project, selector, node, LOG_NAME));
     }
 }

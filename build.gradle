@@ -14,7 +14,7 @@ subprojects {
     apply plugin: 'org.jetbrains.intellij'
 
     intellij {
-        version '192-EAP-SNAPSHOT'
+        version '193-EAP-SNAPSHOT'
     }
 
     patchPluginXml {
@@ -28,5 +28,5 @@ subprojects {
     targetCompatibility = 1.8
 
     String buildNumber = System.getenv("BUILD_NUMBER")
-    version "192." + (buildNumber == null || buildNumber.isEmpty() ? "0" : buildNumber)
+    version "193." + (buildNumber == null || buildNumber.isEmpty() ? "0" : buildNumber)
 }
