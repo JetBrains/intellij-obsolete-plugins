@@ -20,6 +20,7 @@ import java.net.Socket;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @author michael.golubev
@@ -105,14 +106,16 @@ public class HerokuCloudAgentDeploymentImpl implements HerokuCloudAgentDeploymen
   }
 
   @Override
-  public void startListeningLog(final CloudAgentLoggingHandler loggingHandler) {
+  public CompletableFuture<LogListener> startListeningLog(final CloudAgentLoggingHandler loggingHandler) {
+    CompletableFuture<LogListener> result = new CompletableFuture<>();
     myLogManager.startListeningLog(myDeploymentName, new LogPipeProvider() {
 
       @Override
       public List<? extends LogPipe> createLogPipes(String deploymentName) {
-        return Collections.singletonList(new HerokuLogPipe(deploymentName, loggingHandler));
+        return Collections.singletonList(new HerokuLogPipe(deploymentName, loggingHandler, result));
       }
     });
+    return result;
   }
 
   @Override
@@ -266,9 +269,11 @@ public class HerokuCloudAgentDeploymentImpl implements HerokuCloudAgentDeploymen
   }
 
   private class HerokuLogPipe extends LogPipe {
+    private final CompletableFuture<LogListener> myStartListeningCallback;
 
-    HerokuLogPipe(String deploymentName, CloudAgentLoggingHandler loggingHandler) {
+    HerokuLogPipe(String deploymentName, CloudAgentLoggingHandler loggingHandler, CompletableFuture<LogListener> startListeningCallback) {
       super(deploymentName, LOG_PIPE_NAME, myLogger, loggingHandler);
+      myStartListeningCallback = startListeningCallback;
     }
 
     @Override
@@ -280,6 +285,11 @@ public class HerokuCloudAgentDeploymentImpl implements HerokuCloudAgentDeploymen
           return api.getLogs(new Log.LogRequestBuilder().app(deploymentName).tail(true)).openStream();
         }
       }.perform();
+    }
+
+    @Override
+    protected void onStartListening(LogListener logListener) {
+      myStartListeningCallback.complete(logListener);
     }
   }
 

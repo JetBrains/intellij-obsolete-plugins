@@ -22,8 +22,8 @@ public class HerokuApplicationRuntime extends CloudGitApplicationRuntime {
 
       @Override
       protected void run(CloudAgentLoggingHandler loggingHandler) {
-        getDeployment().startListeningLog(loggingHandler);
+        getDeployment().startListeningLog(loggingHandler).thenRun(onDone);
       }
-    }.perform(project, onDone);
+    }.perform(project, () -> {});
   }
 }
