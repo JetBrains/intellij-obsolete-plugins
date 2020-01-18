@@ -8,7 +8,9 @@ import com.intellij.execution.process.ProcessHandler;
 import com.intellij.ide.browsers.BrowserFamily;
 import com.intellij.ide.browsers.WebBrowser;
 import com.intellij.javascript.debugger.JavaScriptDebugEngine;
+import com.intellij.javascript.debugger.execution.ILiveEditOptions;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Pair;
 import com.intellij.util.SmartList;
@@ -97,8 +99,13 @@ public class JstdDebugBrowserInfo {
   public static JstdDebugBrowserInfo build(@NotNull JstdServer server, @NotNull JstdRunSettings runSettings) {
     Collection<JstdBrowserInfo> capturedBrowsers = server.getCapturedBrowsers();
     List<JstdDebugBrowserInfo> debugBrowserInfos = new SmartList<>();
+    ILiveEditOptions liveEditOptions = ServiceManager.getService(ILiveEditOptions.class);
+    boolean useExtension = liveEditOptions != null && liveEditOptions.isUseJBChromeExtension();
     for (JstdBrowserInfo browserInfo : capturedBrowsers) {
-      Pair<JavaScriptDebugEngine, WebBrowser> engine = JavaScriptDebugEngine.Companion.findByBrowserIdOrName(browserInfo.getName());
+      Pair<JavaScriptDebugEngine, WebBrowser> engine = JavaScriptDebugEngine.Companion.findByBrowserIdOrName(
+          browserInfo.getName(),
+          useExtension
+      );
       if (engine != null) {
         debugBrowserInfos.add(new JstdDebugBrowserInfo(engine, server.getSettings(), browserInfo));
       }
