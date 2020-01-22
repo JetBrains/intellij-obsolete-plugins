@@ -4,9 +4,11 @@ plugins {
 
 intellij {
     type 'IU'
-    version '193-EAP-SNAPSHOT'
-    plugins = ['org.jetbrains.plugins.ruby:193.5233.12', 'com.intellij.plugins.watcher:193.1', 'CSS', 'sass']
+    version '201.3803-EAP-CANDIDATE-SNAPSHOT'
+    plugins = ['org.jetbrains.plugins.ruby:201.3803.32', 'com.intellij.plugins.watcher:201.3803.32', 'CSS', 'sass']
 }
+
+version = '201.3803.32'
 
 dependencies {
     testCompile files('../lib/ruby-test-framework-192.7056.jar')

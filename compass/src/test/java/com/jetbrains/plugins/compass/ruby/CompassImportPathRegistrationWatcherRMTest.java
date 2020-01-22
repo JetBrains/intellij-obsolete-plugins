@@ -17,7 +17,6 @@ import com.intellij.util.ui.UIUtil;
 import com.jetbrains.plugins.compass.CompassSettings;
 import com.jetbrains.plugins.compass.CompassUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.plugins.sass.extensions.SassRubyIntegrationHelper;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -33,8 +32,8 @@ public class CompassImportPathRegistrationWatcherRMTest extends SassExtensionsBa
     myConfigFile = VfsUtil.findFileByIoFile(FileUtil.createTempFile("compassConfig", ".rb"), true);
     assertNotNull(myConfigFile);
     CompassSettings.getInstance(myFixture.getModule()).setCompassConfigPath(myConfigFile.getCanonicalPath());
-    SassRubyIntegrationHelper.getInstance().getCompassExtension().stopActivity(myFixture.getModule());
-    SassRubyIntegrationHelper.getInstance().getCompassExtension().startActivity(myFixture.getModule());
+    CompassUtil.getCompassExtension().stopActivity(myFixture.getModule());
+    CompassUtil.getCompassExtension().startActivity(myFixture.getModule());
     UIUtil.dispatchAllInvocationEvents();
   }
 
@@ -123,7 +122,7 @@ public class CompassImportPathRegistrationWatcherRMTest extends SassExtensionsBa
   private void assertSettingsAndLibraryRoots(VirtualFile... expectedLibraryRoots) {
     UIUtil.dispatchAllInvocationEvents();
     final String[] expectedImportPaths = ArrayUtil.prepend(getCompassStylesheetPath(),
-                                                           ContainerUtil.map(expectedLibraryRoots, file -> file.getPath(),
+                                                           ContainerUtil.map(expectedLibraryRoots, VirtualFile::getPath,
                                                                              ArrayUtilRt.EMPTY_STRING_ARRAY)
     );
     assertSameElements(CompassSettings.getInstance(myFixture.getModule()).getImportPaths(), expectedImportPaths);

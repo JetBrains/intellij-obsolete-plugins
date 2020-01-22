@@ -24,18 +24,18 @@ public abstract class CompassTestCase extends CompassBaseTestCase {
     public void setUp() throws Exception {
         super.setUp();
         SassRubyIntegrationHelper.setTestingHelper(new SassRubyIntegrationHelperImpl(), getTestRootDisposable());
-        final String compassPath = getTestDataPath() + "/test/testData/gems/compass-0.13.alpha.2";
+        final String compassPath = getBasePath() + "/gems/compass-0.13.alpha.2";
         myCompassSettings = CompassSettings.getInstance(myFixture.getModule());
         myCompassSettings.setCompassSupportEnabled(true);
         myCompassSettings.setCompassExecutableFilePath(compassPath + "/bin/compass");
-        SassRubyIntegrationHelper.getInstance().getCompassExtension().startActivity(myFixture.getModule());
+        CompassUtil.getCompassExtension().startActivity(myFixture.getModule());
         UIUtil.dispatchAllInvocationEvents();
     }
 
     @Override
     public void tearDown() throws Exception {
         try {
-            SassRubyIntegrationHelper.getInstance().getCompassExtension().stopActivity(myFixture.getModule());
+            CompassUtil.getCompassExtension().stopActivity(myFixture.getModule());
             CompassSettings compassSettings = CompassSettings.getInstance(myFixture.getModule());
             compassSettings.setCompassExecutableFilePath(null);
             compassSettings.setCompassConfigPath(null);

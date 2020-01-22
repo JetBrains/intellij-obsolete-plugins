@@ -31,8 +31,8 @@ public class CompassImportPathRegistrationWatcherImplTest extends CompassTestCas
     assertNotNull(myConfigFile);
     myCompassSettings.setCompassSupportEnabled(true);
     myCompassSettings.setCompassConfigPath(myConfigFile.getCanonicalPath());
-    SassRubyIntegrationHelper.getInstance().getCompassExtension().stopActivity(myFixture.getModule());
-    SassRubyIntegrationHelper.getInstance().getCompassExtension().startActivity(myFixture.getModule());
+    CompassUtil.getCompassExtension().stopActivity(myFixture.getModule());
+    CompassUtil.getCompassExtension().startActivity(myFixture.getModule());
     UIUtil.dispatchAllInvocationEvents();
   }
 
