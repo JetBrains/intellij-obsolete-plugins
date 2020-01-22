@@ -28,14 +28,14 @@ abstract public class SassExtensionsBaseTest extends RailsGemSuiteTestCase {
     CompassSettings compassSettings = CompassSettings.getInstance(myFixture.getModule());
     compassSettings.setCompassSupportEnabled(true);
     CompassUtil.removeCompassLibraryIfNeeded(myFixture.getModule());
-    SassRubyIntegrationHelper.getInstance().getCompassExtension().startActivity(myFixture.getModule());
+    CompassUtil.getCompassExtension().startActivity(myFixture.getModule());
     UIUtil.dispatchAllInvocationEvents();
   }
 
   @Override
   protected void tearDown() throws Exception {
     try {
-      SassRubyIntegrationHelper.getInstance().getCompassExtension().stopActivity(myFixture.getModule());
+      CompassUtil.getCompassExtension().stopActivity(myFixture.getModule());
       CompassSettings.getInstance(myFixture.getModule()).setImportPaths(Collections.emptyList());
       UIUtil.dispatchAllInvocationEvents();
       COMPASS_STYLESHEET_PATH = null;
