@@ -13,7 +13,6 @@ import com.intellij.packaging.elements.PackagingElementResolvingContext;
 import org.jetbrains.android.compiler.artifact.AndroidFinalPackageElement;
 import org.jetbrains.android.facet.AndroidFacet;
 import org.jetbrains.android.facet.AndroidRootUtil;
-import org.jetbrains.android.util.AndroidCommonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,11 +39,22 @@ public class AndroidFinalPackageElementAntGenerator extends PackagingElementAntG
 
     final String apkPath = AndroidRootUtil.getApkPath(facet);
     final String path = apkPath != null
-        ? AndroidCommonUtils.addSuffixToFileName(apkPath, AndroidCommonUtils.ANDROID_FINAL_PACKAGE_FOR_ARTIFACT_SUFFIX)
+        ? addSuffixToFileName(apkPath, ".afp")
         : null;
     return path != null
         ? FileUtil.toSystemIndependentName(path) + "!/"
         : null;
+  }
+
+  @NotNull
+  private static String addSuffixToFileName(@NotNull String path, @NotNull String suffix) {
+    int dot = path.lastIndexOf('.');
+    if (dot < 0) {
+      return path + suffix;
+    }
+    String a = path.substring(0, dot);
+    String b = path.substring(dot);
+    return a + suffix + b;
   }
 }
 

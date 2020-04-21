@@ -3,6 +3,7 @@ package org.jetbrains.plugins.javaFX.packaging.ant;
 
 import com.intellij.compiler.ant.*;
 import com.intellij.compiler.ant.artifacts.DirectoryAntCopyInstructionCreator;
+import com.intellij.compiler.ant.packaging.PackagingElementAntGenerators;
 import com.intellij.compiler.ant.taskdefs.Property;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.JavaSdkType;
@@ -83,7 +84,7 @@ public class JavaFxChunkBuildExtension extends ChunkBuildExtension {
                                                                   List<PackagingElement<?>> children) {
       final List<Generator> generators = new ArrayList<>();
       for (PackagingElement<?> child : children) {
-        generators.addAll(child.computeAntInstructions(resolvingContext, copyInstructionCreator, generationContext, artifactType));
+        generators.addAll(PackagingElementAntGenerators.computeAntInstructions(child, resolvingContext, copyInstructionCreator, generationContext, artifactType));
       }
       return generators;
     }

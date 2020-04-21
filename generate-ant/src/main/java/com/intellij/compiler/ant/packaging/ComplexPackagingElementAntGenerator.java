@@ -24,7 +24,7 @@ public class ComplexPackagingElementAntGenerator extends PackagingElementAntGene
 
     final List<Generator> fileSets = new ArrayList<>();
     for (PackagingElement<?> element : substitution) {
-      fileSets.addAll(element.computeAntInstructions(resolvingContext, creator, generationContext, artifactType));
+      fileSets.addAll(PackagingElementAntGenerators.computeAntInstructions(element, resolvingContext, creator, generationContext, artifactType));
     }
     return fileSets;
   }
