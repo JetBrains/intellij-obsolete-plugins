@@ -12,5 +12,5 @@ This repository includes the following plugins:
   * [Struts 1.x](https://plugins.jetbrains.com/plugin/110-struts-1-x/)
   * [Heroku integration](https://plugins.jetbrains.com/plugin/7605-heroku-integration)
   * [RubyMotion support](https://plugins.jetbrains.com/plugin/10674-rubymotion-support)
-  * [Compass support](https://plugins.jetbrains.com/plugin/10674-rubymotion-support)
+  * [Compass support](https://plugins.jetbrains.com/plugin/13705-compass)
   * [Generate Ant Build](https://plugins.jetbrains.com/plugin/14169-ant-build-generation)
