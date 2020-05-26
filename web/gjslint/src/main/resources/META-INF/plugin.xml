@@ -44,5 +44,6 @@ Note that this plugin is not actively maintained and may stop working in future 
         <projectService serviceImplementation="com.intellij.lang.javascript.linter.gjslint.GjsLintConfiguration"/>
         <projectService
                 serviceImplementation="com.intellij.lang.javascript.linter.gjslint.GjsLintConfigFileChangeTracker"/>
+        <JavaScript.linter.descriptor implementation="com.intellij.lang.javascript.linter.gjslint.GjsLinterDescriptor"/>
     </extensions>
 </idea-plugin>
