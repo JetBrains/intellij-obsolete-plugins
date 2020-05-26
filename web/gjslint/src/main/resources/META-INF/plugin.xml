@@ -1,0 +1,48 @@
+<idea-plugin>
+    <name>Closure Linter</name>
+    <id>com.jetbrains.plugins.gjslint</id>
+    <category>JavaScript Frameworks and Tools</category>
+    <vendor>JetBrains</vendor>
+    <description><![CDATA[
+Provides integration with <a href="https://developers.google.com/closure/utilities/">Closure Linter</a>. To enable Closure Linter in the IDE:
+<ul>
+  <li>Open the Settings&#47;Preferences dialog, go to <b>Languages and Frameworks | JavaScript | Code Quality Tools | Closure Linter</b>,
+  select the <i>Enable</i> checkbox. After that all the controls on the page become available.
+  </li>
+  <li>Specify the path to the Closure Linter executable file:
+<code>&lt;Python_home&gt;\Scripts\gjslint.exe</code> for Windows
+<code>&#47;usr&#47;local&#47;bin&#47;gjslint</code> for Linux and macOS
+  </li>
+</ul>
+<p/>
+Note that this plugin is not actively maintained and may stop working in future IDE releases.
+  ]]></description>
+    <depends>com.intellij.modules.lang</depends>
+    <depends>JavaScript</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <projectConfigurable id="Settings.JavaScript.Linters.ClosureLinter"
+                             parentId="Settings.JavaScript.Linters"
+                             instance="com.intellij.lang.javascript.linter.gjslint.GjsLintConfigurable"
+                             key="settings.javascript.linters.gjslint.configurable.name"
+                             bundle="messages.GjsLintBundle"
+                             order="after Settings.JavaScript.Linters.JSHint"/>
+        <localInspection language="JavaScript"
+                         bundle="messages.GjsLintBundle"
+                         key="settings.javascript.linters.gjslint.configurable.name"
+                         groupPath="JavaScript and TypeScript"
+                         groupBundle="messages.JavaScriptBundle"
+                         groupKey="js.linters.inspection.group.name"
+                         enabledByDefault="false"
+                         level="WARNING"
+                         implementationClass="com.intellij.lang.javascript.linter.gjslint.GjsLintInspection"
+                         unfair="true"/>
+        <externalAnnotator language="JavaScript"
+                           implementationClass="com.intellij.lang.javascript.linter.gjslint.GjsLintExternalAnnotator"/>
+        <externalAnnotator language="HTML"
+                           implementationClass="com.intellij.lang.javascript.linter.gjslint.GjsLintHtmlExternalAnnotator"/>
+        <projectService serviceImplementation="com.intellij.lang.javascript.linter.gjslint.GjsLintConfiguration"/>
+        <projectService
+                serviceImplementation="com.intellij.lang.javascript.linter.gjslint.GjsLintConfigFileChangeTracker"/>
+    </extensions>
+</idea-plugin>

@@ -1,0 +1,17 @@
+plugins {
+    id 'java'
+}
+
+intellij {
+    pluginName 'Closure Linter'
+    type 'IU'
+    plugins 'JavaScriptLanguage'
+}
+
+publishPlugin {
+    token System.getenv("PUBLISH_PLUGIN_TOKEN")
+}
+
+dependencies {
+    compileOnly 'org.jetbrains:annotations:17.0.0'
+}
