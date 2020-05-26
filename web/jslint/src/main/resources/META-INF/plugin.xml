@@ -1,0 +1,43 @@
+<idea-plugin>
+    <name>JSLint</name>
+    <id>com.jetbrains.plugins.jslint</id>
+    <category>JavaScript Frameworks and Tools</category>
+    <vendor>JetBrains</vendor>
+    <description><![CDATA[
+Provides integration with <a href="https://jslint.com/">JSLint</a>. To enable JSLint in the IDE:
+<ul>
+  <li>Open the Settings&#47;Preferences dialog, go to <b>Languages and Frameworks | JavaScript | Code Quality Tools | JSLint</b>,
+  select the <i>Enable</i> checkbox. After that all the controls on the page become available.
+  </li>
+  <li>In the <i>Tolerate</i> area, specify the types of problems you do not want JSLint to report.
+  In the <i>Assume</i> area, specify the targeted environment to check the code for.
+  </li>
+</ul>
+<p/>
+Note that this plugin is not actively maintained and may stop working in future IDE releases.
+  ]]></description>
+    <depends>com.intellij.modules.lang</depends>
+    <depends>JavaScript</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <projectConfigurable id="Settings.JavaScript.Linters.JSLint"
+                             parentId="Settings.JavaScript.Linters"
+                             instance="com.intellij.lang.javascript.linter.jslint.JSLintConfigurable"
+                             bundle="messages.JSLintBundle"
+                             key="settings.javascript.linters.jslint.configurable.name"
+                             order="first"/>
+        <localInspection language="JavaScript"
+                         bundle="messages.JSLintBundle"
+                         key="settings.javascript.linters.jslint.configurable.name"
+                         groupPath="JavaScript and TypeScript"
+                         groupBundle="messages.JavaScriptBundle"
+                         groupKey="js.linters.inspection.group.name"
+                         enabledByDefault="false"
+                         level="ERROR"
+                         implementationClass="com.intellij.lang.javascript.linter.jslint.JSLintInspection"
+                         unfair="true"/>
+        <externalAnnotator language="JavaScript" implementationClass="com.intellij.lang.javascript.linter.jslint.JSLintExternalAnnotator"/>
+        <externalAnnotator language="JSON" implementationClass="com.intellij.lang.javascript.linter.jslint.JSLintJsonExternalAnnotator"/>
+        <projectService serviceImplementation="com.intellij.lang.javascript.linter.jslint.JSLintConfiguration"/>
+    </extensions>
+</idea-plugin>
