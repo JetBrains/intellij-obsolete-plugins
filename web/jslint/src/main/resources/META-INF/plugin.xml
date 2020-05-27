@@ -25,7 +25,7 @@ Note that this plugin is not actively maintained and may stop working in future 
                              instance="com.intellij.lang.javascript.linter.jslint.JSLintConfigurable"
                              bundle="messages.JSLintBundle"
                              key="settings.javascript.linters.jslint.configurable.name"
-                             order="first"/>
+                             order="last"/>
         <localInspection language="JavaScript"
                          bundle="messages.JSLintBundle"
                          key="settings.javascript.linters.jslint.configurable.name"

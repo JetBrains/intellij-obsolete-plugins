@@ -23,7 +23,8 @@ Note that this plugin is not actively maintained and may stop working in future 
                              parentId="Settings.JavaScript.Linters"
                              instance="com.intellij.lang.javascript.linter.jscs.JscsConfigurable"
                              bundle="messages.JscsBundle"
-                             key="settings.javascript.linters.jscs.configurable.name"/>
+                             key="settings.javascript.linters.jscs.configurable.name"
+                             order="last"/>
         <localInspection language="JavaScript"
                          bundle="messages.JscsBundle"
                          key="settings.javascript.linters.jscs.configurable.name"
