@@ -1,0 +1,12 @@
+{
+  "disallowShorthandArrowFunctions": true,
+  "disallowArrowFunctions": true,
+  "validateOrderInObjectKeys": "asc",
+
+
+  "disallowEmptyBlocks": { "allExcept": ["comments"] },
+  "requirePaddingNewLinesAfterUseStrict": { "allExcept": ["require"] },
+  "requireAnonymousFunctions": { "allExcept": ["declarations"] },
+  "requireBlocksOnNewline": {"includeComments": true, "minLines": 1},
+  "requireTemplateStrings": { "allExcept": ["stringConcatenation"] }
+}

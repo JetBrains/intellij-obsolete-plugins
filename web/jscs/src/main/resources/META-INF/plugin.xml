@@ -1,0 +1,60 @@
+<idea-plugin>
+    <name>JSCS</name>
+    <id>com.jetbrains.plugins.jscs</id>
+    <category>JavaScript Frameworks and Tools</category>
+    <vendor>JetBrains</vendor>
+    <description><![CDATA[
+Provides integration with <a href="https://jscs-dev.github.io/">JSCS</a>. To enable JSCS in the IDE:
+<ul>
+  <li>Open the Settings&#47;Preferences dialog, go to <b>Languages and Frameworks | JavaScript | Code Quality Tools | JSCS</b>,
+  select the <i>Enable</i> checkbox. After that all the controls on the page become available.
+  </li>
+  <li>In the <b>JSCS Package</b> field, specify the location of the <code>jscs</code> package installed in the current project.</li>
+  <li>To use a specific configuration file, specify the location of the file in the <b>Configuration File</b> field.</li>
+</ul>
+<p/>
+Note that this plugin is not actively maintained and may stop working in future IDE releases.
+  ]]></description>
+    <depends>com.intellij.modules.lang</depends>
+    <depends>JavaScript</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <projectConfigurable id="settings.javascript.linters.jscs"
+                             parentId="Settings.JavaScript.Linters"
+                             instance="com.intellij.lang.javascript.linter.jscs.JscsConfigurable"
+                             bundle="messages.JscsBundle"
+                             key="settings.javascript.linters.jscs.configurable.name"/>
+        <localInspection language="JavaScript"
+                         bundle="messages.JscsBundle"
+                         key="settings.javascript.linters.jscs.configurable.name"
+                         groupPath="JavaScript and TypeScript"
+                         groupBundle="messages.JavaScriptBundle"
+                         groupKey="js.linters.inspection.group.name"
+                         enabledByDefault="false"
+                         level="ERROR"
+                         implementationClass="com.intellij.lang.javascript.linter.jscs.JscsInspection"
+                         unfair="true"/>
+        <externalAnnotator language="JavaScript" implementationClass="com.intellij.lang.javascript.linter.jscs.JscsExternalAnnotator"/>
+        <externalAnnotator language="HTML" implementationClass="com.intellij.lang.javascript.linter.jscs.JscsExternalAnnotator"/>
+        <annotator language="JSON" implementationClass="com.intellij.lang.javascript.linter.jscs.config.JscsConfigFileAnnotator"/>
+        <projectService serviceImplementation="com.intellij.lang.javascript.linter.jscs.JscsConfiguration"/>
+        <projectService serviceImplementation="com.intellij.lang.javascript.linter.jscs.config.JscsConfigFileChangeTracker"/>
+        <fileType name="JSCS" implementationClass="com.intellij.lang.javascript.linter.jscs.config.JscsConfigFileType" fieldName="INSTANCE" extensions="jscsrc" patterns="*.jscs.json"/>
+        <completion.contributor order="first" language="JSON"
+                                implementationClass="com.intellij.lang.javascript.linter.jscs.config.JscsConfigFileCompletionContributor"/>
+        <lang.documentationProvider language="JSON"
+                                    implementationClass="com.intellij.lang.javascript.linter.jscs.config.JscsConfigDocumentationProvider"/>
+        <schemeImporter name="JSCS config file" implementationClass="com.intellij.lang.javascript.linter.jscs.importer.JscsSchemeImporter"
+                        schemeClass="com.intellij.psi.codeStyle.CodeStyleScheme"/>
+        <JavaScript.linter.descriptor implementation="com.intellij.lang.javascript.linter.jscs.config.JscsLinterDescriptor"/>
+        <json.catalog.exclusion implementation="com.intellij.lang.javascript.linter.jscs.config.JscsSchemaExclusion"/>
+    </extensions>
+
+    <actions>
+        <action class="com.intellij.lang.javascript.linter.jscs.JscsFixAction" id="Javascript.Linters.JSCS.Fix">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        </action>
+    </actions>
+
+</idea-plugin>

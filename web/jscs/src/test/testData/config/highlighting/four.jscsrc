@@ -1,0 +1,5 @@
+{
+  "requireCurlyBraces": ["for", "if", <warning descr="string expected">{
+    "wrong" : 12
+  }</warning>, "with"]
+}

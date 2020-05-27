@@ -1,0 +1,17 @@
+{
+  "requireCurlyBraces": ["for", "if", "with"],
+  "requireDotNotation" : <warning descr="Expected: true or string">false</warning>,
+  <warning descr="Unknown JSCS option name">"test"</warning> : 2,
+  "requireCurlyBraces": true,
+
+  "requireSpacesInConditionalExpression" : {
+    "afterTest" : true,
+    "beforeConsequent" : true,
+    "afterTest" : true,
+    <warning descr="Unknown requireSpacesInConditionalExpression option name">"no"</warning> : true
+  },
+
+  "maximumLineLength" : <warning descr="Required property 'value' should be defined">{
+  "allowComments": true
+}</warning>
+}

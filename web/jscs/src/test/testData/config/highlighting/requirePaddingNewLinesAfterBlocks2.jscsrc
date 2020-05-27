@@ -1,0 +1,5 @@
+{
+  "requirePaddingNewLinesAfterBlocks" : {
+    "allExcept": [<warning descr="Expected values: \"inCallExpressions\", \"inNewExpressions\", \"inArrayExpressions\", \"inProperties\"">"34"</warning>]
+  }
+}

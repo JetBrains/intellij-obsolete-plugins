@@ -1,0 +1,8 @@
+{
+  "requireCurlyBraces": ["if"],
+    "requireSpaceAfterKeywords":true,
+    "disallowSpacesInsideArrayBrackets": "all",
+    "disallowSpaceBeforeBinaryOperators": true,
+    "disallowSpaceAfterBinaryOperators": true
+}
+

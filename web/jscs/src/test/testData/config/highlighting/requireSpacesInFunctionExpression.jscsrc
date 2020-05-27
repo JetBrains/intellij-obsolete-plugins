@@ -1,0 +1,5 @@
+{
+  "requireSpacesInFunctionExpression" : {
+    "beforeOpeningCurlyBrace" : <warning descr="Expected: true">12</warning>
+  }
+}

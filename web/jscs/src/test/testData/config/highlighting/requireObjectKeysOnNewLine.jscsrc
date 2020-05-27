@@ -1,0 +1,5 @@
+{
+  "requireObjectKeysOnNewLine": {
+    "allExcept": ["sameLine"]
+  }
+}

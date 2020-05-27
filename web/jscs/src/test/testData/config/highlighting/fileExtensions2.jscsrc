@@ -1,0 +1,6 @@
+{
+  "fileExtensions" : [
+    ".txt",
+    <warning descr="File extension should begin with '.'">"js"</warning>
+  ]
+}

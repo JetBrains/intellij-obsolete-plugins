@@ -1,0 +1,5 @@
+{
+  "maximumLineLength" : {
+    "value" : <warning descr="Expected: integer">true</warning>
+  }
+}

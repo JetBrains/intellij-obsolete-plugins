@@ -1,0 +1,9 @@
+{
+  "jsDoc": {
+    "checkAnnotations": {
+      "preset": "closurecompiler", "extra": {
+        "bubble": true
+      }
+    }
+  }
+}

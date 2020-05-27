@@ -1,0 +1,20 @@
+{
+  "disallowDanglingUnderscores":{"allExcept": ["_exception"]},
+  "disallowKeywordsInComments":"\\b(word1|word2)\\b",
+  "disallowMultipleVarDecl": {"strict": true},
+  "disallowSpaceAfterObjectKeys": "ignoreSingleLine",
+  "disallowSpacesInConditionalExpression":true,
+  "disallowSpacesInsideParentheses":{ "only": [ "{", "}" ] },
+  "disallowTrailingWhitespace":"ignoreEmptyLines",
+  "maximumLineLength": {"allowRegex":true, "value":1},
+  "requireCapitalizedConstructors": { "allExcept": ["somethingNative"] },
+  "requireDollarBeforejQueryAssignment": "ignoreProperties",
+  "requireDotNotation": "except_snake_case",
+  "requirePaddingNewLinesAfterBlocks": {"allExcept": ["inCallExpressions", "inArrayExpressions", "inProperties"]},
+  "requirePaddingNewLinesBeforeLineComments": {"allExcept": "firstAfterCurly"},
+  "requireSpaceAfterLineComment": "allowSlash",
+  "requireSpaceBeforeBlockStatements": 2,
+  "requireSpacesInConditionalExpression": true,
+  "requireSpacesInsideArrayBrackets": {"allExcept": [ "[", "]", "{", "}" ]},
+  "validateIndentation": {"value":1}
+}
