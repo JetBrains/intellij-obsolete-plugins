@@ -24,8 +24,7 @@ Note that this plugin is not actively maintained and may stop working in future 
                              parentId="Settings.JavaScript.Linters"
                              instance="com.intellij.lang.javascript.linter.jslint.JSLintConfigurable"
                              bundle="messages.JSLintBundle"
-                             key="settings.javascript.linters.jslint.configurable.name"
-                             order="last"/>
+                             key="settings.javascript.linters.jslint.configurable.name"/>
         <localInspection language="JavaScript"
                          bundle="messages.JSLintBundle"
                          key="settings.javascript.linters.jslint.configurable.name"
