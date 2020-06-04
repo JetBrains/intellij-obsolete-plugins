@@ -35,8 +35,8 @@ public class GjsLintView extends JSLinterBaseView<GjsLintState> {
   public GjsLintView(@NotNull Project project, boolean singleDialog) {
     myLinterExeFileTextField = JSLinterUtil
       .createTextFieldWithBrowseButton(project,
-                                       "Select Closure Linter executable file - " + GjsLintConfiguration.DEFAULT_EXE_FILE_BASE_NAME);
-    myConfigFileTextField = JSLinterUtil.createTextFieldWithBrowseButton(project, "Select configuration file");
+                                       "Select Closure Linter executable file - " + GjsLintConfiguration.DEFAULT_EXE_FILE_BASE_NAME, myDisposable);
+    myConfigFileTextField = JSLinterUtil.createTextFieldWithBrowseButton(project, "Select configuration file", myDisposable);
     mySingleDialog = singleDialog;
   }
 
