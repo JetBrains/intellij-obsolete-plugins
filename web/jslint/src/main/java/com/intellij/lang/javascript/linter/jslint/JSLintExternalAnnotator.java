@@ -37,7 +37,7 @@ public class JSLintExternalAnnotator extends JSLinterExternalAnnotator<JSLintSta
     new Supplier<String>() {
       @Override
       public String get() {
-        String fileName = "jslint.js";
+        String fileName = "/data/jslint.js";
         InputStream inputStream = getClass().getResourceAsStream(fileName);
         if (inputStream == null) {
           throw new RuntimeException("Resource " + fileName + " is not found!");
