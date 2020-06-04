@@ -1,6 +1,5 @@
 package com.intellij.lang.javascript.linter.jslint;
 
-import com.intellij.lang.javascript.JavaScriptBundle;
 import com.intellij.lang.javascript.linter.JSLinterBaseView;
 import com.intellij.lang.javascript.linter.JSLinterConfigurable;
 import com.intellij.openapi.project.Project;
@@ -19,7 +18,7 @@ public class JSLintConfigurable extends JSLinterConfigurable<JSLintState> {
   @Nls
   @Override
   public String getDisplayName() {
-    return JavaScriptBundle.message("settings.javascript.linters.jslint.configurable.name");
+    return JSLintBundle.message("settings.javascript.linters.jslint.configurable.name");
   }
 
   @NotNull

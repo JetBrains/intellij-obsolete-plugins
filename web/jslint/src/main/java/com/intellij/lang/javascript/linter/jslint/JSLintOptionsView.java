@@ -2,7 +2,6 @@ package com.intellij.lang.javascript.linter.jslint;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
-import com.intellij.lang.javascript.JavaScriptBundle;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.IdeBorderFactory;
 import com.intellij.ui.components.JBScrollPane;

@@ -1,6 +1,5 @@
 package com.intellij.lang.javascript.linter.gjslint;
 
-import com.intellij.lang.javascript.JavaScriptBundle;
 import com.intellij.lang.javascript.linter.JSLinterDescriptor;
 import org.jetbrains.annotations.NotNull;
 
@@ -12,7 +11,7 @@ public class GjsLinterDescriptor extends JSLinterDescriptor {
   @NotNull
   @Override
   public String getDisplayName() {
-    return JavaScriptBundle.message("settings.javascript.linters.gjslint.configurable.name");
+    return GjsLintBundle.message("settings.javascript.linters.gjslint.configurable.name");
   }
 
   @NotNull
