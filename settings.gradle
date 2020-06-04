@@ -1,5 +1,7 @@
 rootProject.name = 'intellij-obsolete-plugins'
-include 'j2me', 'JsTestDriver:common', 'JsTestDriver:rt', 'JsTestDriver:plugin'
+include 'j2me'
+include 'JsTestDriver:common', 'JsTestDriver:rt', 'JsTestDriver:plugin'
+include 'web:jslint', 'web:gjslint', 'web:jscs'
 include 'struts'
 include 'heroku', 'heroku:api', 'heroku:impl'
 //include 'ruby-motion'
