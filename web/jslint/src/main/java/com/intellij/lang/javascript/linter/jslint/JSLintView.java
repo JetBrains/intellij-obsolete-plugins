@@ -21,7 +21,7 @@ public class JSLintView extends JSLinterBaseView<JSLintState> {
   @Nullable
   @Override
   protected Component createTopRightComponent() {
-    return new JLabel("Version 2016-07-13");
+    return new JLabel(JSLintBundle.message("version.text", "2016-07-13"));
   }
 
   @NotNull

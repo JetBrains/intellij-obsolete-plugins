@@ -17,12 +17,12 @@ public enum JSLintOption {
   ES6(Type.BOOLEAN, "ES6", "check if using the good parts of ECMAScript Sixth Edition, it adds ES6 globals"),
   EVAL(Type.BOOLEAN, "Tolerate eval", "check if eval should be allowed"),
   FOR(Type.BOOLEAN, "Tolerate for statement", "check if for statement should be allowed"),
-  MAXERR(Type.INTEGER, "Maximum number of errors", "Maximum number of warnings reported"),
-  MAXLEN(Type.INTEGER, "Maximum line length", "Maximum number of characters in a line"),
+  MAXERR(Type.INTEGER, JSLintBundle.message("maximum.number.of.errors.text"), "Maximum number of warnings reported"),
+  MAXLEN(Type.INTEGER, JSLintBundle.message("maximum.line.length.text"), "Maximum number of characters in a line"),
   MULTIVAR(Type.BOOLEAN, "multiple vars",
            "check if a var, let, or const statement can declare two or more variables in a single statement"),
   NODE(Type.BOOLEAN, "Assume Node.js", "check if Node.js globals should be predefined"),
-  GLOBALS(Type.STRING, "Globals ( , separated)", "An array of strings, the names of predefined global variables," +
+  GLOBALS(Type.STRING, JSLintBundle.message("globals.text"), "An array of strings, the names of predefined global variables," +
                                                  " or an object whose keys are global variable names, and whose values are booleans" +
                                                  " that determine if each variable is assignable." +
                                                  " predef is used with the option object, but not with the /*jslint */ directive." +
