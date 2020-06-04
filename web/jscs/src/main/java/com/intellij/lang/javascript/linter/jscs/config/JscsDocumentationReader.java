@@ -101,7 +101,7 @@ public class JscsDocumentationReader {
 
   @NotNull
   private static String loadXmlContent() throws IOException {
-    InputStream in = JscsDocumentationReader.class.getResourceAsStream("jscs-documentation.xml");
+    InputStream in = JscsDocumentationReader.class.getResourceAsStream("/data/jscs-documentation.xml");
     Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8);
     return FileUtil.loadTextAndClose(reader);
   }
