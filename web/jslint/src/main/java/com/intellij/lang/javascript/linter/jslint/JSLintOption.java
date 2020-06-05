@@ -12,15 +12,13 @@ public enum JSLintOption {
 
   BITWISE(Type.BOOLEAN, "Tolerate bitwise operators", "check if bitwise operators should be allowed"),
   BROWSER(Type.BOOLEAN, "Assume a browser", "check if the standard browser globals should be predefined"),
+  CONVERT(Type.BOOLEAN, "Tolerate conversion operators", "check if !!, + prefix, and concatenation with \"\" are allowed. The Boolean, Number, and String functions are preferred"),
   COUCH(Type.BOOLEAN, "Assume CouchDB", "check if Couch DB globals should be predefined"),
   DEVEL(Type.BOOLEAN, "Assume in development", "check if browser globals that are useful in development should be predefined"),
-  ES6(Type.BOOLEAN, "ES6", "check if using the good parts of ECMAScript Sixth Edition, it adds ES6 globals"),
   EVAL(Type.BOOLEAN, "Tolerate eval", "check if eval should be allowed"),
   FOR(Type.BOOLEAN, "Tolerate for statement", "check if for statement should be allowed"),
-  MAXERR(Type.INTEGER, JSLintBundle.message("maximum.number.of.errors.text"), "Maximum number of warnings reported"),
-  MAXLEN(Type.INTEGER, JSLintBundle.message("maximum.line.length.text"), "Maximum number of characters in a line"),
-  MULTIVAR(Type.BOOLEAN, "multiple vars",
-           "check if a var, let, or const statement can declare two or more variables in a single statement"),
+  GETSET(Type.BOOLEAN, "Tolerate get and set", "check if accessor properties are allowed in object literals."),
+  LONG(Type.BOOLEAN, "Tolerate long source lines", "check if a line can contain more than 80 characters."),
   NODE(Type.BOOLEAN, "Assume Node.js", "check if Node.js globals should be predefined"),
   GLOBALS(Type.STRING, JSLintBundle.message("globals.text"), "An array of strings, the names of predefined global variables," +
                                                  " or an object whose keys are global variable names, and whose values are booleans" +

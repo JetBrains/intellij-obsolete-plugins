@@ -16,8 +16,6 @@ import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.NumberFormatter;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.*;
@@ -26,9 +24,11 @@ public class JSLintOptionsView {
 
   private static final JSLintOption[][] TOLERATE_CHECKBOX_OPTIONS_LAYOUT = {
     {JSLintOption.BITWISE  },
+    {JSLintOption.CONVERT  },
     {JSLintOption.EVAL     },
     {JSLintOption.FOR      },
-    {JSLintOption.MULTIVAR },
+    {JSLintOption.GETSET   },
+    {JSLintOption.LONG     },
     {JSLintOption.SINGLE   },
     {JSLintOption.THIS     },
     {JSLintOption.WHITE    },
@@ -36,15 +36,12 @@ public class JSLintOptionsView {
 
   private static final JSLintOption[][] ASSUME_CHECKBOX_OPTIONS_LAYOUT = {
     {JSLintOption.DEVEL   },
-    {JSLintOption.ES6     },
     {JSLintOption.BROWSER },
     {JSLintOption.COUCH   },
     {JSLintOption.NODE    },
   };
 
   private static final JSLintOption[] TEXT_FIELD_OPTIONS_LAYOUT = {
-    JSLintOption.MAXLEN,
-    JSLintOption.MAXERR,
     JSLintOption.GLOBALS
   };
 
@@ -140,12 +137,7 @@ public class JSLintOptionsView {
       center.setBorder(BorderFactory.createEmptyBorder(0, IdeBorderFactory.TITLED_BORDER_INDENT, 0, 0));
       panel.add(center, BorderLayout.CENTER);
       final Runnable r = () -> UIUtil.setEnabled(center, titleCheckBox.isSelected(), true);
-      titleCheckBox.addActionListener(new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-          r.run();
-        }
-      });
+      titleCheckBox.addActionListener(e -> r.run());
       myUpdatingJobs.add(r);
     }
     return panel;

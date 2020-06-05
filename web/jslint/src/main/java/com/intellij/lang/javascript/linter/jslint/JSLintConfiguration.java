@@ -21,7 +21,6 @@ public class JSLintConfiguration extends JSLinterConfiguration<JSLintState> {
   private static final JSLintState DEFAULT_STATE = new JSLintState.Builder()
     .setOptionsState(
       new JSLintOptionsState.Builder()
-        .put(JSLintOption.MAXERR, 50)
         .build()
     ).build();
 

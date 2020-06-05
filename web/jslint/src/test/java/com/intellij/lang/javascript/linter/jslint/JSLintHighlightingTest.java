@@ -54,7 +54,6 @@ public class JSLintHighlightingTest extends BasePlatformTestCase {
     JSLintState state = new JSLintState.Builder()
       .setOptionsState(
         new JSLintOptionsState.Builder()
-          .put(JSLintOption.MULTIVAR, false)
           .put(JSLintOption.SINGLE, true)
           .build())
       .build();
@@ -66,7 +65,6 @@ public class JSLintHighlightingTest extends BasePlatformTestCase {
     state = new JSLintState.Builder()
       .setOptionsState(
         new JSLintOptionsState.Builder()
-          .put(JSLintOption.MULTIVAR, true)
           .put(JSLintOption.SINGLE, false)
           .build())
       .build();
