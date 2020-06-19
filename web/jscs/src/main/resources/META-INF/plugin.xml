@@ -11,6 +11,7 @@ Provides integration with <a href="https://jscs-dev.github.io/">JSCS</a>. To ena
   </li>
   <li>In the <b>JSCS Package</b> field, specify the location of the <code>jscs</code> package installed in the current project.</li>
   <li>To use a specific configuration file, specify the location of the file in the <b>Configuration File</b> field.</li>
+  <li>If necessary, from the <b>Code Style Preset</b> list, select the set of predefined rules associated with the code style you use.</li>
 </ul>
 <p/>
 Note that this plugin is not actively maintained and may stop working in future IDE releases.
