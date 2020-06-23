@@ -41,7 +41,11 @@ Note that this plugin is not actively maintained and may stop working in future 
         <annotator language="JSON" implementationClass="com.intellij.lang.javascript.linter.jscs.config.JscsConfigFileAnnotator"/>
         <projectService serviceImplementation="com.intellij.lang.javascript.linter.jscs.JscsConfiguration"/>
         <projectService serviceImplementation="com.intellij.lang.javascript.linter.jscs.config.JscsConfigFileChangeTracker"/>
-        <fileType name="JSCS" implementationClass="com.intellij.lang.javascript.linter.jscs.config.JscsConfigFileType" fieldName="INSTANCE" extensions="jscsrc" patterns="*.jscs.json"/>
+        <fileType name="JSCS"
+                  implementationClass="com.intellij.lang.javascript.linter.jscs.config.JscsConfigFileType" fieldName="INSTANCE"
+                  fileNames=".jscsrc"
+                  extensions="jscsrc"
+                  patterns="*.jscs.json"/>
         <completion.contributor order="first" language="JSON"
                                 implementationClass="com.intellij.lang.javascript.linter.jscs.config.JscsConfigFileCompletionContributor"/>
         <lang.documentationProvider language="JSON"
