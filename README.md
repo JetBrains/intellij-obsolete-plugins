@@ -9,7 +9,7 @@ Starting with IntelliJ IDEA 2019.2, we've moved a number of plugins out of the m
 This repository includes the following plugins:
   * [J2ME](https://plugins.jetbrains.com/plugin/12318-j2me)
   * [JsTestDriver](https://plugins.jetbrains.com/plugin/4468-jstestdriver-plugin)
-  * [Struts 1.x](https://plugins.jetbrains.com/plugin/110-struts-1-x/)
+  * [Struts 1.x](https://plugins.jetbrains.com/plugin/110-struts-1-x/) (plugin is no longer compatible with IntelliJ IDEA 2020.2 or newer and will not be updated)
   * [Heroku integration](https://plugins.jetbrains.com/plugin/7605-heroku-integration)
   * [RubyMotion support](https://plugins.jetbrains.com/plugin/10674-rubymotion-support)
   * [Compass support](https://plugins.jetbrains.com/plugin/13705-compass)
