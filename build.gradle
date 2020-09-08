@@ -14,7 +14,7 @@ subprojects {
     apply plugin: 'org.jetbrains.intellij'
 
     intellij {
-        version '202-EAP-SNAPSHOT'
+        version '2020.2.1'
     }
 
     patchPluginXml {
