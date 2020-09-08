@@ -4,6 +4,11 @@
 
 package com.intellij.compiler.ant.packaging;
 
+import com.android.builder.model.AndroidArtifact;
+import com.android.builder.model.AndroidArtifactOutput;
+import com.android.tools.idea.apk.ApkFacet;
+import com.android.tools.idea.gradle.project.model.AndroidModuleModel;
+import com.android.tools.idea.gradle.util.GradleUtil;
 import com.intellij.compiler.ant.Generator;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.packaging.artifacts.ArtifactType;
@@ -15,9 +20,15 @@ import org.jetbrains.android.facet.AndroidFacet;
 import org.jetbrains.android.facet.AndroidRootUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.SystemDependent;
+import org.jetbrains.annotations.SystemIndependent;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
+
+import static com.intellij.openapi.util.io.FileUtil.toSystemDependentName;
+import static org.jetbrains.android.compiler.AndroidCompileUtil.getOutputPackage;
 
 public class AndroidFinalPackageElementAntGenerator extends PackagingElementAntGenerator<AndroidFinalPackageElement> {
   @NotNull
@@ -37,7 +48,7 @@ public class AndroidFinalPackageElementAntGenerator extends PackagingElementAntG
       return null;
     }
 
-    final String apkPath = AndroidRootUtil.getApkPath(facet);
+    final String apkPath = getApkPath(facet);
     final String path = apkPath != null
         ? addSuffixToFileName(apkPath, ".afp")
         : null;
@@ -45,6 +56,35 @@ public class AndroidFinalPackageElementAntGenerator extends PackagingElementAntG
         ? FileUtil.toSystemIndependentName(path) + "!/"
         : null;
   }
+
+
+  @Nullable
+  @SystemDependent
+  private static String getApkPath(@NotNull AndroidFacet facet) {
+    if (requiresAndroidModel(facet)) {
+      AndroidModuleModel androidModuleModel = AndroidModuleModel.get(facet);
+      if (androidModuleModel != null) {
+        // For Android-Gradle projects, AndroidModel is not null.
+        AndroidArtifact mainArtifact = androidModuleModel.getMainArtifact();
+        AndroidArtifactOutput output = GradleUtil.getOutput(mainArtifact);
+        File outputFile = output.getMainOutputFile().getOutputFile();
+        return outputFile.getAbsolutePath();
+      } else {
+        return null;
+      }
+    }
+    String path = facet.getProperties().APK_PATH;
+    if (path.isEmpty()) {
+      return getOutputPackage(facet.getModule());
+    }
+    @SystemIndependent String moduleDirPath = AndroidRootUtil.getModuleDirPath(facet.getModule());
+    return moduleDirPath != null ? toSystemDependentName(moduleDirPath + path) : null;
+  }
+
+  private static boolean requiresAndroidModel(AndroidFacet facet) {
+    return !facet.getProperties().ALLOW_USER_CONFIGURATION && ApkFacet.getInstance(facet.getModule()) == null;
+  }
+
 
   @NotNull
   private static String addSuffixToFileName(@NotNull String path, @NotNull String suffix) {
