@@ -5,7 +5,6 @@ import com.intellij.compiler.ant.taskdefs.Delete;
 import com.intellij.compiler.ant.taskdefs.Property;
 import com.intellij.compiler.ant.taskdefs.Target;
 import com.intellij.facet.ProjectFacetManager;
-import com.intellij.gwt.GwtBundle;
 import com.intellij.gwt.facet.GwtFacet;
 import com.intellij.gwt.facet.GwtFacetType;
 import com.intellij.openapi.application.ReadAction;
@@ -89,8 +88,8 @@ public class GwtBuildExtension extends ChunkBuildExtension {
                                      "/GWTCompilerOutput_" + BuildProperties.convertName(facet.getModule().getName());
           generator.add(new Property(GwtBuildProperties.getGwtCompilerOutputPropertyName(facet), outputDir), 1);
           Comment comment = new Comment(
-            GwtBundle.message("ant.target.comment.run.gwt.compiler.for.gwt.module.0",
-                              BuildProperties.propertyRef(GwtBuildProperties.getGwtModuleParameter())));
+              "Run GWT compiler for GWT module " +
+                                BuildProperties.propertyRef(GwtBuildProperties.getGwtModuleParameter()));
           generator.add(comment, 1);
           generator.add(new RunGwtCompilerTarget(facet, genOptions));
           generator.add(CompileGwtTarget.create(facet, genOptions), 1);

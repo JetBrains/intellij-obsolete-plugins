@@ -14,7 +14,6 @@ import com.intellij.openapi.vfs.JarFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NonNls;
-import org.jetbrains.idea.devkit.DevKitBundle;
 import org.jetbrains.idea.devkit.build.PluginBuildConfiguration;
 import org.jetbrains.idea.devkit.build.PluginBuildUtil;
 import org.jetbrains.idea.devkit.build.PrepareToDeployAction;
@@ -28,7 +27,7 @@ public class BuildJarTarget extends Target {
                         final GenerationOptions genOptions,
                         final PluginBuildConfiguration moduleBuildProperties) {
     super(PluginBuildProperties.getBuildJarTargetName(chunk.getName()), BuildProperties.getCompileTargetName(chunk.getName()),
-          DevKitBundle.message("ant.build.jar.description", chunk.getName()), null);
+        "Build plugin archive for module '" + chunk.getName() + "'", null);
 
     final File moduleBaseDir = chunk.getBaseDir();
 

@@ -14,13 +14,12 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.plugins.watcher.config.BackgroundTaskConsumer;
 import com.intellij.plugins.watcher.model.TaskOptions;
-import com.intellij.psi.PsiBundle;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.execution.ParametersListUtil;
+import com.jetbrains.plugins.compass.CompassSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import com.jetbrains.plugins.compass.CompassSettings;
 
 import java.util.List;
 
@@ -64,7 +63,7 @@ public class CompassSassScssTaskConsumerBase extends BackgroundTaskConsumer {
     options.setName("Compass " + myFileType.getName());
     options.setDescription("Compiles ." + myFileType.getDefaultExtension() + " files into .css files using compass");
     options.setFileExtension(myFileType.getDefaultExtension());
-    options.setScopeName(PsiBundle.message("psi.search.scope.project"));
+    options.setScopeName("Project Files");
 
     options.setArguments("compile path/to/project $" + new FileNameMacro().getName() + "$");
     options.setWorkingDir("$" + new FileDirMacro().getName() + "$");

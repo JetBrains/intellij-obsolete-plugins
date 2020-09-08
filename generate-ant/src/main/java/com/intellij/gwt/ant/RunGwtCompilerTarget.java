@@ -7,7 +7,6 @@ import com.intellij.compiler.ant.Tag;
 import com.intellij.compiler.ant.taskdefs.PathElement;
 import com.intellij.compiler.ant.taskdefs.PathRef;
 import com.intellij.compiler.ant.taskdefs.Target;
-import com.intellij.gwt.GwtBundle;
 import com.intellij.gwt.facet.GwtFacet;
 import com.intellij.gwt.facet.GwtFacetConfiguration;
 import com.intellij.gwt.run.GwtClasspathUtil;
@@ -36,7 +35,7 @@ public class RunGwtCompilerTarget extends Target {
   private final GwtFacetConfiguration myConfiguration;
 
   public RunGwtCompilerTarget(GwtFacet facet, final GenerationOptions genOptions) {
-    super(GwtBuildProperties.getRunGwtCompilerTargetName(facet), null, GwtBundle.message("ant.target.name.run.gwt.compiler"), null);
+    super(GwtBuildProperties.getRunGwtCompilerTargetName(facet), null, "Run GWT compiler", null);
     myFacet = facet;
     myConfiguration = myFacet.getConfiguration();
     addJavaTag(genOptions);

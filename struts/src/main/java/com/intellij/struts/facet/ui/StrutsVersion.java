@@ -7,7 +7,6 @@ package com.intellij.struts.facet.ui;
 import com.intellij.facet.ui.libraries.LibraryDownloadInfo;
 import com.intellij.facet.ui.libraries.LibraryInfo;
 import com.intellij.facet.ui.libraries.RemoteRepositoryInfo;
-import com.intellij.ide.IdeBundle;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
@@ -124,7 +123,7 @@ public enum StrutsVersion {
 
   private static LibraryInfo doCreateMavenJarInfo(final String jarName, final String version, final String downloadingPrefix,
                                                 final String... requiredClasses) {
-    RemoteRepositoryInfo MAVEN = new RemoteRepositoryInfo("maven", IdeBundle.message("maven.repository.presentable.name"), new String[]{
+    RemoteRepositoryInfo MAVEN = new RemoteRepositoryInfo("maven", "Maven repository", new String[]{
         "https://repo1.maven.org/maven2/",
     });
     LibraryDownloadInfo downloadInfo = new LibraryDownloadInfo(MAVEN, downloadingPrefix + "/" + jarName + "/" + version + "/" + jarName + "-" + version + ".jar", jarName, ".jar");

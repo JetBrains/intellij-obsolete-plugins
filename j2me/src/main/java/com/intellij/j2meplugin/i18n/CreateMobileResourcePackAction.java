@@ -4,7 +4,6 @@
 
 package com.intellij.j2meplugin.i18n;
 
-import com.intellij.ide.IdeBundle;
 import com.intellij.ide.actions.CreateElementActionBase;
 import com.intellij.j2meplugin.J2MEBundle;
 import com.intellij.j2meplugin.module.J2MEModuleType;
@@ -34,8 +33,8 @@ public class CreateMobileResourcePackAction extends CreateElementActionBase {
   @NotNull
   public PsiElement[] invokeDialog(Project project, PsiDirectory directory) {
     CreateElementActionBase.MyInputValidator validator = new CreateElementActionBase.MyInputValidator(project, directory);
-    Messages.showInputDialog(project, IdeBundle.message("prompt.enter.new.class.name"),
-                             IdeBundle.message("title.new.class"), Messages.getQuestionIcon(), "", validator);
+    Messages.showInputDialog(project, "Enter a new class name:",
+                             "New Class", Messages.getQuestionIcon(), "", validator);
     return validator.getCreatedElements();
   }
 

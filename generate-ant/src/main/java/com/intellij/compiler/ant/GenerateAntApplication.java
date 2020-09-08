@@ -3,7 +3,6 @@
  */
 package com.intellij.compiler.ant;
 
-import com.intellij.codeInspection.InspectionsBundle;
 import com.intellij.compiler.actions.GenerateAntBuildFileAction;
 import com.intellij.openapi.application.ex.ApplicationEx;
 import com.intellij.openapi.application.ex.ApplicationManagerEx;
@@ -57,7 +56,7 @@ public class GenerateAntApplication {
       myProjectPath = myProjectPath.replace(File.separatorChar, '/');
       VirtualFile vfsProject = LocalFileSystem.getInstance().findFileByPath(myProjectPath);
       if (vfsProject == null) {
-        logError(InspectionsBundle.message("inspection.application.file.cannot.be.found", myProjectPath));
+        logError("File " + myProjectPath + " cannot be found");
         GenerateAntMain.printHelp();
       }
 

@@ -6,7 +6,6 @@ import com.intellij.compiler.ant.taskdefs.AntCall;
 import com.intellij.compiler.ant.taskdefs.Param;
 import com.intellij.compiler.ant.taskdefs.Property;
 import com.intellij.compiler.ant.taskdefs.Target;
-import com.intellij.gwt.GwtBundle;
 import com.intellij.gwt.facet.GwtFacet;
 import com.intellij.gwt.module.GwtModulesManager;
 import com.intellij.gwt.module.model.GwtModule;
@@ -40,7 +39,7 @@ public class CompileGwtTarget extends Target {
 
   public static CompileGwtTarget create(@NotNull GwtFacet facet, final GenerationOptions genOptions) {
     String depends = BuildProperties.getCompileTargetName(genOptions.getChunkByModule(facet.getModule()).getName());
-    String description = GwtBundle.message("ant.target.description.compile.gwt.modules.in.module.0", facet.getModule().getName());
+    String description = "Compile all GWT modules in module " + facet.getModule().getName();
     return new CompileGwtTarget(facet, depends, description);
   }
 }

@@ -12,7 +12,6 @@ import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.util.ArrayUtilRt;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.idea.devkit.DevKitBundle;
 import org.jetbrains.idea.devkit.build.PluginBuildConfiguration;
 import org.jetbrains.idea.devkit.build.PluginBuildUtil;
 import org.jetbrains.idea.devkit.module.PluginModuleType;
@@ -49,7 +48,7 @@ public class ChunkBuildPluginExtension extends ChunkBuildExtension {
 
       generator.add(new Property(PluginBuildProperties.getJarPathProperty(chunk.getName()), GenerationUtils.toRelativePath(jarPath, chunk, genOptions)), 1);
 
-      generator.add(factory.createComment(DevKitBundle.message("ant.build.jar.comment", chunk.getName())), 1);
+      generator.add(factory.createComment("Build archive for plugin '" + chunk.getName() + "'"), 1);
       generator.add(new BuildJarTarget(chunk, genOptions, buildProperties));
     }
   }
