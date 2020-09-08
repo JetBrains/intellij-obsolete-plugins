@@ -1,4 +1,4 @@
 intellij {
     type 'IU'
-    plugins 'java', 'devkit', 'android', 'JavaEE', 'GwtStudio', 'javaFX', 'ant', 'Groovy'
+    plugins 'java', 'devkit', 'android', 'JavaEE', 'com.intellij.gwt:202.6948.5', 'javaFX', 'ant', 'Groovy'
 }
