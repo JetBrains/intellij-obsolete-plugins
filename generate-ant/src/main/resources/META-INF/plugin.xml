@@ -5,7 +5,7 @@
     <vendor>JetBrains</vendor>
     <resource-bundle>com.intellij.compiler.ant.GenerateAntBundle</resource-bundle>
     <depends>com.intellij.modules.java</depends>
-    <idea-version since-build="193.1"/>
+    <idea-version since-build="202.1"/>
 
     <depends optional="true" config-file="generate-ant-devkit.xml">DevKit</depends>
     <depends optional="true" config-file="generate-ant-android.xml">org.jetbrains.android</depends>
