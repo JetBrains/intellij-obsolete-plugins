@@ -77,7 +77,7 @@ public class JstdResolveTest extends CodeInsightFixtureTestCase {
         ScriptingLibraryModel.LibraryLevel.GLOBAL,
         false
       );
-      JSLibraryMappings jsLibraryMappings = ServiceManager.getService(project, JSLibraryMappings.class);
+      JSLibraryMappings jsLibraryMappings = JSLibraryMappings.getInstance(project);
       jsLibraryMappings.associate(null, libraryModel.getName());
       jsLibraryManager.commitChanges();
     });

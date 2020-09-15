@@ -1,8 +1,8 @@
 package com.google.jstestdriver.idea.execution;
 
+import com.google.jstestdriver.idea.assertFramework.JstdTestMethodNameRefiner;
 import com.intellij.javascript.testFramework.TestFileStructureManager;
 import com.intellij.javascript.testFramework.TestFileStructurePack;
-import com.intellij.javascript.testFramework.util.TestMethodNameRefiner;
 import com.intellij.lang.javascript.psi.JSFile;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -25,7 +25,7 @@ public class NavUtils {
                                            @NotNull VirtualFile jsTestVirtualFile,
                                            @NotNull String testCaseName,
                                            @Nullable String testMethodName,
-                                           @Nullable TestMethodNameRefiner testMethodNameRefiner) {
+                                           @Nullable JstdTestMethodNameRefiner testMethodNameRefiner) {
     PsiFile psiFile = PsiManager.getInstance(project).findFile(jsTestVirtualFile);
     if (!(psiFile instanceof JSFile)) {
       return null;

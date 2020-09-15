@@ -16,22 +16,21 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.ui.Gray;
 import com.intellij.ui.HyperlinkLabel;
-import com.intellij.ui.ListCellRendererWrapper;
+import com.intellij.ui.JBColor;
+import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.components.JBList;
-import com.intellij.util.ArrayUtil;
 import com.intellij.util.ui.SwingHelper;
 import com.intellij.webcore.ScriptingFrameworkDescriptor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -126,24 +125,19 @@ public class AddAdapterSupportDialog extends DialogWrapper {
     JPanel panel = new JPanel(new BorderLayout(0, 2));
     panel.add(new JLabel("Files to add:"), BorderLayout.NORTH);
 
-    final JBList fileList = new JBList(ArrayUtil.EMPTY_STRING_ARRAY);
-    fileList.setBorder(BorderFactory.createLineBorder(Color.lightGray));
-    fileList.addListSelectionListener(new ListSelectionListener() {
-      @Override
-      public void valueChanged(ListSelectionEvent e) {
-        fileList.clearSelection();
-      }
-    });
+    final JBList<VirtualFile> fileList = new JBList<>();
+    fileList.setBorder(BorderFactory.createLineBorder(JBColor.LIGHT_GRAY));
+    fileList.addListSelectionListener(e -> fileList.clearSelection());
     fileList.setFocusable(false);
     fileList.setRequestFocusEnabled(false);
     fileList.setBackground(Gray._242);
-    fileList.setCellRenderer(new ListCellRendererWrapper<VirtualFile>() {
+    fileList.setCellRenderer(new SimpleListCellRenderer<VirtualFile>() {
       @Override
-      public void customize(JList list, VirtualFile value, int index, boolean selected, boolean hasFocus) {
+      public void customize(@NotNull JList<? extends VirtualFile> list, VirtualFile value, int index, boolean selected, boolean hasFocus) {
         setText(" " + value.getName());
       }
     });
-    fileList.setListData(files.toArray());
+    fileList.setListData(VfsUtil.toVirtualFileArray(files));
     panel.add(fileList, BorderLayout.CENTER);
     return panel;
   }

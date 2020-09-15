@@ -1,6 +1,7 @@
 package com.intellij.javascript.testFramework;
 
-import com.intellij.javascript.testFramework.util.TestMethodNameRefiner;
+import com.google.jstestdriver.idea.assertFramework.JstdTestMethodNameRefiner;
+import com.google.jstestdriver.idea.assertFramework.jstd.JstdTestFileStructure;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
@@ -30,9 +31,11 @@ public class TestFileStructurePack {
   public JstdRunElement getJstdRunElement(@NotNull PsiElement psiElement) {
     TextRange textRange = psiElement.getTextRange();
     for (AbstractTestFileStructure testFileStructure : myTestFileStructures) {
-      JstdRunElement jstdRunElement = testFileStructure.findJstdRunElement(textRange);
-      if (jstdRunElement != null) {
-        return jstdRunElement;
+      if (testFileStructure instanceof JstdTestFileStructure) {
+        JstdRunElement jstdRunElement = ((JstdTestFileStructure)testFileStructure).findJstdRunElement1(textRange);
+        if (jstdRunElement != null) {
+          return jstdRunElement;
+        }
       }
     }
     return null;
@@ -41,7 +44,7 @@ public class TestFileStructurePack {
   @Nullable
   public PsiElement findPsiElement(@NotNull String testCaseName,
                                    @Nullable String testMethodName,
-                                   @Nullable TestMethodNameRefiner testMethodNameRefiner) {
+                                   @Nullable JstdTestMethodNameRefiner testMethodNameRefiner) {
     for (AbstractTestFileStructure testFileStructure : myTestFileStructures) {
       String refinedTestMethodName = testMethodName;
       if (testMethodNameRefiner != null && testMethodName != null) {
@@ -57,7 +60,7 @@ public class TestFileStructurePack {
 
   public boolean contains(@NotNull final String testCaseName,
                           @Nullable final String testMethodName,
-                          @Nullable TestMethodNameRefiner testMethodNameRefiner) {
+                          @Nullable JstdTestMethodNameRefiner testMethodNameRefiner) {
     for (AbstractTestFileStructure testFileStructure : myTestFileStructures) {
       String refinedTestMethodName = testMethodName;
       if (testMethodNameRefiner != null && testMethodName != null) {

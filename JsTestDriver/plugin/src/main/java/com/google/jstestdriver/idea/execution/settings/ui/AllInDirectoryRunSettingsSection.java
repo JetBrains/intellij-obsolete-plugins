@@ -4,7 +4,6 @@ import com.google.jstestdriver.idea.execution.JstdSettingsUtil;
 import com.google.jstestdriver.idea.execution.settings.JstdRunSettings;
 import com.google.jstestdriver.idea.util.ProjectRootUtils;
 import com.google.jstestdriver.idea.util.SwingUtils;
-import com.google.jstestdriver.idea.util.TextChangeListener;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
@@ -13,7 +12,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.JBColor;
-import com.intellij.ui.ListCellRendererWrapper;
+import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBList;
 import com.intellij.util.ArrayUtil;
@@ -104,20 +103,17 @@ public class AllInDirectoryRunSettingsSection extends AbstractRunSettingsSection
     JPanel panel = new JPanel(new BorderLayout());
     panel.add(new JLabel("Matched configuration files (*.jstd and jsTestDriver.conf):"), BorderLayout.NORTH);
 
-    final JBList fileList = new JBList(ArrayUtil.EMPTY_STRING_ARRAY);
+    final JBList<String> fileList = new JBList<>();
     fileList.setBorder(BorderFactory.createLineBorder(JBColor.GRAY));
-    fileList.setCellRenderer(new ListCellRendererWrapper<String>() {
+    fileList.setCellRenderer(new SimpleListCellRenderer<String>() {
       @Override
-      public void customize(JList list, String value, int index, boolean selected, boolean hasFocus) {
+      public void customize(@NotNull JList<? extends String> list, String value, int index, boolean selected, boolean hasFocus) {
         setText(value);
       }
     });
-    SwingUtils.addTextChangeListener(directoryTextField, new TextChangeListener() {
-      @Override
-      public void textChanged(String oldText, @NotNull String newText) {
-        List<String> configs = getConfigsInDir(project, newText);
-        fileList.setListData(configs.toArray());
-      }
+    SwingUtils.addTextChangeListener(directoryTextField, (oldText, newText) -> {
+      List<String> configs = getConfigsInDir(project, newText);
+      fileList.setListData(ArrayUtil.toStringArray(configs));
     });
 
     panel.add(fileList, BorderLayout.CENTER);

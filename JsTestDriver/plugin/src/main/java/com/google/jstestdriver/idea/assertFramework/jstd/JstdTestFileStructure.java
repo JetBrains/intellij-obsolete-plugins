@@ -66,8 +66,12 @@ public class JstdTestFileStructure extends AbstractTestFileStructure {
   }
 
   @Override
+  public @Nullable JstdRunElement findJstdRunElement(@NotNull TextRange textRange) {
+    return null;
+  }
+
   @Nullable
-  public JstdRunElement findJstdRunElement(@NotNull TextRange textRange) {
+  public JstdRunElement findJstdRunElement1(@NotNull TextRange textRange) {
     for (JstdTestCaseStructure testCaseStructure : myTestCaseStructures) {
       JstdRunElement jstdRunElement = testCaseStructure.findJstdRunElement(textRange);
       if (jstdRunElement != null) {
