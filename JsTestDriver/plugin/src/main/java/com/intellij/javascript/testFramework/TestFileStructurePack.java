@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class TestFileStructurePack {
@@ -76,14 +77,7 @@ public class TestFileStructurePack {
 
   @NotNull
   public List<String> getTopLevelElements() {
-    List<String> out = new ArrayList<>();
-    for (AbstractTestFileStructure structure : myTestFileStructures) {
-      if (!structure.isEmpty()) {
-        List<String> topLevel = structure.getTopLevelElements();
-        out.addAll(topLevel);
-      }
-    }
-    return out;
+    return Collections.emptyList();
   }
 
   @NotNull
