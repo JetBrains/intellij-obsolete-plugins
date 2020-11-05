@@ -14,3 +14,4 @@ This repository includes the following plugins:
   * [RubyMotion support](https://plugins.jetbrains.com/plugin/10674-rubymotion-support)
   * [Compass support](https://plugins.jetbrains.com/plugin/13705-compass)
   * [Generate Ant Build](https://plugins.jetbrains.com/plugin/14169-ant-build-generation)
+  * [CVS](https://plugins.jetbrains.com/plugin/10746-cvs)
