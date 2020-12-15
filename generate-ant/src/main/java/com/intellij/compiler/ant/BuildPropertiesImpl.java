@@ -92,11 +92,14 @@ public class BuildPropertiesImpl extends BuildProperties {
         add(new Property(PROPERTY_JAVAC2_HOME, propertyRelativePath(PROPERTY_IDEA_HOME, "lib")));
         Path javac2 = new Path(PROPERTY_JAVAC2_CLASSPATH_ID);
         FileSet fileSet = new FileSet("${" + PROPERTY_JAVAC2_HOME + "}");
-        fileSet.add(new Include("javac2.jar"));
         fileSet.add(new Include("jdom.jar"));
         fileSet.add(new Include("asm-all*.jar"));
         fileSet.add(new Include("forms-*.jar"));
+        fileSet.add(new Include("forms_rt.jar"));
         javac2.add(fileSet);
+        FileSet redistFileSet = new FileSet(propertyRelativePath(PROPERTY_IDEA_HOME, "plugins/java/lib"));
+        redistFileSet.add(new Include("javac2.jar"));
+        javac2.add(redistFileSet);
         add(javac2);
         register.add(new Tag("taskdef",
                              pair("name", "javac2"),
