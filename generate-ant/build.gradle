@@ -2,3 +2,7 @@ intellij {
     type 'IU'
     plugins 'java', 'devkit', 'android', 'JavaEE', 'com.intellij.gwt:203.5981.155', 'javaFX', 'ant', 'Groovy'
 }
+
+publishPlugin {
+    token System.getenv("PUBLISH_PLUGIN_TOKEN")
+}
