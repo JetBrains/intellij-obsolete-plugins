@@ -14,11 +14,11 @@ subprojects {
     apply plugin: 'org.jetbrains.intellij'
 
     intellij {
-        version '2020.2.1'
+        version '2020.3'
     }
 
     patchPluginXml {
-        sinceBuild '202.1'
+        sinceBuild '203.1'
         untilBuild ''
     }
 
@@ -28,5 +28,5 @@ subprojects {
     targetCompatibility = 1.8
 
     String buildNumber = System.getenv("BUILD_NUMBER")
-    version "202." + (buildNumber == null || buildNumber.isEmpty() ? "0" : buildNumber)
+    version "203." + (buildNumber == null || buildNumber.isEmpty() ? "0" : buildNumber)
 }
