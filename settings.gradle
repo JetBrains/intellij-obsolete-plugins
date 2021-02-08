@@ -9,3 +9,5 @@ include 'applets'
 include 'compass'
 include 'generate-ant'
 include 'cvs'
+include 'restClient-legacy'
+

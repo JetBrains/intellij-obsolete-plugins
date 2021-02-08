@@ -1,0 +1,5 @@
+<idea-plugin>
+  <extensions defaultExtensionNs="com.intellij">
+    <restClient.legacy.customRequestActions implementation="com.intellij.ws.rest.client.legacy.php.PhpRestClientCustomActionsProvider"/>
+  </extensions>
+</idea-plugin>
