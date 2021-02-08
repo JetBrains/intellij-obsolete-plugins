@@ -89,7 +89,12 @@ public final class RESTClient implements RestClientResponseListener, Disposable 
 
   public RESTClient(final Project project) {
     myProject = project;
-    myController = new RestClientControllerImpl(project);
+    myController = new RestClientControllerImpl(project) {
+      @Override
+      protected void addToHistory(@NotNull Project project, @NotNull RestClientRequest request, @Nullable RestClientResponse response) {
+        RestClientSettings.getInstance(project).addToHistory(request);
+      }
+    };
     myResponseTab = new NonOpaquePanel(new BorderLayout());
     myClientRequestPanel = new RestClientRequestPanel(project, this);
     myCookiesPanel = new RESTCookiesPanel(project, this);
