@@ -15,18 +15,18 @@
 
   <extensionPoints>
     <extensionPoint qualifiedName="com.intellij.restClient.legacy.customRequestActions"
-                    interface="com.intellij.ws.rest.client.legacy.RestClientCustomActionsProvider" dynamic="true"/>
+                    interface="com.intellij.restClient.RestClientCustomActionsProvider" dynamic="true"/>
   </extensionPoints>
   <extensions defaultExtensionNs="com.intellij">
-    <projectService serviceImplementation="com.intellij.ws.rest.client.legacy.RestClientSettings"/>
+    <projectService serviceImplementation="com.intellij.restClient.RestClientSettings"/>
   </extensions>
 
   <actions>
     <action id="WebServicesPlugin.CreateRESTClient"
-            class="com.intellij.ws.rest.client.legacy.CreateRestClientAction" text="Test RESTful Web Service">
+            class="com.intellij.restClient.CreateRestClientAction" text="Test RESTful Web Service">
       <add-to-group group-id="ToolsMenu" anchor="last"/>
     </action>
-    <action id="RESTClient.RunRequest" class="com.intellij.ws.rest.client.legacy.RunRequestAction"
+    <action id="RESTClient.RunRequest" class="com.intellij.restClient.RunRequestAction"
             text="Load into REST Client">
       <add-to-group group-id="ProjectViewPopupMenuRefactoringGroup" anchor="after"
                     relative-to-action="ValidateXml"/>

@@ -1,4 +1,4 @@
-package com.intellij.ws.rest.client.legacy;
+package com.intellij.restClient;
 
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.editor.colors.impl.DelegateColorScheme;

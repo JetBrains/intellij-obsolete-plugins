@@ -1,4 +1,4 @@
-package com.intellij.ws.rest.client.legacy.php;
+package com.intellij.restClient.php;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.icons.AllIcons;
@@ -8,12 +8,12 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.restClient.RESTClient;
+import com.intellij.restClient.RestClientLegacyBundle;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.httpClient.http.request.run.HttpClientRequestProcessHandler;
 import com.intellij.httpClient.execution.RestClientRequest;
 import com.intellij.httpClient.execution.RestClientRequestProcessor;
-import com.intellij.ws.rest.client.legacy.RESTClient;
-import com.intellij.ws.rest.client.legacy.RestClientLegacyBundle;
 import com.jetbrains.php.restClient.PhpXDebugHttpRequestDebugger;
 import org.apache.http.HttpHost;
 import org.apache.http.client.CookieStore;

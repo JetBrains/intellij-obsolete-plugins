@@ -1,4 +1,4 @@
-package com.intellij.ws.rest.client.legacy;
+package com.intellij.restClient;
 
 import com.intellij.codeInsight.actions.ReformatCodeProcessor;
 import com.intellij.codeInsight.daemon.impl.analysis.FileHighlightingSetting;

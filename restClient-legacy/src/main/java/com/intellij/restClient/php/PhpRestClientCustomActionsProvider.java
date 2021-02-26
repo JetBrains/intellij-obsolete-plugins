@@ -1,8 +1,8 @@
-package com.intellij.ws.rest.client.legacy.php;
+package com.intellij.restClient.php;
 
 import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.ws.rest.client.legacy.RESTClient;
-import com.intellij.ws.rest.client.legacy.RestClientCustomActionsProvider;
+import com.intellij.restClient.RESTClient;
+import com.intellij.restClient.RestClientCustomActionsProvider;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

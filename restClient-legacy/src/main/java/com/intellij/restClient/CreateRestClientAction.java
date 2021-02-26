@@ -1,4 +1,4 @@
-package com.intellij.ws.rest.client.legacy;
+package com.intellij.restClient;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;

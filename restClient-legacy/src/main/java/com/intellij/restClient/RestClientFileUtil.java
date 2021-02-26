@@ -1,4 +1,4 @@
-package com.intellij.ws.rest.client.legacy;
+package com.intellij.restClient;
 
 import com.intellij.json.JsonFileType;
 import com.intellij.json.JsonLanguage;
