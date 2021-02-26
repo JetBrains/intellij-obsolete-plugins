@@ -3,7 +3,7 @@ package com.intellij.ws.rest.client.legacy;
 import com.intellij.openapi.components.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.xmlb.XmlSerializerUtil;
-import com.intellij.ws.rest.client.RestClientRequest;
+import com.intellij.httpClient.execution.RestClientRequest;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

@@ -15,7 +15,7 @@ import com.intellij.util.ui.table.JBListTable;
 import com.intellij.util.ui.table.JBTableRow;
 import com.intellij.util.ui.table.JBTableRowEditor;
 import com.intellij.util.ui.table.JBTableRowRenderer;
-import com.intellij.ws.rest.client.RestClientRequest;
+import com.intellij.httpClient.execution.RestClientRequest;
 import com.michaelbaranov.microba.calendar.DatePicker;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.cookie.CookieIdentityComparator;

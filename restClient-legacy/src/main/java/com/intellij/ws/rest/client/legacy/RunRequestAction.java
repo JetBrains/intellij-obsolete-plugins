@@ -8,7 +8,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.xml.NanoXmlUtil;
 import com.intellij.util.xml.XmlFileHeader;
-import com.intellij.ws.rest.client.RestClientSerializer;
+import com.intellij.httpClient.execution.RestClientSerializer;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;

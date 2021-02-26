@@ -5,10 +5,9 @@ plugins {
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
     type 'IU'
-    // TODO: provide versions through gradle.properties
-    plugins 'com.jetbrains.restClient', "com.jetbrains.php:211.5538.21"
+    plugins 'com.jetbrains.restClient', "com.jetbrains.php:${restClientIdeaVersion}"
 
-    version 'LATEST-EAP-SNAPSHOT'
+    version "IU-${restClientIdeaVersion}-EAP-SNAPSHOT"
 }
 
 sourceCompatibility = 11

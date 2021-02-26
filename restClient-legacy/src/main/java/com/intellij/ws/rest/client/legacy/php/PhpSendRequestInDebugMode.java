@@ -7,12 +7,11 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.util.NlsContexts;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.containers.ContainerUtil;
-import com.intellij.ws.http.request.run.HttpClientRequestProcessHandler;
-import com.intellij.ws.rest.client.RestClientRequest;
-import com.intellij.ws.rest.client.RestClientRequestProcessor;
+import com.intellij.httpClient.http.request.run.HttpClientRequestProcessHandler;
+import com.intellij.httpClient.execution.RestClientRequest;
+import com.intellij.httpClient.execution.RestClientRequestProcessor;
 import com.intellij.ws.rest.client.legacy.RESTClient;
 import com.intellij.ws.rest.client.legacy.RestClientLegacyBundle;
 import com.jetbrains.php.restClient.PhpXDebugHttpRequestDebugger;
@@ -20,6 +19,7 @@ import org.apache.http.HttpHost;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.utils.URIUtils;
 import org.apache.http.cookie.Cookie;
+import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.URI;
@@ -71,7 +71,7 @@ public class PhpSendRequestInDebugMode extends AnAction {
       final PhpXDebugHttpRequestDebugger debugger = new PhpXDebugHttpRequestDebugger();
       final String hostName = host.getHostName();
       // TODO: wait for eap
-      final RestClientRequest.Biscuit debugCookie = null /*debugger.startDebugSessionAndCreateCookies(project, hostName, executeProcessHandler)*/;
+      final RestClientRequest.Biscuit debugCookie = debugger.startDebugSessionAndCreateCookies(project, hostName, executeProcessHandler);
       myRESTClient.onGoToUrlAction(new RestClientRequestProcessor() {
         @Override
         public void preProcessRequest(@NotNull RestClientRequest request) {
@@ -93,15 +93,13 @@ public class PhpSendRequestInDebugMode extends AnAction {
         }
       });
     }
-    // TODO: wait for eap
-//    catch (ExecutionException e1) {
-    catch (Exception e1) {
+    catch (ExecutionException e1) {
       LOG.error(e1);
       showErrorDialog(project, e1.getMessage());
     }
   }
 
-  private static void showErrorDialog(@NotNull Project project, @NotNull @NlsContexts.DialogMessage String message) {
+  private static void showErrorDialog(@NotNull Project project, @NotNull @Nls String message) {
     Messages.showErrorDialog(project, message, RestClientLegacyBundle.message("debug.rest.client.can.not.resolve.host.name.title"));
   }
 }

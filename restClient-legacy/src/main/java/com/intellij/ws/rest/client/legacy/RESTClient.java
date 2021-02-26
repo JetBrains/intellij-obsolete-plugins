@@ -42,7 +42,7 @@ import com.intellij.ui.tabs.TabInfo;
 import com.intellij.util.net.HttpConfigurable;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
-import com.intellij.ws.rest.client.*;
+import com.intellij.httpClient.execution.*;
 import net.miginfocom.swing.MigLayout;
 import org.apache.http.cookie.Cookie;
 import org.jetbrains.annotations.NotNull;

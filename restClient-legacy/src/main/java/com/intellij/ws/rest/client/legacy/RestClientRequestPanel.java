@@ -25,8 +25,8 @@ import com.intellij.ui.table.JBTable;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.table.*;
-import com.intellij.ws.rest.client.RestClientFormBodyPart;
-import com.intellij.ws.rest.client.RestClientRequest;
+import com.intellij.httpClient.execution.RestClientFormBodyPart;
+import com.intellij.httpClient.execution.RestClientRequest;
 import net.miginfocom.swing.MigLayout;
 import org.jetbrains.annotations.NonNls;
 

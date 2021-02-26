@@ -1,10 +1,10 @@
 <idea-plugin>
   <id>com.jetbrains.restClient.legacy</id>
-  <name>Legacy REST Client</name>
+  <name>Old REST Client</name>
   <category>Other Tools</category>
   <description>
     <![CDATA[
-      Provides UI for Legacy REST Client, which is replaced by HTTP Client plugin.
+      Provides UI for Old REST Client, which is replaced by HTTP Client plugin.
       See the <a href="https://www.jetbrains.com/help/idea/http-client-in-product-code-editor.html">documentation</a> for details.
       ]]>
   </description>
