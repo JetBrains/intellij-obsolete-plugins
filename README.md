@@ -15,3 +15,4 @@ This repository includes the following plugins:
   * [Compass support](https://plugins.jetbrains.com/plugin/13705-compass)
   * [Generate Ant Build](https://plugins.jetbrains.com/plugin/14169-ant-build-generation)
   * [CVS](https://plugins.jetbrains.com/plugin/10746-cvs)
+  * [Old REST Client](https://plugins.jetbrains.com/plugin/16216-old-rest-client)
