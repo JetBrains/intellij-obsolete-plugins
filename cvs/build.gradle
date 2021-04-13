@@ -14,6 +14,10 @@ sourceSets{
     }
 }
 
+intellij {
+    version '2020.2.1'
+}
+
 dependencies {
     compile files('lib/trilead-ssh2-build213.jar')
 }
