@@ -1,6 +1,7 @@
 intellij {
     type.set("IU")
-    plugins.set(listOf("java", "devkit", "android", "JavaEE", "com.intellij.gwt:203.5981.155", "javaFX", "ant", "Groovy"))
+    version.set("2021.2")
+    plugins.set(listOf("java", "devkit", "android", "JavaEE", "com.intellij.gwt:212.4746.52", "javaFX", "ant", "Groovy"))
 }
 
 tasks {

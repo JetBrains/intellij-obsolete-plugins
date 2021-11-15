@@ -17,11 +17,11 @@ import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.IdeBorderFactory;
 import com.intellij.ui.ScrollPaneFactory;
+import com.intellij.ui.table.JBTable;
 import com.intellij.util.ArrayUtilRt;
 import com.intellij.util.Chunk;
 import com.intellij.util.ListWithSelection;
 import com.intellij.util.ui.JBUI;
-import com.intellij.util.ui.Table;
 import com.intellij.util.ui.table.ComboBoxTableCellEditor;
 import org.jetbrains.annotations.NonNls;
 
@@ -60,7 +60,7 @@ public class GenerateAntBuildDialog extends DialogWrapper {
   @NonNls private static final String GENERATE_IDEA_HOME_PROPERTY = "GenerateAntBuildDialog.generateIdeaHomeProperty";
   @NonNls private static final String OUTPUT_FILE_NAME_PROPERTY = "GenerateAntBuildDialog.outputFileNameProperty";
   private MyTableModel myTableModel;
-  private Table myTable;
+  private JBTable myTable;
 
   public GenerateAntBuildDialog(Project project) {
     super(project, false);
@@ -166,7 +166,7 @@ public class GenerateAntBuildDialog extends DialogWrapper {
     myChunksPanel.add(textLabel, BorderLayout.NORTH);
 
     myTableModel = new MyTableModel(chunks);
-    myTable = new Table(myTableModel);
+    myTable = new JBTable(myTableModel);
     final MyTableCellRenderer cellRenderer = new MyTableCellRenderer();
     final TableColumn nameColumn = myTable.getColumnModel().getColumn(MyTableModel.NAME_COLUMN);
     nameColumn.setCellEditor(ComboBoxTableCellEditor.INSTANCE);
