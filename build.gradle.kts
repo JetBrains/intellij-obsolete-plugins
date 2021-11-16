@@ -3,13 +3,17 @@ fun properties(key: String) = project.findProperty(key).toString()
 plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "1.5.31"
-    id("org.jetbrains.intellij") version "1.2.1"
+    id("org.jetbrains.intellij") version "1.3.0"
 }
 
 tasks {
     wrapper {
         gradleVersion = properties("gradleVersion")
     }
+}
+
+intellij {
+    version.set("2020.3")
 }
 
 allprojects {
