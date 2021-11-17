@@ -4,6 +4,15 @@ import com.intellij.codeInsight.actions.ReformatCodeProcessor;
 import com.intellij.codeInsight.daemon.impl.analysis.FileHighlightingSetting;
 import com.intellij.codeInsight.daemon.impl.analysis.HighlightingSettingsPerFile;
 import com.intellij.execution.ui.layout.impl.JBRunnerTabs;
+import com.intellij.httpClient.execution.common.CommonClientBodyFileHint;
+import com.intellij.httpClient.execution.common.CommonClientRequest;
+import com.intellij.httpClient.execution.common.CommonClientResponse;
+import com.intellij.httpClient.execution.common.CommonClientResponseBody;
+import com.intellij.httpClient.http.request.HttpRequestPsiConverter;
+import com.intellij.httpClient.http.request.HttpRequestPsiFactory;
+import com.intellij.httpClient.http.request.HttpRequestVariableSubstitutor;
+import com.intellij.httpClient.http.request.psi.HttpRequest;
+import com.intellij.httpClient.http.request.run.HttpRunRequestInfo;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
@@ -26,6 +35,7 @@ import com.intellij.openapi.ui.popup.PopupStep;
 import com.intellij.openapi.ui.popup.util.BaseListPopupStep;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Ref;
+import com.intellij.openapi.util.Segment;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileWrapper;
@@ -34,6 +44,8 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
+import com.intellij.psi.SmartPsiElementPointer;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.ui.*;
 import com.intellij.ui.components.JBTextField;
 import com.intellij.ui.components.panels.NonOpaquePanel;
@@ -57,9 +69,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.*;
 
+import static com.intellij.util.ObjectUtils.doIfNotNull;
+
 /**
  * @author Konstantin Bulenkov
  */
+@SuppressWarnings("UnstableApiUsage")
 public final class RESTClient implements RestClientResponseListener, Disposable {
   private final Project myProject;
   private TextFieldWithHistory myHttpMethod;
@@ -89,10 +104,10 @@ public final class RESTClient implements RestClientResponseListener, Disposable 
 
   public RESTClient(final Project project) {
     myProject = project;
-    myController = new RestClientControllerImpl(project) {
+    myController = new RestClientControllerImpl(project, null, null, false) {
       @Override
-      protected void addToHistory(@NotNull Project project, @NotNull RestClientRequest request, @Nullable RestClientResponse response) {
-        RestClientSettings.getInstance(project).addToHistory(request);
+      protected void addToHistory(@NotNull Project project, @NotNull CommonClientRequest request, @Nullable CommonClientResponse response) {
+        RestClientSettings.getInstance(project).addToHistory((RestClientRequest) request);
       }
     };
     myResponseTab = new NonOpaquePanel(new BorderLayout());
@@ -477,8 +492,51 @@ public final class RESTClient implements RestClientResponseListener, Disposable 
     IdeFocusManager.getGlobalInstance().doWhenFocusSettlesDown(() -> IdeFocusManager
       .getGlobalInstance().requestFocus(myResponse.getContentComponent(), true));
     FileDocumentManager.getInstance().saveAllDocuments();
-    myController.onGoButtonClick(createRequest(), true, this, processors);
+    myController.onGoButtonClick(getHttpRunRequestInfo(), true, this, processors);
     myHttpMethod.addCurrentTextToHistory();
+  }
+
+  @NotNull
+  private HttpRunRequestInfo getHttpRunRequestInfo() {
+    var request = createRequest();
+    var requestPsiFile = HttpRequestPsiFactory
+            .createDummyFile(myProject, HttpRequestPsiConverter.toPsiHttpRequest(request, null, true));
+    var httpRequest = PsiTreeUtil.findChildOfType(requestPsiFile, HttpRequest.class, false);
+    return HttpRunRequestInfo.create(
+            Objects.requireNonNull(httpRequest),
+            new SmartPsiElementPointer<>() {
+              @Override
+              public @NotNull HttpRequest getElement() {
+                return httpRequest;
+              }
+
+              @Override
+              public @NotNull PsiFile getContainingFile() {
+                return requestPsiFile;
+              }
+
+              @Override
+              public @NotNull Project getProject() {
+                return myProject;
+              }
+
+              @Override
+              public VirtualFile getVirtualFile() {
+                return null;
+              }
+
+              @Override
+              public @Nullable Segment getRange() {
+                return null;
+              }
+
+              @Override
+              public @Nullable Segment getPsiRange() {
+                return null;
+              }
+            },
+            HttpRequestVariableSubstitutor.empty()
+    );
   }
 
   private void splitParameters() {
@@ -548,12 +606,25 @@ public final class RESTClient implements RestClientResponseListener, Disposable 
   }
 
   @Override
-  public void onResponse(@Nullable String header, @NotNull String response, @Nullable String mimeType, @NotNull String status) {
+  public void onResponse(@Nullable String header, @NotNull CommonClientResponseBody body, @NotNull String status, long executionTime) {
     myHeader.setText(header == null ? "" : header);
 
-    FileType fileType = RestClientFileUtil.findFileType(mimeType);
+
+    String responseText;
+    FileType fileType;
+    if (!(body instanceof CommonClientResponseBody.Text)) {
+      responseText = RestClientLegacyBundle.message("rest.client.unsupported.response.message");
+      fileType = PlainTextFileType.INSTANCE;
+    } else {
+      responseText = ((CommonClientResponseBody.Text) body).getContent();
+      fileType = doIfNotNull(body.getFileHint(), CommonClientBodyFileHint::getFileTypeHint);
+      if (fileType == null) {
+        fileType = PlainTextFileType.INSTANCE;
+      }
+    }
+
     RestClientFileUtil.deleteFile(myResponseFile);
-    myResponseFile = RestClientFileUtil.createFile(response, fileType);
+    myResponseFile = RestClientFileUtil.createFile(responseText, fileType);
     updateEditor(FileDocumentManager.getInstance().getDocument(myResponseFile), fileType);
     mySelectedResponseFileType = fileType;
     myFileTypeFromResponse.set(fileType);

@@ -4,13 +4,16 @@ plugins {
     id("java")
 }
 
+version = "213.0"
+
 val restClientIdeaVersion = properties("restClientIdeaVersion")
+val restClientPHPVersion = properties("restClientPHPVersion")
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
     type.set("IU")
     version.set(restClientIdeaVersion)
-    plugins.set(listOf("com.jetbrains.restClient", "com.jetbrains.php:$restClientIdeaVersion"))
+    plugins.set(listOf("com.jetbrains.restClient", "com.jetbrains.php:$restClientPHPVersion"))
 }
 
 tasks {
@@ -20,8 +23,9 @@ tasks {
     }
 
     patchPluginXml {
-        sinceBuild.set("211.1")
+        sinceBuild.set("213")
         untilBuild.set("")
+        changeNotes.set("Make plugin compatible with 213. PHP Debug temporary unavailable because of platform changes.")
     }
 
     publishPlugin {

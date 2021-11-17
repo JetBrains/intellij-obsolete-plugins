@@ -8,7 +8,7 @@ import com.intellij.openapi.wm.ToolWindowAnchor;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.openapi.wm.ex.ToolWindowEx;
 import com.intellij.ui.content.Content;
-import icons.RestClientIcons;
+import com.intellij.httpClient.RestClientIcons;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;

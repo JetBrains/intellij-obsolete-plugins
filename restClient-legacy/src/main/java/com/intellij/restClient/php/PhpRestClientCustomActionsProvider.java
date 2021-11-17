@@ -6,6 +6,7 @@ import com.intellij.restClient.RestClientCustomActionsProvider;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -16,8 +17,9 @@ public class PhpRestClientCustomActionsProvider implements RestClientCustomActio
   @NotNull
   @Override
   public List<AnAction> getCustomActions(@NotNull RESTClient restClient) {
-    List<AnAction> actions = new ArrayList<>();
-    actions.add(new PhpSendRequestInDebugMode(restClient));
-    return actions;
+//    List<AnAction> actions = new ArrayList<>();
+//     TODO: wait for API fix
+//    actions.add(new PhpSendRequestInDebugMode(restClient));
+    return Collections.emptyList();
   }
 }
