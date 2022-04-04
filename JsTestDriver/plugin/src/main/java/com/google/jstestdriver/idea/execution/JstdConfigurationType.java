@@ -45,6 +45,12 @@ public final class JstdConfigurationType extends ConfigurationTypeBase implement
       public RunConfigurationSingletonPolicy getSingletonPolicy() {
         return RunConfigurationSingletonPolicy.SINGLE_INSTANCE_ONLY;
       }
+      
+      @NotNull
+      @Override
+      public String getId() {
+        return NAME;
+      }
     });
   }
 
