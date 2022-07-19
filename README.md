@@ -17,3 +17,4 @@ This repository includes the following plugins:
   * [CVS](https://plugins.jetbrains.com/plugin/10746-cvs)
   * [Old REST Client](https://plugins.jetbrains.com/plugin/16216-old-rest-client)
   * [IDETalk](https://plugins.jetbrains.com/plugin/233-idetalk)
+  * [Tapestry](https://plugins.jetbrains.com/plugin/14589-tapestry)
