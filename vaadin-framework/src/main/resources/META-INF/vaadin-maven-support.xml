@@ -1,0 +1,9 @@
+<idea-plugin>
+  <extensions defaultExtensionNs="org.jetbrains.idea.maven">
+    <importer implementation="com.intellij.vaadin.maven.GwtFacetForVaadinImporter" order="after web"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <gwt.sdkType implementation="com.intellij.vaadin.maven.GwtVaadinMavenSdkType"/>
+  </extensions>
+</idea-plugin>

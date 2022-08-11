@@ -18,3 +18,4 @@ This repository includes the following plugins:
   * [Old REST Client](https://plugins.jetbrains.com/plugin/16216-old-rest-client)
   * [IDETalk](https://plugins.jetbrains.com/plugin/233-idetalk)
   * [Tapestry](https://plugins.jetbrains.com/plugin/14589-tapestry)
+  * [Vaadin](https://plugins.jetbrains.com/plugin/13199-vaadin-6-8)

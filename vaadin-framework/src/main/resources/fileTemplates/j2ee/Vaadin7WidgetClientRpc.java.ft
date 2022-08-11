@@ -1,0 +1,8 @@
+package ${PACKAGE_NAME};
+
+import com.vaadin.shared.communication.ClientRpc;
+
+#parse("File Header.java")
+public interface ${NAME} extends ClientRpc {
+
+}

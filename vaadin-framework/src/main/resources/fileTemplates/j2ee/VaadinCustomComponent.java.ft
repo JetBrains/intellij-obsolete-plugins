@@ -1,0 +1,10 @@
+package ${PACKAGE_NAME};
+
+import com.vaadin.ui.*;
+
+#parse("File Header.java")
+public class ${NAME} extends CustomComponent {
+    public ${NAME}() {
+        setCompositionRoot();
+    }
+}

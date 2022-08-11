@@ -1,0 +1,34 @@
+package ${PACKAGE_NAME};
+
+import ${BASE_PACKAGE_NAME}.${WIDGET_NAME};
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.ui.Widget;
+import com.vaadin.client.communication.RpcProxy;
+import com.vaadin.client.ui.AbstractComponentConnector;
+import com.vaadin.shared.ui.Connect;
+
+#parse("File Header.java")
+@Connect(${WIDGET_NAME}.class)
+public class ${NAME} extends AbstractComponentConnector {
+    private final ${WIDGET_NAME}ServerRpc serverRpc = RpcProxy.create(${WIDGET_NAME}ServerRpc.class, this);
+
+    public ${NAME}() {
+        registerRpc(${WIDGET_NAME}ClientRpc.class, new ${WIDGET_NAME}ClientRpc() {
+        });
+    }
+
+    @Override
+    protected Widget createWidget() {
+      return GWT.create(${WIDGET_NAME}Widget.class);
+    }
+
+    @Override
+    public ${WIDGET_NAME}Widget getWidget() {
+      return (${WIDGET_NAME}Widget) super.getWidget();
+    }
+
+    @Override
+    public ${WIDGET_NAME}State getState() {
+      return (${WIDGET_NAME}State) super.getState();
+    }
+}
