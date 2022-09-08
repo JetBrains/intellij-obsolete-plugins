@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xs:schema xmlns="http://jboss.com/products/seam/pageflow"
+	targetNamespace="http://jboss.com/products/seam/pageflow"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	elementFormDefault="qualified">
+
+	<!--  PAGEFLOW-DEFINITION -->
+	<!--  ################### -->
+	<xs:element name="pageflow-definition">
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:group ref="start-node-elements" />
+				<xs:group ref="node-elements" />
+				<xs:group ref="end-node-elements" />
+				<xs:group ref="action-elements" />
+				<xs:element ref="event" />
+				<xs:element ref="exception-handler" />
+			</xs:choice>
+			<xs:attribute name="name" type="xs:string" use="required" />
+			<xs:attribute name="start-page" type="xs:string" />
+		</xs:complexType>
+	</xs:element>
+
+	<!--  NODES -->
+	<!--  ##### -->
+	<xs:element name="start-state">
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:element ref="transition" />
+				<xs:element ref="event" />
+				<xs:element ref="exception-handler" />
+			</xs:choice>
+			<xs:attribute name="name" type="xs:string" />
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="end-state">
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:element ref="event" />
+				<xs:element ref="exception-handler" />
+			</xs:choice>
+			<xs:attribute name="name" type="xs:string" use="required" />
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="process-state">
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:element ref="sub-process" />
+				<xs:element ref="transition" />
+				<xs:element ref="event" />
+				<xs:element ref="exception-handler" />
+			</xs:choice>
+			<xs:attribute name="name" type="xs:string" />
+			<xs:attribute name="binding" type="bindingType" />
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="sub-process">
+		<xs:complexType>
+			<xs:attribute name="name" type="xs:string" use="required" />
+			<xs:attribute name="version" type="xs:integer" />
+			<xs:attribute name="binding" type="bindingType" />
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="start-page">
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:group ref="page-elements" />
+			</xs:choice>
+			<xs:attributeGroup ref="page-attributes" />
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="decision">
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:element name="handler" type="delegation" />
+				<xs:element ref="event" />
+				<xs:element ref="exception-handler" />
+				<xs:element name="transition">
+					<xs:complexType>
+						<xs:choice minOccurs="0"
+							maxOccurs="unbounded">
+							<xs:element name="condition">
+								<xs:complexType mixed="true">
+									<xs:sequence minOccurs="0"
+										maxOccurs="unbounded">
+										<xs:any processContents="lax"
+											minOccurs="0" maxOccurs="unbounded" />
+									</xs:sequence>
+									<xs:attribute name="expression"
+										type="xs:string" />
+								</xs:complexType>
+							</xs:element>
+							<xs:group ref="action-elements" />
+							<xs:element ref="exception-handler" />
+						</xs:choice>
+						<xs:attribute name="to" type="xs:string"
+							use="required" />
+						<xs:attribute name="name" type="xs:string" />
+					</xs:complexType>
+				</xs:element>
+			</xs:choice>
+			<xs:attribute name="name" type="xs:string" use="required" />
+			<xs:attribute name="expression" type="xs:string" />
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="page">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:choice minOccurs="0" maxOccurs="1">
+					<xs:element ref="end-conversation" />
+				</xs:choice>
+				<xs:choice minOccurs="0" maxOccurs="1">
+					<xs:element ref="end-task" />
+				</xs:choice>
+				<xs:group ref="page-elements" />
+			</xs:sequence>
+			<xs:attributeGroup ref="page-attributes" />
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="redirect" />
+	<xs:element name="description" type="xs:string" />
+
+	<xs:element name="end-conversation">
+		<xs:complexType>
+			<xs:attribute name="before-redirect" type="booleanType" />
+			<xs:attribute name="create-process" type="xs:string" />
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="end-task">
+		<xs:complexType>
+			<xs:attribute name="transition" type="xs:string" />
+		</xs:complexType>
+	</xs:element>
+
+	<!--  TRANSITION -->
+	<!--  ########## -->
+	<xs:element name="transition">
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:group ref="action-elements" />
+				<xs:element ref="exception-handler" />
+			</xs:choice>
+			<xs:attribute name="to" type="xs:string" use="required" />
+			<xs:attribute name="name" type="xs:string" />
+		</xs:complexType>
+	</xs:element>
+
+	<!-- ACTIONS -->
+	<!-- ####### -->
+	<xs:element name="action">
+		<xs:complexType mixed="true">
+			<xs:sequence>
+				<xs:any processContents="lax" minOccurs="0"
+					maxOccurs="unbounded" />
+			</xs:sequence>
+			<xs:attribute name="class" type="xs:string" />
+			<xs:attribute name="config-type" default="field" type="xs:string" />
+			<xs:attribute name="name" type="xs:string" />
+			<xs:attribute name="ref-name" type="xs:string" />
+			<xs:attribute name="accept-propagated-events"
+				type="booleanType" default="true" />
+			<xs:attribute name="expression" type="xs:string" />
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="script">
+		<xs:complexType mixed="true">
+			<xs:sequence>
+				<xs:any processContents="lax" minOccurs="0"
+					maxOccurs="unbounded" />
+			</xs:sequence>
+			<xs:attribute name="name" type="xs:string" />
+			<xs:attribute name="accept-propagated-events"
+				type="booleanType" default="true" />
+		</xs:complexType>
+	</xs:element>
+
+	<!--  EVENT -->
+	<!--  ##### -->
+	<xs:element name="event">
+		<xs:complexType>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:group ref="action-elements" />
+			</xs:choice>
+			<xs:attribute name="type" use="required">
+				<xs:simpleType>
+					<xs:union>
+						<xs:simpleType>
+							<xs:restriction base="xs:string" />
+						</xs:simpleType>
+						<xs:simpleType>
+							<xs:restriction base="xs:string">
+								<xs:enumeration value="node-enter" />
+								<xs:enumeration value="node-leave" />
+								<xs:enumeration value="process-start" />
+								<xs:enumeration value="process-end" />
+								<xs:enumeration value="task-create" />
+								<xs:enumeration value="task-assign" />
+								<xs:enumeration value="task-start" />
+								<xs:enumeration value="task-end" />
+								<xs:enumeration value="before-signal" />
+								<xs:enumeration value="after-signal" />
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:union>
+				</xs:simpleType>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+
+	<!--  EXCEPTION-HANDLER -->
+	<!--  ################# -->
+	<xs:element name="exception-handler">
+		<xs:complexType>
+			<xs:choice minOccurs="1" maxOccurs="unbounded">
+				<xs:element ref="action" />
+				<xs:element ref="script" />
+			</xs:choice>
+			<xs:attribute name="exception-class" type="xs:string" />
+		</xs:complexType>
+	</xs:element>
+
+	<!-- TYPES AND GROUPS -->
+	<!-- ################ -->
+	<xs:complexType name="delegation" mixed="true">
+		<xs:sequence>
+			<xs:any processContents="lax" minOccurs="0"
+				maxOccurs="unbounded" />
+		</xs:sequence>
+		<xs:attribute name="class" type="xs:string" />
+		<xs:attribute name="config-type" default="field" type="xs:string" />
+	</xs:complexType>
+
+	<xs:simpleType name="configType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="field" />
+			<xs:enumeration value="bean" />
+			<xs:enumeration value="constructor" />
+			<xs:enumeration value="configuration-property" />
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:simpleType name="booleanType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="yes" />
+			<xs:enumeration value="no" />
+			<xs:enumeration value="true" />
+			<xs:enumeration value="false" />
+			<xs:enumeration value="on" />
+			<xs:enumeration value="off" />
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:simpleType name="enabledType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="enabled" />
+			<xs:enumeration value="disabled" />
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:group name="start-node-elements">
+		<xs:choice>
+			<xs:element ref="start-state" />
+			<xs:element ref="start-page" />
+		</xs:choice>
+	</xs:group>
+
+	<xs:group name="node-elements">
+		<xs:choice>
+			<xs:element ref="page" />
+			<xs:element ref="decision" />
+			<xs:element ref="process-state" />
+		</xs:choice>
+	</xs:group>
+	
+	<xs:group name="end-node-elements">
+		<xs:choice>
+			<xs:element ref="end-state" />
+		</xs:choice>
+	</xs:group>
+
+	<xs:group name="action-elements">
+		<xs:choice>
+			<xs:element ref="action" />
+			<xs:element ref="script"/>
+		</xs:choice>
+	</xs:group>
+
+	<xs:group name="page-elements">
+		<xs:sequence>
+            <xs:element ref="description" maxOccurs="1" minOccurs="0"/>
+            <xs:element ref="redirect" maxOccurs="1" minOccurs="0"/>
+			<xs:element ref="event" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element ref="exception-handler" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element ref="transition" maxOccurs="unbounded" minOccurs="0"/>
+			<xs:group ref="action-elements" minOccurs="0" maxOccurs="1" />
+		</xs:sequence>
+	</xs:group>
+
+	<xs:attributeGroup name="page-attributes">
+		<xs:attribute name="redirect" type="xs:boolean" />
+		<xs:attribute name="switch" type="enabledType" />
+		<xs:attribute name="no-conversation-view-id" type="xs:string" />
+		<xs:attribute name="timeout" type="xs:int" />
+		<xs:attribute name="back" type="enabledType" />
+		<xs:attribute name="view-id" type="xs:string" use="required" />
+		<xs:attribute name="name" type="xs:string" use="required" />
+	</xs:attributeGroup>
+  
+    <xs:simpleType name="bindingType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="late" />
+            <xs:enumeration value="early" />
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

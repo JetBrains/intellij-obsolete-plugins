@@ -1,0 +1,67 @@
+<html>
+<body>
+<p>Reports Seam annotations that appear on classes or methods with invalid signatures or fields with invalid type.</p>
+
+<ul>
+  <li>
+    <p><code>@Name</code> is invalid on interfaces and abstract classes. Requires a no-argument constructor in the annotated class.</p>
+  </li>
+  <li>
+    <p><code>@In</code> must appear either on a field or on a setter method, such as <code>void setUser(User user)</code>.</p>
+    <ul>
+      <li>Void return type</li>
+      <li>One argument</li>
+      <li>Non-static</li>
+      <li>Name must start with <code>set</code></li>
+    </ul>
+  </li>
+  <li>
+    <p><code>@Out</code> must appear either on a field or on a getter method, such as <code>User getUser()</code>.</p>
+    <ul>
+      <li>Non-void return type</li>
+      <li>No arguments</li>
+      <li>Non-static</li>
+      <li>Name must start with <code>get</code>, or optionally <code>is</code> if the return type is <code>boolean</code></li>
+    </ul>
+  </li>
+  <li>
+    <p><strong>@DataModel</strong> must appear either on a field or on a getter method (same as the <code>@Out</code> annotation).
+    The field type or return type must be one of the following:</p>
+    <ul>
+      <li><code>java.util.List</code></li>
+      <li><code>java.util.Set</code></li>
+      <li><code>java.util.Map</code></li>
+    </ul>
+  </li>
+  <li>
+    <p><code>@DataModelSelection</code> must appear on setter methods.</p>
+  </li>
+  <li>
+    <p><code>@DataModelSelectionIndex</code> must appear on setter methods.</p>
+  </li>
+  <li>
+    <p><code>@Factory</code> and <code>@Unwrap</code> must appear on a method with the following signature:</p>
+    <ul>
+      <li>Non-void return type</li>
+      <li>Either no parameters or a single <code>org.jboss.seam.Component</code> parameter (or its super type)</li>
+      <li>Non-static</li>
+    </ul>
+  </li>
+  <li>
+    <p><code>@Create</code> must appear on a method with the following signature:</p>
+    <ul>
+      <li>Either no parameters or a single <code>org.jboss.seam.Component</code> parameter (or its super type)</li>
+      <li>Non-static</li>
+    </ul>
+  </li>
+  <li>
+    <p><code>@Destroy</code> must appear on a method with the following signature:</p>
+    <ul>
+      <li>Void return type</li>
+      <li>No parameters</li>
+      <li>Non-static</li>
+    </ul>
+  </li>
+</ul>
+</body>
+</html>

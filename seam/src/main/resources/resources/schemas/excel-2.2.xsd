@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:components="http://jboss.com/products/seam/components" targetNamespace="http://jboss.com/products/seam/document"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified">
+
+	<xs:import namespace="http://jboss.com/products/seam/components" schemaLocation="components-2.2.xsd" />
+
+	<xs:element name="excel-factory">
+		<xs:annotation>
+			<xs:documentation>Factory creating excel workbook instances</xs:documentation>
+		</xs:annotation>
+		<xs:complexType mixed="true">
+			<xs:sequence>
+                <xs:element name="implementations" type="components:mapProperty" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+
+
+</xs:schema>

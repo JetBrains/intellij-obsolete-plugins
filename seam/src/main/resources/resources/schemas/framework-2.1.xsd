@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+    targetNamespace="http://jboss.com/products/seam/framework"
+    xmlns:framework="http://jboss.com/products/seam/framework"
+    xmlns:components="http://jboss.com/products/seam/components" attributeFormDefault="unqualified">
+    
+    <xs:import namespace="http://jboss.com/products/seam/components" schemaLocation="components-2.1.xsd"/>
+
+    <xs:element name="entity-query">
+        <xs:annotation>
+            <xs:documentation>A query controller for JPA queries</xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element minOccurs="0" maxOccurs="1" ref="framework:ejbql"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="framework:order"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="framework:restrictions"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="framework:group-by"/>
+                <xs:element minOccurs="0" maxOccurs="1" name="hints" type="components:mapProperty" />
+            </xs:choice>
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="framework:attlist.Query"/>
+            <xs:attributeGroup ref="framework:attlist.entityQuery"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.entityQuery">
+        <xs:attribute name="entity-manager" type="xs:string"/>
+    </xs:attributeGroup>
+
+    <xs:element name="hibernate-entity-query">
+        <xs:annotation>
+            <xs:documentation>A query controller for Hibernate queries</xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element minOccurs="0" maxOccurs="1" ref="framework:ejbql"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="framework:order"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="framework:restrictions"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="framework:group-by"/>
+            </xs:choice>
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="framework:attlist.Query"/>
+            <xs:attributeGroup ref="framework:attlist.HibernateEntityQuery"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.HibernateEntityQuery">
+        <xs:attribute name="cacheable" type="components:boolean" />
+        <xs:attribute name="cache-region" type="components:string"/>
+        <xs:attribute name="fetch-size" type="components:int"/>
+        <xs:attribute name="session" type="components:string"/>
+    </xs:attributeGroup>
+    
+    <xs:attributeGroup name="attlist.Query">
+        <xs:attribute name="ejbql" type="components:string">
+            <xs:annotation>
+                <xs:documentation>The base query</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="max-results" type="components:int">
+            <xs:annotation>
+                <xs:documentation>The query page size</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="order" type="components:string">
+            <xs:annotation>
+                <xs:documentation>The property to order results by</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="group-by" type="components:string">
+            <xs:annotation>
+                <xs:documentation>The group-by clause</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:attributeGroup>
+    
+    <xs:element name="ejbql" type="components:string">
+        <xs:annotation>
+            <xs:documentation>The base query</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="order" type="components:string">
+        <xs:annotation>
+            <xs:documentation>The property to order results by</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="group-by" type="components:string">
+        <xs:annotation>
+            <xs:documentation>The group-by clause</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    
+    <xs:element name="restrictions" type="components:multiValuedProperty">
+        <xs:annotation>
+            <xs:documentation>Query restrictions (the WHERE clause)</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    
+    
+
+    <xs:element name="entity-home">
+        <xs:annotation>
+            <xs:documentation>A home controller for JPA entities</xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="id" type="xs:string"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="framework:created-message"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="framework:updated-message"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="framework:deleted-message"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="framework:new-instance"/>
+            </xs:choice>
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="framework:attlist.Home"/>
+            <xs:attributeGroup ref="framework:attlist.EntityHome"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.EntityHome">
+        <xs:attribute name="entity-manager" type="components:string"/>
+    </xs:attributeGroup>
+
+    <xs:element name="hibernate-entity-home">
+        <xs:annotation>
+            <xs:documentation>A home controller for Hibernate entities</xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="id" type="xs:string"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="framework:created-message"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="framework:updated-message"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="framework:deleted-message"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="framework:new-instance"/>
+            </xs:choice>
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="framework:attlist.Home"/>
+            <xs:attributeGroup ref="framework:attlist.HibernateEntityHome"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.HibernateEntityHome">
+        <xs:attribute name="session" type="components:string"/>
+    </xs:attributeGroup>
+    
+    <xs:attributeGroup name="attlist.Home">
+        <xs:attribute name="entity-class" type="components:string"/>
+        <xs:attribute name="new-instance" type="components:expressionType"/>
+        <xs:attribute name="created-message" type="components:string"/>
+        <xs:attribute name="updated-message" type="components:string"/>
+        <xs:attribute name="deleted-message" type="components:string"/>
+    </xs:attributeGroup>
+
+    <xs:element name="created-message" type="components:string">
+        <xs:annotation>
+            <xs:documentation>A faces message added when the home controller creates a new instance</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="updated-message" type="components:string">
+        <xs:annotation>
+            <xs:documentation>A faces message added when the home controller updates an instance</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="deleted-message" type="components:string">
+        <xs:annotation>
+            <xs:documentation>A faces message added when the home controller deletes an instance</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:element name="new-instance" type="components:expressionType">
+        <xs:annotation>
+            <xs:documentation>The new instance managed by a home controller</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+</xs:schema>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+    targetNamespace="http://jboss.com/products/seam/core" xmlns:core="http://jboss.com/products/seam/core"
+    xmlns:components="http://jboss.com/products/seam/components" attributeFormDefault="unqualified">
+    <xs:import namespace="http://jboss.com/products/seam/components" schemaLocation="components-2.0.xsd"/>
+
+    <xs:element name="init">
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="core:attlist.init"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.init">
+        <xs:attribute name="debug">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="true"/>
+                    <xs:enumeration value="false"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="jndi-pattern"/>
+        <xs:attribute name="transaction-management-enabled">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="true"/>
+                    <xs:enumeration value="false"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="user-transaction-name"/>
+    </xs:attributeGroup>
+
+    <xs:element name="manager">
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="core:attlist.manager"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.manager">
+        <xs:attribute name="concurrent-request-timeout" type="xs:integer"/>
+        <xs:attribute name="conversation-timeout" type="xs:integer"/>
+        <xs:attribute name="conversation-id-parameter"/>
+        <xs:attribute name="parent-conversation-id-parameter"/>
+    </xs:attributeGroup>
+    
+    <xs:element name="resource-loader">
+        <xs:complexType mixed="true">
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="core:bundle-names"/>
+            </xs:choice>
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="core:attlist.resourceLoader"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="bundle-names" type="components:multiValuedProperty"/>
+    <xs:attributeGroup name="attlist.resourceLoader">
+        <xs:attribute name="bundle-names"> </xs:attribute>
+    </xs:attributeGroup>
+
+    <xs:element name="pojo-cache">
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="core:attlist.pojoCache"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.pojoCache">
+        <xs:attribute name="cfg-resource-name"/>
+    </xs:attributeGroup>
+
+</xs:schema>

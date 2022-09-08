@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+    targetNamespace="http://jboss.com/products/seam/web" xmlns:web="http://jboss.com/products/seam/web"
+    xmlns:components="http://jboss.com/products/seam/components" attributeFormDefault="unqualified">
+    <xs:import namespace="http://jboss.com/products/seam/components" schemaLocation="components-2.0.xsd"/>
+
+    <xs:element name="multipart-filter">
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="web:attlist.filter"/>
+            <xs:attributeGroup ref="web:attlist.multipartFilter"/>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="redirect-filter">
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="web:attlist.filter"/>
+        </xs:complexType>    
+    </xs:element>    
+    
+    <xs:element name="exception-filter">
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="web:attlist.filter"/>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="context-filter">
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="web:attlist.filter"/>
+        </xs:complexType>
+    </xs:element>    
+        
+    <xs:element name="character-encoding-filter">
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="web:attlist.filter"/>
+            <xs:attribute name="encoding" type="xs:string"/>
+            <xs:attribute name="override-client" type="xs:boolean"/>
+        </xs:complexType>
+    </xs:element> 
+    
+    <xs:element name="authentication-filter">
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="web:attlist.filter"/>
+            <xs:attribute name="realm" type="xs:string"/>
+            <xs:attribute name="key" type="xs:string"/>
+            <xs:attribute name="nonce-validity-seconds" type="xs:int"/>
+            <xs:attribute name="auth-type" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+        
+    <xs:element name="logging-filter">
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="web:attlist.filter"/>
+        </xs:complexType>
+    </xs:element>
+       
+    <xs:element name="ajax4jsf-filter">
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="web:attlist.filter"/>
+            <xs:attributeGroup ref="web:attlist.ajax4jsfFilter"/>
+        </xs:complexType>
+    </xs:element>    
+    
+    <xs:attributeGroup name="attlist.filter">
+        <xs:attribute name="url-pattern" type="xs:string"/>
+        <xs:attribute name="disabled" type="xs:string" default="false" />
+    </xs:attributeGroup>
+    
+    <xs:attributeGroup name="attlist.multipartFilter">
+        <xs:attribute name="create-temp-files">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="true"/>
+                    <xs:enumeration value="false"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>                
+        <xs:attribute name="max-request-size" type="xs:integer"/>
+    </xs:attributeGroup>
+    
+    <xs:attributeGroup name="attlist.ajax4jsfFilter">
+        <xs:attribute name="enable-cache">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="true"/>
+                    <xs:enumeration value="false"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="force-parser">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="true"/>
+                    <xs:enumeration value="false"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="log4j-init-file" type="xs:string"/>
+    </xs:attributeGroup>
+    
+    <xs:element name="servlet-session">
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="web:attlist.servlet-session"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.servlet-session">
+        <xs:attribute name="invalidate-on-scheme-change" type="xs:boolean"/>
+    </xs:attributeGroup>   
+   
+</xs:schema>

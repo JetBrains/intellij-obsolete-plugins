@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+    targetNamespace="http://jboss.com/products/seam/drools" xmlns:drools="http://jboss.com/products/seam/drools"
+    xmlns:components="http://jboss.com/products/seam/components" attributeFormDefault="unqualified">
+    
+    <xs:import namespace="http://jboss.com/products/seam/components" schemaLocation="components-2.1.xsd"/>
+
+    <xs:element name="rule-base">
+        <xs:annotation>
+            <xs:documentation>A drools rule base</xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element minOccurs="0" maxOccurs="1" ref="drools:rule-files"/>
+            </xs:choice>
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="drools:attlist.RuleBase"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="rule-files" type="components:multiValuedProperty"/>
+    <xs:attributeGroup name="attlist.RuleBase">
+        <xs:attribute name="dsl-file" type="components:string"/>
+        <xs:attribute name="rule-files" type="components:string"/>        
+    </xs:attributeGroup>
+
+    <xs:element name="rule-agent">
+        <xs:annotation>
+            <xs:documentation>A drools BRMS configuration</xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">    		
+    		<xs:attributeGroup ref="components:attlist.component" />
+    		<xs:attributeGroup ref="drools:attlist.RuleAgent" />
+    	</xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.RuleAgent">
+        <xs:attribute name="configuration-file" type="components:string" />
+        <xs:attribute name="config-name" type="components:string" />
+        <xs:attribute name="new-instance" type="components:string" />
+        <xs:attribute name="files" type="components:string" />
+        <xs:attribute name="url" type="components:string" />
+        <xs:attribute name="local-cache-dir" type="components:string" />
+        <xs:attribute name="poll" type="components:string" />        
+    </xs:attributeGroup>
+
+    <xs:element name="managed-working-memory">
+        <xs:annotation>
+            <xs:documentation>A working memory for rules calculations</xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="drools:attlist.ManagedWorkingMemory"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.ManagedWorkingMemory">
+        <xs:attribute name="rule-base" type="components:expressionType"/>
+    </xs:attributeGroup>
+
+</xs:schema>

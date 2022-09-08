@@ -1,0 +1,371 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+           elementFormDefault="qualified"
+           targetNamespace="http://jboss.com/products/seam/components"
+           xmlns:components="http://jboss.com/products/seam/components">
+    <xs:annotation>
+        <xs:documentation> 
+            The top-level schema for a Seam components.xml. For more information on Seam, see
+            http://www.seamframework.org. 
+        </xs:documentation>
+    </xs:annotation>
+
+    <xs:element name="components">
+        <xs:annotation>
+            <xs:documentation> The components tag is a the root element for a components.xml containing multiples
+                component definitions. </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="components:component"/>
+                <xs:element ref="components:factory"/>
+                <xs:element ref="components:event"/>
+                <xs:element ref="components:import"/>
+                <xs:any namespace="##other" processContents="strict"/>
+            </xs:choice>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="component">
+        <xs:annotation>
+            <xs:documentation> The component tag defines a single Seam component. It may serve as to the root element of
+                a fine-grained *.component.xml file. </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="components:property"/>
+            </xs:sequence>
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="components:attlist.ejbcomponent"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="import" type="xs:string">
+        <xs:annotation>
+            <xs:documentation>
+                The import tag declares additional global component namespaces that will be in effect for
+                all components. 
+            </xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:attributeGroup name="attlist.ejbcomponent">
+        <xs:attribute name="jndi-name" type="components:string">
+            <xs:annotation>
+                <xs:documentation> 
+                    The JNDI name used to lookup the component. This value is only used with EJB
+                    components that don't follow the global JNDI pattern. 
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:attributeGroup>
+
+    <xs:attributeGroup name="attlist.component">
+        <xs:attribute name="name" type="components:componentName">
+            <xs:annotation>
+                <xs:documentation>The name of component</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        
+        <xs:attribute name="class" type="components:componentName">
+            <xs:annotation>
+                <xs:documentation>The Java class of the component implementation</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+
+        <xs:attribute name="scope">
+            <xs:annotation>
+                <xs:documentation>The scope of the component</xs:documentation>
+            </xs:annotation>
+            
+            <xs:simpleType>
+                <xs:union memberTypes="components:scopeType components:expressionType"></xs:union>       
+            </xs:simpleType>
+        </xs:attribute>
+
+        <xs:attribute name="precedence" default="20">
+            <xs:annotation>
+                <xs:documentation>
+                    The precedence of the component, expressed as a positive integer.  Higher
+                    precedence components override lower precedence components.  The pre-definied precedence
+                    values are: 
+                    
+                    BUILT_IN = 0, 
+                    FRAMEWORK = 10,
+                    APPLICATION = 20,
+                    DEPLOYMENT = 30,
+                    MOCK = 40
+                </xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+                <xs:union memberTypes="xs:nonNegativeInteger components:precedenceType components:expressionType"></xs:union>
+            </xs:simpleType>
+        </xs:attribute>
+        
+        <xs:attribute name="installed" default="true" type="components:boolean">
+            <xs:annotation>
+                <xs:documentation>
+                    The installed value indicates whether or not the component definition should be installed.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        
+        <xs:attribute name="auto-create" default="false" type="components:boolean">
+            <xs:annotation>
+                <xs:documentation>
+                    Indicates whether or not a components instance should be created when
+                    one doesn't exist and when the component is requested using a method that 
+                    would not normally instantiate a new instance.  (such as basic injection)
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        
+        <xs:attribute name="startup" default="false" type="components:boolean">
+            <xs:annotation>
+                <xs:documentation>
+                    Indicates that an instance of the component should be created when the 
+                    the component's controlling scope starts.  This is only used for application and
+                    session scope.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        
+        <xs:attribute name="startupDepends" type="components:string">
+            <xs:annotation>
+                <xs:documentation>
+                    A list of component names that this component depends on and that should be created before
+                    this component is started.
+                </xs:documentation>
+            </xs:annotation></xs:attribute>
+    </xs:attributeGroup>
+    
+    <xs:element name="factory">
+        <xs:annotation>
+            <xs:documentation>
+                Factories are like a component instances except their values are 
+                determined by computing a value or calling a method on another 
+                component.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attributeGroup ref="components:attlist.factory"/>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:attributeGroup name="attlist.factory">
+        <xs:attribute name="name" use="required">
+            <xs:annotation>
+                <xs:documentation>The name of the factory component</xs:documentation>
+            </xs:annotation></xs:attribute>
+       
+        <xs:attribute name="method">
+            <xs:annotation>
+                <xs:documentation>
+                     The method binding used to evauluate the factory value.  A factory should have either
+                     a method binding or a value binding, but not both.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        
+        <xs:attribute name="value">
+            <xs:annotation>
+                <xs:documentation>
+                     The value binding used to evauluate the factory value.  A factory should have either
+                     a method binding or a value binding, but not both.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        
+        <xs:attribute name="scope">
+            <xs:annotation>
+                <xs:documentation>The scope of the factory value</xs:documentation>
+            </xs:annotation>
+            
+            <xs:simpleType>
+                <xs:union memberTypes="components:scopeType components:expressionType"></xs:union>       
+            </xs:simpleType>
+        </xs:attribute>
+        
+        <xs:attribute name="auto-create" default="false" type="components:boolean">
+            <xs:annotation>
+                <xs:documentation>
+                    Indicates whether or not the factory value should be created when
+                    one doesn't exist and when the component is requested using a method that 
+                    would not normally instantiate a new instance.  (such as basic injection)
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:attributeGroup>
+    
+    
+    <xs:element name="property">
+        <xs:annotation>
+            <xs:documentation>
+                A generic property.  The body contains the value or values.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="components:key" />
+                <xs:element ref="components:value" />
+            </xs:choice>
+            <xs:attributeGroup ref="components:attlist.property"/>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:attributeGroup name="attlist.property">
+        <xs:attribute name="name" use="required" type="components:string">
+            <xs:annotation>
+                <xs:documentation>The property name</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+	<xs:attribute name="type" type="components:string" >
+            <xs:annotation>
+                <xs:documentation>Concrete type to use if the property is multi-valued</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:attributeGroup>
+    
+
+    <xs:element name="key" type="components:string">
+        <xs:annotation>
+            <xs:documentation>For map values, the key for the following value</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    
+    <xs:element name="value" type="components:string">
+        <xs:annotation>
+            <xs:documentation>
+                For list values, the value to be added.
+                For map values, the value for the preceding key
+            </xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:complexType name="multiValuedProperty">
+        <xs:sequence minOccurs="0" maxOccurs="unbounded">
+            <xs:element ref="components:value"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="mapProperty">
+        <xs:sequence minOccurs="0" maxOccurs="unbounded">
+            <xs:element ref="components:key"/>
+            <xs:element ref="components:value"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:element name="event">
+        <xs:annotation>
+            <xs:documentation>An event handler definition</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="components:action"/>
+            </xs:choice>
+            <xs:attributeGroup ref="components:attlist.event"/>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:attributeGroup name="attlist.event">
+        <xs:attribute name="type" use="required" type="components:componentNameType" >
+            <xs:annotation>
+                <xs:documentation>The event type to handle</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:attributeGroup>
+
+    <xs:element name="action">
+        <xs:annotation>
+            <xs:documentation>The action to be taken when the event occurs</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attributeGroup ref="components:attlist.action"/>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:attributeGroup name="attlist.action">
+        <xs:attribute name="execute" use="required" type="components:elType">
+            <xs:annotation>
+                <xs:documentation>An EL expression to be invoked when the event is invoked</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:attributeGroup>
+
+    <xs:simpleType name="propertyType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="@.+@"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="elType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="\#\{.+\}"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- place holder - need something more expressive -->
+    <xs:simpleType name="componentNameType">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1" />   
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="expressionType">
+        <xs:union memberTypes="components:elType components:propertyType"/>
+    </xs:simpleType>
+    
+    <xs:simpleType name="boolean">
+        <xs:union memberTypes="xs:boolean components:expressionType"/>
+    </xs:simpleType>
+
+    <xs:simpleType name="string">
+        <xs:union memberTypes="xs:string components:expressionType"/>
+    </xs:simpleType>
+    
+    <xs:simpleType name="int">
+        <xs:union memberTypes="xs:int components:expressionType"/>
+    </xs:simpleType>
+   
+    <xs:simpleType name="componentName">
+        <xs:union memberTypes="components:componentNameType components:expressionType" />
+    </xs:simpleType>
+    
+    <xs:simpleType name="scopeType">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="stateless"/>
+            <xs:enumeration value="event"/>
+            <xs:enumeration value="page"/>
+            <xs:enumeration value="conversation"/>
+            <xs:enumeration value="session"/>
+            <xs:enumeration value="business_process"/>
+            <xs:enumeration value="application"/>
+            <xs:enumeration value="STATELESS"/>
+            <xs:enumeration value="EVENT"/>
+            <xs:enumeration value="PAGE"/>
+            <xs:enumeration value="CONVERSATION"/>
+            <xs:enumeration value="SESSION"/>
+            <xs:enumeration value="BUSINESS_PROCESS"/>
+            <xs:enumeration value="APPLICATION"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="implementationType">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="hash"/>
+            <xs:enumeration value="linked"/>
+            <xs:enumeration value="tree"/>
+            <xs:enumeration value="HASH"/>
+            <xs:enumeration value="LINKED"/>
+            <xs:enumeration value="TREE"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="precedenceType">
+        <xs:restriction base="xs:int">
+            <xs:enumeration value="0"/>
+            <xs:enumeration value="10"/>
+            <xs:enumeration value="20"/>
+            <xs:enumeration value="30"/>
+            <xs:enumeration value="40"/>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>

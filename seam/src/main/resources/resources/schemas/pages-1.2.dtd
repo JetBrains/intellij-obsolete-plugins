@@ -1,0 +1,106 @@
+<!--
+
+<!DOCTYPE pages PUBLIC
+	"-//JBoss/Seam Pages Configuration DTD 1.2//EN"
+	"http://jboss.com/products/seam/pages-1.2.dtd">
+
+-->
+
+<!ELEMENT pages ((conversation|page)*,exception*)>
+<!ATTLIST pages no-conversation-view-id CDATA #IMPLIED>
+<!ATTLIST pages login-view-id CDATA #IMPLIED>
+
+<!ELEMENT exception (end-conversation?,(http-error|redirect))>
+<!ATTLIST exception class CDATA #IMPLIED>
+
+<!ELEMENT conversation EMPTY>
+<!ATTLIST conversation name CDATA #REQUIRED>
+<!ATTLIST conversation parameter-name CDATA #REQUIRED>
+<!ATTLIST conversation parameter-value CDATA #IMPLIED>
+
+<!ELEMENT page (#PCDATA|restrict|description|param|in|begin-conversation|end-conversation|start-task|begin-task|end-task|create-process|resume-process|action|navigation)*>
+<!ATTLIST page action CDATA #IMPLIED>
+<!ATTLIST page view-id CDATA #IMPLIED>
+<!ATTLIST page switch (enabled|disabled) "enabled">
+<!ATTLIST page no-conversation-view-id CDATA #IMPLIED>
+<!ATTLIST page conversation-required (true|false) "false">
+<!ATTLIST page login-required (true|false) "false">
+<!ATTLIST page scheme CDATA #IMPLIED>
+<!ATTLIST page timeout CDATA #IMPLIED>
+<!ATTLIST page bundle CDATA #IMPLIED>
+<!ATTLIST page conversation CDATA #IMPLIED>
+
+<!ELEMENT param EMPTY>
+<!ATTLIST param name CDATA #IMPLIED>
+<!ATTLIST param value CDATA #IMPLIED>
+<!ATTLIST param converter CDATA #IMPLIED>
+<!ATTLIST param converterId CDATA #IMPLIED>
+
+<!ELEMENT action EMPTY>
+<!ATTLIST action if CDATA #IMPLIED>
+<!ATTLIST action execute CDATA #REQUIRED>
+
+<!ELEMENT restrict (#PCDATA)>
+
+<!ELEMENT navigation (((begin-conversation|end-conversation|start-task|begin-task|end-task|create-process|resume-process)?,(out*),(render|redirect))|(rule*))>
+<!ATTLIST navigation from-action CDATA #IMPLIED>
+<!ATTLIST navigation evaluate CDATA #IMPLIED>
+
+<!ELEMENT rule ((begin-conversation|end-conversation|start-task|begin-task|end-task|create-process|resume-process)?,(out*),(render|redirect))>
+<!ATTLIST rule if-outcome CDATA #IMPLIED>
+<!ATTLIST rule if CDATA #IMPLIED>
+
+<!ELEMENT begin-conversation EMPTY>
+<!ATTLIST begin-conversation join (true|false) "false">
+<!ATTLIST begin-conversation nested (true|false) "false">
+<!ATTLIST begin-conversation pageflow CDATA #IMPLIED>
+<!ATTLIST begin-conversation flush-mode (manual|auto|commit|MANUAL|AUTO|COMMIT) #IMPLIED>
+<!ATTLIST begin-conversation if CDATA #IMPLIED>
+
+<!ELEMENT end-conversation EMPTY>
+<!ATTLIST end-conversation before-redirect (true|false) "false">
+<!ATTLIST end-conversation if CDATA #IMPLIED>
+
+<!ELEMENT begin-task EMPTY>
+<!ATTLIST begin-task task-id CDATA #IMPLIED>
+<!ATTLIST begin-task pageflow CDATA #IMPLIED>
+<!ATTLIST begin-task flush-mode (manual|auto|commit|MANUAL|AUTO|COMMIT) #IMPLIED>
+
+<!ELEMENT start-task EMPTY>
+<!ATTLIST start-task task-id CDATA #IMPLIED>
+<!ATTLIST start-task pageflow CDATA #IMPLIED>
+<!ATTLIST start-task flush-mode (manual|auto|commit|MANUAL|AUTO|COMMIT) #IMPLIED>
+
+<!ELEMENT end-task EMPTY>
+<!ATTLIST end-task transition CDATA #IMPLIED>
+<!ATTLIST end-task before-redirect (true|false) "false">
+
+<!ELEMENT create-process EMPTY>
+<!ATTLIST create-process definition CDATA #IMPLIED>
+
+<!ELEMENT resume-process EMPTY>
+<!ATTLIST resume-process process-id CDATA #IMPLIED>
+
+<!ELEMENT in EMPTY>
+<!ATTLIST in name CDATA #REQUIRED>
+<!ATTLIST in scope (stateless|event|page|conversation|session|business_process|application|STATELESS|EVENT|PAGE|CONVERSATION|SESSION|BUSINESS_PROCESS|APPLICATION) #IMPLIED>
+<!ATTLIST in value CDATA #REQUIRED>
+
+<!ELEMENT out EMPTY>
+<!ATTLIST out name CDATA #REQUIRED>
+<!ATTLIST out scope (stateless|event|page|conversation|session|business_process|application|STATELESS|EVENT|PAGE|CONVERSATION|SESSION|BUSINESS_PROCESS|APPLICATION) "CONVERSATION">
+<!ATTLIST out value CDATA #REQUIRED>
+
+<!ELEMENT render (message?)>
+<!ATTLIST render view-id CDATA #IMPLIED>
+
+<!ELEMENT redirect (message?,param*)>
+<!ATTLIST redirect view-id CDATA #IMPLIED>
+
+<!ELEMENT http-error (message?)>
+<!ATTLIST http-error error-code CDATA #IMPLIED>
+
+<!ELEMENT message (#PCDATA)>
+<!ATTLIST message severity (info|warn|error|fatal|INFO|WARN|ERROR|FATAL) "INFO">
+
+<!ELEMENT description (#PCDATA)>

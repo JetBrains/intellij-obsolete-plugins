@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+    targetNamespace="http://jboss.com/products/seam/navigation" xmlns:navigation="http://jboss.com/products/seam/navigation"
+    xmlns:components="http://jboss.com/products/seam/components" attributeFormDefault="unqualified">
+    
+    <xs:import namespace="http://jboss.com/products/seam/components" schemaLocation="components-2.1.xsd"/>
+
+    <xs:element name="pages">
+        <xs:annotation>
+            <xs:documentation>The pages component</xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
+            <xs:choice minOccurs="0" maxOccurs="1">
+                <xs:element name="resources" type="components:multiValuedProperty">
+                    <xs:annotation>
+                        <xs:documentation>
+                            A list of pages configuration files.  Setting this value overrides the 
+                            default /WEB-INF/pages.xml.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:choice>
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="navigation:attlist.pages"/>
+        </xs:complexType>
+    </xs:element>
+   
+    <xs:attributeGroup name="attlist.pages">
+        <xs:attribute name="no-conversation-view-id" type="components:string" />
+        <xs:attribute name="login-view-id" type="components:string" />
+        <xs:attribute name="http-port" type="components:int" />
+        <xs:attribute name="https-port" type="components:int" />
+    </xs:attributeGroup>
+
+</xs:schema>

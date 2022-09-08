@@ -1,0 +1,20 @@
+<html>
+<body>
+<p>Reports the <code>scope</code> parameters in <code>@In</code> and <code>@Out</code> annotations
+for cases when Seam always uses the scope defined by the component itself.</p>
+
+<ul>
+  <li>
+    When specifying <code>@In(create=true)</code>, the context variable must belong to a declared Seam component.
+    Else, Seam would not know which class to instantiate.
+    In other words, for <code>create=true</code> you cannot inject values that are not Seam components.
+    Seam always uses the scope defined in the component declaration
+    (the default scope for the component type or the scope defined in <code>@Scope</code> or <code>@Role</code>).
+  </li>
+  <li>
+    When you eject a value of a declared Seam component with <code>@Out</code>, the scope is always taken from that component.
+    You can use <code>@Out(scope=...)</code> only when you are not ejecting a Seam component.
+  </li>
+</ul>
+</body>
+</html>

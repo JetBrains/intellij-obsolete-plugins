@@ -1,0 +1,185 @@
+<idea-plugin package="com.intellij.seam">
+  <id>com.intellij.seam</id>
+  <name>JBoss Seam</name>
+
+  <description><![CDATA[
+    Adds navigation, auto-completion and inspections specific to the <a href="http://seamframework.org/">JBoss Seam Framework</a>.
+  ]]></description>
+
+  <category>JVM Frameworks</category>
+  <vendor>JetBrains</vendor>
+
+  <dependencies>
+    <plugin id="com.intellij.javaee"/>
+    <plugin id="com.intellij.javaee.ejb"/>
+    <plugin id="com.intellij.javaee.el"/>
+    <plugin id="com.intellij.jsp"/>
+    <plugin id="com.intellij.jsf"/>
+  </dependencies>
+
+  <resource-bundle>messages.SeamBundle</resource-bundle>
+
+  <extensionPoints>
+    <extensionPoint name="elFileProvider" interface="com.intellij.seam.el.SeamElFileProvider" dynamic="true"/>
+  </extensionPoints>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <!--  Seam Core  -->
+
+    <facetType implementation="com.intellij.seam.facet.SeamFacetType"/>
+    <framework.detector implementation="com.intellij.seam.facet.SeamFacetType$SeamFrameworkDetector"/>
+    <semContributor implementation="com.intellij.seam.model.jam.SeamSemContributor"/>
+
+    <dom.fileMetaData implementation="com.intellij.seam.SeamDomFileDescription" rootTagName="components"/>
+
+    <dom.implementation interfaceClass="com.intellij.seam.model.xml.components.SeamDomComponent" implementationClass="com.intellij.seam.impl.model.xml.components.SeamDomComponentImpl"/>
+    <dom.implementation interfaceClass="com.intellij.seam.model.xml.components.SeamDomFactory" implementationClass="com.intellij.seam.impl.model.xml.components.SeamDomFactoryImpl"/>
+    <dom.implementation interfaceClass="com.intellij.seam.model.xml.framework.EntityHome" implementationClass="com.intellij.seam.impl.model.xml.framework.EntityHomeImpl"/>
+    <dom.implementation interfaceClass="com.intellij.seam.model.xml.components.BasicSeamComponent" implementationClass="com.intellij.seam.impl.model.xml.components.BasicSeamComponentImpl"/>
+    <dom.implementation interfaceClass="com.intellij.seam.model.xml.CustomSeamComponent" implementationClass="com.intellij.seam.model.xml.CustomSeamComponent"/>
+    <dom.implementation interfaceClass="com.intellij.seam.model.xml.components.SeamProperty" implementationClass="com.intellij.seam.impl.model.xml.components.SeamPropertyImpl"/>
+
+    <psi.referenceContributor implementation="com.intellij.seam.model.references.SeamReferenceContributor"/>
+
+    <facet.toolWindow id="Seam"
+                      facetIdList="Seam"
+                      anchor="left"
+                      secondary="true"
+                      icon="com.intellij.seam.SeamIcons.SeamToolWindow"
+                      factoryClass="com.intellij.seam.structure.SeamToolWindowFactory"/>
+
+    <projectService serviceInterface="com.intellij.seam.model.xml.SeamDomModelManager"
+                    serviceImplementation="com.intellij.seam.impl.model.xml.SeamDomModelManagerImpl"/>
+
+    <moduleService serviceInterface="com.intellij.seam.model.metadata.SeamEventTypeFactory"
+                   serviceImplementation="com.intellij.seam.impl.model.metadata.SeamEventTypeFactoryImpl"/>
+
+    <javaee.jsp.el.customJsfContextBeansProvider implementation="com.intellij.seam.jsf.SeamJsfContexBeansProvider"/>
+    <customPropertyScopeProvider implementation="com.intellij.seam.el.SeamModelPropertyScopeProvider"/>
+
+    <dom.extender domClass="com.intellij.seam.model.xml.components.SeamComponents"
+                  extenderClass="com.intellij.seam.model.xml.SeamComponentsExtender"/>
+    <annotator language="JAVA" implementationClass="com.intellij.seam.gutter.SeamConversationAnnotator"/>
+
+    <gotoSymbolContributor implementation="com.intellij.seam.model.gotosymbol.GotoSeamComponentsProvider"/>
+
+    <implicitUsageProvider implementation="com.intellij.seam.providers.SeamImplicitUsageProvider"/>
+
+    <fileEditorProvider implementation="com.intellij.seam.dependencies.SeamDependenciesEditorProvider"/>
+
+    <typedHandler implementation="com.intellij.seam.el.typedHandler.SeamElXmlTypedHandler"/>
+    <typedHandler implementation="com.intellij.seam.el.typedHandler.SeamElPsiClassTypedHandler"/>
+
+    <multiHostInjector implementation="com.intellij.seam.el.SeamClassELInjector"/>
+    <multiHostInjector implementation="com.intellij.seam.SeamElXmlConfigProvider"/>
+    <standardResourceProvider implementation="com.intellij.seam.SeamResourceProvider"/>
+
+    <completion.contributor language="JAVA" implementationClass="com.intellij.seam.providers.SeamComponentCompletionContributor"/>
+
+    <seam.elFileProvider implementation="com.intellij.seam.el.SeamComponentsElFileProvider"/>
+    <jsf.jsfConvertersDiscoverer implementation="com.intellij.seam.jsf.SeamJamConvertersDiscoverer" />
+    <virtualFileSystem key="SEAM_DEPENDENCIES" implementationClass="com.intellij.seam.dependencies.SeamDependenciesVirtualFileSystem"/>
+    <metaDataContributor implementation="com.intellij.seam.SeamApplicationComponent"/>
+    <fileTemplateGroup implementation="com.intellij.seam.SeamApplicationComponent"/>
+
+    <!--suppress PluginXmlCapitalization -->
+    <localInspection language="XML" shortName="SeamDomModelInspection" bundle="messages.SeamInspectionBundle" key="model.inspection.display.name"
+                     groupKey="model.inspection.group.name" enabledByDefault="true" level="ERROR"
+                     implementationClass="com.intellij.seam.highlighting.xml.SeamDomModelInspection"/>
+    <!--suppress PluginXmlCapitalization -->
+    <localInspection language="JAVA" shortName="SeamAnnotationIncorrectSignatureInspection" bundle="messages.SeamInspectionBundle"
+                     key="jam.annotation.incorrect.signature.inspection.name" groupKey="model.inspection.group.name" enabledByDefault="true"
+                     level="ERROR" implementationClass="com.intellij.seam.highlighting.jam.SeamAnnotationIncorrectSignatureInspection"/>
+    <!--suppress PluginXmlCapitalization -->
+    <localInspection language="JAVA" shortName="SeamAnnotationsInconsistencyInspection" bundle="messages.SeamInspectionBundle"
+                     key="jam.annotation.inconsistency.inspection.name" groupKey="model.inspection.group.name" enabledByDefault="true"
+                     level="ERROR" implementationClass="com.intellij.seam.highlighting.jam.SeamAnnotationsInconsistencyInspection"/>
+    <!--suppress PluginXmlCapitalization -->
+    <localInspection language="JAVA" shortName="SeamBijectionUndefinedContextVariableInspection" bundle="messages.SeamInspectionBundle"
+                     key="bijection.undefined.context.variables.inspection.name" groupKey="model.inspection.group.name"
+                     enabledByDefault="true" level="WARNING"
+                     implementationClass="com.intellij.seam.highlighting.jam.SeamBijectionUndefinedContextVariableInspection"/>
+    <!--suppress PluginXmlCapitalization -->
+    <localInspection language="JAVA" shortName="SeamBijectionIllegalScopeParameterInspection" bundle="messages.SeamInspectionBundle"
+                     key="bijection.illegal.scope.parameter.inspection.name" groupKey="model.inspection.group.name" enabledByDefault="true"
+                     level="ERROR" implementationClass="com.intellij.seam.highlighting.jam.SeamBijectionIllegalScopeParameterInspection"/>
+    <!--suppress PluginXmlCapitalization -->
+    <localInspection language="JAVA" shortName="SeamBijectionTypeMismatchInspection" bundle="messages.SeamInspectionBundle"
+                     key="bijection.type.mismatch.inspection.name" groupKey="model.inspection.group.name" enabledByDefault="true"
+                     level="ERROR" implementationClass="com.intellij.seam.highlighting.jam.SeamBijectionTypeMismatchInspection"/>
+    <!--suppress PluginXmlCapitalization -->
+    <localInspection language="JAVA" shortName="SeamJamComponentInspection" bundle="messages.SeamInspectionBundle"
+                     key="jam.component.inspection.name" groupKey="model.inspection.group.name" enabledByDefault="true" level="ERROR"
+                     implementationClass="com.intellij.seam.highlighting.jam.SeamJamComponentInspection"/>
+    <!--suppress PluginXmlCapitalization -->
+    <localInspection language="JAVA" shortName="SeamIllegalComponentScopeInspection" bundle="messages.SeamInspectionBundle"
+                     key="illegal.scope.inspection.name" groupKey="model.inspection.group.name" enabledByDefault="true" level="ERROR"
+                     implementationClass="com.intellij.seam.highlighting.jam.SeamIllegalComponentScopeInspection"/>
+    <!--suppress PluginXmlCapitalization -->
+    <localInspection language="JAVA" shortName="SeamDuplicateComponentsInspection" bundle="messages.SeamInspectionBundle"
+                     key="duplicated.jam.component.inspection.name" groupKey="model.inspection.group.name" enabledByDefault="true"
+                     level="ERROR" implementationClass="com.intellij.seam.highlighting.jam.SeamDuplicateComponentsInspection"/>
+
+    <!--  Seam Pages  -->
+
+    <fileEditorProvider implementation="com.intellij.seam.pages.fileEditor.PagesGraphFileEditorProvider"/>
+    <projectService serviceInterface="com.intellij.seam.pages.xml.PagesDomModelManager"
+                    serviceImplementation="com.intellij.seam.pages.impl.PagesDomModelManagerImpl"/>
+    <dom.fileMetaData implementation="com.intellij.seam.pages.PagesDomFileDescription" rootTagName="pages"/>
+    <dom.fileMetaData implementation="com.intellij.seam.pages.PagesFileDomFileDescription" rootTagName="page"/>
+
+    <seam.elFileProvider implementation="com.intellij.seam.pages.el.SeamPagesElFileProvider" />
+    <!--suppress PluginXmlCapitalization -->
+    <localInspection language="XML" shortName="PagesModelInspection" bundle="messages.SeamBundle" key="pages.model.inspection.display.name"
+                     groupBundle="messages.SeamInspectionBundle" groupKey="model.inspection.group.name" enabledByDefault="true"
+                     level="ERROR" implementationClass="com.intellij.seam.pages.inspections.PagesModelInspection"/>
+    <!--suppress PluginXmlCapitalization -->
+    <localInspection language="XML" shortName="PagesFileModelInspection" bundle="messages.SeamBundle" key="pages.model.file.inspection.display.name"
+                     groupBundle="messages.SeamInspectionBundle"
+                     groupKey="model.inspection.group.name" enabledByDefault="true" level="ERROR"
+                     implementationClass="com.intellij.seam.pages.inspections.PagesFileModelInspection"/>
+
+    <!-- Seam Pageflow -->
+
+    <!--suppress PluginXmlCapitalization -->
+    <localInspection language="XML" shortName="PageflowModelInspection" bundle="messages.SeamBundle" key="pageflow.model.inspection.display.name"
+                     groupBundle="messages.SeamInspectionBundle" groupKey="model.inspection.group.name" enabledByDefault="true"
+                     level="ERROR" implementationClass="com.intellij.seam.pageflow.inspections.PageflowModelInspection"/>
+
+    <fileEditorProvider implementation="com.intellij.seam.pageflow.fileEditor.PageflowDesignerFileEditorProvider"/>
+    <projectService serviceInterface="com.intellij.seam.pageflow.model.xml.PageflowDomModelManager"
+                    serviceImplementation="com.intellij.seam.pageflow.impl.PageflowDomModelManagerImpl"/>
+    <dom.fileMetaData implementation="com.intellij.seam.pageflow.PageflowDomFileDescription" rootTagName="pageflow-definition"/>
+
+    <seam.elFileProvider implementation="com.intellij.seam.pageflow.el.SeamPageflowElFileProvider" />
+
+    <renameInputValidator implementation="com.intellij.seam.pageflow.PageflowRenameInputValidator"/>
+  </extensions>
+
+  <actions>
+    <!--suppress PluginXmlCapitalization -->
+    <action id="Seam.Create.Components.Xml" class="com.intellij.seam.actions.CreateSeamComponentsAction">
+      <add-to-group anchor="last" group-id="NewGroup"/>
+    </action>
+
+    <action id="ShowSeamDependenciesGraph" class="com.intellij.seam.dependencies.ShowSeamDependenciesGraph">
+      <add-to-group group-id="J2EEViewPopupMenu" anchor="after" relative-to-action="EditSource"/>
+    </action>
+
+    <!--suppress PluginXmlCapitalization -->
+    <action id="Seam.Create.Pages.Xml" class="com.intellij.seam.pages.actions.CreateSeamPagesAction">
+      <add-to-group anchor="last" group-id="NewGroup"/>
+    </action>
+
+    <action id="Seam.Create.Pageflow" class="com.intellij.seam.pageflow.actions.CreatePageflowFileAction">
+      <add-to-group anchor="last" group-id="NewGroup"/>
+    </action>
+
+    <group id="Pageflow.Designer" popup="false">
+      <reference ref="EditSource"/>
+      <reference ref="FindUsages"/>
+      <reference ref="RenameElement"/>
+      <separator/>
+    </group>
+  </actions>
+</idea-plugin>

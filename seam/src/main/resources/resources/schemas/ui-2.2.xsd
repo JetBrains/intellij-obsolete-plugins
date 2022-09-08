@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+           targetNamespace="http://jboss.com/products/seam/ui"
+           xmlns:components="http://jboss.com/products/seam/components" attributeFormDefault="unqualified">
+    <xs:import namespace="http://jboss.com/products/seam/components" schemaLocation="components-2.2.xsd"/>
+
+    <xs:element name="jpa-entity-loader">
+      <xs:complexType>
+         <xs:attributeGroup ref="components:attlist.component" />
+         <xs:attribute name="entity-manager" type="xs:string" />
+      </xs:complexType>
+    </xs:element>
+
+    <xs:element name="hibernate-entity-loader">
+      <xs:complexType>
+         <xs:attributeGroup ref="components:attlist.component" />
+         <xs:attribute name="session" type="xs:string" />
+      </xs:complexType>
+    </xs:element>
+
+    <xs:element name="entity-converter">
+      <xs:complexType>
+         <xs:attributeGroup ref="components:attlist.component" />
+         <xs:attribute name="entity-loader" type="xs:string" />
+      </xs:complexType>
+    </xs:element>
+
+    <xs:element name="render-stamp-store">
+      <xs:complexType>
+         <xs:attributeGroup ref="components:attlist.component" />
+         <xs:attribute name="max-size" type="xs:int" />
+      </xs:complexType>
+    </xs:element>
+
+</xs:schema>

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+	targetNamespace="http://jboss.com/products/seam/spring" xmlns:spring="http://jboss.com/products/seam/spring"
+	xmlns:components="http://jboss.com/products/seam/components" attributeFormDefault="unqualified">
+	<xs:import namespace="http://jboss.com/products/seam/components"
+		schemaLocation="http://jboss.com/products/seam/components-2.0.xsd" />
+
+	<xs:element name="context-loader">
+		<xs:complexType mixed="true">
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:element minOccurs="0" maxOccurs="1" ref="spring:config-locations" />
+			</xs:choice>
+			<xs:attributeGroup ref="components:attlist.component" />
+			<xs:attribute name="config-locations" type="xs:string" use="optional"
+				default="/WEB-INF/applicationContext.xml">
+				<xs:annotation>
+					<xs:documentation>
+						<![CDATA[
+                                 A single application context config location.
+                        ]]>
+					</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="config-locations" type="components:multiValuedProperty">
+		<xs:annotation>
+			<xs:documentation>
+				<![CDATA[
+	                 Allows you to specify many config-locations in nested value elements.
+	        ]]>
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="task-executor-dispatcher">
+		<xs:complexType mixed="true">
+			<xs:attributeGroup ref="components:attlist.component" />
+			<xs:attributeGroup ref="spring:attlist.taskExecutorDispatcher" />
+		</xs:complexType>
+	</xs:element>
+	<xs:attributeGroup name="attlist.taskExecutorDispatcher">
+		<xs:attribute name="task-executor" use="required" />
+		<xs:attribute name="schedule-dispatcher" />
+	</xs:attributeGroup>
+
+	<xs:element name="spring-transaction">
+		<xs:complexType mixed="true">
+			<xs:attributeGroup ref="components:attlist.component" />
+			<xs:attribute name="platform-transaction-manager">
+				<xs:annotation>
+					<xs:documentation>
+						<![CDATA[
+                        	An expression evalutating to the spring platform transaction manager
+                        ]]>
+					</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="conversation-context-required" type="xs:boolean" use="optional" default="true">
+				<xs:annotation>
+					<xs:documentation>
+						Specify if this transaction manager requires a conversation context to be available or not.
+						Set to true if you're using a JpaTransactionManager with a conversation scoped persistence
+						context.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="join-transaction" type="xs:boolean" use="optional">
+				<xs:annotation>
+					<xs:documentation>
+						Should this transaction manager participate in request to join a transaction.  For JTA
+						transactions set to true. 
+					</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

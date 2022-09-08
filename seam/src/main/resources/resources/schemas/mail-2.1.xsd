@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+    targetNamespace="http://jboss.com/products/seam/mail"
+    xmlns:mail="http://jboss.com/products/seam/mail"
+    xmlns:components="http://jboss.com/products/seam/components" attributeFormDefault="unqualified">
+    
+    <xs:import namespace="http://jboss.com/products/seam/components" schemaLocation="components-2.1.xsd"/>
+    
+    <xs:element name="mail-session">
+        <xs:annotation>
+            <xs:documentation></xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attributeGroup ref="components:attlist.component" />
+            <xs:attributeGroup ref="mail:attlist.mailSession" />
+        </xs:complexType>
+    </xs:element>
+   
+    <xs:attributeGroup name="attlist.mailSession">
+        <xs:attribute name="username" type="components:string"/>
+        <xs:attribute name="password" type="components:string"/>
+        <xs:attribute name="host" type="components:string" default="localhost"/>
+        <xs:attribute name="port" type="components:string" />
+        <xs:attribute name="debug" type="components:string" default="false" />
+        <xs:attribute name="ssl" type="components:boolean" default="false" />
+        <xs:attribute name="tls" type="components:boolean" default="true" />
+        <xs:attribute name="session-jndi-name" type="components:string" />
+    </xs:attributeGroup>
+
+    
+    <xs:element name="meldware">
+        <xs:annotation>
+            <xs:documentation></xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="users" type="components:multiValuedProperty" />        
+            </xs:choice>
+            <xs:attributeGroup ref="components:attlist.component" />
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="meldware-user">
+        <xs:annotation>
+            <xs:documentation></xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="aliases" type="components:multiValuedProperty" />
+            </xs:choice>
+            <xs:attributeGroup ref="components:attlist.component" />
+            <xs:attributeGroup ref="mail:attlist.meldwareUser" />
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:attributeGroup name="attlist.meldwareUser">
+        <xs:attribute name="username" type="components:string" />
+    	<xs:attribute name="password" type="components:string" />
+    	<xs:attribute name="administrator" type="components:boolean" default="false"/>
+    </xs:attributeGroup>
+</xs:schema>

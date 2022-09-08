@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+           elementFormDefault="qualified"
+           targetNamespace="http://jboss.com/products/seam/pdf" 
+           xmlns:pdf="http://jboss.com/products/seam/pdf"
+           xmlns:components="http://jboss.com/products/seam/components" 
+           attributeFormDefault="unqualified">
+    <xs:import namespace="http://jboss.com/products/seam/components" schemaLocation="components-2.0.xsd"/>
+
+    <xs:element name="document-store">
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="pdf:attlist.docstore"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.docstore">
+        <xs:attribute name="error-page" type="xs:string"/>
+        <xs:attribute name="use-extensions" type="xs:string"/>
+    </xs:attributeGroup>
+
+    <xs:element name="key-store-config">
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="pdf:attlist.UseExtensions"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.UseExtensions">
+        <xs:attribute name="key-store" type="xs:string"/>
+        <xs:attribute name="key-store-password" type="xs:string"/>
+        <xs:attribute name="key-password" type="xs:string"/>
+        <xs:attribute name="key-alias" type="xs:string"/>
+    </xs:attributeGroup>
+</xs:schema>

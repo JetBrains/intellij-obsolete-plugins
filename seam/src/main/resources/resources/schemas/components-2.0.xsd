@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+    targetNamespace="http://jboss.com/products/seam/components"
+    xmlns:components="http://jboss.com/products/seam/components">
+    <xs:element name="components">
+        <xs:complexType>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="components:component"/>
+                <xs:element ref="components:factory"/>
+                <xs:element ref="components:event"/>
+                <xs:element ref="components:import"/>
+                <xs:any namespace="##other" processContents="strict"/>
+            </xs:choice>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="component">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="components:property"/>
+            </xs:sequence>
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="components:attlist.ejbcomponent"/>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="import" type="xs:string"/>
+
+    <xs:attributeGroup name="attlist.ejbcomponent">
+        <xs:attribute name="jndi-name"/>
+    </xs:attributeGroup>
+    
+    <xs:attributeGroup name="attlist.component">
+        <xs:attribute name="name"/>
+        <xs:attribute name="class"/>
+        <xs:attribute name="scope">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="stateless"/>
+                    <xs:enumeration value="event"/>
+                    <xs:enumeration value="page"/>
+                    <xs:enumeration value="conversation"/>
+                    <xs:enumeration value="session"/>
+                    <xs:enumeration value="business_process"/>
+                    <xs:enumeration value="application"/>
+                    <xs:enumeration value="STATELESS"/>
+                    <xs:enumeration value="EVENT"/>
+                    <xs:enumeration value="PAGE"/>
+                    <xs:enumeration value="CONVERSATION"/>
+                    <xs:enumeration value="SESSION"/>
+                    <xs:enumeration value="BUSINESS_PROCESS"/>
+                    <xs:enumeration value="APPLICATION"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+
+        <xs:attribute name="precedence"/>
+        <xs:attribute name="installed" default="true"/>
+        <xs:attribute name="auto-create" default="false">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="true"/>
+                    <xs:enumeration value="false"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:attributeGroup>
+    <xs:element name="factory">
+        <xs:complexType>
+            <xs:attributeGroup ref="components:attlist.factory"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.factory">
+        <xs:attribute name="name" use="required"/>
+        <xs:attribute name="method"/>
+        <xs:attribute name="value"/>
+        <xs:attribute name="scope">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="stateless"/>
+                    <xs:enumeration value="event"/>
+                    <xs:enumeration value="page"/>
+                    <xs:enumeration value="conversation"/>
+                    <xs:enumeration value="session"/>
+                    <xs:enumeration value="business_process"/>
+                    <xs:enumeration value="application"/>
+                    <xs:enumeration value="STATELESS"/>
+                    <xs:enumeration value="EVENT"/>
+                    <xs:enumeration value="PAGE"/>
+                    <xs:enumeration value="CONVERSATION"/>
+                    <xs:enumeration value="SESSION"/>
+                    <xs:enumeration value="BUSINESS_PROCESS"/>
+                    <xs:enumeration value="APPLICATION"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="auto-create">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="true"/>
+                    <xs:enumeration value="false"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="startup">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="true"/>
+                    <xs:enumeration value="false"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:attributeGroup>
+    <xs:element name="property">
+        <xs:complexType mixed="true">
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="components:key"/>
+                <xs:element ref="components:value"/>
+            </xs:choice>
+            <xs:attributeGroup ref="components:attlist.property"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.property">
+        <xs:attribute name="name" use="required"/>
+    </xs:attributeGroup>
+    <xs:element name="key" type="xs:string"/>
+    <xs:element name="value" type="xs:string"/>
+
+    <xs:complexType name="multiValuedProperty">
+        <xs:sequence minOccurs="0" maxOccurs="unbounded">
+            <xs:element ref="components:value"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="mapProperty">
+        <xs:sequence minOccurs="0" maxOccurs="unbounded">
+            <xs:element ref="components:key"/>
+            <xs:element ref="components:value"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:element name="event">
+        <xs:complexType>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="components:action"/>
+            </xs:choice>
+            <xs:attributeGroup ref="components:attlist.event"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.event">
+        <xs:attribute name="type" use="required"/>
+    </xs:attributeGroup>
+
+    <xs:element name="action">
+        <xs:complexType>
+            <xs:attributeGroup ref="components:attlist.action"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.action">
+        <xs:attribute name="execute" use="required"/>
+    </xs:attributeGroup>
+
+</xs:schema>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+    targetNamespace="http://jboss.com/products/seam/security" xmlns:security="http://jboss.com/products/seam/security"
+    xmlns:components="http://jboss.com/products/seam/components" attributeFormDefault="unqualified">
+    <xs:import namespace="http://jboss.com/products/seam/components" schemaLocation="components-2.0.xsd"/>
+
+    <xs:element name="identity">
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="security:attlist.identity"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.identity">
+        <xs:attribute name="authenticate-method" />
+        <xs:attribute name="remember-me" type="xs:boolean"/>
+        <xs:attribute name="authenticate-every-request" type="xs:boolean"/>
+        <xs:attribute name="jaas-config-name" type="xs:string"/>
+        <xs:attribute name="security-rules" type="xs:string"/>
+        <xs:attribute name="cookie-max-age" />
+    </xs:attributeGroup>
+    
+</xs:schema>

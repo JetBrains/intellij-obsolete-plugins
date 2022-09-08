@@ -19,3 +19,4 @@ This repository includes the following plugins:
   * [IDETalk](https://plugins.jetbrains.com/plugin/233-idetalk)
   * [Tapestry](https://plugins.jetbrains.com/plugin/14589-tapestry)
   * [Vaadin](https://plugins.jetbrains.com/plugin/13199-vaadin-6-8)
+  * [JBoss Seam](https://plugins.jetbrains.com/plugin/14587-jboss-seam)

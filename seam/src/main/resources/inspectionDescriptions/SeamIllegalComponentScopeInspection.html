@@ -1,0 +1,79 @@
+<html>
+<head>
+    <style type="text/css">
+<!--
+    th {font-family:monospace;vertical-align:top;}
+    td {font-family:monospace;text-align:center;}
+-->
+    </style>
+</head>
+<body>
+<p>Reports <code>@Scope</code>, <code>@Role</code>, and <code>@DataModel</code> annotations that specify an unsupported scope for the specific component.</p>
+
+<p>The following table lists the supported scopes for each component type (default scope in bold):</p>
+<table border="1">
+    <tr>
+        <th></th>
+        <th>Stateless<br>Session Bean</th>
+        <th>Stateful<br>Session Bean</th>
+        <th>Entity Bean</th>
+        <th>Java Bean</th>
+    </tr>
+    <tr>
+        <th>STATELESS</th>
+        <td><b>X</b></td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>x</td>
+    </tr>
+    <tr>
+        <th>EVENT</th>
+        <td>&nbsp;</td>
+        <td>x</td>
+        <td>x</td>
+        <td>x</td>
+    </tr>
+    <tr>
+        <th>PAGE</th>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>x</td>
+        <td>x</td>
+    </tr>
+    <tr>
+        <th>CONVERSATION</th>
+        <td>&nbsp;</td>
+        <td><b>X</b></td>
+        <td><b>X</b></td>
+        <td><b>X</b></td>
+    </tr>
+    <tr>
+        <th>SESSION</th>
+        <td>&nbsp;</td>
+        <td>x</td>
+        <td>x</td>
+        <td>x</td>
+    </tr>
+    <tr>
+        <th>BUSINESS_PROCESS</th>
+        <td>&nbsp;</td>
+        <td>x</td>
+        <td>x</td>
+        <td>x</td>
+    </tr>
+    <tr>
+        <th>APPLICATION</th>
+        <td>&nbsp;</td>
+        <td>x</td>
+        <td>x</td>
+        <td>x</td>
+    </tr>
+
+</table>
+
+<p>The <code>@DataModel</code> context variables have a different restriction on their scope:
+if no scope is specified the scope is the same as for the enclosing component (EVENT if the component is in STATELESS scope).
+Alternatively, specify the PAGE scope for the <code>@DataModel</code> context variables.</p>
+
+</body>
+</html>

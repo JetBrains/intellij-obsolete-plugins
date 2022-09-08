@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+    targetNamespace="http://jboss.com/products/seam/wicket"
+    xmlns:wicket="http://jboss.com/products/seam/wicket"
+    xmlns:components="http://jboss.com/products/seam/components" attributeFormDefault="unqualified">
+    
+    <xs:import namespace="http://jboss.com/products/seam/components" schemaLocation="components-2.1.xsd"/>
+    
+    <xs:element name="web-application">
+        <xs:annotation>
+            <xs:documentation></xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attributeGroup ref="components:attlist.component" />
+            <xs:attributeGroup ref="wicket:attlist.webApplication" />
+        </xs:complexType>
+    </xs:element>
+   
+    <xs:attributeGroup name="attlist.webApplication">
+        <xs:attribute name="application-class" type="components:string" />
+    </xs:attributeGroup>
+
+</xs:schema>
