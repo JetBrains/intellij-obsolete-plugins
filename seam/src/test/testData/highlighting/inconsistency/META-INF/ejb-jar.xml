@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ejb-jar xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd"
+         version="3.0">
+    <enterprise-beans>
+        <entity>
+            <ejb-name>SeamEJB</ejb-name>
+            <home>SeamEntityHome</home>
+            <remote>SeamEntity</remote>
+            <ejb-class>SeamEntityBean</ejb-class>
+            <persistence-type>Bean</persistence-type>
+            <prim-key-class>java.lang.String</prim-key-class>
+            <reentrant>true</reentrant>
+        </entity>
+    </enterprise-beans>
+</ejb-jar>
