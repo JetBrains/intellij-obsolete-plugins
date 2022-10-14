@@ -46,8 +46,13 @@ public class TapestryParameter implements Comparable {
           name = params.get(PARAMETER_NAME)[0];
         }
       }
-
-      return name.startsWith("$") || name.startsWith("_") ? name.substring(1) : name;
+      if (name.startsWith("$") || name.startsWith("_")) {
+          return name.substring(1);
+      }
+      if (name.endsWith("$") || name.endsWith("_")) {
+          return name.substring(0, name.length() - 1);
+      }
+      return name;
     }
 
   /**
