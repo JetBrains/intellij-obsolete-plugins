@@ -64,7 +64,7 @@ public class PageflowDesignerComponent extends JPanel implements DataProvider, D
 
     setLayout(new BorderLayout());
 
-    final SimpleDnDPanel simpleDnDPanel = GraphDnDUtils.createDnDActions(project, myBuilder, new PageflowDnDSupport(myDataModel));
+    final SimpleDnDPanel<?> simpleDnDPanel = GraphDnDUtils.createDnDActions(project, myBuilder, new PageflowDnDSupport(myDataModel));
     final JComponent graphComponent = myBuilder.getView().getJComponent();
 
     splitter.setSecondComponent(simpleDnDPanel.getTree());
@@ -85,7 +85,7 @@ public class PageflowDesignerComponent extends JPanel implements DataProvider, D
       @Override
       public void eventOccured(@NotNull final DomEvent event) {
         if (isShowing()) {
-          simpleDnDPanel.getBuilder().updateFromRoot();
+          simpleDnDPanel.updateTree();
           myBuilder.queueUpdate();
         }
       }
