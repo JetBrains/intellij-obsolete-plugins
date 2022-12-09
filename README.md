@@ -20,3 +20,4 @@ This repository includes the following plugins:
   * [Tapestry](https://plugins.jetbrains.com/plugin/14589-tapestry)
   * [Vaadin](https://plugins.jetbrains.com/plugin/13199-vaadin-6-8)
   * [JBoss Seam](https://plugins.jetbrains.com/plugin/14587-jboss-seam)
+  * [dmServer](https://plugins.jetbrains.com/plugin/4542-virgo-dmserver)

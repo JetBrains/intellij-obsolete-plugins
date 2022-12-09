@@ -1,0 +1,102 @@
+<idea-plugin>
+  <name>Virgo/dmServer</name>
+  <id>com.intellij.dmserver</id>
+  <category>Other Tools</category>
+  <description>
+    <![CDATA[
+      Supports the development of the OSGI (Osmorc) bundles targeting Eclipse Virgo (formerly known as Spring dmServer) Runtime.
+      Following features are available:
+      <ul>
+        <li>option on "Technologies" page of the module wizard to quickly configure OSGI & dmServer module</li>
+        <li>Spring DM OSGI/Bean context XML templates (from "Technologies" page or Facet settings)</li>
+        <li>run configuration for local/remote dmServer</li>
+        <li>Platform Archive (PAR) modules (from Facet settings)</li>
+        <li>dmServer specific OSGI framework instance (from OSGI Project / IDE settings)</li>
+        <li>1.0 / 2.0 specific server configuration, (from Settings / Application servers)</li>
+        <li>automatic management of pre-installed server library bundles</li>
+        <li>download libraries from SpringSource Bundle Repository</li>
+        <li>dmShell for local server's -- tool window accessible when server is started</li>
+      </ul>
+      <p/>
+    ]]>
+  </description>
+  <vendor>JetBrains</vendor>
+
+  <depends>com.intellij.modules.java</depends>
+  <depends>com.intellij.modules.ultimate</depends>
+  <depends>com.intellij.javaee</depends>
+  <depends>com.intellij.javaee.web</depends>
+  <depends>com.intellij.javaee.app.servers.integration</depends>
+  <depends>com.intellij.spring</depends>
+  <depends>Osmorc</depends>
+
+  <project-components>
+    <component>
+      <implementation-class>com.intellij.dmserver.artifacts.ArtifactSynchronizer</implementation-class>
+    </component>
+    <component>
+      <implementation-class>com.intellij.dmserver.editor.AvailableBundlesProvider</implementation-class>
+    </component>
+  </project-components>
+
+  <extensions defaultExtensionNs="com.intellij">
+
+    <manifest.parser.provider implementation="com.intellij.dmserver.osmorc.DmManifestHeaderParsers"/>
+
+    <configurationType implementation="com.intellij.dmserver.run.DMServerRunConfigurationType"/>
+    <facetType implementation="com.intellij.dmserver.facet.DMBundleFacetType"/>
+    <facetType implementation="com.intellij.dmserver.facet.DMCompositeFacetType"/>
+    <facetType implementation="com.intellij.dmserver.facet.DMConfigFacetType"/>
+
+    <frameworkSupport implementation="com.intellij.dmserver.facet.DMServerSupportProvider"/>
+    <frameworkSupportCommunicator implementation="com.intellij.dmserver.facet.DMFrameworkSupportCommunicator"/>
+    <applicationService serviceInterface="com.intellij.dmserver.install.DMServerInstallationManager"
+                        serviceImplementation="com.intellij.dmserver.install.impl.DMServerInstallationManagerImpl"/>
+    <applicationService serviceImplementation="com.intellij.dmserver.osmorc.DMServerFrameworkInstanceManager"/>
+
+    <javaee.app.servers.integration.appServerIntegration implementation="com.intellij.dmserver.integration.DMServerIntegration"/>
+
+    <packaging.elementType implementation="com.intellij.dmserver.artifacts.DMContainerPackagingElementType"/>
+    <packaging.elementType implementation="com.intellij.dmserver.artifacts.DMCompositePackagingElementType"/>
+    <packaging.elementType implementation="com.intellij.dmserver.artifacts.DMConfigPackagingElementType"/>
+    <packaging.artifactType implementation="com.intellij.dmserver.artifacts.DMBundleArtifactType"/>
+    <packaging.artifactType implementation="com.intellij.dmserver.artifacts.DMParArtifactType"/>
+    <packaging.artifactType implementation="com.intellij.dmserver.artifacts.DMPlanArtifactType"/>
+    <packaging.artifactType implementation="com.intellij.dmserver.artifacts.DMConfigArtifactType"/>
+
+    <fileTemplateGroup implementation="com.intellij.dmserver.facet.DMTemplateGroupDescriptorFactory"/>
+
+    <codeInsight.unresolvedReferenceQuickFixProvider
+        implementation="com.intellij.dmserver.intention.DmServerUnresolvedReferenceQuickFixProvider"/>
+
+    <!-- consider to use org.osmorc.inspection.WrongImportPackageInspection -->
+    <!--<localInspection shortName="dmserverUnknownImportedPackage" bundle="com.intellij.dmserver.util.DmServer"
+                     key="UnknownImportedPackageInspection.display-name" groupKey="UnknownImportedPackageInspection.group-name.osgi"
+                     enabledByDefault="true" level="ERROR"
+                     implementationClass="com.intellij.dmserver.intention.UnknownImportedPackageInspection"/>-->
+
+    <fileType name="Manifest" extensions="libd"/>
+    <fileType name="XML" extensions="plan"/>
+    <dom.fileMetaData implementation="com.intellij.dmserver.artifacts.plan.PlanDomFileDescription" rootTagName="plan"/>
+
+    <fileEditorProvider implementation="com.intellij.dmserver.editor.ManifestFileEditorProvider"/>
+
+    <completion.contributor language="Manifest"
+                            implementationClass="com.intellij.dmserver.completion.ManifestImportsCompletionContributor"/>
+
+    <compileServer.plugin classpath="javaee-appServers-dmServer-jps.jar"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="Osmorc">
+    <frameworkIntegrator implementation="com.intellij.dmserver.osmorc.DMServerFrameworkIntegrator"/>
+  </extensions>
+
+  <actions>
+    <action id="dmServer.manage.server.libraries"
+            class="com.intellij.dmserver.libraries.ManageServerLibrariesAction">
+      <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+    </action>
+  </actions>
+  <resource-bundle>messages.DmServerBundle</resource-bundle>
+
+</idea-plugin>

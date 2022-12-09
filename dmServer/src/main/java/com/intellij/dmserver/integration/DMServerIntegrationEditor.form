@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.intellij.dmserver.integration.DMServerIntegrationEditor">
+  <grid id="27dc6" binding="myMainPanel" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="0" left="0" bottom="0" right="0"/>
+    <constraints>
+      <xy x="20" y="20" width="792" height="546"/>
+    </constraints>
+    <properties>
+      <visible value="true"/>
+    </properties>
+    <border type="empty"/>
+    <children>
+      <grid id="9a0bf" layout-manager="GridLayoutManager" row-count="3" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="0" left="0" bottom="0" right="0"/>
+        <constraints>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <clientProperties>
+          <BorderFactoryClass class="java.lang.String" value="com.intellij.ui.IdeBorderFactory$PlainSmallWithoutIndent"/>
+        </clientProperties>
+        <border type="etched" title-resource-bundle="messages/DmServerBundle" title-key="Form.DMServerIntegrationEditor.server.configuration"/>
+        <children>
+          <tabbedpane id="6e5b3" class="com.intellij.ui.components.JBTabbedPane" default-binding="true">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                <preferred-size width="200" height="200"/>
+              </grid>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <grid id="82a74" layout-manager="GridLayoutManager" row-count="6" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                <margin top="0" left="0" bottom="0" right="0"/>
+                <constraints>
+                  <tabbedpane title-resource-bundle="messages/DmServerBundle" title-key="Form.DMServerIntegrationEditor.common"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="f285e" class="javax.swing.JLabel">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text resource-bundle="messages/DmServerBundle" key="Form.DMServerIntegrationEditor.deployer.timeout"/>
+                    </properties>
+                  </component>
+                  <component id="f4e7f" class="javax.swing.JSpinner" binding="myDeployerTimeoutField">
+                    <constraints>
+                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <alignmentX value="0.5"/>
+                      <doubleBuffered value="false"/>
+                    </properties>
+                  </component>
+                  <hspacer id="cf865">
+                    <constraints>
+                      <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="1" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                  </hspacer>
+                  <component id="cdec2" class="javax.swing.JLabel">
+                    <constraints>
+                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text resource-bundle="messages/DmServerBundle" key="Form.DMServerIntegrationEditor.pickup.directory"/>
+                    </properties>
+                  </component>
+                  <component id="e4529" class="com.intellij.openapi.ui.TextFieldWithBrowseButton" binding="myPickupDirectoryField">
+                    <constraints>
+                      <grid row="1" column="1" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties/>
+                  </component>
+                  <component id="19a97" class="javax.swing.JLabel">
+                    <constraints>
+                      <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text resource-bundle="messages/DmServerBundle" key="Form.DMServerIntegrationEditor.dmshell.port"/>
+                    </properties>
+                  </component>
+                  <component id="65855" class="javax.swing.JSpinner" binding="myShellPortField">
+                    <constraints>
+                      <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <alignmentX value="0.5"/>
+                      <enabled value="true"/>
+                    </properties>
+                  </component>
+                  <component id="d6839" class="javax.swing.JCheckBox" binding="myShellEnabledCheckBox">
+                    <constraints>
+                      <grid row="2" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <alignmentX value="0.5"/>
+                      <text resource-bundle="messages/DmServerBundle" key="Form.DMServerIntegrationEditor.dmshell.enabled"/>
+                    </properties>
+                  </component>
+                  <component id="a1ad7" class="javax.swing.JLabel">
+                    <constraints>
+                      <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text resource-bundle="messages/DmServerBundle" key="Form.DMServerIntegrationEditor.server.dumps.folder"/>
+                    </properties>
+                  </component>
+                  <component id="a39e3" class="com.intellij.openapi.ui.TextFieldWithBrowseButton" binding="myServerLogsRootFolder">
+                    <constraints>
+                      <grid row="3" column="1" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties/>
+                  </component>
+                  <component id="a9570" class="javax.swing.JCheckBox" binding="myLogSystemOutCheckBox" default-binding="true">
+                    <constraints>
+                      <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false">
+                        <preferred-size width="284" height="22"/>
+                      </grid>
+                    </constraints>
+                    <properties>
+                      <alignmentX value="0.5"/>
+                      <text resource-bundle="messages/DmServerBundle" key="Form.DMServerIntegrationEditor.log.system.out"/>
+                    </properties>
+                  </component>
+                  <component id="8d5e8" class="javax.swing.JCheckBox" binding="myLogSystemErrCheckBox" default-binding="true">
+                    <constraints>
+                      <grid row="4" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <alignmentX value="0.5"/>
+                      <text resource-bundle="messages/DmServerBundle" key="Form.DMServerIntegrationEditor.log.system.err"/>
+                    </properties>
+                  </component>
+                  <vspacer id="52e3a">
+                    <constraints>
+                      <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                  </vspacer>
+                </children>
+              </grid>
+              <grid id="fe54a" binding="myRepositoryPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+                <constraints>
+                  <tabbedpane title-resource-bundle="messages/DmServerBundle" title-key="Form.DMServerIntegrationEditor.repository"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children/>
+              </grid>
+            </children>
+          </tabbedpane>
+          <component id="1c744" class="javax.swing.JLabel" binding="myReadErrorLabel">
+            <constraints>
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text resource-bundle="messages/DmServerBundle" key="Form.DMServerIntegrationEditor.warning.cant.read.config"/>
+            </properties>
+          </component>
+          <grid id="b575a" layout-manager="GridLayoutManager" row-count="1" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="4" left="0" bottom="0" right="0"/>
+            <constraints>
+              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <alignmentX value="0.0"/>
+            </properties>
+            <border type="none"/>
+            <children>
+              <component id="2c35" class="javax.swing.JButton" binding="myImportButton">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="1" anchor="1" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text resource-bundle="messages/DmServerBundle" key="Form.DMServerIntegrationEditor.reload"/>
+                </properties>
+              </component>
+              <component id="6b398" class="javax.swing.JButton" binding="myExportButton">
+                <constraints>
+                  <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="1" anchor="1" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text resource-bundle="messages/DmServerBundle" key="Form.DMServerIntegrationEditor.update.server"/>
+                </properties>
+              </component>
+              <hspacer id="d142f">
+                <constraints>
+                  <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+              </hspacer>
+            </children>
+          </grid>
+        </children>
+      </grid>
+      <grid id="c47d4" layout-manager="GridLayoutManager" row-count="3" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="0" left="0" bottom="0" right="0"/>
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="none">
+          <size top="2" left="2" bottom="2" right="2"/>
+        </border>
+        <children>
+          <component id="8866c" class="javax.swing.JLabel">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text resource-bundle="messages/DmServerBundle" key="Form.DMServerIntegrationEditor.dmserver.home"/>
+            </properties>
+          </component>
+          <component id="9af21" class="com.intellij.openapi.ui.TextFieldWithBrowseButton" binding="myInstallationHomeField">
+            <constraints>
+              <grid row="0" column="1" row-span="1" col-span="2" vsize-policy="3" hsize-policy="7" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties/>
+          </component>
+          <component id="931b6" class="javax.swing.JLabel">
+            <constraints>
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text resource-bundle="messages/DmServerBundle" key="Form.DMServerIntegrationEditor.osgi.framework"/>
+            </properties>
+          </component>
+          <component id="eca6a" class="javax.swing.JTextField" binding="myFrameworkNameField">
+            <constraints>
+              <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                <preferred-size width="290" height="20"/>
+              </grid>
+            </constraints>
+            <properties>
+              <editable value="false"/>
+            </properties>
+          </component>
+          <component id="f043b" class="javax.swing.JButton" binding="myEditFrameworkButton">
+            <constraints>
+              <grid row="2" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="1" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text resource-bundle="messages/DmServerBundle" key="Form.DMServerIntegrationEditor.edit"/>
+            </properties>
+          </component>
+          <grid id="de43c" binding="myStatusPanel" layout-manager="CardLayout" hgap="0" vgap="0">
+            <constraints>
+              <grid row="1" column="1" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="1" use-parent-layout="false"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <component id="cf39c" class="com.intellij.ui.components.JBLabel" binding="myStatusValidLabel">
+                <constraints>
+                  <card name="valid"/>
+                </constraints>
+                <properties>
+                  <componentStyle value="SMALL"/>
+                  <fontColor value="BRIGHTER"/>
+                  <text resource-bundle="messages/DmServerBundle" key="Form.DMServerIntegrationEditor.status.path.is.valid"/>
+                </properties>
+              </component>
+              <component id="9056e" class="com.intellij.ui.components.JBLabel" binding="myStatusErrorLabel">
+                <constraints>
+                  <card name="error"/>
+                </constraints>
+                <properties>
+                  <componentStyle value="SMALL"/>
+                  <fontColor value="BRIGHTER"/>
+                  <text resource-bundle="messages/DmServerBundle" key="Form.DMServerIntegrationEditor.status.path.is.invalid"/>
+                </properties>
+              </component>
+            </children>
+          </grid>
+        </children>
+      </grid>
+    </children>
+  </grid>
+</form>
