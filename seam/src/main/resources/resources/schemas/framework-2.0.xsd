@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+    targetNamespace="http://jboss.com/products/seam/framework"
+    xmlns:framework="http://jboss.com/products/seam/framework"
+    xmlns:components="http://jboss.com/products/seam/components" attributeFormDefault="unqualified">
+    <xs:import namespace="http://jboss.com/products/seam/components" schemaLocation="components-2.0.xsd"/>
+
+
+    <xs:attributeGroup name="attlist.Home">
+        <xs:attribute name="entity-class" type="xs:string"/>
+        <xs:attribute name="new-instance" type="xs:string"/>
+        <xs:attribute name="created-message" type="xs:string"/>
+        <xs:attribute name="updated-message" type="xs:string"/>
+        <xs:attribute name="deleted-message" type="xs:string"/>
+    </xs:attributeGroup>
+
+    <xs:attributeGroup name="attlist.Query">
+        <xs:attribute name="ejbql" type="xs:string"/>
+        <xs:attribute name="max-results" type="xs:integer"/>
+        <xs:attribute name="order" type="xs:string"/>
+    </xs:attributeGroup>
+    <xs:element name="restrictions" type="components:multiValuedProperty"/>
+    <xs:element name="hints" type="components:mapProperty"/>
+
+    <xs:element name="ejbql" type="xs:string"/>
+    <xs:element name="order" type="xs:string"/>
+
+    <xs:element name="entity-query">
+        <xs:complexType mixed="true">
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element minOccurs="0" maxOccurs="1" ref="framework:ejbql"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="framework:order"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="framework:restrictions"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="framework:hints"/>
+            </xs:choice>
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="framework:attlist.Query"/>
+            <xs:attributeGroup ref="framework:attlist.entityQuery"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.entityQuery">
+        <xs:attribute name="entity-manager" type="xs:string"/>
+    </xs:attributeGroup>
+
+    <xs:element name="hibernate-entity-query">
+        <xs:complexType mixed="true">
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element minOccurs="0" maxOccurs="1" ref="framework:ejbql"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="framework:order"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="framework:restrictions"/>
+            </xs:choice>
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="framework:attlist.Query"/>
+            <xs:attributeGroup ref="framework:attlist.HibernateEntityQuery"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.HibernateEntityQuery">
+        <xs:attribute name="cacheable">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="true"/>
+                    <xs:enumeration value="false"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="cache-region" type="xs:string"/>
+        <xs:attribute name="fetch-size" type="xs:integer"/>
+        <xs:attribute name="session" type="xs:string"/>
+    </xs:attributeGroup>
+    
+    <xs:element name="created-message" type="xs:string"/>
+    <xs:element name="updated-message" type="xs:string"/>
+    <xs:element name="deleted-message" type="xs:string"/>
+    <xs:element name="new-instance" type="xs:string"/>
+
+    <xs:element name="entity-home">
+        <xs:complexType mixed="true">
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="id" type="xs:string"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="framework:created-message"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="framework:updated-message"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="framework:deleted-message"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="framework:new-instance"/>
+            </xs:choice>
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="framework:attlist.Home"/>
+            <xs:attributeGroup ref="framework:attlist.EntityHome"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.EntityHome">
+        <xs:attribute name="entity-manager" type="xs:string"/>
+    </xs:attributeGroup>
+
+    <xs:element name="hibernate-entity-home">
+        <xs:complexType mixed="true">
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="id" type="xs:string"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="framework:created-message"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="framework:updated-message"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="framework:deleted-message"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="framework:new-instance"/>
+            </xs:choice>
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="framework:attlist.Home"/>
+            <xs:attributeGroup ref="framework:attlist.HibernateEntityHome"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.HibernateEntityHome">
+        <xs:attribute name="session" type="xs:string"/>
+    </xs:attributeGroup>
+
+</xs:schema>

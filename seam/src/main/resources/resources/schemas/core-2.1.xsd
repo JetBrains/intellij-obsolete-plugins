@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+    targetNamespace="http://jboss.com/products/seam/core" xmlns:core="http://jboss.com/products/seam/core"
+    xmlns:components="http://jboss.com/products/seam/components" attributeFormDefault="unqualified">
+    
+    <xs:import namespace="http://jboss.com/products/seam/components" schemaLocation="components-2.1.xsd"/>
+
+    <xs:annotation>
+        <xs:documentation>The core Seam components</xs:documentation>
+    </xs:annotation>
+    
+    <xs:element name="init">
+        <xs:annotation>
+            <xs:documentation>A Seam component that holds Seam configuration settings</xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="interceptors" type="components:multiValuedProperty">
+                    <xs:annotation>
+                        <xs:documentation>A list of interceptors that should be enabled for all components. You must specify all built-in interceptors as well as any additional interceptors. Execution order is determined by the around and within attributes on the @Interceptor annotation.
+                        
+These interceptors are enabled by default:
+   org.jboss.seam.core.SynchronizationInterceptor
+   org.jboss.seam.async.AsynchronousInterceptor
+   org.jboss.seam.ejb.RemoveInterceptor
+   org.jboss.seam.persistence.HibernateSessionProxyInterceptor
+   org.jboss.seam.persistence.EntityManagerProxyInterceptor
+   org.jboss.seam.core.MethodContextInterceptor
+   org.jboss.seam.core.EventInterceptor
+   org.jboss.seam.core.ConversationalInterceptor
+   org.jboss.seam.bpm.BusinessProcessInterceptor
+   org.jboss.seam.core.ConversationInterceptor
+   org.jboss.seam.core.BijectionInterceptor
+   org.jboss.seam.transaction.RollbackInterceptor
+   org.jboss.seam.transaction.TransactionInterceptor
+   org.jboss.seam.webservice.WSSecurityInterceptor
+   org.jboss.seam.security.SecurityInterceptor
+   
+The distributable flag appends the ManagedEntityInterceptor to this list (applies only to conversation-scoped components).</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:choice>
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="core:attlist.init"/>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:attributeGroup name="attlist.init">
+        <xs:attribute name="debug" type="components:boolean" />
+        <xs:attribute name="distributable" type="components:boolean" />
+        <xs:attribute name="jndi-pattern" type="components:string" />
+        <xs:attribute name="security-enabled" type="components:boolean" />
+        <xs:attribute name="transaction-management-enabled" type="components:boolean"/>
+        <xs:attribute name="user-transaction-name" type="components:string"/>
+    </xs:attributeGroup>
+
+    <xs:element name="manager">
+        <xs:annotation>
+            <xs:documentation>The Seam conversation manager</xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="core:attlist.manager"/>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:attributeGroup name="attlist.manager">
+        <xs:attribute name="concurrent-request-timeout" type="components:int"/>
+        <xs:attribute name="conversation-timeout" type="components:int"/>
+        <xs:attribute name="conversation-id-parameter" type="components:string"/>
+        <xs:attribute name="parent-conversation-id-parameter" type="components:string"/>
+        <xs:attribute name="uri-encoding" type="components:string" />
+        <xs:attribute name="default-flush-mode">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="MANUAL"/>
+                    <xs:enumeration value="AUTO"/>
+                    <xs:enumeration value="COMMIT"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:attributeGroup>
+    
+    <xs:element name="resource-loader">
+        <xs:annotation>
+            <xs:documentation>Access to application resources and resource bundles</xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="bundle-names" type="components:multiValuedProperty">
+                    <xs:annotation>
+                        <xs:documentation>A list of resource bundle names</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:choice>
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="core:attlist.resourceLoader"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.resourceLoader">
+        <xs:attribute name="bundle-names" type="components:string" /> 
+    </xs:attributeGroup>
+
+    <xs:element name="pojo-cache">
+        <xs:annotation>
+            <xs:documentation>Integration with JBoss Cache</xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="core:attlist.pojoCache"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.pojoCache">
+        <xs:attribute name="cfg-resource-name" type="components:string" />
+    </xs:attributeGroup>
+</xs:schema>

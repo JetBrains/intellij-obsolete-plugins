@@ -19,7 +19,6 @@ import com.intellij.tapestry.intellij.facet.ui.NewFacetDialog;
 import com.intellij.tapestry.intellij.util.Validators;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,7 +53,7 @@ public class TapestryFrameworkSupportProvider extends FacetBasedFrameworkSupport
 
   @Override
   public boolean isEnabledForModuleBuilder(@NotNull ModuleBuilder builder) {
-    return JavaeeProjectCategory.LEGACY_MODULE_BUILDER_ID.equals(builder.getBuilderId());
+    return false;
   }
 
   @Override
@@ -65,7 +64,7 @@ public class TapestryFrameworkSupportProvider extends FacetBasedFrameworkSupport
   @Override
   protected void onFacetCreated(final TapestryFacet facet, final ModifiableRootModel rootModel, final FrameworkVersion version) {
     final Project project = facet.getModule().getProject();
-    StartupManager.getInstance(project).runWhenProjectIsInitialized(() -> {
+    StartupManager.getInstance(project).runAfterOpened(() -> {
       Runnable action = () -> {
         if (project.isDisposed()) return;
         final TapestryFacetConfiguration configuration = facet.getConfiguration();
@@ -91,8 +90,8 @@ public class TapestryFrameworkSupportProvider extends FacetBasedFrameworkSupport
         builder.showModal(true);
 
         AddTapestrySupportUtil.addSupportInWriteCommandAction(rootModel.getModule(), configuration,
-                                                              newFacetDialog.shouldGenerateStartupApplication(),
-                                                              newFacetDialog.shouldGeneratePom());
+                newFacetDialog.shouldGenerateStartupApplication(),
+                newFacetDialog.shouldGeneratePom());
       };
 
       if (ApplicationManager.getApplication().isWriteAccessAllowed()) {
@@ -105,6 +104,6 @@ public class TapestryFrameworkSupportProvider extends FacetBasedFrameworkSupport
 
   @Override
   public FrameworkRole[] getRoles() {
-    return new FrameworkRole[] {JavaeeProjectCategory.ROLE };
+    return new FrameworkRole[] { JavaeeProjectCategory.ROLE };
   }
 }

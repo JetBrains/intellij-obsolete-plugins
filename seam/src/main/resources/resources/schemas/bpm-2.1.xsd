@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+    targetNamespace="http://jboss.com/products/seam/bpm" xmlns:bpm="http://jboss.com/products/seam/bpm"
+    xmlns:components="http://jboss.com/products/seam/components" attributeFormDefault="unqualified">
+    <xs:import namespace="http://jboss.com/products/seam/components" schemaLocation="components-2.1.xsd"/>
+
+    <xs:element name="actor">
+        <xs:annotation>
+            <xs:documentation>The jbpm actor id</xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element minOccurs="0" maxOccurs="1" ref="bpm:id"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="bpm:group-actor-ids"/>
+            </xs:choice>
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="bpm:attlist.actor"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="id" type="xs:string"/>
+    <xs:element name="group-actor-ids" type="components:multiValuedProperty"/>
+    <xs:attributeGroup name="attlist.actor">
+        <xs:attribute name="group-actor-ids" type="components:string" />
+    </xs:attributeGroup>
+
+    <xs:element name="jbpm">
+        <xs:annotation>
+            <xs:documentation>Configuration for jbpm</xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="process-definitions" type="components:multiValuedProperty">
+                    <xs:annotation>
+                        <xs:documentation>A list of jbpm process files</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="pageflow-definitions" type="components:multiValuedProperty"/>                
+            </xs:choice>
+            <xs:attributeGroup ref="components:attlist.component" />
+            <xs:attributeGroup ref="bpm:attlist.jbpm" />
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:attributeGroup name="attlist.jbpm" /> 
+
+</xs:schema>

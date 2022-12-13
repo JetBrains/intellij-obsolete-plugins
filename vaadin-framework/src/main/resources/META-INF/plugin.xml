@@ -1,0 +1,47 @@
+<idea-plugin>
+  <name>Vaadin Framework 6-8</name>
+  <id>com.intellij.vaadin</id>
+  <vendor>JetBrains</vendor>
+  <category>Web/JavaEE Technologies</category>
+
+  <description>
+      <![CDATA[
+      (Obsolete) Supports developing <a href="https://vaadin.com/home">Vaadin</a> applications based on Vaadin versions 6-8.
+      The following features are available:
+       <ul>
+       <li>Dedicated pages for creating a Vaadin project.</li>
+       <li>Ability to create Vaadin components.</li>
+       <li>Automatic setup of Google Web Toolkit (GWT) compiler for Vaadin custom widget sets.</li>
+       <li>Support for debugging custom widget sets using GWT run configurations.</li>
+       </ul>
+      ]]>
+  </description>
+
+  <depends>com.intellij.javaee</depends>
+  <depends>com.intellij.gwt</depends>
+  <depends optional="true" config-file="vaadin-maven-support.xml">org.jetbrains.idea.maven</depends>
+
+  <resource-bundle>messages.VaadinBundle</resource-bundle>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <library.type implementation="com.intellij.vaadin.framework.VaadinLibraryType"/>
+    <framework.type implementation="com.intellij.vaadin.framework.VaadinFrameworkType"/>
+    <fileTemplateGroup implementation="com.intellij.vaadin.templates.VaadinTemplateGroupDescriptorFactory"/>
+    <packaging.sourceItemProvider implementation="com.intellij.vaadin.artifact.VaadinWidgetSetOutputSourceItemProvider"/>
+    <implicitUsageProvider implementation="com.intellij.vaadin.codeInsight.VaadinImplicitUsageProvider"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="com.intellij.gwt">
+    <compileOutputRelativePathSuggester implementation="com.intellij.vaadin.artifact.VaadinWidgetSetOutputRelativePathSuggester"/>
+    <sdkType implementation="com.intellij.vaadin.framework.sdk.GwtVaadinSdkType"/>
+    <devModeServerProvider implementation="com.intellij.vaadin.debug.VaadinDevModeServerProvider"/>
+  </extensions>
+
+  <actions>
+    <group id="VaadinNewGroup">
+      <action id="vaadin.CreateCustomComponent" class="com.intellij.vaadin.actions.CreateCustomComponentAction"/>
+      <action id="vaadin.CreateWidget" class="com.intellij.vaadin.actions.CreateWidgetAction"/>
+      <add-to-group group-id="NewGroup" anchor="last"/>
+    </group>
+  </actions>
+</idea-plugin>

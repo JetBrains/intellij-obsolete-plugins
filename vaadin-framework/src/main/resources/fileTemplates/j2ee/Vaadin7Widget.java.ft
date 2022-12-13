@@ -1,0 +1,23 @@
+package ${PACKAGE_NAME};
+
+import ${CLIENT_PACKAGE_NAME}.${WIDGET_NAME}ClientRpc;
+import ${CLIENT_PACKAGE_NAME}.${WIDGET_NAME}ServerRpc;
+import ${CLIENT_PACKAGE_NAME}.${WIDGET_NAME}State;
+import com.vaadin.shared.AbstractComponentState;
+import com.vaadin.ui.AbstractComponent;
+
+#parse("File Header.java")
+public class ${NAME} extends AbstractComponent {
+    public ${NAME}() {
+      registerRpc(new ${WIDGET_NAME}ServerRpc() {
+        private ${WIDGET_NAME}ClientRpc getClientRpc() {
+          return getRpcProxy(${WIDGET_NAME}ClientRpc.class);
+        }
+      });
+    }
+
+    @Override
+    protected ${WIDGET_NAME}State getState() {
+      return (${WIDGET_NAME}State) super.getState();
+    }
+}

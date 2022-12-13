@@ -1,0 +1,14 @@
+package ${PACKAGE_NAME};
+
+import com.vaadin.Application;
+import com.vaadin.ui.*;
+
+#parse("File Header.java")
+public class ${NAME} extends Application {
+    @Override
+    public void init() {
+        Window window = new Window("${NAME}");
+        window.addComponent(new Label("Hello, world!"));
+        setMainWindow(window);
+    }
+}

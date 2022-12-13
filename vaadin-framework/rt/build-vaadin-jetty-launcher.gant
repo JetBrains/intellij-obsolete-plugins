@@ -1,0 +1,19 @@
+target(build: "Build vaadin-jetty-launcher.jar") {
+  String vaadinDistPath = System.getProperty("vaadin.dist")
+  String jarPath = "lib/vaadin-jetty-launcher.jar"
+  ant.delete(file: jarPath)
+  String classesPath = "__temp__"
+  ant.mkdir(dir: classesPath)
+  ant.javac(source: "1.6", target: "1.6", destdir: classesPath, fork: true) {
+    src(path: "src")
+    classpath {
+      fileset(dir: vaadinDistPath) {
+        include(name: "vaadin-client-compiler-*.jar")
+      }
+    }
+  }
+  ant.jar(destfile: jarPath) {
+    fileset(dir: classesPath)
+  }
+  ant.delete(dir: classesPath)
+}

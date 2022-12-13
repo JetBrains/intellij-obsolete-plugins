@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifacts>
+  <artifact version="2.1">
+    <item name="jboss-seam.jar"  url="http://download.jetbrains.com/idea/j2ee_libs/seam/2.1.1.GA/jboss-seam.jar">
+      <required-class fqn="org.jboss.seam.annotations.Name"/>
+    </item>
+   <item name="jboss-seam-debug.jar"  url="http://download.jetbrains.com/idea/j2ee_libs/seam/2.1.1.GA/jboss-seam-debug.jar">
+      <required-class fqn="org.jboss.seam.debug.Contexts"/>
+    </item>
+   <item name="jboss-seam-ioc.jar"  url="http://download.jetbrains.com/idea/j2ee_libs/seam/2.1.1.GA/jboss-seam-ioc.jar">
+      <required-class fqn="org.jboss.seam.ioc.IoCComponent"/>
+    </item>
+   <item name="jboss-seam-mail.jar"  url="http://download.jetbrains.com/idea/j2ee_libs/seam/2.1.1.GA/jboss-seam-mail.jar">
+      <required-class fqn="org.jboss.seam.mail.ui.MailComponent"/>
+    </item>
+   <item name="jboss-seam-remoting.jar"  url="http://download.jetbrains.com/idea/j2ee_libs/seam/2.1.1.GA/jboss-seam-remoting.jar">
+      <required-class fqn="org.jboss.seam.remoting.Remoting"/>
+    </item>
+   <item name="jboss-seam-ui.jar"  url="http://download.jetbrains.com/idea/j2ee_libs/seam/2.1.1.GA/jboss-seam-ui.jar/">
+      <required-class fqn="org.jboss.seam.ui.facelet.FaceletsRenderer"/>
+    </item>
+  </artifact>
+  <artifact version="2.2">
+    <item name="jboss-seam.jar"  url="http://download.jetbrains.com/idea/j2ee_libs/seam/2.2.0.GA/jboss-seam.jar">
+      <required-class fqn="org.jboss.seam.annotations.Name"/>
+    </item>
+   <item name="jboss-seam-debug.jar"  url="http://download.jetbrains.com/idea/j2ee_libs/seam/2.2.0.GA/jboss-seam-debug.jar">
+      <required-class fqn="org.jboss.seam.debug.Contexts"/>
+    </item>
+   <item name="jboss-seam-ioc.jar"  url="http://download.jetbrains.com/idea/j2ee_libs/seam/2.2.0.GA/jboss-seam-ioc.jar">
+      <required-class fqn="org.jboss.seam.ioc.IoCComponent"/>
+    </item>
+   <item name="jboss-seam-mail.jar"  url="http://download.jetbrains.com/idea/j2ee_libs/seam/2.2.0.GA/jboss-seam-mail.jar">
+      <required-class fqn="org.jboss.seam.mail.ui.MailComponent"/>
+    </item>
+   <item name="jboss-seam-remoting.jar"  url="http://download.jetbrains.com/idea/j2ee_libs/seam/2.2.0.GA/jboss-seam-remoting.jar">
+      <required-class fqn="org.jboss.seam.remoting.Remoting"/>
+    </item>
+   <item name="jboss-seam-ui.jar"  url="http://download.jetbrains.com/idea/j2ee_libs/seam/2.2.0.GAjboss-seam-ui.jar/">
+      <required-class fqn="org.jboss.seam.ui.facelet.FaceletsRenderer"/>
+    </item>
+  </artifact>
+</artifacts>

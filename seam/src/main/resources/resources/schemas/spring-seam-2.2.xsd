@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<xsd:schema xmlns="http://jboss.com/products/seam/spring-seam" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:tool="http://www.springframework.org/schema/tool" targetNamespace="http://jboss.com/products/seam/spring-seam"
+            elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+    <xsd:import namespace="http://www.springframework.org/schema/tool"
+                schemaLocation="http://www.springframework.org/schema/tool/spring-tool-2.0.xsd" />
+
+    <xsd:element name="configure-scopes">
+        <xsd:annotation>
+            <xsd:documentation>Makes all the seam scopes available in spring.</xsd:documentation>
+            <xsd:appinfo>
+                <tool:annotation>
+                    <tool:exports />
+                </tool:annotation>
+            </xsd:appinfo>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:attribute name="prefix" type="xsd:string" use="optional">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <![CDATA[
+                                 The prefix to use for the seam scopes.  Default: "seam."
+                        ]]>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
+            <xsd:attribute name="default-auto-create" type="xsd:boolean" use="optional" default="false">
+            	<xsd:annotation>
+            		<xsd:documentation>
+            			<![CDATA[
+							Should instances of this component be auto-created.  Defaults to false since custom Seam
+							scopes are typically used to create stateful components that go on to be created multiple times.
+                        ]]>
+            		</xsd:documentation>
+            	</xsd:annotation>
+            </xsd:attribute>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="instance">
+        <xsd:annotation>
+            <xsd:documentation>
+                Make an instance of a seam component available to spring beans for spring injection.
+            </xsd:documentation>
+            <xsd:appinfo>
+                <tool:annotation>
+                    <tool:exports />
+                </tool:annotation>
+            </xsd:appinfo>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:attribute name="id" type="xsd:ID">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <![CDATA[
+                                 The id to use when making this seam component instance available in spring.  The default will be the seam component name.
+                        ]]>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
+            <xsd:attribute name="name" type="xsd:string" use="required">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <![CDATA[
+                                 The seam component name to get an instance of.
+                        ]]>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
+            <xsd:attribute name="scope" use="optional">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <![CDATA[
+                                 The optional scope to look for this seam component instance in.
+                        ]]>
+                    </xsd:documentation>
+                </xsd:annotation>
+                <xsd:simpleType>
+                    <xsd:restriction base="xsd:string">
+                        <xsd:enumeration value="STATELESS" />
+                        <xsd:enumeration value="METHOD" />
+                        <xsd:enumeration value="EVENT" />
+                        <xsd:enumeration value="PAGE" />
+                        <xsd:enumeration value="CONVERSATION" />
+                        <xsd:enumeration value="SESSION" />
+                        <xsd:enumeration value="APPLICATION" />
+                        <xsd:enumeration value="BUSINESS_PROCESS" />
+                    </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:attribute>
+            <xsd:attribute name="type" type="xsd:string" use="optional">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <![CDATA[
+                                 The class type to use when creating a proxy of this instance.  Useful when using
+                                 EL for the name because the type of the EL expression may not be available when the
+                                 proxy is created.
+                        ]]>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
+            <xsd:attribute name="create" type="xsd:boolean" use="optional">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <![CDATA[
+                                 Whether seam should create a new instance if one does not already exist.
+                        ]]>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
+            <xsd:attribute name="proxy" type="xsd:boolean" use="optional" default="false">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <![CDATA[
+                                 Whether to wrap this definition in a proxy for safe injection into a spring singleton.
+                        ]]>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="component">
+        <xsd:annotation>
+            <xsd:documentation>
+                <![CDATA[
+                         Makes the surrounding spring bean a seam component with the scope managed by spring.  Also helps to resolve cases where
+                         the spring bean name must be different from the seam component name or where the seam beanClass cannot be correctly
+                         detected.
+                ]]>
+            </xsd:documentation>
+            <xsd:appinfo>
+                <tool:annotation>
+                    <tool:exports />
+                </tool:annotation>
+            </xsd:appinfo>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:attribute name="name" type="xsd:string" use="optional">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <![CDATA[
+                                 The seam component name to give this spring bean.  Optional unless the seam component name must be different from the
+                                 spring bean name.
+                        ]]>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
+            <xsd:attribute name="spring-name" type="xsd:string" use="optional">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <![CDATA[
+                                 What spring bean name should seam use to obtain an instance of this bean.  Only necessary when seam-spring cannot
+                                 property detect the name of the spring bean which some spring NamespaceHandlers can do (eg. <aop:scoped-proxy/>, etc.).
+                        ]]>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
+            <xsd:attribute name="class" type="xsd:string" use="optional">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <![CDATA[
+                                 The component class seam will use to get annotations from and to wrap it's interceptors around.  Optional unless the
+                                 correct class is not being detected by seam-spring.
+                        ]]>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
+            <xsd:attribute name="intercept" type="xsd:boolean" use="optional">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <![CDATA[
+                                 Determines whether Seam interceptors should be wrapped around a bean, overriding
+                                 Seam's default which is currently "true". 
+                        ]]>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
+            <xsd:attribute name="auto-create" type="xsd:boolean" use="optional" default="true">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <![CDATA[
+							Should instances of this component be auto-created.  Defaults to true since the STATELESS
+							scope is going to be used most of the time when using this namespace handler.
+                        ]]>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
+            <xsd:attribute name="scope" use="optional" default="STATELESS">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <![CDATA[
+The optional scope this component should have.  STATELESS will allow spring to manage the scope.                        ]]>
+                    </xsd:documentation>
+                </xsd:annotation>
+                <xsd:simpleType>
+                    <xsd:restriction base="xsd:string">
+                        <xsd:enumeration value="STATELESS" />
+                        <xsd:enumeration value="EVENT" />
+                        <xsd:enumeration value="PAGE" />
+                        <xsd:enumeration value="CONVERSATION" />
+                        <xsd:enumeration value="SESSION" />
+                        <xsd:enumeration value="APPLICATION" />
+                        <xsd:enumeration value="BUSINESS_PROCESS" />
+                    </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:attribute>
+        </xsd:complexType>
+    </xsd:element>
+</xsd:schema>

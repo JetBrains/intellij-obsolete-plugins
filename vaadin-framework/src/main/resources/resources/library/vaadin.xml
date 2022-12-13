@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifacts>
+  <artifact version="6.8.9" name="vaadin">
+    <item name="vaadin-6.8.9.jar" url="http://vaadin.com/download/release/6.8/6.8.9/vaadin-6.8.9.jar" md5="" />
+  </artifact>
+  <artifact version="6.8.5" name="vaadin">
+    <item name="vaadin-6.8.5.jar" url="http://vaadin.com/download/release/6.8/6.8.5/vaadin-6.8.5.jar" md5="" />
+  </artifact>
+</artifacts>

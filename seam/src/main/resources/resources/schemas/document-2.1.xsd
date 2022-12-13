@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+           xmlns:doc="http://jboss.com/products/seam/document"
+           xmlns:components="http://jboss.com/products/seam/components" 
+           targetNamespace="http://jboss.com/products/seam/document" 
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified"> 
+
+    <xs:import namespace="http://jboss.com/products/seam/components" 
+               schemaLocation="components-2.1.xsd"/>
+
+    <xs:element name="document-store">
+        <xs:annotation>
+            <xs:documentation>
+                 The document store is used to store rendered documents for download on a later request.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="doc:attlist.docstore"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:attributeGroup name="attlist.docstore">
+        <xs:attribute name="error-page" type="components:string">
+            <xs:annotation>
+                <xs:documentation>
+                     When a document had expired or otherwise cannot be loaded, this page is displayed.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="use-extensions" type="components:boolean">
+            <xs:annotation>
+                <xs:documentation>
+                    Controls whether or not the URLs for documents should contain their correct file name
+                    extensions. Using file name extensions requires additional configuration in web.xml.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:attributeGroup>
+</xs:schema>

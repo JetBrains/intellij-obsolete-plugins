@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+    targetNamespace="http://jboss.com/products/seam/async" xmlns:async="http://jboss.com/products/seam/async"
+    xmlns:components="http://jboss.com/products/seam/components" attributeFormDefault="unqualified">
+    <xs:import namespace="http://jboss.com/products/seam/components" schemaLocation="components-2.1.xsd"/>
+
+    <xs:element name="timer-service-dispatcher">
+        <xs:annotation>
+            <xs:documentation></xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="components:attlist.ejbcomponent"/>
+            <xs:attributeGroup ref="async:attlist.timerServiceDispatcher"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.timerServiceDispatcher" />
+
+    <xs:element name="quartz-dispatcher">
+        <xs:annotation>
+            <xs:documentation></xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="async:attlist.quartzDispatcher"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.quartzDispatcher"> </xs:attributeGroup>
+
+    <xs:element name="thread-pool-dispatcher">
+        <xs:annotation>
+            <xs:documentation></xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="async:attlist.threadPoolDispatcher"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.threadPoolDispatcher">
+        <xs:attribute name="thread-pool-size" type="components:int"/>
+    </xs:attributeGroup>
+
+</xs:schema>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+   elementFormDefault="qualified"
+   targetNamespace="http://jboss.com/products/seam/cache"
+   xmlns:cache="http://jboss.com/products/seam/cache"
+   xmlns:components="http://jboss.com/products/seam/components"
+   attributeFormDefault="unqualified">
+   <xs:import namespace="http://jboss.com/products/seam/components"
+      schemaLocation="components-2.1.xsd" />
+   
+   <xs:element name="eh-cache-provider">
+      <xs:annotation>
+         <xs:documentation>The EHCache provider</xs:documentation>
+      </xs:annotation>
+      <xs:complexType mixed="true">
+         <xs:attributeGroup ref="components:attlist.component" />
+         <xs:attributeGroup ref="cache:attlist.cacheProvider" />
+      </xs:complexType>
+   </xs:element>
+   
+   <xs:element name="jboss-cache-provider">
+      <xs:annotation>
+         <xs:documentation>The JBoss 1.x Cache provider</xs:documentation>
+      </xs:annotation>
+      <xs:complexType mixed="true">
+         <xs:attributeGroup ref="components:attlist.component" />
+         <xs:attributeGroup ref="cache:attlist.cacheProvider" />
+      </xs:complexType>
+   </xs:element>
+   
+   <xs:element name="jboss-cache2-provider">
+      <xs:annotation>
+         <xs:documentation>The JBoss 2.x cache provider</xs:documentation>
+      </xs:annotation>
+      <xs:complexType mixed="true">
+         <xs:attributeGroup ref="components:attlist.component" />
+         <xs:attributeGroup ref="cache:attlist.cacheProvider" />
+      </xs:complexType>
+   </xs:element>
+
+   <xs:element name="jboss-pojo-cache-provider">
+      <xs:annotation>
+         <xs:documentation>The JBoss 1.x POJOCache provider</xs:documentation>
+      </xs:annotation>
+      <xs:complexType mixed="true">
+         <xs:attributeGroup ref="components:attlist.component" />
+         <xs:attributeGroup ref="cache:attlist.cacheProvider" />
+      </xs:complexType>
+   </xs:element>
+
+   <xs:attributeGroup name="attlist.cacheProvider">
+      <xs:attribute name="default-region" type="components:string" />
+      <xs:attribute name="configuration" type="components:string" />
+   </xs:attributeGroup>
+
+</xs:schema>

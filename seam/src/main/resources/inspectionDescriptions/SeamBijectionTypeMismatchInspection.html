@@ -1,0 +1,17 @@
+<html>
+<body>
+<p>Reports JBoss Seam Dependency Bijection annotations where the type of the property
+(field or accessor parameter) does not match the type of the context variable.</p>
+
+
+<p><strong>Example:</strong></p>
+
+<pre><code>
+   @In("loggedInUser")
+   private User user;
+</code>
+</pre>
+
+<p>The <code>loggedInUser</code> variable must be assignable to <code>User</code> or its subclass.</p>
+</body>
+</html>

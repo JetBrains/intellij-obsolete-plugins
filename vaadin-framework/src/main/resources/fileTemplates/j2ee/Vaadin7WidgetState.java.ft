@@ -1,0 +1,8 @@
+package ${PACKAGE_NAME};
+
+import com.vaadin.shared.AbstractComponentState;
+
+#parse("File Header.java")
+public class ${NAME} extends AbstractComponentState {
+
+}

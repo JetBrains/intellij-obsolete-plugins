@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+    targetNamespace="http://jboss.com/products/seam/theme" xmlns:theme="http://jboss.com/products/seam/theme"
+    xmlns:components="http://jboss.com/products/seam/components" attributeFormDefault="unqualified">
+    <xs:import namespace="http://jboss.com/products/seam/components" schemaLocation="components-2.1.xsd"/>
+
+    <xs:element name="theme-selector">
+        <xs:annotation>
+            <xs:documentation>Theme selector component</xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
+            <xs:choice minOccurs="0" maxOccurs="1">
+                <xs:element name="available-themes" type="components:multiValuedProperty"/>
+            </xs:choice>
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="theme:attlist.themeSelector"/>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:attributeGroup name="attlist.themeSelector">
+        <xs:attribute name="theme" type="components:string"/>
+        <xs:attribute name="available-themes" type="components:string"/>
+        <xs:attribute name="cookie-max-age" type="components:int"/>
+        <xs:attribute name="cookie-enabled" type="components:boolean" />
+    </xs:attributeGroup>
+</xs:schema>

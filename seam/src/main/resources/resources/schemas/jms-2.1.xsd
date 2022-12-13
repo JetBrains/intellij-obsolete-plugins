@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+    targetNamespace="http://jboss.com/products/seam/jms" xmlns:jms="http://jboss.com/products/seam/jms"
+    xmlns:components="http://jboss.com/products/seam/components" attributeFormDefault="unqualified">
+    <xs:import namespace="http://jboss.com/products/seam/components" schemaLocation="components-2.1.xsd"/>
+
+    <xs:element name="topic-connection">
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="jms:attlist.TopicConnection"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.TopicConnection">
+        <xs:attribute name="topic-connection-factory-jndi-name" type="components:string"/>
+    </xs:attributeGroup>
+
+    <xs:element name="queue-connection">
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="jms:attlist.QueueConnection"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.QueueConnection">
+        <xs:attribute name="queue-connection-factory-jndi-name" type="components:string"/>
+    </xs:attributeGroup>
+
+    <xs:element name="managed-topic-publisher">
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="jms:attlist.ManagedTopicPublisher"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.ManagedTopicPublisher">
+        <xs:attribute name="topic-jndi-name" type="components:string"/>
+    </xs:attributeGroup>
+
+    <xs:element name="managed-queue-sender">
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="jms:attlist.ManagedQueueSender"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.ManagedQueueSender">
+        <xs:attribute name="queue-jndi-name" type="components:string"/>
+    </xs:attributeGroup>
+</xs:schema>

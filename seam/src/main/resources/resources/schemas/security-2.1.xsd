@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+    targetNamespace="http://jboss.com/products/seam/security" xmlns:security="http://jboss.com/products/seam/security"
+    xmlns:components="http://jboss.com/products/seam/components" attributeFormDefault="unqualified">
+    
+    <xs:import namespace="http://jboss.com/products/seam/components" schemaLocation="components-2.1.xsd"/>
+
+    <xs:element name="identity">
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="security:attlist.identity"/>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="faces-security-events">
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="security:attlist.faces-security-events"/>
+        </xs:complexType>    
+    </xs:element>
+    
+    <xs:attributeGroup name="attlist.identity">
+        <xs:attribute name="authenticate-method" type="components:expressionType"/>
+        <xs:attribute name="remember-me" type="components:boolean"/>
+        <xs:attribute name="jaas-config-name" type="components:string"/>
+    </xs:attributeGroup>
+    
+    <xs:attributeGroup name="attlist.faces-security-events">
+        <xs:attribute name="cookie-max-age" type="components:int"/>
+    </xs:attributeGroup>   
+    
+    <xs:element name="identity-manager">
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="security:attlist.identity-manager"/>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="jpa-identity-store">
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="security:attlist.jpa-identity-store"/>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="ldap-identity-store">
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="security:attlist.ldap-identity-store"/>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="permission-manager">
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="security:attlist.permission-manager"/>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="jpa-permission-store">
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="security:attlist.jpa-permission-store"/>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="rule-based-permission-resolver">
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="security:attlist.rule-based-permission-resolver"/>        
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="persistent-permission-resolver">
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="security:attlist.persistent-permission-resolver"/>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:attributeGroup name="attlist.identity-manager">
+        <xs:attribute name="identity-store" type="components:expressionType"/>
+        <xs:attribute name="role-identity-store" type="components:expressionType"/>
+    </xs:attributeGroup>
+    
+    <xs:attributeGroup name="attlist.jpa-identity-store">
+        <xs:attribute name="entity-manager" type="components:string"/>
+        <xs:attribute name="user-class" type="components:string" use="required"/>
+        <xs:attribute name="role-class" type="components:string"/>
+        <xs:attribute name="features" type="components:string"/>
+    </xs:attributeGroup>     
+    
+    <xs:attributeGroup name="attlist.ldap-identity-store">
+        <xs:attribute name="server-address" type="components:string"/>
+        <xs:attribute name="server-port" type="components:string"/>
+        <xs:attribute name="bind-DN" type="components:string"/>
+        <xs:attribute name="bind-credentials" type="components:string"/>
+        <xs:attribute name="user-DN-prefix" type="components:string"/>
+        <xs:attribute name="user-DN-suffix" type="components:string"/>
+        <xs:attribute name="role-DN-prefix" type="components:string"/>
+        <xs:attribute name="role-DN-suffix" type="components:string"/>
+        <xs:attribute name="user-context-DN" type="components:string"/>
+        <xs:attribute name="role-context-DN" type="components:string"/>
+        <xs:attribute name="user-role-attribute" type="components:string"/>
+        <xs:attribute name="user-name-attribute" type="components:string"/>
+        <xs:attribute name="role-name-attribute" type="components:string"/>
+        <xs:attribute name="role-attribute-is-DN" type="components:boolean"/>
+        <xs:attribute name="user-object-classes" type="components:string"/>
+        <xs:attribute name="role-object-classes" type="components:string"/>
+        <xs:attribute name="enabled-attribute" type="components:string"/>
+        <xs:attribute name="search-scope" type="components:string"/>
+        <xs:attribute name="first-name-attribute" type="components:string"/>
+        <xs:attribute name="last-name-attribute" type="components:string"/>
+        <xs:attribute name="user-password-attribute" type="components:string"/>
+    </xs:attributeGroup>
+    
+    <xs:attributeGroup name="attlist.permission-manager">
+        <xs:attribute name="permission-store" type="components:expressionType"/>
+    </xs:attributeGroup>
+    
+    <xs:attributeGroup name="attlist.jpa-permission-store">
+        <xs:attribute name="entity-manager" type="components:string"/>
+        <xs:attribute name="user-permission-class" type="components:string"/>
+        <xs:attribute name="role-permission-class" type="components:string"/>
+    </xs:attributeGroup>
+    
+    <xs:attributeGroup name="attlist.rule-based-permission-resolver">
+        <xs:attribute name="security-rules" type="components:expressionType"/>
+    </xs:attributeGroup>
+
+    <xs:attributeGroup name="attlist.persistent-permission-resolver">
+        <xs:attribute name="permission-store" type="components:expressionType"/>
+    </xs:attributeGroup>
+            
+</xs:schema>

@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+    targetNamespace="http://jboss.com/products/seam/web" xmlns:web="http://jboss.com/products/seam/web"
+    xmlns:components="http://jboss.com/products/seam/components" attributeFormDefault="unqualified">
+    <xs:import namespace="http://jboss.com/products/seam/components" schemaLocation="components-2.1.xsd"/>
+
+    <xs:element name="hot-deploy-filter">
+        <xs:annotation>
+            <xs:documentation>This filter triggers a scan for hot deployable components and descriptor files on each request. The URL pattern should be set to the same pattern as used by the Faces Servlet. Note that this filter is automatically disabled when Seam debug mode is disabled.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="web:attlist.filter"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="identity-filter">
+        <xs:annotation>
+            <xs:documentation>This filter provides integration between Servlet Security and the identity component.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="web:attlist.filter"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="multipart-filter">
+        <xs:annotation>
+            <xs:documentation>
+                Detects multipart form requests and processes them according to the 
+                multipart/form-data specification (RFC-2388).
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="web:attlist.filter"/>
+            <xs:attributeGroup ref="web:attlist.multipartFilter"/>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="redirect-filter">
+        <xs:annotation>
+            <xs:documentation>This filter allows Seam to propagate the conversation context across browser redirects. It intercepts any 
+browser redirects and adds a request parameter that specifies the Seam conversation identifier.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="web:attlist.filter"/>
+        </xs:complexType>    
+    </xs:element>    
+    
+    <xs:element name="exception-filter">
+        <xs:annotation>
+            <xs:documentation>This filter provides the exception mapping functionality in pages.xml.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="web:attlist.filter"/>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="context-filter">
+        <xs:annotation>
+            <xs:documentation>This filter allows custom servlets to interact with the Seam contexts. It sets up the Seam contexts at the begin- 
+ning of each request, and tears them down at the end of the request.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="web:attlist.filter"/>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="wicket-filter">
+        <xs:annotation>
+            <xs:documentation></xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="web:attlist.filter"/>
+            <xs:attributeGroup ref="web:attlist.wicketFilter"/>
+        </xs:complexType>
+    </xs:element>    
+        
+    <xs:element name="character-encoding-filter">
+        <xs:annotation>
+            <xs:documentation>Sets the character encoding of submitted form data.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="web:attlist.filter"/>
+            <xs:attribute name="encoding" type="components:string"/>
+            <xs:attribute name="override-client" type="components:boolean"/>
+        </xs:complexType>
+    </xs:element> 
+    
+    <xs:element name="authentication-filter">
+        <xs:annotation>
+            <xs:documentation>Although not recommended for use unless absolutely necessary, Seam provides means for authenticating using 
+either HTTP Basic or HTTP Digest (RFC 2617) methods.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="web:attlist.filter"/>
+            <xs:attribute name="realm" type="components:string"/>
+            <xs:attribute name="key" type="components:string"/>
+            <xs:attribute name="nonce-validity-seconds" type="components:int"/>
+            <xs:attribute name="auth-type" type="components:string"/>
+        </xs:complexType>
+    </xs:element>
+        
+    <xs:element name="logging-filter">
+        <xs:annotation>
+            <xs:documentation>This filter adds the authenticated user name to the log4j mapped diagnostic context so that it can be included in 
+formatted log output if desired, by adding %X{username} to the pattern.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="web:attlist.filter"/>
+        </xs:complexType>
+    </xs:element>
+       
+    <xs:element name="ajax4jsf-filter">
+        <xs:annotation>
+            <xs:documentation>The ajax4jsf filter for RichFaces</xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="web:attlist.filter"/>
+            <xs:attributeGroup ref="web:attlist.ajax4jsfFilter"/>
+        </xs:complexType>
+    </xs:element>    
+    
+    <xs:element name="rewrite-filter">
+        <xs:annotation>
+            <xs:documentation>This filter performs URL rewriting.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="web:rewrite.filter"/>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:attributeGroup name="attlist.filter">
+        <xs:attribute name="url-pattern" type="components:string"/>
+        <xs:attribute name="regex-url-pattern" type="components:string"/>
+        <xs:attribute name="disabled" type="components:boolean" default="false" />
+    </xs:attributeGroup>
+    
+    <xs:attributeGroup name="attlist.wicketFilter">
+        <xs:attribute name="application-class" type="components:string"/>
+        <xs:attribute name="application-factory-class" type="components:string"/>
+        <xs:attribute name="detect-portlet-context" type="components:boolean" default="false" />
+    </xs:attributeGroup>
+    
+    <xs:attributeGroup name="attlist.multipartFilter">
+        <xs:attribute name="create-temp-files" type="components:boolean" />           
+        <xs:attribute name="max-request-size" type="components:int"/>
+    </xs:attributeGroup>
+    
+    <xs:attributeGroup name="attlist.ajax4jsfFilter">
+        <xs:attribute name="enable-cache" type="components:boolean" />
+        <xs:attribute name="force-parser" type="components:boolean" />
+        <xs:attribute name="log4j-init-file" type="components:string"/>
+    </xs:attributeGroup>
+    
+    <xs:element name="session">
+        <xs:complexType mixed="true">
+            <xs:attributeGroup ref="components:attlist.component"/>
+            <xs:attributeGroup ref="web:attlist.session"/>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:attributeGroup name="attlist.session">
+        <xs:attribute name="invalidate-on-scheme-change" type="components:boolean"/>
+    </xs:attributeGroup>   
+    
+    <xs:attributeGroup name="rewrite.filter">
+        <xs:attribute name="view-mapping" type="components:string">
+            <xs:annotation>
+                <xs:documentation>
+                    This is the servlet mapping.  It should be set to the same pattern as used by the
+                    Faces Servlet.  If no value is specified, a pattern of *.seam will be assumed.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:attributeGroup>
+   
+</xs:schema>

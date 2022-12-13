@@ -1,0 +1,638 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+           elementFormDefault="qualified"
+           targetNamespace="http://jboss.com/products/seam/pages" 
+           xmlns:pages="http://jboss.com/products/seam/pages">
+
+    <xs:annotation>
+        <xs:documentation>About this format ...</xs:documentation>
+    </xs:annotation>
+    
+    <xs:element name="pages">
+        <xs:annotation>
+            <xs:documentation>The root of a pages.xml file</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="pages:conversation"/>
+                <xs:element ref="pages:page"/>
+                <xs:element ref="pages:exception"/>
+            </xs:choice>
+            <xs:attributeGroup ref="pages:attlist.pages"/>
+        </xs:complexType>
+        <xs:key name="conversation-key">
+            <xs:annotation>
+                <xs:documentation><p>You can read this as:</p>
+                  <p>The pages element has a bunch of conversation elements, and for each of those conversation elements, they must have a unique name within this document.</p>
+                </xs:documentation>
+            </xs:annotation>
+            <xs:selector xpath="conversation"/>
+            <xs:field xpath="name"/>
+        </xs:key>
+    </xs:element>
+    
+    <xs:attributeGroup name="attlist.pages">
+        <xs:attribute name="no-conversation-view-id" type="pages:view-id" />
+        <xs:attribute name="login-view-id" type="pages:view-id"/>
+        <xs:attribute name="http-port" type="xs:unsignedLong"/>
+        <xs:attribute name="https-port" type="xs:unsignedLong"/>
+    </xs:attributeGroup>
+    
+    <xs:element name="exception">
+        <xs:annotation>
+            <xs:documentation>A Seam exception handler</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" ref="pages:end-conversation"/>
+                <xs:choice>
+                    <xs:element ref="pages:http-error"/>
+                    <xs:element ref="pages:redirect"/>
+                </xs:choice>
+            </xs:sequence>
+            <xs:attributeGroup ref="pages:attlist.exception"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.exception">
+        <xs:attribute name="class" type="xs:token"/>
+        <xs:attribute name="log" type="pages:tf-boolean"/>
+        <xs:attribute name="log-level" type="pages:loglevel-values"/>
+    </xs:attributeGroup>
+    
+    <xs:element name="conversation">
+        <xs:annotation>
+            <xs:documentation>Natural conversation configuration</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attributeGroup ref="pages:attlist.conversation"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.conversation">
+        <xs:attribute name="name" use="required" type="xs:token" />
+        <xs:attribute name="parameter-name" use="required" type="xs:token" />
+        <xs:attribute name="parameter-value" type="xs:token" />
+    </xs:attributeGroup>
+    
+    <xs:element name="page">
+        <xs:annotation>
+            <xs:documentation>Configuration for a specific page or set up pages</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="pages:restrict"/>
+                <xs:element ref="pages:description"/>
+                <xs:element ref="pages:param"/>
+                <xs:element ref="pages:header" />
+                <xs:element ref="pages:rewrite" />
+                <xs:element ref="pages:begin-conversation"/>
+                <xs:element ref="pages:end-conversation"/>
+                <xs:element ref="pages:start-task"/>
+                <xs:element ref="pages:begin-task"/>
+                <xs:element ref="pages:end-task"/>
+                <xs:element ref="pages:create-process"/>
+                <xs:element ref="pages:resume-process"/>
+                <xs:element ref="pages:in"/>
+                <xs:element ref="pages:raise-event"/>
+                <xs:element ref="pages:action"/>
+                <xs:element ref="pages:navigation"/>
+            </xs:choice>
+            <xs:attributeGroup ref="pages:attlist.page"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.page">
+        <xs:attribute name="action" type="xs:token" />
+        <xs:attribute name="view-id" type="pages:view-id"/>
+        <xs:attribute name="switch" default="enabled" type="pages:ableness"/>
+        <xs:attribute name="no-conversation-view-id" type="pages:view-id" />
+        <xs:attribute name="conversation-required" default="false" type="pages:tf-boolean"/>
+        <xs:attribute name="login-required" default="false" type="pages:tf-boolean"/>
+        <xs:attribute name="scheme" type="pages:schemes" />
+        <xs:attribute name="timeout" type="xs:unsignedLong" />
+        <xs:attribute name="concurrent-request-timeout" type="xs:unsignedLong" >
+            <xs:annotation>
+                <xs:documentation>
+                    Requests to conversations are serialized by default, and if
+                    a lock cannot be acquired in time, the request will be 
+                    dropped. You can set the timeout on a page-by-page basis 
+                    here.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="bundle" type="xs:token" />
+        <xs:attribute name="conversation" type="xs:token" />
+        <xs:attribute name="expires" type="xs:unsignedLong" /> 
+    </xs:attributeGroup>
+    
+    <xs:element name="param">
+        <xs:annotation>
+            <xs:documentation>A page parameter</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attributeGroup ref="pages:attlist.param"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:attributeGroup name="attlist.param">
+        <xs:attribute name="name" type="xs:token" />
+        <xs:attribute name="value" type="xs:token" />
+        <xs:attribute name="converter" type="xs:token" />
+        <xs:attribute name="converterId" type="xs:token" />
+        <xs:attribute name="validator" type="xs:token" />
+        <xs:attribute name="validatorId" type="xs:token" />
+        <xs:attribute name="required" type="pages:tf-boolean"/>
+    </xs:attributeGroup>
+    
+    <xs:element name="header">
+        <xs:annotation>
+            <xs:documentation>HTTP headers to be added</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attributeGroup ref="pages:attlist.header"/>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:attributeGroup name="attlist.header">
+        <xs:attribute name="name" use="required" type="xs:token" />
+        <xs:attribute name="value" type="xs:token" />
+    </xs:attributeGroup>
+    
+    <xs:element name="rewrite">
+        <xs:annotation>
+            <xs:documentation>URL rewriting pattern for this view</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attributeGroup ref="pages:attlist.rewrite"/>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:attributeGroup name="attlist.rewrite">
+        <xs:attribute name="pattern" use="required" type="xs:token" />
+    </xs:attributeGroup>
+    
+    <xs:element name="action">
+        <xs:annotation>
+            <xs:documentation>Page action</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attributeGroup ref="pages:attlist.action"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.action">
+        <xs:attribute name="if" type="pages:boolean-value-expression" />
+        <xs:attribute name="on-postback" default="true" type="pages:tf-boolean"/>
+        <xs:attribute name="execute" use="required" type="pages:method-expression" />
+    </xs:attributeGroup>
+    
+    <xs:element name="restrict" type="pages:boolean-value-expression" default="true">
+        <xs:annotation>
+            <xs:documentation>Security restrictions</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    
+    <xs:element name="navigation">
+        <xs:annotation>
+            <xs:documentation>Page navigation</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:choice maxOccurs="2">
+                <xs:sequence>
+                    <xs:choice minOccurs="0">
+                        <xs:element ref="pages:begin-conversation"/>
+                        <xs:element ref="pages:end-conversation"/>
+                        <xs:element ref="pages:start-task"/>
+                        <xs:element ref="pages:begin-task"/>
+                        <xs:element ref="pages:end-task"/>
+                        <xs:element ref="pages:create-process"/>
+                        <xs:element ref="pages:resume-process"/>
+                    </xs:choice>
+                    <xs:element minOccurs="0" maxOccurs="unbounded" ref="pages:out"/>
+                    <xs:element minOccurs="0" ref="pages:raise-event" maxOccurs="1"/>
+                    <xs:choice minOccurs="0">
+                        <xs:element ref="pages:render"/>
+                        <xs:element ref="pages:redirect"/>
+                    </xs:choice>
+                </xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="pages:rule"/>
+            </xs:choice>
+            <xs:attributeGroup ref="pages:attlist.navigation"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.navigation">
+        <xs:attribute name="from-action" type="pages:from-action-expression" />
+        <xs:attribute name="evaluate" type="pages:method-expression" />
+    </xs:attributeGroup>
+    
+    <xs:element name="rule">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:choice minOccurs="0">
+                    <xs:element ref="pages:begin-conversation"/>
+                    <xs:element ref="pages:end-conversation"/>
+                    <xs:element ref="pages:start-task"/>
+                    <xs:element ref="pages:begin-task"/>
+                    <xs:element ref="pages:end-task"/>
+                    <xs:element ref="pages:create-process"/>
+                    <xs:element ref="pages:resume-process"/>
+                </xs:choice>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="pages:out"/>
+                <xs:element minOccurs="0" ref="pages:raise-event"/>
+                <xs:choice minOccurs="0">
+                    <xs:element ref="pages:render"/>
+                    <xs:element ref="pages:redirect"/>
+                </xs:choice>
+            </xs:sequence>
+            <xs:attributeGroup ref="pages:attlist.rule"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.rule">
+        <xs:attribute name="if-outcome" type="pages:outcome-expression" />
+        <xs:attribute name="if" type="pages:boolean-value-expression" />
+    </xs:attributeGroup>
+    
+    <xs:element name="raise-event">
+        <xs:annotation>
+            <xs:documentation>Event to be raised</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attributeGroup ref="pages:attlist.raise-event"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.raise-event">
+        <xs:attribute name="type" use="required" type="xs:token" />
+    </xs:attributeGroup>
+    
+    <xs:element name="begin-conversation">
+        <xs:annotation>
+            <xs:documentation>This page begins a new conversation</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attributeGroup ref="pages:attlist.begin-conversation"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.begin-conversation">
+        <xs:attribute name="join" default="false" type="pages:tf-boolean"/>
+        <xs:attribute name="nested" default="false" type="pages:tf-boolean"/>
+        <xs:attribute name="pageflow" type="xs:token" />
+        <xs:attribute name="flush-mode" type="pages:flush-modes" />
+        <xs:attribute name="if" type="pages:boolean-value-expression" />
+        <xs:attribute name="conversation" type="xs:token" />
+    </xs:attributeGroup>
+    
+    <xs:element name="end-conversation">
+        <xs:annotation>
+            <xs:documentation>This page ends a conversation</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attributeGroup ref="pages:attlist.end-conversation"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.end-conversation">
+        <xs:attribute name="before-redirect" default="false" type="pages:tf-boolean"/>
+        <xs:attribute name="root" default="false" type="pages:tf-boolean"/>
+        <xs:attribute name="if" type="pages:boolean-value-expression" />
+    </xs:attributeGroup>
+    
+    <xs:element name="begin-task">
+        <xs:annotation>
+            <xs:documentation>Begin a BPM task</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attributeGroup ref="pages:attlist.begin-task"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.begin-task">
+        <xs:attribute name="task-id" type="xs:token" />
+        <xs:attribute name="pageflow" type="xs:token" />
+        <xs:attribute name="flush-mode" type="pages:flush-modes" />
+    </xs:attributeGroup>
+    
+    <xs:element name="start-task">
+        <xs:annotation>
+            <xs:documentation>Start a BPM task</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attributeGroup ref="pages:attlist.start-task"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.start-task">
+        <xs:attribute name="task-id" type="xs:token" />
+        <xs:attribute name="pageflow" type="xs:token" />
+        <xs:attribute name="flush-mode" type="pages:flush-modes" />
+    </xs:attributeGroup>
+    
+    <xs:element name="end-task">
+        <xs:annotation>
+            <xs:documentation>Add a BPM task</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attributeGroup ref="pages:attlist.end-task"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.end-task">
+        <xs:attribute name="transition" type="xs:token" />
+        <xs:attribute name="before-redirect" default="false" type="pages:tf-boolean" />
+    </xs:attributeGroup>
+    
+    <xs:element name="create-process">
+        <xs:annotation>
+            <xs:documentation>Create a BPM process</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attributeGroup ref="pages:attlist.create-process"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.create-process">
+        <xs:attribute name="definition" type="xs:token" />
+    </xs:attributeGroup>
+    
+    <xs:element name="resume-process">
+        <xs:annotation>
+            <xs:documentation>Resume a BPM process instance</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attributeGroup ref="pages:attlist.resume-process"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.resume-process">
+        <xs:attribute name="process-id" type="xs:token" />
+    </xs:attributeGroup>
+    
+    <xs:element name="in">
+        <xs:annotation>
+            <xs:documentation>A page input</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attributeGroup ref="pages:attlist.in"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.in">
+        <xs:attribute name="name" use="required" type="xs:token" />
+        <xs:attribute name="scope" type="pages:allowed-scopes" />
+        <xs:attribute name="value" use="required" type="xs:token" />
+    </xs:attributeGroup>
+    
+    <xs:element name="out">
+        <xs:annotation>
+            <xs:documentation>A contextual output for a navigation rule</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attributeGroup ref="pages:attlist.out"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.out">
+        <xs:attribute name="name" use="required" type="xs:token" />
+        <xs:attribute name="scope" default="CONVERSATION" type="pages:allowed-scopes" />
+        <xs:attribute name="value" use="required" type="xs:token" />
+    </xs:attributeGroup>
+    
+    <xs:element name="render">
+        <xs:annotation>
+            <xs:documentation>Render a view</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" ref="pages:message"/>
+            </xs:sequence>
+            <xs:attributeGroup ref="pages:attlist.render"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.render">
+        <xs:attribute name="view-id" type="pages:view-id-expression" />
+    </xs:attributeGroup>
+    
+    <xs:element name="redirect">
+        <xs:annotation>
+            <xs:documentation>Redirect to another view or URL</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" ref="pages:message"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="pages:param"/>
+            </xs:sequence>
+            
+            <xs:attributeGroup ref="pages:attlist.redirect"/>  
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.redirect">
+        <xs:attribute name="view-id" type="pages:view-id-expression" />
+        <xs:attribute name="url" type="pages:url-expression" />
+        <xs:attribute name="include-page-params" type="pages:tf-boolean" />
+    </xs:attributeGroup>
+    
+    <xs:element name="http-error">
+        <xs:annotation>
+            <xs:documentation>Send an HTTP error code</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" ref="pages:message"/>
+            </xs:sequence>
+            <xs:attributeGroup ref="pages:attlist.http-error"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.http-error">
+        <xs:attribute name="error-code" use="required" type="xs:unsignedLong" />
+    </xs:attributeGroup>
+    
+    <xs:element name="message">
+        <xs:annotation>
+            <xs:documentation>Add a message to the faces messages</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+                    <xs:attributeGroup ref="pages:attlist.message"/>
+                </xs:extension>
+            </xs:simpleContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.message">
+        <xs:attribute name="for" type="xs:token"/>
+        <xs:attribute name="severity" default="INFO" type="pages:loglevel-values" />
+    </xs:attributeGroup>
+    
+    <xs:element name="description" type="xs:string">
+        <xs:annotation>
+            <xs:documentation>A page description for workflow switching</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:simpleType name="url">
+        <xs:restriction base="xs:anyURI">
+          <xs:pattern value="http://.*|https://.*"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="url-expression">
+        <xs:union memberTypes="pages:url pages:method-expression"></xs:union>
+    </xs:simpleType>
+
+    <xs:simpleType name="schemes">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="https"/>
+            <xs:enumeration value="http"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="outcome">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[^#\{\}]+"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="view-id">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="(/.*)|\*"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="view-id-expression">
+        <xs:union memberTypes="pages:view-id pages:value-expression"></xs:union>
+    </xs:simpleType>
+
+    <xs:simpleType name="outcome-expression">
+        <xs:union memberTypes="pages:outcome pages:value-expression"></xs:union>
+    </xs:simpleType>
+
+    <xs:simpleType name="from-action-expression">
+        <xs:union memberTypes="pages:outcome pages:method-expression"></xs:union>
+    </xs:simpleType>
+
+    <xs:simpleType name="ableness">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="enabled"/>
+            <xs:enumeration value="disabled"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tf-boolean">
+        <xs:annotation>
+            <xs:documentation>
+              <p>Allows for the following values:</p>
+              <ul>
+                <li>true</li>
+                <li>false</li>
+              </ul>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:boolean">
+            <xs:pattern value="true"/>
+            <xs:pattern value="false"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="allowed-scopes">
+        <xs:restriction base="xs:token">
+           <xs:enumeration value="stateless"/>
+            <xs:enumeration value="event"/>
+            <xs:enumeration value="page"/>
+            <xs:enumeration value="conversation"/>
+            <xs:enumeration value="session"/>
+            <xs:enumeration value="business_process"/>
+            <xs:enumeration value="application"/>
+            <xs:enumeration value="STATELESS"/>
+            <xs:enumeration value="EVENT"/>
+            <xs:enumeration value="PAGE"/>
+            <xs:enumeration value="CONVERSATION"/>
+            <xs:enumeration value="SESSION"/>
+            <xs:enumeration value="BUSINESS_PROCESS"/>
+            <xs:enumeration value="APPLICATION"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="loglevel-values">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="info"/>
+            <xs:enumeration value="warn"/>
+            <xs:enumeration value="error"/>
+            <xs:enumeration value="fatal"/>
+            <xs:enumeration value="debug"/>
+            <xs:enumeration value="trace"/>
+            <xs:enumeration value="INFO"/>
+            <xs:enumeration value="WARN"/>
+            <xs:enumeration value="ERROR"/>
+            <xs:enumeration value="FATAL"/>
+            <xs:enumeration value="DEBUG"/>
+            <xs:enumeration value="TRACE"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="http-error-codes">
+        <xs:annotation>
+            <xs:documentation><p><b>Note:</b> These do not include the HTTP extensions.</p></xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="100"/>
+            <xs:enumeration value="101"/>
+            <xs:enumeration value="200"/>
+            <xs:enumeration value="201"/>
+            <xs:enumeration value="202"/>
+            <xs:enumeration value="203"/>
+            <xs:enumeration value="204"/>
+            <xs:enumeration value="205"/>
+            <xs:enumeration value="206"/>
+            <xs:enumeration value="300"/>
+            <xs:enumeration value="301"/>
+            <xs:enumeration value="302"/>
+            <xs:enumeration value="303"/>
+            <xs:enumeration value="304"/>
+            <xs:enumeration value="305"/>
+            <xs:enumeration value="306"/>
+            <xs:enumeration value="307"/>
+            <xs:enumeration value="400"/>
+            <xs:enumeration value="401"/>
+            <xs:enumeration value="402"/>
+            <xs:enumeration value="403"/>
+            <xs:enumeration value="404"/>
+            <xs:enumeration value="405"/>
+            <xs:enumeration value="406"/>
+            <xs:enumeration value="407"/>
+            <xs:enumeration value="408"/>
+            <xs:enumeration value="409"/>
+            <xs:enumeration value="410"/>
+            <xs:enumeration value="411"/>
+            <xs:enumeration value="412"/>
+            <xs:enumeration value="413"/>
+            <xs:enumeration value="414"/>
+            <xs:enumeration value="415"/>
+            <xs:enumeration value="416"/>
+            <xs:enumeration value="417"/>
+            <xs:enumeration value="500"/>
+            <xs:enumeration value="501"/>
+            <xs:enumeration value="502"/>
+            <xs:enumeration value="503"/>
+            <xs:enumeration value="504"/>
+            <xs:enumeration value="505"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="flush-modes">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="manual"/>
+            <xs:enumeration value="auto"/>
+            <xs:enumeration value="commit"/>
+            <xs:enumeration value="MANUAL"/>
+            <xs:enumeration value="AUTO"/>
+            <xs:enumeration value="COMMIT"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="method-expression">
+        <xs:restriction base="xs:token">
+            <xs:pattern value="#\{.+\..+\}"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="value-expression">
+        <xs:restriction base="xs:token">
+            <xs:pattern value="#\{.*\}"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="boolean-value-expression">
+        <xs:restriction base="xs:token">
+            <xs:pattern value="true|false|#\{.*\}"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

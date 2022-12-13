@@ -1,0 +1,25 @@
+<html>
+<body>
+<p>Reports configuration issues on annotated Seam classes</p>
+<!-- tooltip end -->
+<p><strong>Example:</strong></p>
+<pre><code>
+@Name("authenticator")
+class SeanComponent {
+  <strong>@Create</strong> // static method not allowed
+  private static void create() {...}
+
+   <strong>@Destroy</strong> // static method not allowed
+   private static void destroy() {...}
+
+   <strong>@DataModel</strong> // not getter
+   private Map method() {...}
+
+   <strong>@Factory</strong> // must be public
+   private Map getUniverse2() {...}
+
+   <strong>@Unwrap</strong> // must have no parameters
+   private static Map createUniverse(int days) { ... }
+}</code></pre>
+</body>
+</html>

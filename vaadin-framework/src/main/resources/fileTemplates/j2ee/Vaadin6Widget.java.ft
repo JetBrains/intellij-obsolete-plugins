@@ -1,0 +1,14 @@
+package ${PACKAGE_NAME};
+
+import com.vaadin.ui.*;
+import java.util.Map;
+import ${CLIENT_PACKAGE_NAME}.${WIDGET_NAME}Widget;
+
+#parse("File Header.java")
+@ClientWidget(${WIDGET_NAME}Widget.class)
+public class ${NAME} extends AbstractComponent {
+    @Override
+    public void changeVariables(Object source, Map<String, Object> variables) {
+        super.changeVariables(source, variables);
+    }
+}
