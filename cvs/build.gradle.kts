@@ -18,5 +18,5 @@ dependencies {
 }
 
 intellij {
-    version.set("2020.2.1")
+    version.set("2022.3")
 }
