@@ -166,7 +166,7 @@ public class CvsFileAnnotation extends FileAnnotation{
 
   private abstract static class CvsAnnotationAspect extends LineAnnotationAspectAdapter {
     CvsAnnotationAspect(String id, boolean showByDefault) {
-      super(id, showByDefault);
+      super(id, null, showByDefault);
     }
 
     @Override
