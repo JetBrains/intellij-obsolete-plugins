@@ -140,5 +140,8 @@ public class CvsFileOperationsHandler implements LocalFileOperationsHandler {
   }
 
   @Override
-  public void afterDone(@NotNull final ThrowableConsumer<LocalFileOperationsHandler, IOException> invoker) {}
+  public void afterDone(@NotNull ThrowableConsumer<? super LocalFileOperationsHandler, ? extends IOException> invoker) {
+
+  }
+
 }

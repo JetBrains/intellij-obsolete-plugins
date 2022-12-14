@@ -20,15 +20,13 @@ import com.intellij.cvsSupport2.util.CvsVfsUtil;
 import com.intellij.ide.IdeBundle;
 import com.intellij.ide.util.treeView.NodeRenderer;
 import com.intellij.idea.ActionsBundle;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileSystemTree;
 import com.intellij.openapi.fileChooser.FileSystemTreeFactory;
-import com.intellij.openapi.fileChooser.ex.FileChooserDialogImpl;
-import com.intellij.openapi.fileChooser.ex.FileDrop;
-import com.intellij.openapi.fileChooser.ex.FileTextFieldImpl;
-import com.intellij.openapi.fileChooser.ex.LocalFsFinder;
+import com.intellij.openapi.fileChooser.ex.*;
 import com.intellij.openapi.fileChooser.impl.FileChooserFactoryImpl;
 import com.intellij.openapi.keymap.KeymapUtil;
 import com.intellij.openapi.project.Project;
@@ -55,6 +53,7 @@ import javax.swing.event.TreeSelectionListener;
 import java.awt.*;
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author lesya
@@ -87,9 +86,9 @@ public abstract class SelectLocationStep extends WizardStep {
     myFileSystemTree = FileSystemTreeFactory.SERVICE.getInstance().createFileSystemTree(project, myChooserDescriptor);
     myFileSystemTree.updateTree();
 
-    myPathTextField = new FileTextFieldImpl.Vfs(
+    myPathTextField = new Vfs(
       FileChooserFactoryImpl.getMacroMap(), myFileSystemTree,
-      new LocalFsFinder.FileChooserFilter(myChooserDescriptor, myFileSystemTree)) {
+      new LocalFsFinder.FileChooserFilter(myChooserDescriptor, myFileSystemTree.areHiddensShown())) {
       @Override
       protected void onTextChanged(final String newValue) {
         updateTreeFromPath(newValue);
@@ -130,7 +129,7 @@ public abstract class SelectLocationStep extends WizardStep {
       }
 
       @Override
-      public void dropFiles(final List<VirtualFile> files) {
+      public void dropFiles(List<? extends VirtualFile> files) {
         if (files.size() > 0) {
           selectInTree(files.toArray(VirtualFile.EMPTY_ARRAY));
         }
@@ -154,7 +153,8 @@ public abstract class SelectLocationStep extends WizardStep {
     myNorthPanel.add(toolbarPanel, BorderLayout.NORTH);
     panel.add(myNorthPanel, BorderLayout.NORTH);
     panel.add(ScrollPaneFactory.createScrollPane(myFileSystemTree.getTree()), BorderLayout.CENTER);
-    JLabel dndLabel = new JLabel(FileChooserDialogImpl.DRAG_N_DROP_HINT, SwingConstants.CENTER);
+    String DRAG_N_DROP_HINT = "Drag and drop a file into the space above to quickly locate it in the tree";
+    JLabel dndLabel = new JLabel(DRAG_N_DROP_HINT, SwingConstants.CENTER);
     dndLabel.setFont(JBUI.Fonts.miniFont());
     dndLabel.setForeground(UIUtil.getLabelDisabledForeground());
     panel.add(dndLabel, BorderLayout.SOUTH);
@@ -328,4 +328,26 @@ public abstract class SelectLocationStep extends WizardStep {
       toggleShowTextField();
     }
   }
+
+  public static class Vfs extends FileTextFieldImpl {
+
+    public Vfs(JTextField field,
+               Map<String, String> macroMap,
+               Disposable parent, final FileLookup.LookupFilter chooserFilter) {
+      super(field, new LocalFsFinder(), chooserFilter, macroMap, parent);
+    }
+
+    public Vfs(Map<String, String> macroMap,
+               Disposable parent, final FileLookup.LookupFilter chooserFilter) {
+      this(new JTextField(), macroMap, parent, chooserFilter);
+    }
+
+    @Override
+    public VirtualFile getSelectedFile() {
+      FileLookup.LookupFile lookupFile = getFile();
+      return lookupFile != null ? ((LocalFsFinder.VfsFile)lookupFile).getFile() : null;
+    }
+  }
+
+
 }

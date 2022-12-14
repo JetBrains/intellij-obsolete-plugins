@@ -13,20 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intellij.cvsSupport2.actions.cvsContext;
 
-import com.intellij.openapi.vcs.actions.VcsContext;
-import com.intellij.openapi.vcs.ui.Refreshable;
+package com.intellij.openapi.actionSystem;
 
-import java.util.Collection;
-
-public interface CvsContext extends VcsContext {
-
-  boolean cvsIsActive();
-
-  Collection<String> getDeletedFileNames();
-
-  CvsLightweightFile[] getSelectedLightweightFiles();
-
-  Refreshable getRefreshableDialog();
+public interface DataSink {
+  <T> void put(DataKey<T> key, T data); 
 }

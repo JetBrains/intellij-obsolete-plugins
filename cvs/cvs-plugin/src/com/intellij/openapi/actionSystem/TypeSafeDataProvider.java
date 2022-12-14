@@ -13,20 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intellij.cvsSupport2.actions.cvsContext;
 
-import com.intellij.openapi.vcs.actions.VcsContext;
-import com.intellij.openapi.vcs.ui.Refreshable;
+package com.intellij.openapi.actionSystem;
 
-import java.util.Collection;
+import org.jetbrains.annotations.NotNull;
 
-public interface CvsContext extends VcsContext {
-
-  boolean cvsIsActive();
-
-  Collection<String> getDeletedFileNames();
-
-  CvsLightweightFile[] getSelectedLightweightFiles();
-
-  Refreshable getRefreshableDialog();
+/**
+ * @deprecated This API proved to be rather inconvenient
+ * @see DataProvider
+ */
+@Deprecated
+public interface TypeSafeDataProvider {
+  void calcData(@NotNull DataKey key, @NotNull DataSink sink);
 }

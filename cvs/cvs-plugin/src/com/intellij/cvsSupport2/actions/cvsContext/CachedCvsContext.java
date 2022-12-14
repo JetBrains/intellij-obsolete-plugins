@@ -88,7 +88,7 @@ public class CachedCvsContext implements CvsContext{
 
   @Override
   public Refreshable getRefreshableDialog() {
-    return myVcsContext.getRefreshableDialog();
+    return null;//myVcsContext.getRefreshableDialog();
   }
 
   @Override

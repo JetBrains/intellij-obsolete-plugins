@@ -13,6 +13,8 @@ import com.intellij.cvsSupport2.cvshandlers.CvsHandler;
 import com.intellij.openapi.application.ApplicationNamesInfo;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.MessageType;
+import com.intellij.openapi.util.NlsContexts;
+import com.intellij.openapi.util.NlsSafe;
 import com.intellij.openapi.vcs.CheckinProjectPanel;
 import com.intellij.openapi.vcs.FilePath;
 import com.intellij.openapi.vcs.VcsException;
@@ -68,11 +70,12 @@ public class CvsCheckinEnvironment implements CheckinEnvironment {
     return CvsBundle.message("operation.name.checkin.project");
   }
 
+
   @Override
-  public List<VcsException> commit(@NotNull List<Change> changes,
-                                   @NotNull String commitMessage,
-                                   @NotNull CommitContext commitContext,
-                                   @NotNull Set<String> feedback) {
+  public List<VcsException> commit(@NotNull List<? extends Change> changes,
+                                      @NotNull @NlsSafe String commitMessage,
+                                      @NotNull CommitContext commitContext,
+                                      @NotNull Set<? super @NlsContexts.DetailedDescription String> feedback) {
     final Collection<FilePath> filesList = ChangesUtil.getPaths(changes);
     FilePath[] files = filesList.toArray(new FilePath[0]);
     final CvsOperationExecutor executor = new CvsOperationExecutor(myProject);
@@ -107,7 +110,7 @@ public class CvsCheckinEnvironment implements CheckinEnvironment {
   }
 
   @Override
-  public List<VcsException> scheduleMissingFileForDeletion(@NotNull List<FilePath> files) {
+  public @Nullable List<VcsException> scheduleMissingFileForDeletion(@NotNull List<? extends FilePath> files) {
     for (FilePath file : files) {
       if (file.isDirectory()) {
         VcsBalloonProblemNotifier.showOverChangesView(myProject,
@@ -126,7 +129,7 @@ public class CvsCheckinEnvironment implements CheckinEnvironment {
   }
 
   @Override
-  public List<VcsException> scheduleUnversionedFilesForAddition(@NotNull List<VirtualFile> files) {
+  public @Nullable List<VcsException> scheduleUnversionedFilesForAddition(@NotNull List<? extends VirtualFile> files) {
     final CvsHandler handler = AddFileOrDirectoryAction.getDefaultHandler(myProject, VfsUtil.toVirtualFileArray(files));
     final CvsOperationExecutor executor = new CvsOperationExecutor(myProject);
     executor.performActionSync(handler, CvsOperationExecutorCallback.EMPTY);

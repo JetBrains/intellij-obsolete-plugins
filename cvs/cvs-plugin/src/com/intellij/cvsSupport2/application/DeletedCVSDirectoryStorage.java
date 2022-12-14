@@ -9,6 +9,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -34,7 +35,7 @@ public class DeletedCVSDirectoryStorage {
   void checkNeedForPurge(File file) {
     if (!file.isDirectory()) return;
 
-    File[] subdirectories = file.listFiles(FileUtilRt.ALL_DIRECTORIES);
+    File[] subdirectories = file.listFiles(file1 -> file1.isDirectory());
     for (File subdirectory : subdirectories) {
       checkNeedForPurge(subdirectory);
     }
