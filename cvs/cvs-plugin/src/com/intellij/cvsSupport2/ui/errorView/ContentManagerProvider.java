@@ -13,20 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intellij.cvsSupport2.actions.cvsContext;
+package com.intellij.cvsSupport2.ui.errorView;
 
-import com.intellij.openapi.vcs.actions.VcsContext;
-import com.intellij.openapi.vcs.ui.Refreshable;
+import com.intellij.ui.content.ContentManager;
 
-import java.util.Collection;
 
-public interface CvsContext extends VcsContext {
-
-  boolean cvsIsActive();
-
-  Collection<String> getDeletedFileNames();
-
-  CvsLightweightFile[] getSelectedLightweightFiles();
-
-  Refreshable getRefreshableDialog();
+public interface ContentManagerProvider {
+  ContentManager getParentContent();
 }

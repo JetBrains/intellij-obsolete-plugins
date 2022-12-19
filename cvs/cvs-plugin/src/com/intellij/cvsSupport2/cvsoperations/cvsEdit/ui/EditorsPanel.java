@@ -4,9 +4,7 @@ package com.intellij.cvsSupport2.cvsoperations.cvsEdit.ui;
 import com.intellij.CvsBundle;
 import com.intellij.cvsSupport2.cvsoperations.cvsEdit.EditorInfo;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.actionSystem.DataKey;
-import com.intellij.openapi.actionSystem.DataSink;
-import com.intellij.openapi.actionSystem.TypeSafeDataProvider;
+import com.intellij.openapi.actionSystem.DataProvider;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -18,7 +16,9 @@ import com.intellij.util.EditSourceOnEnterKeyHandler;
 import com.intellij.util.text.DateFormatUtil;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * author: lesya
  */
-public class EditorsPanel extends JPanel implements TypeSafeDataProvider {
+public class EditorsPanel extends JPanel implements DataProvider {
 
   private final ListTableModel<EditorInfo> myModel = new ListTableModel<>(COLUMNS);
   private final TableView<EditorInfo> myTable = new TableView<>(myModel);
@@ -109,15 +109,16 @@ public class EditorsPanel extends JPanel implements TypeSafeDataProvider {
     EditSourceOnEnterKeyHandler.install(myTable);
   }
 
+
   @Override
-  public void calcData(@NotNull DataKey key, @NotNull DataSink sink) {
-    if (key.equals(CommonDataKeys.PROJECT)) {
-      sink.put(CommonDataKeys.PROJECT, myProject);
+  public @Nullable Object getData(@NotNull @NonNls String dataId) {
+    if (CommonDataKeys.PROJECT.is(dataId)) {
+      return myProject;
     }
-    else if (key.equals(CommonDataKeys.NAVIGATABLE)) {
+    else if (CommonDataKeys.NAVIGATABLE.is(dataId)) {
       final EditorInfo editorInfo = myTable.getSelectedObject();
       if (editorInfo == null) {
-        return;
+        return null;
       }
       String filePath = editorInfo.getFilePath();
       final int pos = filePath.lastIndexOf('/');
@@ -127,8 +128,9 @@ public class EditorsPanel extends JPanel implements TypeSafeDataProvider {
       final File file = new File(editorInfo.getPath(), filePath);
       final VirtualFile vf = LocalFileSystem.getInstance().findFileByIoFile(file);
       if (vf != null) {
-        sink.put(CommonDataKeys.NAVIGATABLE, new OpenFileDescriptor(myProject, vf));
+        return new OpenFileDescriptor(myProject, vf);
       }
     }
+    return null;
   }
 }
