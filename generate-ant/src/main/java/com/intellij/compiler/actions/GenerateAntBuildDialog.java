@@ -3,6 +3,7 @@
  */
 package com.intellij.compiler.actions;
 
+import com.intellij.ModuleChunks;
 import com.intellij.compiler.HelpID;
 import com.intellij.compiler.ModuleCompilerUtil;
 import com.intellij.compiler.ant.BuildProperties;
@@ -24,6 +25,7 @@ import com.intellij.util.ListWithSelection;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.table.ComboBoxTableCellEditor;
 import org.jetbrains.annotations.NonNls;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -72,7 +74,7 @@ public class GenerateAntBuildDialog extends DialogWrapper {
 
   private List<Chunk<Module>> getCycleChunks() {
     List<Chunk<Module>> chunks =
-      ModuleCompilerUtil.getSortedModuleChunks(myProject, Arrays.asList(ModuleManager.getInstance(myProject).getModules()));
+      ModuleChunks.getSortedModuleChunks(myProject, Arrays.asList(ModuleManager.getInstance(myProject).getModules()));
     for (Iterator<Chunk<Module>> it = chunks.iterator(); it.hasNext();) {
       final Chunk<Module> chunk = it.next();
       if (chunk.getNodes().size() == 1) {

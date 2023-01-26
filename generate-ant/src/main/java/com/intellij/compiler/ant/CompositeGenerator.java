@@ -82,7 +82,7 @@ public class CompositeGenerator extends Generator {
    * @param emptyLinesCount amount of empty lines
    */
   public final void add(Generator generator, int emptyLinesCount) {
-    myGenerators.add(Pair.create(generator, new Integer(emptyLinesCount)));
+    myGenerators.add(Pair.create(generator, emptyLinesCount));
   }
 
   /**

@@ -29,8 +29,6 @@
     </extensionPoints>
 
     <extensions defaultExtensionNs="com.intellij">
-        <appStarter implementation="com.intellij.compiler.ant.GenerateAntMain"/>
-
         <applicationService serviceInterface="com.intellij.compiler.ant.AntBuildTargetsFactory"
                             serviceImplementation="com.intellij.compiler.ant.AntBuildTargetsFactoryImpl"/>
 
