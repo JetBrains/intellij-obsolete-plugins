@@ -6,6 +6,7 @@ package com.intellij.compiler.ant.artifacts;
 import com.intellij.compiler.ant.*;
 import com.intellij.compiler.ant.packaging.PackagingElementAntGenerators;
 import com.intellij.compiler.ant.taskdefs.*;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Couple;
@@ -38,7 +39,7 @@ public class ArtifactsGenerator {
   public ArtifactsGenerator(Project project, GenerationOptions genOptions) {
     myResolvingContext = ArtifactManager.getInstance(project).getResolvingContext();
 
-    myAllArtifacts = new ArrayList<>(Arrays.asList(ArtifactManager.getInstance(project).getSortedArtifacts()));
+    myAllArtifacts = new ArrayList<>(Arrays.asList(ReadAction.compute(()->ArtifactManager.getInstance(project).getSortedArtifacts())));
 
     myContext = new ArtifactAntGenerationContextImpl(project, genOptions, myAllArtifacts);
   }
