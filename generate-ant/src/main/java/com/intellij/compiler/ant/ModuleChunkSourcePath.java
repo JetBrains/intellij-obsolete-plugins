@@ -16,6 +16,7 @@
 package com.intellij.compiler.ant;
 
 import com.intellij.compiler.ant.taskdefs.*;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
@@ -44,82 +45,83 @@ public class ModuleChunkSourcePath extends CompositeGenerator{
     final String moduleChunkBasedirProperty = BuildProperties.getModuleChunkBasedirProperty(chunk);
     final Module[] modules = chunk.getModules();
 
-    if (CompilerExcludes.isAvailable(project)) {
-      excludedFromCompilation.add(new PatternSetRef(BuildProperties.PROPERTY_COMPILER_EXCLUDES));
-    }
-
     final List<VirtualFile> sourceRootFiles = new ArrayList<>();
     final List<VirtualFile> testSourceRootFiles = new ArrayList<>();
 
-    for (final Module module : modules) {
-      final String moduleName = module.getName();
-      final ModuleRootManager rootManager = ModuleRootManager.getInstance(module);
-      final ModuleFileIndex moduleFileIndex = rootManager.getFileIndex();
-
-
-      final PatternSet excludedFromModule = new PatternSet(BuildProperties.getExcludedFromModuleProperty(moduleName));
-      excludedFromModule.add(new PatternSetRef(BuildProperties.PROPERTY_IGNORED_FILES));
-
-      final ContentEntry[] contentEntries = rootManager.getContentEntries();
-      for (final ContentEntry contentEntry : contentEntries) {
-        final VirtualFile file = contentEntry.getFile();
-        if (file == null) {
-          continue; // filter invalid entries
-        }
-        if (!file.isInLocalFileSystem()) {
-          continue; // skip content roots inside jar and zip archives
-        }
-        final VirtualFile dirSetRoot = getDirSetRoot(contentEntry);
-
-        final String dirSetRootRelativeToBasedir = GenerationUtils
-          .toRelativePath(dirSetRoot, chunk.getBaseDir(), moduleChunkBasedirProperty, genOptions);
-        final DirSet sourcesDirSet = new DirSet(dirSetRootRelativeToBasedir);
-        final DirSet testSourcesDirSet = new DirSet(dirSetRootRelativeToBasedir);
-
-        final VirtualFile[] sourceRoots = contentEntry.getSourceFolderFiles();
-        for (final VirtualFile root : sourceRoots) {
-          if (!moduleFileIndex.isInContent(root)) {
-            continue; // skip library sources
-          }
-
-          addExcludePatterns(module, root, root, excludedFromModule, true);
-
-          final Include include = new Include(VfsUtilCore.getRelativePath(root, dirSetRoot, '/'));
-          if (moduleFileIndex.isInTestSourceContent(root)) {
-            testSourcesDirSet.add(include);
-            testSourceRootFiles.add(root);
-          }
-          else {
-            sourcesDirSet.add(include);
-            sourceRootFiles.add(root);
-          }
-        }
-        if (sourcesDirSet.getGeneratorCount() > 0) {
-          sourcePath.add(sourcesDirSet);
-        }
-        if (testSourcesDirSet.getGeneratorCount() > 0) {
-          testSourcePath.add(testSourcesDirSet);
-        }
+    ReadAction.run(() -> {
+      if (CompilerExcludes.isAvailable(project)) {
+        excludedFromCompilation.add(new PatternSetRef(BuildProperties.PROPERTY_COMPILER_EXCLUDES));
       }
 
-      if (excludedFromModule.getGeneratorCount() > 0) {
-        add(excludedFromModule);
-        excludedFromCompilation.add(new PatternSetRef(BuildProperties.getExcludedFromModuleProperty(moduleName)));
+      for (final Module module : modules) {
+        final String moduleName = module.getName();
+        final ModuleRootManager rootManager = ModuleRootManager.getInstance(module);
+        final ModuleFileIndex moduleFileIndex = rootManager.getFileIndex();
+
+
+        final PatternSet excludedFromModule = new PatternSet(BuildProperties.getExcludedFromModuleProperty(moduleName));
+        excludedFromModule.add(new PatternSetRef(BuildProperties.PROPERTY_IGNORED_FILES));
+
+        final ContentEntry[] contentEntries = rootManager.getContentEntries();
+        for (final ContentEntry contentEntry : contentEntries) {
+          final VirtualFile file = contentEntry.getFile();
+          if (file == null) {
+            continue; // filter invalid entries
+          }
+          if (!file.isInLocalFileSystem()) {
+            continue; // skip content roots inside jar and zip archives
+          }
+          final VirtualFile dirSetRoot = getDirSetRoot(contentEntry);
+
+          final String dirSetRootRelativeToBasedir = GenerationUtils
+            .toRelativePath(dirSetRoot, chunk.getBaseDir(), moduleChunkBasedirProperty, genOptions);
+          final DirSet sourcesDirSet = new DirSet(dirSetRootRelativeToBasedir);
+          final DirSet testSourcesDirSet = new DirSet(dirSetRootRelativeToBasedir);
+
+          final VirtualFile[] sourceRoots = contentEntry.getSourceFolderFiles();
+          for (final VirtualFile root : sourceRoots) {
+            if (!moduleFileIndex.isInContent(root)) {
+              continue; // skip library sources
+            }
+
+            addExcludePatterns(module, root, root, excludedFromModule, true);
+
+            final Include include = new Include(VfsUtilCore.getRelativePath(root, dirSetRoot, '/'));
+            if (moduleFileIndex.isInTestSourceContent(root)) {
+              testSourcesDirSet.add(include);
+              testSourceRootFiles.add(root);
+            }
+            else {
+              sourcesDirSet.add(include);
+              sourceRootFiles.add(root);
+            }
+          }
+          if (sourcesDirSet.getGeneratorCount() > 0) {
+            sourcePath.add(sourcesDirSet);
+          }
+          if (testSourcesDirSet.getGeneratorCount() > 0) {
+            testSourcePath.add(testSourcesDirSet);
+          }
+        }
+
+        if (excludedFromModule.getGeneratorCount() > 0) {
+          add(excludedFromModule);
+          excludedFromCompilation.add(new PatternSetRef(BuildProperties.getExcludedFromModuleProperty(moduleName)));
+        }
       }
-    }
+      if (excludedFromCompilation.getGeneratorCount() > 0) {
+        add(excludedFromCompilation, 1);
+      }
+      if (sourcePath.getGeneratorCount() > 0) {
+        add(sourcePath, 1);
+      }
+      if (testSourcePath.getGeneratorCount() != 0) {
+        add(testSourcePath, 1);
+      }
+    });
 
     mySourceRoots = VfsUtilCore.toVirtualFileArray(sourceRootFiles);
     myTestSourceRoots = VfsUtilCore.toVirtualFileArray(testSourceRootFiles);
-
-    if (excludedFromCompilation.getGeneratorCount() > 0) {
-      add(excludedFromCompilation, 1);
-    }
-    if (sourcePath.getGeneratorCount() > 0) {
-      add(sourcePath, 1);
-    }
-    if (testSourcePath.getGeneratorCount() != 0) {
-      add(testSourcePath, 1);
-    }
   }
 
   public VirtualFile[] getSourceRoots() {
@@ -132,10 +134,12 @@ public class ModuleChunkSourcePath extends CompositeGenerator{
 
   private VirtualFile getDirSetRoot(final ContentEntry contentEntry) {
     final VirtualFile contentRoot = contentEntry.getFile();
-    final VirtualFile[] sourceFolderFiles = contentEntry.getSourceFolderFiles();
-    for (VirtualFile sourceFolderFile : sourceFolderFiles) {
-      if (contentRoot.equals(sourceFolderFile)) {
-        return contentRoot.getParent();
+    if (contentRoot != null) {
+      final VirtualFile[] sourceFolderFiles = contentEntry.getSourceFolderFiles();
+      for (VirtualFile sourceFolderFile : sourceFolderFiles) {
+        if (contentRoot.equals(sourceFolderFile)) {
+          return contentRoot.getParent();
+        }
       }
     }
     return contentRoot;
