@@ -61,7 +61,7 @@ public class CvsConfiguration implements PersistentStateComponent<CvsConfigurati
 
 
   public static CvsConfiguration getInstance(Project project) {
-    return ServiceManager.getService(project, CvsConfiguration.class);
+    return project.getService(CvsConfiguration.class);
   }
 
   public static VcsShowConfirmationOption.Value convertToEnumValue(boolean value, boolean onOk) {

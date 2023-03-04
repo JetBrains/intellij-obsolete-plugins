@@ -2,7 +2,6 @@
 package com.intellij.cvsSupport2.connections.ssh;
 
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.util.Alarm;
 import org.jetbrains.annotations.Nullable;
 import org.netbeans.lib.cvsclient.connection.ConnectionSettings;
@@ -18,7 +17,7 @@ public class SshConnectionPool implements ConnectionPoolI {
   private final Alarm myAlarm;
 
   public static SshConnectionPool getInstance() {
-    return ServiceManager.getService(SshConnectionPool.class);
+    return ApplicationManager.getApplication().getService(SshConnectionPool.class);
   }
 
   private SshConnectionPool() {

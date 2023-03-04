@@ -2,7 +2,7 @@
 package com.intellij.cvsSupport2.connections.ssh;
 
 import com.intellij.cvsSupport2.config.ProxySettings;
-import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.util.Pair;
 import com.intellij.util.proxy.CommonProxy;
 import com.intellij.util.proxy.NonStaticAuthenticator;
@@ -23,7 +23,7 @@ public class SocksAuthenticatorManager {
   private volatile CvsProxySelector mySelector;
 
   public static SocksAuthenticatorManager getInstance() {
-    return ServiceManager.getService(SocksAuthenticatorManager.class);
+    return ApplicationManager.getApplication().getService(SocksAuthenticatorManager.class);
   }
 
   private SocksAuthenticatorManager() {

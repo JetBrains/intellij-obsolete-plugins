@@ -14,8 +14,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-// https://stackoverflow.com/questions/64082680/intellij-plugin-cannot-init-component-state-exception
-// todo: migrate to settings: https://plugins.jetbrains.com/docs/intellij/settings-guide.html#extension-points-for-settings
 @State(
         name = "ImportConfiguration",
         storages = @Storage(value = "other.xml", roamingType = RoamingType.DISABLED),

@@ -12,7 +12,6 @@ import com.intellij.cvsSupport2.cvsstatuses.CvsEntriesListener;
 import com.intellij.cvsSupport2.util.CvsVfsUtil;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
@@ -53,7 +52,7 @@ public class CvsEntriesManager implements VirtualFileListener {
   private Disposable listenerDisposable;
 
   public static CvsEntriesManager getInstance() {
-    return ServiceManager.getService(CvsEntriesManager.class);
+    return ApplicationManager.getApplication().getService(CvsEntriesManager.class);
   }
 
   private class MyVirtualFileManagerListener implements VirtualFileManagerListener {
