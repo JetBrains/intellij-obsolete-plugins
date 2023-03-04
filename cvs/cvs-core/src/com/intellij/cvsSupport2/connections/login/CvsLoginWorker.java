@@ -15,6 +15,8 @@
  */
 package com.intellij.cvsSupport2.connections.login;
 
+import com.intellij.util.concurrency.annotations.RequiresBackgroundThread;
+import com.intellij.util.concurrency.annotations.RequiresEdt;
 import org.jetbrains.annotations.CalledInAwt;
 import org.jetbrains.annotations.CalledInBackground;
 import com.intellij.util.ThreeState;
@@ -25,10 +27,10 @@ public interface CvsLoginWorker {
   /**
    * @return {@code true} if login attempt should be repeated after prompting user
    */
-  @CalledInAwt
+  @RequiresEdt
   boolean promptForPassword();
 
-  @CalledInBackground
+  @RequiresBackgroundThread
   ThreeState silentLogin(boolean forceCheck) throws AuthenticationException;
 
   void goOffline();
