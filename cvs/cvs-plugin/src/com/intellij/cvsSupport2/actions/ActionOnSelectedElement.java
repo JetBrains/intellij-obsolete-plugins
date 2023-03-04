@@ -29,6 +29,7 @@ import com.intellij.openapi.vcs.actions.VcsContext;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.io.File;
@@ -145,6 +146,10 @@ public abstract class ActionOnSelectedElement extends AbstractAction {
 
   public ActionOnSelectedElement(boolean startLvcsAction, String name, Icon icon) {
     super(startLvcsAction, name, icon);
+  }
+
+  public ActionOnSelectedElement(boolean myStartLvcsAction, @Nullable String text, @Nullable String description, @Nullable Icon icon) {
+    super(myStartLvcsAction, text, description, icon);
   }
 
 
