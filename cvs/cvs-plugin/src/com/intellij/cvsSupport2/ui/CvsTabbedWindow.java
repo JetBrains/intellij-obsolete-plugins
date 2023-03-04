@@ -129,6 +129,7 @@ public class CvsTabbedWindow implements Disposable {
     contentManager.addContent(content);
     if (selectTab) {
       getToolWindow().activate(null, false);
+      contentManager.setSelectedContent(content);
     }
   }
 
