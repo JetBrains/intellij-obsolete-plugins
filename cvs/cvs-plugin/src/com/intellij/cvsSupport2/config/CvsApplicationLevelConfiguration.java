@@ -1,43 +1,46 @@
 // Copyright 2000-2020 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package com.intellij.cvsSupport2.config;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.RoamingType;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.util.DefaultJDOMExternalizer;
-import com.intellij.openapi.util.DifferenceFilter;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
 import com.intellij.util.SystemProperties;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import com.intellij.util.xmlb.SkipDefaultValuesSerializationFilters;
+import com.intellij.util.xmlb.XmlSerializer;
+import com.intellij.util.xmlb.annotations.Transient;
 import org.jdom.Element;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
 @State(name = "CvsApplicationLevelConfiguration", storages = @Storage(value = "other.xml", roamingType = RoamingType.DISABLED),
-  reportStatistic = false)
-public class CvsApplicationLevelConfiguration implements PersistentStateComponent<Element> {
+        reportStatistic = false)
+public class CvsApplicationLevelConfiguration implements PersistentStateComponent<Element/*CvsApplicationLevelConfiguration*/> {
   private static final Logger LOG = Logger.getInstance(CvsApplicationLevelConfiguration.class);
 
+  @Transient
   public List<CvsRootConfiguration> CONFIGURATIONS = new ArrayList<>();
-
+  @Transient
   public ExtConfiguration EXT_CONFIGURATION = new ExtConfiguration();
+  @Transient
   public SshSettings SSH_CONFIGURATION = new SshSettings();
+  @Transient
   public LocalSettings LOCAL_CONFIGURATION = new LocalSettings();
+  @Transient
   public ProxySettings PROXY_SETTINGS = new ProxySettings();
+  @Transient
   public SshSettings SSH_FOR_EXT_CONFIGURATION = new SshSettings();
 
   @NonNls private static final String CONFIGURATION_ELEMENT_NAME = "Configuration";
@@ -63,17 +66,17 @@ public class CvsApplicationLevelConfiguration implements PersistentStateComponen
 
 
   public static CvsApplicationLevelConfiguration getInstance() {
-    return ServiceManager.getService(CvsApplicationLevelConfiguration.class);
+    return ApplicationManager.getApplication().getService(CvsApplicationLevelConfiguration.class);
   }
 
   @Nullable
   @Override
   public Element getState() {
     Element state = new Element("state");
-    DefaultJDOMExternalizer.writeExternal(this, state, new DifferenceFilter<>(this, new CvsApplicationLevelConfiguration()));
+    XmlSerializer.serializeInto(this, state, new SkipDefaultValuesSerializationFilters());
     for (CvsRootConfiguration configuration : CONFIGURATIONS) {
       Element child = new Element(CONFIGURATION_ELEMENT_NAME);
-      configuration.writeExternal(child);
+      XmlSerializer.serializeInto(configuration, child);
       state.addContent(child);
     }
     return state;
@@ -81,9 +84,12 @@ public class CvsApplicationLevelConfiguration implements PersistentStateComponen
 
   @Override
   public void loadState(@NotNull Element state) {
-    DefaultJDOMExternalizer.readExternal(this, state);
+    XmlSerializer.deserializeInto(this, state);
     for (Element child : state.getChildren(CONFIGURATION_ELEMENT_NAME)) {
-      CONFIGURATIONS.add(createConfigurationOn(child));
+      CvsRootConfiguration config = createNewConfiguration(this);
+      XmlSerializer.deserializeInto(config, child);
+
+      CONFIGURATIONS.add(config);
     }
 
     if (!encodingExists(ENCODING)) {
@@ -105,7 +111,6 @@ public class CvsApplicationLevelConfiguration implements PersistentStateComponen
 
   private CvsRootConfiguration createConfigurationOn(Element child) {
     CvsRootConfiguration config = createNewConfiguration(this);
-    config.readExternal(child);
     return config;
   }
 

@@ -2,19 +2,26 @@
 package com.intellij.cvsSupport2.config;
 
 import com.intellij.cvsSupport2.ui.experts.importToCvs.FileExtension;
-import com.intellij.openapi.components.ServiceManager;
-import com.intellij.openapi.util.DefaultJDOMExternalizer;
-import com.intellij.openapi.util.DifferenceFilter;
-import com.intellij.openapi.util.WriteExternalException;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.components.*;
 import com.intellij.openapi.util.text.StringUtil;
-import org.jdom.Element;
+import com.intellij.util.xmlb.XmlSerializerUtil;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-public class ImportConfiguration extends AbstractConfiguration {
+// https://stackoverflow.com/questions/64082680/intellij-plugin-cannot-init-component-state-exception
+// todo: migrate to settings: https://plugins.jetbrains.com/docs/intellij/settings-guide.html#extension-points-for-settings
+@State(
+        name = "ImportConfiguration",
+        storages = @Storage(value = "other.xml", roamingType = RoamingType.DISABLED),
+        reportStatistic = false
+)
+public class ImportConfiguration implements PersistentStateComponent<ImportConfiguration>, NamedComponent {
   public String VENDOR;
   public String RELEASE_TAG;
   public String LOG_MESSAGE;
@@ -22,12 +29,8 @@ public class ImportConfiguration extends AbstractConfiguration {
   public String KEYWORD_SUBSTITUTION_WRAPPERS = "";
   public boolean MAKE_NEW_FILES_READ_ONLY = false;
 
-  public static ImportConfiguration getInstance(){
-    return ServiceManager.getService(ImportConfiguration.class);
-  }
-
-  public ImportConfiguration() {
-    super("ImportConfiguration");
+  public static ImportConfiguration getInstance() {
+    return ApplicationManager.getApplication().getService(ImportConfiguration.class);
   }
 
   public Collection<FileExtension> getExtensions() {
@@ -57,7 +60,17 @@ public class ImportConfiguration extends AbstractConfiguration {
   }
 
   @Override
-  public void writeExternal(Element element) throws WriteExternalException {
-    DefaultJDOMExternalizer.writeExternal(this, element, new DifferenceFilter<>(this, new ImportConfiguration()));
+  public @NotNull String getComponentName() {
+    return "ImportConfiguration";
+  }
+
+  @Override
+  public @Nullable ImportConfiguration getState() {
+    return this;
+  }
+
+  @Override
+  public void loadState(@NotNull ImportConfiguration state) {
+    XmlSerializerUtil.copyBean(state, this);
   }
 }

@@ -15,18 +15,17 @@
  */
 package com.intellij.cvsSupport2.config;
 
+import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.util.DefaultJDOMExternalizer;
-import com.intellij.openapi.util.InvalidDataException;
-import com.intellij.openapi.util.JDOMExternalizable;
-import com.intellij.openapi.util.WriteExternalException;
-import org.jdom.Element;
+import com.intellij.util.xmlb.XmlSerializerUtil;
 import org.jetbrains.annotations.NonNls;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * author: lesya
  */
-public class LocalSettings implements JDOMExternalizable, Cloneable {
+public class LocalSettings implements PersistentStateComponent<LocalSettings>, Cloneable {
 
   private static final Logger LOG = Logger.getInstance(LocalSettings.class);
 
@@ -36,13 +35,13 @@ public class LocalSettings implements JDOMExternalizable, Cloneable {
   private boolean myCvsClientVerified = false;
 
   @Override
-  public void readExternal(Element element) throws InvalidDataException {
-    DefaultJDOMExternalizer.readExternal(this, element);
+  public @Nullable LocalSettings getState() {
+    return this;
   }
 
   @Override
-  public void writeExternal(Element element) throws WriteExternalException {
-    DefaultJDOMExternalizer.writeExternal(this, element);
+  public void loadState(@NotNull LocalSettings state) {
+    XmlSerializerUtil.copyBean(state, this);
   }
 
   public boolean isCvsClientVerified() {
