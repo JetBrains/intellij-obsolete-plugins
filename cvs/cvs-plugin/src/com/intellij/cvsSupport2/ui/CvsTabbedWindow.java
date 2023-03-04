@@ -5,6 +5,8 @@ import com.intellij.CvsBundle;
 import com.intellij.cvsSupport2.config.ui.ConfigureCvsGlobalSettingsDialog;
 import com.intellij.cvsSupport2.config.ui.CvsConfigurationsListEditor;
 import com.intellij.cvsSupport2.errorHandling.CvsException;
+import com.intellij.cvsSupport2.ui.errorView.ContentManagerProvider;
+import com.intellij.cvsSupport2.ui.errorView.ErrorViewFactoryImpl;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.ActionGroup;
@@ -12,7 +14,6 @@ import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.EditorSettings;
@@ -24,8 +25,6 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.content.ContentManagerEvent;
 import com.intellij.ui.content.ContentManagerListener;
-import com.intellij.cvsSupport2.ui.errorView.ContentManagerProvider;
-import com.intellij.cvsSupport2.ui.errorView.ErrorViewFactoryImpl;
 import com.intellij.util.ui.ErrorTreeView;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
@@ -33,6 +32,8 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.util.Objects;
+
+import static com.intellij.cvsSupport2.ui.CvsTabbedWindowComponent.JComponentReleasable;
 
 public class CvsTabbedWindow implements Disposable {
   private final Project myProject;
@@ -42,7 +43,7 @@ public class CvsTabbedWindow implements Disposable {
   public CvsTabbedWindow(Project project) {
     myProject = project;
 
-    ApplicationManager.getApplication().invokeLater(() -> initToolWindow());
+    ApplicationManager.getApplication().invokeLater(this::initToolWindow);
   }
 
   private void initToolWindow() {
@@ -50,14 +51,14 @@ public class CvsTabbedWindow implements Disposable {
       return;
     }
 
-    final ToolWindow toolWindow = getToolWindow();
+    final ToolWindow toolWindow = getToolWindow(myProject);
     final ContentManager contentManager = toolWindow.getContentManager();
     contentManager.addContentManagerListener(new ContentManagerListener() {
       @Override
       public void contentRemoved(@NotNull ContentManagerEvent event) {
         final JComponent component = event.getContent().getComponent();
         final JComponent removedComponent = component instanceof CvsTabbedWindowComponent ?
-                                            ((CvsTabbedWindowComponent)component).getComponent() : component;
+                ((CvsTabbedWindowComponent)component).getComponent() : component;
         if (removedComponent == myErrorsView) {
           myErrorsView.dispose();
           myErrorsView = null;
@@ -84,14 +85,18 @@ public class CvsTabbedWindow implements Disposable {
   }
 
   @NotNull
-  private ToolWindow getToolWindow() {
-    final ToolWindow toolWindow = ToolWindowManager.getInstance(myProject).getToolWindow(ChangesViewContentManager.TOOLWINDOW_ID);
+  public static ToolWindow getToolWindow(@NotNull Project project) {
+    final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(ChangesViewContentManager.TOOLWINDOW_ID);
     assert toolWindow != null : "Version Control ToolWindow should be available at this point.";
     return toolWindow;
   }
 
-  public static CvsTabbedWindow getInstance(Project project) {
-    return ServiceManager.getService(project, CvsTabbedWindow.class);
+  public static ContentManager getContentManager(@NotNull Project project) {
+    return getToolWindow(project).getContentManager();
+  }
+
+  public static CvsTabbedWindow getInstance(@NotNull Project project) {
+    return project.getService(CvsTabbedWindow.class);
   }
 
   public interface DeactivateListener {
@@ -106,7 +111,18 @@ public class CvsTabbedWindow implements Disposable {
                      boolean addDefaultToolbar,
                      @Nullable final ActionGroup toolbarActions,
                      @NonNls String helpId) {
-    final ContentManager contentManager = getToolWindow().getContentManager();
+    addTab(title, () -> component, selectTab, replaceContent, lockable, addDefaultToolbar, toolbarActions, helpId);
+  }
+
+  public void addTab(String title,
+                     JComponentReleasable componentWrapper,
+                     boolean selectTab,
+                     boolean replaceContent,
+                     boolean lockable,
+                     boolean addDefaultToolbar,
+                     @Nullable final ActionGroup toolbarActions,
+                     @NonNls String helpId) {
+    final ContentManager contentManager = getToolWindow(myProject).getContentManager();
     final Content existingContent = contentManager.findContent(title);
     if (existingContent != null) {
       final JComponent existingComponent = existingContent.getComponent();
@@ -123,12 +139,13 @@ public class CvsTabbedWindow implements Disposable {
       }
     }
     final CvsTabbedWindowComponent newComponent =
-      new CvsTabbedWindowComponent(component, addDefaultToolbar, toolbarActions, contentManager, helpId);
+            new CvsTabbedWindowComponent(componentWrapper, addDefaultToolbar, toolbarActions, contentManager, helpId);
     final Content content = contentManager.getFactory().createContent(newComponent.getShownComponent(), title, lockable);
     newComponent.setContent(content);
     contentManager.addContent(content);
+    contentManager.addContentManagerListener(newComponent);
     if (selectTab) {
-      getToolWindow().activate(null, false);
+      getToolWindow(myProject).activate(null, false);
       contentManager.setSelectedContent(content);
     }
   }
@@ -136,16 +153,16 @@ public class CvsTabbedWindow implements Disposable {
   public ErrorTreeView getErrorsTreeView() {
     if (myErrorsView == null) {
       myErrorsView = ErrorViewFactoryImpl
-        .createErrorTreeView(myProject, null, true, new AnAction[]{ActionManager.getInstance().getAction("CvsActions")},
-                             new AnAction[]{new GlobalCvsSettingsAction(), new ReconfigureCvsRootAction()}, new ContentManagerProvider() {
-          @Override
-          public ContentManager getParentContent() {
-            return getToolWindow().getContentManager();
-          }
-        });
+              .createErrorTreeView(myProject, null, true, new AnAction[]{ActionManager.getInstance().getAction("CvsActions")},
+                      new AnAction[]{new GlobalCvsSettingsAction(), new ReconfigureCvsRootAction()}, new ContentManagerProvider() {
+                        @Override
+                        public ContentManager getParentContent() {
+                          return getToolWindow(myProject).getContentManager();
+                        }
+                      });
       addTab(CvsBundle.message("tab.title.errors"), myErrorsView.getComponent(), true, false, true, false, null, "cvs.errors");
     }
-    getToolWindow().activate(null, false);
+    getToolWindow(myProject).activate(null, false);
     return myErrorsView;
   }
 
@@ -160,6 +177,10 @@ public class CvsTabbedWindow implements Disposable {
 
   @NotNull
   private static Editor createOutputEditor(Project project) {
+    return createEditor(project);
+  }
+
+  public static Editor createEditor(Project project) {
     final Editor result = EditorFactory.getInstance().createViewer(EditorFactory.getInstance().createDocument(""), project);
     final EditorSettings editorSettings = result.getSettings();
     editorSettings.setLineMarkerAreaShown(false);
