@@ -1,0 +1,17 @@
+PlayPsiFile: TagWithChildren3.html
+  TAG
+    PsiElement(TAG_START)('#{')
+    PsiElement(TAG_NAME)('form')
+    PsiWhiteSpace(' ')
+    PsiElement(TAG_END)('}')
+    TAG
+      PsiElement(TAG_START)('#{')
+      PsiElement(TAG_NAME)('child1')
+      PsiElement(CLOSE_TAG)('/}')
+    TAG
+      PsiElement(TAG_START)('#{')
+      PsiElement(TAG_NAME)('child1')
+      PsiElement(CLOSE_TAG)('/}')
+    PsiElement(END_TAG_START)('#{/')
+    PsiElement(TAG_NAME)('form')
+    PsiElement(TAG_END)('}')

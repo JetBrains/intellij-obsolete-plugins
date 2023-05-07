@@ -1,0 +1,7 @@
+END_TAG_START ('#{/')
+TAG_NAME ('if')
+WHITE_SPACE (' ')
+TEMPLATE_TEXT ('aaa}  ')
+TAG_START ('#{')
+TAG_NAME ('list')
+WHITE_SPACE ('  ')

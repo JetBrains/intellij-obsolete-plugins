@@ -1,0 +1,5 @@
+TEMPLATE_TEXT ('<a href="')
+ACTION_START ('@{')
+ACTION_SCRIPT ('leave(user)')
+ACTION_END ('}')
+TEMPLATE_TEXT ('">Leave the chat room</a>')

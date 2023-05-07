@@ -1,0 +1,9 @@
+PlayPsiFile: IncorrectClosingTag.html
+  PsiElement(TAG_START)('#{')
+  PsiElement(TAG_NAME)('form')
+  PsiElement(TAG_END)('}')
+  PsiElement(TEMPLATE_TEXT)(' ')
+  PsiElement(END_TAG_START)('#{/')
+  PsiElement(TAG_NAME)('form')
+  PsiErrorElement:Closing element for 'form' tag expected
+    <empty list>

@@ -1,0 +1,3 @@
+TEMPLATE_TEXT ('aaa ')
+ACTION_START ('@{')
+ACTION_SCRIPT (' {a+b } bbb')

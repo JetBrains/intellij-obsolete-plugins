@@ -1,0 +1,14 @@
+PlayPsiFile: Tags.html
+  PsiElement(TEMPLATE_TEXT)('template text ')
+  TAG
+    PsiElement(TAG_START)('#{')
+    PsiElement(TAG_NAME)('list')
+    PsiWhiteSpace(' ')
+    TAG_EXPRESSION
+      Reference expression
+        PsiElement(identifier)('events')
+    PsiElement(TAG_END)('}')
+    PsiElement(TEMPLATE_TEXT)(' foo  ')
+    PsiElement(END_TAG_START)('#{/')
+    PsiElement(TAG_NAME)('list')
+    PsiElement(TAG_END)('}')

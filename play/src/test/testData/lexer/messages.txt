@@ -1,0 +1,5 @@
+TEMPLATE_TEXT ('foo ')
+MESSAGE_START ('&{')
+MESSAGE_EXPRESSION (''extends' ')
+MESSAGE_END ('}')
+TEMPLATE_TEXT (' bar')

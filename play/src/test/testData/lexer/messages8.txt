@@ -1,0 +1,3 @@
+TEMPLATE_TEXT ('foo ')
+MESSAGE_START ('&{')
+BAD_CHARACTER (''a,b}')

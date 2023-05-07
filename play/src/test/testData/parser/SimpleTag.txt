@@ -1,0 +1,6 @@
+PlayPsiFile: SimpleTag.html
+  TAG
+    PsiElement(TAG_START)('#{')
+    PsiElement(TAG_NAME)('authenticityToken')
+    PsiWhiteSpace(' ')
+    PsiElement(CLOSE_TAG)('/}')

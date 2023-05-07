@@ -1,0 +1,6 @@
+TEMPLATE_TEXT ('header ')
+TAG_START ('#{')
+TAG_NAME ('authenticityToken')
+WHITE_SPACE (' ')
+CLOSE_TAG ('/}')
+TEMPLATE_TEXT (' footer ')

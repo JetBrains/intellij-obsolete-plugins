@@ -1,0 +1,5 @@
+TAG_START ('#{')
+TAG_NAME ('foo')
+WHITE_SPACE (' ')
+TAG_EXPRESSION (''aa,bb' ')
+CLOSE_TAG ('/}')

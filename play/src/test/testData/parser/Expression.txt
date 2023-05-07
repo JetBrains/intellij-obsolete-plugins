@@ -1,0 +1,8 @@
+PlayPsiFile: Expression.html
+  PsiElement(TEMPLATE_TEXT)('Are you ')
+  PsiElement(EL_START)('${')
+  EL_EXPRESSION
+    Reference expression
+      PsiElement(identifier)('user')
+  PsiElement(EL_END)('}')
+  PsiElement(TEMPLATE_TEXT)(' ?')

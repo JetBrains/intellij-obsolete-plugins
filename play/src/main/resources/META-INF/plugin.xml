@@ -1,0 +1,88 @@
+<idea-plugin package="com.intellij.play">
+
+  <id>com.intellij.play</id>
+  <name>Play Framework</name>
+
+  <description><![CDATA[
+Supports building applications with the <a href="https://www.playframework.com/">Play</a> Web framework 1.0.
+  ]]></description>
+
+  <category>JVM Frameworks</category>
+  <vendor>JetBrains</vendor>
+
+  <dependencies>
+    <plugin id="org.intellij.groovy"/>
+    <plugin id="com.intellij.modules.ultimate"/>
+  </dependencies>
+  <depends optional="true" config-file="play-persistence-integration.xml">com.intellij.persistence</depends>
+
+  <resource-bundle>messages.PlayBundle</resource-bundle>
+
+  <extensions defaultExtensionNs="com.intellij">
+
+    <fileType language="Play" extensions="play" fieldName="INSTANCE" name="Play" implementationClass="com.intellij.play.language.PlayFileType"/>
+    <fileType name="PlayMessages" fieldName="INSTANCE" implementationClass="com.intellij.play.language.PlayMessagesFileType"/>
+
+    <lang.parserDefinition language="Play" implementationClass="com.intellij.play.language.PlayParserDefinition"/>
+    <lang.fileViewProviderFactory language="Play" implementationClass="com.intellij.play.language.PlayFileViewProviderFactory"/>
+    <lang.foldingBuilder language="Play" implementationClass="com.intellij.play.language.PlayFoldingBuilder"/>
+    <braceMatcher filetype="Play" implementationClass="com.intellij.play.language.support.PlayPairedBraceMatcher"/>
+    <lang.commenter language="Play" implementationClass="com.intellij.play.language.support.PlayCommenter"/>
+
+    <lang.substitutor language="HTML" implementationClass="com.intellij.play.language.PlayLanguageSubstitutor"/>
+    <lang.substitutor language="JSP" implementationClass="com.intellij.play.language.PlayLanguageSubstitutor"/>
+
+    <applicationService serviceImplementation="com.intellij.play.console.PlayConfiguration"/>
+
+    <completion.contributor language="TEXT" implementationClass="com.intellij.play.console.PlayConsoleCompletionContributor"/>
+    <lang.formatter language="Play" implementationClass="com.intellij.play.language.formatter.PlayFormattingModelBuilder"/>
+    <lang.whiteSpaceFormattingStrategy language="Play"
+                                       implementationClass="com.intellij.play.language.formatter.PlayWhiteSpaceFormattingStrategy"/>
+    <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.intellij.play.annotator.PlayControllerClassAnnotator"/>
+
+    <lang.psiStructureViewFactory language="Play" implementationClass="com.intellij.play.files.PlayStructureViewBuilderProvider"/>
+
+    <psi.referenceContributor implementation="com.intellij.play.references.PlayReferenceContributor"/>
+
+    <completion.contributor language="Play" implementationClass="com.intellij.play.completion.PlayCompletionContributor" id="play"/>
+    <completion.contributor language="Groovy" order="first"
+                            implementationClass="com.intellij.play.completion.PlayGroovyCompletionContributor" id="playGroovy"/>
+    <completion.contributor language="HTML" implementationClass="com.intellij.play.completion.PlayHtmlCompletionContributor"
+                            id="playHtml"/>
+
+    <gotoRelatedProvider implementation="com.intellij.play.navigation.PlayGotoRelatedFileProvider" />
+
+    <localInspection language="Groovy" level="WARNING" shortName="PlayPropertyInspection"
+                     key="PlayPropertyInspection.name" groupKey="play.inspections.group.name"
+                     implementationClass="com.intellij.play.inspections.PlayI18nInspection" enabledByDefault="true"/>
+
+    <localInspection language="Play" level="WARNING" shortName="PlayCustomTagNameInspection"
+                     key="PlayCustomTagNameInspection.name" groupKey="play.inspections.group.name"
+                     implementationClass="com.intellij.play.inspections.PlayCustomTagNameInspection" enabledByDefault="true"/>
+
+    <lang.findUsagesProvider language="Play" implementationClass="com.intellij.play.references.PlayFindUsagesProvider"/>
+    <lang.elementManipulator forClass="com.intellij.psi.PsiPlainText" implementationClass="com.intellij.play.references.PlainTextManipulator"/>
+    <lang.elementManipulator forClass="com.intellij.play.language.psi.PlayTag" implementationClass="com.intellij.play.language.psi.PlayTagManipulator"/>
+    <referencesSearch implementation="com.intellij.play.references.PlayRoutesFilesSearcher"/>
+    <referencesSearch implementation="com.intellij.play.references.PlayFastTagsSearcher"/>
+    <findUsagesHandlerFactory implementation="com.intellij.play.usages.PlayFindUsagesHandlerFactory"/>
+
+    <useScopeEnlarger implementation="com.intellij.play.utils.PlayScopeEnlarger"/>
+    <renamePsiElementProcessor implementation="com.intellij.play.rename.PlayViewControllerRenameProcessor"/>
+    <projectConfigurable groupId="language" groupWeight="140" instance="com.intellij.play.console.PlayConfigurable" id="play.paths.configuration"
+                         bundle="messages.PlayBundle" key="play.home.configuration"/>
+    <editorHighlighterProvider filetype="Play" implementationClass="com.intellij.play.language.PlayEditorHighlighterProvider"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="org.intellij.groovy">
+    <membersContributor implementation="com.intellij.play.utils.PlayFlashScopeMembersContributor"/>
+    <membersContributor implementation="com.intellij.play.utils.PlayClassExtensionsMembersContributor"/>
+  </extensions>
+
+
+  <actions>
+    <action id="com.intellij.play.console.RunPlayConsoleAction" class="com.intellij.play.console.RunPlayConsoleAction">
+      <add-to-group group-id="ToolsMenu" anchor="last"/>
+    </action>
+  </actions>
+</idea-plugin>
