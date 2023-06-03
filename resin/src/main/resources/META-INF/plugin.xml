@@ -1,0 +1,21 @@
+<idea-plugin>
+    <name>Resin</name>
+    <id>com.intellij.resin</id>
+
+    <depends>com.intellij.modules.java</depends>
+    <depends>com.intellij.modules.ultimate</depends>
+    <depends>com.intellij.javaee</depends>
+    <depends>com.intellij.javaee.app.servers.integration</depends>
+
+    <description>
+        Allows configuring and using Resin application server directly from IntelliJ IDEA,
+        for deploying and running/debugging web applications.
+    </description>
+    <vendor>JetBrains</vendor>
+    <category>Deployment</category>
+    <extensions defaultExtensionNs="com.intellij">
+        <configurationType implementation="org.intellij.j2ee.web.resin.ResinConfigurationType"/>
+        <configurationProducer implementation="org.intellij.j2ee.web.resin.ResinConfigurationProducer"/>
+        <javaee.app.servers.integration.appServerIntegration implementation="org.intellij.j2ee.web.resin.ResinManager"/>
+    </extensions>
+</idea-plugin>
