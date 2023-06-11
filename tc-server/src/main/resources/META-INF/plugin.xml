@@ -1,0 +1,21 @@
+<idea-plugin>
+  <!--suppress PluginXmlCapitalization -->
+  <name>tc Server</name>
+  <id>com.intellij.tcserver</id>
+  <description>
+    <![CDATA[Provides integration with tc Server 2.0 - 3.2.5.]]>
+  </description>
+  <!--suppress PluginXmlValidity -->
+  <vendor>JetBrains</vendor>
+  <category>Deployment</category>
+
+  <resource-bundle>messages.TcServerBundle</resource-bundle>
+
+  <depends>com.intellij.javaee</depends>
+  <depends>com.intellij.javaee.app.servers.integration</depends>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <javaee.app.servers.integration.appServerIntegration implementation="com.intellij.tcserver.server.integration.TcServerIntegration"/>
+    <configurationType implementation="com.intellij.tcserver.server.run.TcServerConfigurationType"/>
+  </extensions>
+</idea-plugin>
