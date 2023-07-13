@@ -36,7 +36,7 @@
 
     <vendor>JetBrains</vendor>
 
-    <xi:include href="/META-INF/ognl.xml"/>
+    <xi:include href="ognl.xml"/>
 
     <!-- published extension points -->
     <extensionPoints>
