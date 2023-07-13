@@ -17,15 +17,17 @@
 // Generated from ognl.bnf, do not modify
 package com.intellij.lang.ognl.psi;
 
-import java.util.List;
 import org.jetbrains.annotations.*;
-import com.intellij.psi.PsiElement;
 
-public interface OgnlParameterList extends OgnlPsiCompositeElement {
+public interface OgnlBinaryExpression extends OgnlExpression {
 
   @NotNull
-  List<OgnlExpression> getParametersList();
+  OgnlExpression getLeft();
 
-  int getParameterCount();
+  @Nullable
+  OgnlExpression getRight();
+
+  @NotNull
+  OgnlTokenType getOperator();
 
 }

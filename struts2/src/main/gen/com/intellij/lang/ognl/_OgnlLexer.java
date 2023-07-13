@@ -4,7 +4,7 @@
 // source: _OgnlLexer.flex
 
 /* Generated code. Do not modify it. */
-package com.intellij.lang.ognl.lexer;
+package com.intellij.lang.ognl;
 
 import com.intellij.lexer.FlexLexer;
 import com.intellij.psi.tree.IElementType;

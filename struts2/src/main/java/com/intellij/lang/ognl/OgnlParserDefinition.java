@@ -20,7 +20,6 @@ import com.intellij.lang.LanguageUtil;
 import com.intellij.lang.ParserDefinition;
 import com.intellij.lang.PsiParser;
 import com.intellij.lang.ognl.lexer.OgnlLexer;
-import com.intellij.lang.ognl.parser.OgnlParser;
 import com.intellij.lang.ognl.psi.OgnlTokenGroups;
 import com.intellij.lexer.Lexer;
 import com.intellij.openapi.project.Project;

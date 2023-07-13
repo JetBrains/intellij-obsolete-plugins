@@ -13,20 +13,23 @@
  * limitations under the License.
  */
 
+package com.intellij.lang.ognl.lexer;
 
-// Generated from ognl.bnf, do not modify
-package com.intellij.lang.ognl.psi;
+import com.intellij.lang.ognl._OgnlLexer;
+import com.intellij.lexer.FlexAdapter;
 
-import java.util.List;
-import org.jetbrains.annotations.*;
-import com.intellij.psi.PsiElement;
+/**
+ * @author Yann C&eacute;bron
+ */
+public class OgnlLexer extends FlexAdapter {
 
-public interface OgnlUnaryExpression extends OgnlExpression {
-
-  @Nullable
-  OgnlExpression getExpression();
-
-  @NotNull
-  OgnlTokenType getUnaryOperator();
-
+  public OgnlLexer() {
+    super(new _OgnlLexer() {
+      @Override
+      public void reset(CharSequence buffer, int start, int end, int initialState) {
+        super.reset(buffer, start, end, initialState);
+        resetInternal();
+      }
+    });
+  }
 }

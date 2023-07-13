@@ -13,22 +13,16 @@
  * limitations under the License.
  */
 
-package com.intellij.lang.ognl.lexer;
 
-import com.intellij.lexer.FlexAdapter;
+// Generated from ognl.bnf, do not modify
+package com.intellij.lang.ognl.psi;
 
-/**
- * @author Yann C&eacute;bron
- */
-public class OgnlLexer extends FlexAdapter {
+import org.jetbrains.annotations.*;
+import com.intellij.psi.PsiType;
 
-  public OgnlLexer() {
-    super(new _OgnlLexer() {
-      @Override
-      public void reset(CharSequence buffer, int start, int end, int initialState) {
-        super.reset(buffer, start, end, initialState);
-        resetInternal();
-      }
-    });
-  }
+public interface OgnlExpression extends OgnlPsiCompositeElement {
+
+  @Nullable
+  PsiType getType();
+
 }

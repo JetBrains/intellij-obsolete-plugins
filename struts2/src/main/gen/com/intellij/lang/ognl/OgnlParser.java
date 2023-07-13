@@ -15,7 +15,7 @@
 
 
 // Generated from ognl.bnf, do not modify
-package com.intellij.lang.ognl.parser;
+package com.intellij.lang.ognl;
 
 import com.intellij.lang.PsiBuilder;
 import com.intellij.lang.PsiBuilder.Marker;
