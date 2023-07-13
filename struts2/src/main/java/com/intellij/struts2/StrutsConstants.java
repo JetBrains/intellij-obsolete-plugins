@@ -93,7 +93,7 @@ public final class StrutsConstants {
    * struts.xml 6.0 URI/ID
    */
   @NonNls
-  public static final String STRUTS_6_0_DTD_URI = "http://struts.apache.org/dtds/struts-6.0.dtd";
+  public static final String STRUTS_6_0_DTD_URI = "https://struts.apache.org/dtds/struts-6.0.dtd";
   @NonNls
   public static final String STRUTS_6_0_DTD_ID = "-//Apache Software Foundation//DTD Struts Configuration 6.0//EN";
 
