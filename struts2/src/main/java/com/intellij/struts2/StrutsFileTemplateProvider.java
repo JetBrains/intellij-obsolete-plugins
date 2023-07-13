@@ -38,7 +38,10 @@ public class StrutsFileTemplateProvider {
   @NotNull
   public FileTemplate determineFileTemplate(Project project) {
     String template;
-    if (isNewerThan("2.5")) {
+    if (isNewerThan("6.0")) {
+      template = StrutsFileTemplateGroupDescriptorFactory.STRUTS_6_0_XML;
+    }
+    else if (isNewerThan("2.5")) {
       template = StrutsFileTemplateGroupDescriptorFactory.STRUTS_2_5_XML;
     }
     else if (isNewerThan("2.3")) {

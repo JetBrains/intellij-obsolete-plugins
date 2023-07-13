@@ -50,58 +50,52 @@ public final class StrutsConstants {
   public static final String STRUTS_XML_DEFAULT_FILENAME = "struts.xml";
 
   /**
-   * struts.xml 2.0 URI.
+   * struts.xml 2.0 URI/ID
    */
   @NonNls
   public static final String STRUTS_2_0_DTD_URI = "http://struts.apache.org/dtds/struts-2.0.dtd";
-
-  /**
-   * struts.xml 2.0 ID.
-   */
   @NonNls
   public static final String STRUTS_2_0_DTD_ID = "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN";
 
   /**
-   * struts.xml 2.1 URI.
+   * struts.xml 2.1 URI/ID
    */
   @NonNls
   public static final String STRUTS_2_1_DTD_URI = "http://struts.apache.org/dtds/struts-2.1.dtd";
-
-  /**
-   * struts.xml 2.1 ID.
-   */
   @NonNls
   public static final String STRUTS_2_1_DTD_ID = "-//Apache Software Foundation//DTD Struts Configuration 2.1//EN";
 
   /**
-   * struts.xml 2.1.7 URI.
+   * struts.xml 2.1.7 URI/ID
    */
   @NonNls
   public static final String STRUTS_2_1_7_DTD_URI = "http://struts.apache.org/dtds/struts-2.1.7.dtd";
-
-  /**
-   * struts.xml 2.1.7 ID.
-   */
   @NonNls
   public static final String STRUTS_2_1_7_DTD_ID = "-//Apache Software Foundation//DTD Struts Configuration 2.1.7//EN";
 
   /**
-   * struts.xml 2.3 URI.
+   * struts.xml 2.3 URI/ID
    */
   @NonNls
   public static final String STRUTS_2_3_DTD_URI = "http://struts.apache.org/dtds/struts-2.3.dtd";
-
-  /**
-   * struts.xml 2.3 ID.
-   */
   @NonNls
   public static final String STRUTS_2_3_DTD_ID = "-//Apache Software Foundation//DTD Struts Configuration 2.3//EN";
 
-
+  /**
+   * struts.xml 2.5 URI/ID
+   */
   @NonNls
   public static final String STRUTS_2_5_DTD_URI = "http://struts.apache.org/dtds/struts-2.5.dtd";
   @NonNls
   public static final String STRUTS_2_5_DTD_ID = "-//Apache Software Foundation//DTD Struts Configuration 2.5//EN";
+
+  /**
+   * struts.xml 6.0 URI/ID
+   */
+  @NonNls
+  public static final String STRUTS_6_0_DTD_URI = "http://struts.apache.org/dtds/struts-6.0.dtd";
+  @NonNls
+  public static final String STRUTS_6_0_DTD_ID = "-//Apache Software Foundation//DTD Struts Configuration 6.0//EN";
 
   /**
    * All struts.xml DTD-IDs/URIs.
@@ -112,7 +106,8 @@ public final class StrutsConstants {
     STRUTS_2_1_DTD_URI, STRUTS_2_1_DTD_ID,
     STRUTS_2_1_7_DTD_URI, STRUTS_2_1_7_DTD_ID,
     STRUTS_2_3_DTD_URI, STRUTS_2_3_DTD_ID,
-    STRUTS_2_5_DTD_URI, STRUTS_2_5_DTD_ID
+    STRUTS_2_5_DTD_URI, STRUTS_2_5_DTD_ID,
+    STRUTS_6_0_DTD_URI, STRUTS_6_0_DTD_ID
   };
 
   @NonNls
