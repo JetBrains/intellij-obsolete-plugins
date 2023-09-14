@@ -1,17 +1,17 @@
 plugins {
     id("java")
-    id("org.jetbrains.intellij") version "1.13.3"
+    id("org.jetbrains.intellij") version "1.15.0"
 }
 
 group = "com.intellij"
-version = "1.0-SNAPSHOT"
+version = "2023.2.1"
 
 repositories {
     mavenCentral()
 }
 
 intellij {
-    version.set("2023.1.1")
+    version.set("2023.2.1")
     type.set("IU") // Target IDE Platform
 
     plugins.set(listOf("org.intellij.groovy", "com.intellij.persistence"))
@@ -29,8 +29,8 @@ tasks {
     }
 
     patchPluginXml {
-        sinceBuild.set("231")
-        untilBuild.set("232.*")
+        sinceBuild.set("232")
+        untilBuild.set("241.*")
     }
 
     signPlugin {
