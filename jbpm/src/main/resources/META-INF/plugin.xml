@@ -1,0 +1,142 @@
+<idea-plugin package="com.intellij.jboss.bpmn">
+  <!--suppress PluginXmlCapitalization -->
+  <name>JBoss jBPM</name>
+  <id>com.intellij.jbpm</id>
+  <category>JVM Frameworks</category>
+  <description>
+    <![CDATA[ JBoss jBPM 4.0 support (<a href="https://www.jbpm.org">https://www.jbpm.org/</a>)<br>
+    <p>Features:
+    <ul>
+     <li>Graphical designer for jpdl files with DnD, usages search, rename and inplace editing
+     <li>Completion, navigation, refactorings and highlighting inside jpdl xml editor
+     <li>Links to processes from class files
+    </ul></p>
+   ]]></description>
+  <vendor>JetBrains</vendor>
+  <resource-bundle>messages.JpdlBundle</resource-bundle>
+
+  <content>
+    <module name="intellij.jboss.jbpm/el"/>
+  </content>
+  <dependencies>
+    <plugin id="com.intellij.javaee"/>
+    <plugin id="com.intellij.diagram"/>
+  </dependencies>
+
+  <extensionPoints>
+    <extensionPoint name="chartNodeRenderer" interface="com.intellij.jboss.bpmn.jbpm.render.ChartNodeRenderer" dynamic="true"/>
+  </extensionPoints>
+
+  <actions>
+    <group id="Jpdl.Designer" popup="false">
+      <reference ref="EditSource"/>
+      <reference ref="FindUsages"/>
+      <reference ref="RenameElement"/>
+      <separator/>
+    </group>
+
+    <action id="Jpdl.CreateJpdl" class="com.intellij.jboss.bpmn.jpdl.actions.CreateJpdlFileAction">
+      <add-to-group group-id="NewGroup" anchor="last"/>
+    </action>
+  </actions>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <fileType name="XML" extensions="bpmn"/>
+
+    <!-- JBPM -->
+    <standardResourceProvider implementation="com.intellij.jboss.bpmn.jbpm.providers.JbpmResourceProvider"/>
+    <!-- <psi.referenceContributor implementation="com.intellij.jboss.jbpm.providers.JbpmReferenceContributor"/> -->
+    <dom.fileMetaData implementation="com.intellij.jboss.bpmn.jbpm.providers.JbpmDomFileDescription" rootTagName="definitions"/>
+    <projectService serviceInterface="com.intellij.jboss.bpmn.jbpm.model.BpmnDomModelManager"
+                    serviceImplementation="com.intellij.jboss.bpmn.jbpm.model.impl.BpmnDomModelManagerImpl"/>
+
+    <dom.implementation interfaceClass="com.intellij.jboss.bpmn.jbpm.model.xml.bpmn20.TProcess"
+                        implementationClass="com.intellij.jboss.bpmn.jbpm.model.impl.xml.TProcessImpl"/>
+    <dom.implementation interfaceClass="com.intellij.jboss.bpmn.jbpm.model.xml.bpmn20.TDefinitions"
+                        implementationClass="com.intellij.jboss.bpmn.jbpm.model.impl.xml.TDefinitionsImpl"/>
+
+    <localInspection language="XML" shortName="BpmnConfigDomInspection" bundle="messages.BpmnBundle" key="constraints.config.inspection"
+                     groupKey="model.inspection.group.name" enabledByDefault="true" level="ERROR"
+                     implementationClass="com.intellij.jboss.bpmn.jbpm.highlighting.BpmnConfigDomInspection"/>
+
+    <xmlStructureViewBuilderProvider implementation="com.intellij.jboss.bpmn.jbpm.model.BpmnStructureViewBuilderProvider"/>
+
+    <dom.extender domClass="com.intellij.jboss.bpmn.jbpm.model.xml.bpmn20.TDefinitions"
+                  extenderClass="com.intellij.jboss.bpmn.jbpm.model.xml.TDefinitionsDomExtender"/>
+
+    <diagram.Provider implementation="com.intellij.jboss.bpmn.jbpm.diagram.BpmnDiagramProvider"/>
+    <!-- JBPM -->
+
+    <dom.fileMetaData implementation="com.intellij.jboss.bpmn.jpdl.JpdlDomFileDescription" rootTagName="process"/>
+    <fileEditorProvider implementation="com.intellij.jboss.bpmn.jpdl.fileEditor.JpdlDesignerFileEditorProvider"/>
+    <projectService serviceInterface="com.intellij.jboss.bpmn.jpdl.model.JpdlDomModelManager"
+                    serviceImplementation="com.intellij.jboss.bpmn.jpdl.impl.JpdlDomModelManagerImpl"/>
+
+    <localInspection shortName="JpdlModelInspection" bundle="messages.JpdlBundle" key="model.inspection.display.name"
+                     groupKey="model.inspection.group.name" enabledByDefault="true" level="ERROR" language="XML"
+                     implementationClass="com.intellij.jboss.bpmn.jpdl.inspections.JpdlModelInspection"/>
+
+    <standardResourceProvider implementation="com.intellij.jboss.bpmn.jpdl.providers.JpdlResourceProvider"/>
+    <psi.referenceContributor implementation="com.intellij.jboss.bpmn.jpdl.providers.JpdlReferenceContributor"/>
+    <gotoSymbolContributor implementation="com.intellij.jboss.bpmn.jpdl.providers.JpdlGotoSymbolProvider"/>
+    <renameInputValidator implementation="com.intellij.jboss.bpmn.jpdl.rename.JpdlNamedActivityInputValidator"/>
+
+    <typeName className="com.intellij.jboss.bpmn.jpdl.model.xml.ProcessDefinition" resourceKey="jpdl.process"/>
+    <typeName className="com.intellij.jboss.bpmn.jpdl.model.xml.Start" resourceKey="jpdl.start"/>
+    <typeName className="com.intellij.jboss.bpmn.jpdl.model.xml.Decision" resourceKey="jpdl.decision"/>
+    <typeName className="com.intellij.jboss.bpmn.jpdl.model.xml.Task" resourceKey="jpdl.task"/>
+    <typeName className="com.intellij.jboss.bpmn.jpdl.model.xml.State" resourceKey="jpdl.state"/>
+
+    <typeName className="com.intellij.jboss.bpmn.jpdl.model.xml.SubProcess" resourceKey="jpdl.subprocess"/>
+    <typeName className="com.intellij.jboss.bpmn.jpdl.model.xml.End" resourceKey="jpdl.end"/>
+    <typeName className="com.intellij.jboss.bpmn.jpdl.model.xml.EndCancel" resourceKey="jpdl.end.cancel"/>
+    <typeName className="com.intellij.jboss.bpmn.jpdl.model.xml.EndError" resourceKey="jpdl.end.error"/>
+    <typeName className="com.intellij.jboss.bpmn.jpdl.model.xml.Fork" resourceKey="jpdl.fork"/>
+
+    <typeName className="com.intellij.jboss.bpmn.jpdl.model.xml.Join" resourceKey="jpdl.join"/>
+    <typeName className="com.intellij.jboss.bpmn.jpdl.model.xml.Rules" resourceKey="jpdl.rules"/>
+    <typeName className="com.intellij.jboss.bpmn.jpdl.model.xml.RulesDecision" resourceKey="jpdl.rules.decision"/>
+    <typeName className="com.intellij.jboss.bpmn.jpdl.model.xml.Script" resourceKey="jpdl.script"/>
+    <typeName className="com.intellij.jboss.bpmn.jpdl.model.xml.Sql" resourceKey="jpdl.sql"/>
+
+    <typeName className="com.intellij.jboss.bpmn.jpdl.model.xml.Hql" resourceKey="jpdl.hql"/>
+    <typeName className="com.intellij.jboss.bpmn.jpdl.model.xml.Custom" resourceKey="jpdl.custom"/>
+    <typeName className="com.intellij.jboss.bpmn.jpdl.model.xml.Mail" resourceKey="jpdl.mail"/>
+
+    <typeIcon className="com.intellij.jboss.bpmn.jpdl.model.xml.ProcessDefinition" icon="com.intellij.jboss.bpmn.JbossJbpmIcons.Jpdl.Process"/>
+    <typeIcon className="com.intellij.jboss.bpmn.jpdl.model.xml.Start" icon="com.intellij.jboss.bpmn.JbossJbpmIcons.Jpdl.Start"/>
+    <typeIcon className="com.intellij.jboss.bpmn.jpdl.model.xml.Decision" icon="com.intellij.jboss.bpmn.JbossJbpmIcons.Jpdl.Decision"/>
+    <typeIcon className="com.intellij.jboss.bpmn.jpdl.model.xml.Task" icon="com.intellij.jboss.bpmn.JbossJbpmIcons.Jpdl.Task"/>
+    <typeIcon className="com.intellij.jboss.bpmn.jpdl.model.xml.State" icon="com.intellij.jboss.bpmn.JbossJbpmIcons.Jpdl.Page"/>
+
+    <typeIcon className="com.intellij.jboss.bpmn.jpdl.model.xml.SubProcess" icon="com.intellij.jboss.bpmn.JbossJbpmIcons.Jpdl.SubProcess"/>
+    <typeIcon className="com.intellij.jboss.bpmn.jpdl.model.xml.End" icon="com.intellij.jboss.bpmn.JbossJbpmIcons.Jpdl.End"/>
+    <typeIcon className="com.intellij.jboss.bpmn.jpdl.model.xml.EndCancel" icon="com.intellij.jboss.bpmn.JbossJbpmIcons.Jpdl.End_cancel"/>
+    <typeIcon className="com.intellij.jboss.bpmn.jpdl.model.xml.EndError" icon="com.intellij.jboss.bpmn.JbossJbpmIcons.Jpdl.End_error"/>
+    <typeIcon className="com.intellij.jboss.bpmn.jpdl.model.xml.Fork" icon="com.intellij.jboss.bpmn.JbossJbpmIcons.Jpdl.Fork"/>
+
+    <typeIcon className="com.intellij.jboss.bpmn.jpdl.model.xml.Join" icon="com.intellij.jboss.bpmn.JbossJbpmIcons.Jpdl.Join"/>
+    <typeIcon className="com.intellij.jboss.bpmn.jpdl.model.xml.Rules" icon="com.intellij.jboss.bpmn.JbossJbpmIcons.Jpdl.Rule"/>
+    <typeIcon className="com.intellij.jboss.bpmn.jpdl.model.xml.RulesDecision" icon="com.intellij.jboss.bpmn.JbossJbpmIcons.Jpdl.Rule_decision"/>
+    <typeIcon className="com.intellij.jboss.bpmn.jpdl.model.xml.Script" icon="com.intellij.jboss.bpmn.JbossJbpmIcons.Jpdl.Script"/>
+    <typeIcon className="com.intellij.jboss.bpmn.jpdl.model.xml.Sql" icon="com.intellij.jboss.bpmn.JbossJbpmIcons.Jpdl.Sql"/>
+
+    <typeIcon className="com.intellij.jboss.bpmn.jpdl.model.xml.Hql" icon="com.intellij.jboss.bpmn.JbossJbpmIcons.Jpdl.Hql"/>
+    <typeIcon className="com.intellij.jboss.bpmn.jpdl.model.xml.Custom" icon="com.intellij.jboss.bpmn.JbossJbpmIcons.Jpdl.Custom"/>
+    <typeIcon className="com.intellij.jboss.bpmn.jpdl.model.xml.Mail" icon="com.intellij.jboss.bpmn.JbossJbpmIcons.Jpdl.Mail"/>
+
+    <fileTemplateGroup implementation="com.intellij.jboss.bpmn.jpdl.providers.JpdlBeansTemplatesFactory"/>
+    <fileEditorProvider implementation="com.intellij.jboss.bpmn.jbpm.chart.editor.BpmnDesignerFileEditorProvider"/>
+    <diagram.Provider implementation="com.intellij.jboss.bpmn.jbpm.chart.BpmnChartProvider"/>
+
+    <jbpm.chartNodeRenderer implementation="com.intellij.jboss.bpmn.jbpm.render.background.ChartNodeBackgroundColorRenderer"/>
+    <jbpm.chartNodeRenderer implementation="com.intellij.jboss.bpmn.jbpm.render.background.ChartNodeBorderRenderer"/>
+    <jbpm.chartNodeRenderer implementation="com.intellij.jboss.bpmn.jbpm.render.pictures.ChartNodeIconRenderer"/>
+    <jbpm.chartNodeRenderer implementation="com.intellij.jboss.bpmn.jbpm.render.pictures.GraphNodeImageRenderer"/>
+    <jbpm.chartNodeRenderer implementation="com.intellij.jboss.bpmn.jbpm.render.label.ChartNodeLabelColorRenderer"/>
+    <jbpm.chartNodeRenderer implementation="com.intellij.jboss.bpmn.jbpm.render.label.ChartNodeLabelPositionRenderer"/>
+    <jbpm.chartNodeRenderer implementation="com.intellij.jboss.bpmn.jbpm.render.label.ChartNodeLabelPositionRenderer"/>
+    <jbpm.chartNodeRenderer implementation="com.intellij.jboss.bpmn.jbpm.render.label.ChartNodeLabelRenderer"/>
+    <jbpm.chartNodeRenderer implementation="com.intellij.jboss.bpmn.jbpm.render.custom.ChartNodeCustomRenderer"/>
+  </extensions>
+</idea-plugin>

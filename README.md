@@ -23,3 +23,4 @@ This repository includes the following plugins:
   * [dmServer](https://plugins.jetbrains.com/plugin/4542-virgo-dmserver)
   * [struts2](https://plugins.jetbrains.com/plugin/1698-struts-2)
   * [arquillian](https://plugins.jetbrains.com/plugin/16872-arquillian)
+  * [jbpm](https://plugins.jetbrains.com/plugin/14588-jboss-jbpm)

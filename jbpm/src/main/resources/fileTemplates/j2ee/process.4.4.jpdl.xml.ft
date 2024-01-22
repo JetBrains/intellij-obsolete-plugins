@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<process name="$NAME" xmlns="http://jbpm.org/4.4/jpdl">
+  <start g="20,20,40,40">
+  </start>
+</process>

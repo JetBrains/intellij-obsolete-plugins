@@ -1,0 +1,55 @@
+package com.intellij.jboss.bpmn.jpdl.model.xml;
+
+import com.intellij.util.xml.GenericAttributeValue;
+import com.intellij.util.xml.GenericDomValue;
+import org.jetbrains.annotations.NotNull;
+
+/**
+ * http://jbpm.org/4.3/jpdm:endElemType interface.
+ */
+public interface End extends JpdlNamedActivity, Graphical, OnOwner {
+
+  /**
+   * Returns the value of the continue child.
+   * <pre>
+   * <h3>Attribute null:continue documentation</h3>
+   * To specify async continuations.
+   *       sync is the default.
+   * </pre>
+   *
+   * @return the value of the continue child.
+   */
+  @NotNull
+  GenericAttributeValue<Continue> getContinue();
+
+
+  /**
+   * Returns the value of the ends child.
+   *
+   * @return the value of the ends child.
+   */
+  @NotNull
+  GenericAttributeValue<Ends> getEnds();
+
+
+  /**
+   * Returns the value of the state child.
+   * <pre>
+   * <h3>Attribute null:state documentation</h3>
+   * sets the state of the execution explicitely
+   * </pre>
+   *
+   * @return the value of the state child.
+   */
+  @NotNull
+  GenericAttributeValue<String> getState();
+
+
+  /**
+   * Returns the value of the description child.
+   *
+   * @return the value of the description child.
+   */
+  @NotNull
+  GenericDomValue<String> getDescription();
+}
