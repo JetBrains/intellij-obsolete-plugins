@@ -1,0 +1,40 @@
+<html>
+<body>
+<p>Reports Arquillian test case classes without a deployment.</p>
+<p>
+  According to the <a href="https://docs.jboss.org/arquillian/reference/1.0.0.Alpha5/en-US/html/gettingstarted.html#d0e451">Arquillian
+  documentation</a>, Arquillian test classes should define the deployment archive using a public static method with a specific signature,
+  annotated with <code>@Deployment</code>.
+</p>
+<p>The quick-fix adds the required method according to the user-editable <em>Arquillian deployment method</em> code template.</p>
+
+<p><b>Example:</b></p>
+<pre><code>
+  // this test case can't be launched by Arquillian
+  @RunWith(Arquillian.class)
+  public class SomeTest {
+    @Test
+    public void testSomething() {
+      Assert.fail("To be implemented");
+    }
+  }
+</code></pre>
+<p>After the quick-fix is applied:</p>
+<pre><code>
+  @RunWith(Arquillian.class)
+  public class SomeTest {
+    // added by quick-fix
+    @Deployment
+    public static JavaArchive ${DEPLOYMENT_NAME}() {
+      return ShrinkWrap.create(JavaArchive.class)
+                       .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+    }
+
+    @Test
+    public void testSomething() {
+      Assert.fail("To be implemented");
+    }
+  }
+</code></pre>
+</body>
+</html>

@@ -21,3 +21,5 @@ This repository includes the following plugins:
   * [Vaadin](https://plugins.jetbrains.com/plugin/13199-vaadin-6-8)
   * [JBoss Seam](https://plugins.jetbrains.com/plugin/14587-jboss-seam)
   * [dmServer](https://plugins.jetbrains.com/plugin/4542-virgo-dmserver)
+  * [struts2](https://plugins.jetbrains.com/plugin/1698-struts-2)
+  * [arquillian](https://plugins.jetbrains.com/plugin/16872-arquillian)

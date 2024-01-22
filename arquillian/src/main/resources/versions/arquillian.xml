@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifacts>
+  <artifact version="1.1.8.Final" name="Arquillian" urlPrefix="http://download.jetbrains.com/idea/j2ee_libs/jboss/arquillian/1.1.8.Final/">
+    <item name="arquillian-config-api-1.1.8.Final.jar" srcUrl="arquillian-config-api-1.1.8.Final-sources.jar"
+          docUrl="arquillian-config-api-1.1.8.Final-javadoc.jar"/>
+    <item name="arquillian-config-impl-base-1.1.8.Final.jar" srcUrl="arquillian-config-impl-base-1.1.8.Final-sources.jar"
+          docUrl="arquillian-config-impl-base-1.1.8.Final-javadoc.jar"/>
+    <item name="arquillian-container-impl-base-1.1.8.Final.jar" srcUrl="arquillian-container-impl-base-1.1.8.Final-sources.jar"
+          docUrl="arquillian-container-impl-base-1.1.8.Final-javadoc.jar"/>
+    <item name="arquillian-container-spi-1.1.8.Final.jar" srcUrl="arquillian-container-spi-1.1.8.Final-sources.jar"
+          docUrl="arquillian-container-spi-1.1.8.Final-javadoc.jar"/>
+    <item name="arquillian-container-test-api-1.1.8.Final.jar" srcUrl="arquillian-container-test-api-1.1.8.Final-sources.jar"
+          docUrl="arquillian-container-test-api-1.1.8.Final-javadoc.jar"/>
+    <item name="arquillian-container-test-impl-base-1.1.8.Final.jar" srcUrl="arquillian-container-test-impl-base-1.1.8.Final-sources.jar"
+          docUrl="arquillian-container-test-impl-base-1.1.8.Final-javadoc.jar"/>
+    <item name="arquillian-container-test-spi-1.1.8.Final.jar" srcUrl="arquillian-container-test-spi-1.1.8.Final-sources.jar"
+          docUrl="arquillian-container-test-spi-1.1.8.Final-javadoc.jar"/>
+    <item name="arquillian-core-api-1.1.8.Final.jar" srcUrl="arquillian-core-api-1.1.8.Final-sources.jar"
+          docUrl="arquillian-core-api-1.1.8.Final-javadoc.jar"/>
+    <item name="arquillian-core-impl-base-1.1.8.Final.jar" srcUrl="arquillian-core-impl-base-1.1.8.Final-sources.jar"
+          docUrl="arquillian-core-impl-base-1.1.8.Final-javadoc.jar"/>
+    <item name="arquillian-core-spi-1.1.8.Final.jar" srcUrl="arquillian-core-spi-1.1.8.Final-sources.jar"
+          docUrl="arquillian-core-spi-1.1.8.Final-javadoc.jar"/>
+    <item name="arquillian-junit-container-1.1.8.Final.jar" srcUrl="arquillian-junit-container-1.1.8.Final-sources.jar"
+          docUrl="arquillian-junit-container-1.1.8.Final-javadoc.jar"/>
+    <item name="arquillian-junit-core-1.1.8.Final.jar" srcUrl="arquillian-junit-core-1.1.8.Final-sources.jar"
+          docUrl="arquillian-junit-core-1.1.8.Final-javadoc.jar"/>
+    <item name="arquillian-test-api-1.1.8.Final.jar" srcUrl="arquillian-test-api-1.1.8.Final-sources.jar"
+          docUrl="arquillian-test-api-1.1.8.Final-javadoc.jar"/>
+    <item name="arquillian-test-impl-base-1.1.8.Final.jar" srcUrl="arquillian-test-impl-base-1.1.8.Final-sources.jar"
+          docUrl="arquillian-test-impl-base-1.1.8.Final-javadoc.jar"/>
+    <item name="arquillian-test-spi-1.1.8.Final.jar" srcUrl="arquillian-test-spi-1.1.8.Final-sources.jar"
+          docUrl="arquillian-test-spi-1.1.8.Final-javadoc.jar"/>
+    <item name="arquillian-testng-container-1.1.8.Final.jar" srcUrl="arquillian-testng-container-1.1.8.Final-sources.jar"
+          docUrl="arquillian-testng-container-1.1.8.Final-javadoc.jar"/>
+    <item name="arquillian-testng-core-1.1.8.Final.jar" srcUrl="arquillian-testng-core-1.1.8.Final-sources.jar"
+          docUrl="arquillian-testng-core-1.1.8.Final-javadoc.jar"/>
+    <item name="shrinkwrap-api-1.2.2.jar" srcUrl="shrinkwrap-api-1.2.2-sources.jar" docUrl="shrinkwrap-api-1.2.2-javadoc.jar"/>
+    <item name="shrinkwrap-descriptors-api-base-2.0.0-alpha-7.jar" srcUrl="shrinkwrap-descriptors-api-base-2.0.0-alpha-7-sources.jar"
+          docUrl="shrinkwrap-descriptors-api-base-2.0.0-alpha-7-javadoc.jar"/>
+    <item name="shrinkwrap-descriptors-spi-2.0.0-alpha-7.jar" srcUrl="shrinkwrap-descriptors-spi-2.0.0-alpha-7-sources.jar"
+          docUrl="shrinkwrap-descriptors-spi-2.0.0-alpha-7-javadoc.jar"/>
+    <item name="shrinkwrap-impl-base-1.2.2.jar" srcUrl="shrinkwrap-impl-base-1.2.2-sources.jar"
+          docUrl="shrinkwrap-impl-base-1.2.2-javadoc.jar"/>
+    <item name="shrinkwrap-spi-1.2.2.jar" srcUrl="shrinkwrap-spi-1.2.2-sources.jar" docUrl="shrinkwrap-spi-1.2.2-javadoc.jar"/>
+  </artifact>
+</artifacts>
+

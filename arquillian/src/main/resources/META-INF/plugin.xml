@@ -1,0 +1,624 @@
+<idea-plugin package="com.intellij.plugins.jboss.arquillian">
+  <id>com.intellij.jboss.arquillian</id>
+  <name>Arquillian</name>
+  <category>JVM Frameworks</category>
+  <description><![CDATA[
+  Adds support for the <a href="https://arquillian.org/">Arquillian</a>, a test framework for Java microservices.
+  <ul>
+    <li>Works with JUnit and TestNG</li>
+    <li>Dedicated run/debug configurations</li>
+    <li>Templates for test files</li>
+  </ul>
+  ]]></description>
+
+  <vendor>JetBrains</vendor>
+  <resource-bundle>messages.ArquillianBundle</resource-bundle>
+
+  <content>
+    <module name="intellij.jboss.arquillian/junit"/>
+    <module name="intellij.jboss.arquillian/testng"/>
+  </content>
+
+  <dependencies>
+    <plugin id="com.intellij.java"/>
+    <plugin id="com.intellij.modules.ultimate"/>
+    <plugin id="org.jetbrains.idea.maven"/>
+  </dependencies>
+
+  <extensionPoints>
+    <extensionPoint name="container" beanClass="com.intellij.plugins.jboss.arquillian.configuration.container.ArquillianContainerBean"/>
+  </extensionPoints>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <localInspection language="JAVA" groupPath="Java" enabledByDefault="true" level="ERROR"
+                     groupKey="arquillian.inspection.group.name"
+                     key="arquillian.inspection.name.deployment.signature"
+                     implementationClass="com.intellij.plugins.jboss.arquillian.inspection.ArquillianDeploymentSignatureInspection"/>
+    <localInspection language="JAVA" groupPath="Java" enabledByDefault="true" level="ERROR"
+                     groupKey="arquillian.inspection.group.name"
+                     key="arquillian.inspection.name.deployment.return.type"
+                     implementationClass="com.intellij.plugins.jboss.arquillian.inspection.ArquillianDeploymentReturnTypeInspection"/>
+    <localInspection language="JAVA" groupPath="Java" enabledByDefault="true" level="ERROR"
+                     groupKey="arquillian.inspection.group.name"
+                     key="arquillian.inspection.name.class.enabled"
+                     implementationClass="com.intellij.plugins.jboss.arquillian.inspection.ArquillianClassEnabledInspection"/>
+    <localInspection language="JAVA" groupPath="Java" enabledByDefault="true" level="ERROR"
+                     groupKey="arquillian.inspection.group.name"
+                     key="arquillian.inspection.name.too.many.deployment"
+                     implementationClass="com.intellij.plugins.jboss.arquillian.inspection.ArquillianTooManyDeploymentInspection"/>
+    <localInspection language="JAVA" groupPath="Java" enabledByDefault="true" level="ERROR"
+                     groupKey="arquillian.inspection.group.name"
+                     key="arquillian.inspection.name.deployment.absent"
+                     implementationClass="com.intellij.plugins.jboss.arquillian.inspection.ArquillianDeploymentAbsentInspection"/>
+
+    <java.programPatcher implementation="com.intellij.plugins.jboss.arquillian.patcher.ArquillianJavaPatcher"/>
+
+    <projectConfigurable id="preferences.arquillian" groupId="build" groupWeight="100"
+                         instance="com.intellij.plugins.jboss.arquillian.configuration.ui.ArquillianSettingsConfigurable"
+                         bundle="messages.ArquillianBundle" key="arquillian.containers.configurable.display.name"/>
+
+    <projectService serviceImplementation="com.intellij.plugins.jboss.arquillian.configuration.persistent.ArquillianContainersManager"/>
+    <projectService serviceImplementation="com.intellij.plugins.jboss.arquillian.runConfiguration.ArquillianRunConfigurationTypeUtil"/>
+    <postStartupActivity implementation="com.intellij.plugins.jboss.arquillian.libraries.ArquillianLibrarySynchronizer"/>
+
+    <jboss.arquillian.container id="embedded.glassfish.3.1" name="GlassFish Embedded 3.1" kind="Embedded">
+      <url>http://arquillian.org/modules/arquillian-glassfish-embedded-3.1-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-glassfish-embedded-3.1"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="embedded.jboss.as.6.x" name="JBoss AS Embedded 6.x" kind="Embedded">
+      <url>http://arquillian.org/modules/arquillian-jbossas-embedded-6-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-jbossas-embedded-6"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="embedded.jetty.6" name="Jetty Embedded 6.x" kind="Embedded">
+      <url>http://arquillian.org/modules/arquillian-jetty-embedded-6.1-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-jetty-embedded-6.1"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="embedded.jetty.7-8" name="Jetty Embedded 7-8.x" kind="Embedded">
+      <url>http://arquillian.org/modules/arquillian-jetty-embedded-7-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-jetty-embedded-7"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="embedded.jetty.9" name="Jetty Embedded 9.x" kind="Embedded">
+      <url>http://arquillian.org/modules/arquillian-jetty-embedded-9-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-jetty-embedded-9"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="embedded.open-web-beans" name="OpenWebBeans Embedded 1.x" kind="Embedded">
+      <url>http://arquillian.org/modules/arquillian-openwebbeans-embedded-1-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-openwebbeans-embedded-1"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="embedded.osgi-jboss" name="OSGi :: JBoss" kind="Embedded">
+      <url>http://arquillian.org/modules/arquillian-osgi-jbosgi-embedded-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-container-jbosgi-embedded"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="embedded.osgi-felix" name="OSGi :: Felix" kind="Embedded">
+      <url>http://arquillian.org/modules/arquillian-osgi-felix-embedded-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-container-felix-embedded"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="embedded.osgi-equinox" name="OSGi :: Equinox" kind="Embedded">
+      <url>http://arquillian.org/modules/arquillian-osgi-equinox-embedded-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-container-equinox-embedded"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="embedded.osgi-karaf" name="OSGi :: Karaf" kind="Embedded">
+      <url>http://arquillian.org/modules/arquillian-osgi-karaf-embedded-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-container-karaf-embedded"/>
+    </jboss.arquillian.container>
+
+    <!--
+        <jboss.arquillian.container id="embedded.resin" name="Resin Embedded 4" kind="Embedded">
+          <url>http://arquillian.org/modules/arquillian-resin-embedded-4-container-adapter/</url>
+          <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-resin-embedded-4"/>
+        </jboss.arquillian.container>
+    -->
+
+    <jboss.arquillian.container id="embedded.open-ejb" name="OpenEJB" kind="Embedded">
+      <url>http://arquillian.org/modules/arquillian-openejb-embedded-4-container-adapter/</url>
+      <mavenDependency groupId="org.apache.tomee" artifactId="arquillian-openejb-embedded"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="embedded.tomcat.6.x" name="Tomcat Embedded 6.x" kind="Embedded">
+      <url>http://arquillian.org/modules/arquillian-tomcat-embedded-6-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-tomcat-embedded-6"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="embedded.tomcat.7.x" name="Tomcat Embedded 7.x" kind="Embedded">
+      <url>http://arquillian.org/modules/arquillian-tomcat-embedded-7-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-tomcat-embedded-7"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="embedded.tomcat.8.x" name="Tomcat Embedded 8.x" kind="Embedded">
+      <url>http://arquillian.org/modules/arquillian-tomcat-embedded-8-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-tomcat-embedded-8"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="embedded.tom-ee" name="TomEE Embedded" kind="Embedded">
+      <url>http://arquillian.org/modules/arquillian-tomee-embedded-container-adapter/</url>
+      <mavenDependency groupId="org.apache.tomee" artifactId="arquillian-tomee-embedded"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="embedded.undertow" name="Undertow Embedded" kind="Embedded">
+      <url>http://arquillian.org/modules/undertow-embedded-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="undertow-embedded"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="embedded.web-logic.12.1" name="WebLogic Embedded 12.1" kind="Embedded">
+      <url>http://arquillian.org/modules/arquillian-wls-embedded-12.1-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-wls-embedded-12.1"/>
+    </jboss.arquillian.container>
+
+    <!--
+        <jboss.arquillian.container id="embedded.web-sphere.as.8.x" name="WebSphere AS Embedded 8.x" kind="Embedded">
+          <url>http://arquillian.org/modules/arquillian-was-embedded-8-container-adapter/</url>
+          <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-was-embedded-8"/>
+        </jboss.arquillian.container>
+    -->
+
+    <jboss.arquillian.container id="embedded.weld.ee.1.1" name="Weld EE Embedded 1.1.x" kind="Embedded">
+      <url>http://arquillian.org/modules/arquillian-weld-ee-embedded-1.1-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-weld-ee-embedded-1.1"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="embedded.weld.se.1" name="Weld SE Embedded 1.x" kind="Embedded">
+      <url>http://arquillian.org/modules/arquillian-weld-se-embedded-1-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-weld-se-embedded-1"/>
+      <mavenDependency groupId="org.slf4j" artifactId="slf4j-simple"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="embedded.weld.se.1.1" name="Weld SE Embedded 1.1.x" kind="Embedded">
+      <url>http://arquillian.org/modules/arquillian-weld-se-embedded-1.1-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-weld-se-embedded-1.1"/>
+    </jboss.arquillian.container>
+
+    <!--
+        <jboss.arquillian.container id="remote.cloudbees" name="Cloudbees" kind="Remote">
+          <url>http://arquillian.org/modules/arquillian-cloudbees-container-adapter/</url>
+          <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-cloudbees"/>
+        </jboss.arquillian.container>
+    -->
+
+    <jboss.arquillian.container id="managed.glassfish.3.1" name="GlassFish Managed 3.1" kind="Managed">
+      <url>http://arquillian.org/modules/arquillian-glassfish-managed-3.1-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-glassfish-managed-3.1"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="remote.glassfish.3.1" name="GlassFish Remote 3.1" kind="Remote">
+      <url>http://arquillian.org/modules/arquillian-glassfish-remote-3.1-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-glassfish-remote-3.1"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="managed.jboss.as.4.2.x" name="JBoss AS Managed 4.2.x" kind="Managed">
+      <url>http://arquillian.org/modules/arquillian-jbossas-managed-4.2-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-jbossas-managed-4.2"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="remote.jboss.as.4.2.x" name="JBoss AS Remote 4.2.x" kind="Remote">
+      <url>http://arquillian.org/modules/arquillian-jbossas-remote-4.2-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-jbossas-remote-4.2"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="remote.jboss.as.5.x" name="JBoss AS Remote 5.x" kind="Remote">
+      <url>http://arquillian.org/modules/arquillian-jbossas-remote-5-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-jbossas-remote-5"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="managed.jboss.as.5.1.x" name="JBoss AS Managed 5.1.x" kind="Managed">
+      <url>http://arquillian.org/modules/arquillian-jbossas-managed-5.1-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-jbossas-managed-5.1"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="remote.jboss.as.5.1.x" name="JBoss AS Remote 5.1.x" kind="Remote">
+      <url>http://arquillian.org/modules/arquillian-jbossas-remote-5.1-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-jbossas-remote-5.1"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="managed.jboss.as.6.x" name="JBoss AS Managed 6.x" kind="Managed">
+      <url>http://arquillian.org/modules/arquillian-jbossas-managed-6-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-jbossas-managed-6"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="remote.jboss.as.6.x" name="JBoss AS Remote 6.x" kind="Remote">
+      <url>http://arquillian.org/modules/arquillian-jbossas-remote-6-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-jbossas-remote-6"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="openShift.express" name="OpenShift Express" kind="Remote">
+      <url>http://arquillian.org/modules/arquillian-openshift-express-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-openshift-express"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="managed.karaf" name="OSGi :: Karaf :: Managed" kind="Managed">
+      <url>http://arquillian.org/modules/arquillian-osgi-karaf-managed-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-container-karaf-managed"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="remote.karaf" name="OSGi :: Karaf :: Remote" kind="Remote">
+      <url>http://arquillian.org/modules/arquillian-osgi-karaf-remote-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-container-karaf-remote"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="managed.tomcat.5.5.x" name="Tomcat Managed 5.5.x" kind="Managed">
+      <url>http://arquillian.org/modules/arquillian-tomcat-managed-5.5-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-tomcat-managed-5.5"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="remote.tomcat.6.x" name="Tomcat Remote 6.x" kind="Remote">
+      <url>http://arquillian.org/modules/arquillian-tomcat-remote-6-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-tomcat-remote-6"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="managed.tomcat.6.x" name="Tomcat Managed 6.x" kind="Managed">
+      <url>http://arquillian.org/modules/arquillian-tomcat-managed-6-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-tomcat-managed-6"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="remote.tomcat.7.x" name="Tomcat Remote 7.x" kind="Remote">
+      <url>http://arquillian.org/modules/arquillian-tomcat-remote-7-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-tomcat-remote-7"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="managed.tomcat.7.x" name="Tomcat Managed 7.x" kind="Managed">
+      <url>http://arquillian.org/modules/arquillian-tomcat-managed-7-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-tomcat-managed-7"/>
+    </jboss.arquillian.container>
+
+    <!--
+        <jboss.arquillian.container id="remote.webSphere.7.x" name="WebSphere AS Remote 7.x" kind="Remote">
+          <url>http://arquillian.org/modules/arquillian-was-remote-7-container-adapter/</url>
+          <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-was-remote-7"/>
+        </jboss.arquillian.container>
+
+        <jboss.arquillian.container id="remote.webSphere.8.0" name="WebSphere AS Remote 8.0" kind="Remote">
+          <url>http://arquillian.org/modules/arquillian-was-remote-8-container-adapter/</url>
+          <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-was-remote-8"/>
+        </jboss.arquillian.container>
+
+        <jboss.arquillian.container id="remote.webSphere.8.5" name="WebSphere AS Remote 8.5" kind="Remote">
+          <url>http://arquillian.org/modules/arquillian-was-remote-8.5-container-adapter/</url>
+          <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-was-remote-8.5"/>
+        </jboss.arquillian.container>
+    -->
+
+    <jboss.arquillian.container id="managed.webSphere.liberty.profile.8.5" name="WebSphere Liberty Profile Managed 8.5" kind="Managed">
+      <url>http://arquillian.org/modules/arquillian-wlp-managed-8.5-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-wlp-managed-8.5"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="remote.webSphere.liberty.profile.8.5" name="WebSphere Liberty Profile Remote 8.5" kind="Remote">
+      <url>http://arquillian.org/modules/arquillian-wlp-remote-8.5-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-wlp-remote-8.5"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="remote.webLogic.10.3.x" name="WebLogic Remote 10.3.x" kind="Remote">
+      <url>http://arquillian.org/modules/arquillian-wls-remote-10.3.x-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-wls-remote-10.3.x"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="remote.webLogic.12.1.x" name="WebLogic Remote 12.1.x" kind="Remote">
+      <url>http://arquillian.org/modules/arquillian-wls-remote-12.1.x-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-wls-remote-12.1.x"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="remote.webLogic.rest" name="WebLogic Remote REST" kind="Remote">
+      <url>http://arquillian.org/modules/arquillian-wls-remote-rest-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-wls-remote-rest"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="managed.webLogic.10.3.x" name="WebLogic Managed 10.3.x" kind="Managed">
+      <url>http://arquillian.org/modules/arquillian-wls-managed-10.3.x-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-wls-managed-10.3.x"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="managed.webLogic.12.1.x" name="WebLogic Managed 12.1.x" kind="Managed">
+      <url>http://arquillian.org/modules/arquillian-wls-managed-12.1.x-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-wls-managed-12.1.x"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="managed.webLogic.rest" name="WebLogic Managed REST" kind="Managed">
+      <url>http://arquillian.org/modules/arquillian-wls-managed-rest-container-adapter/</url>
+      <mavenDependency groupId="org.jboss.arquillian.container" artifactId="arquillian-wls-managed-rest"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="remote.tomee" name="TomEE Remote" kind="Remote">
+      <url>http://arquillian.org/modules/arquillian-tomee-remote-container-adapter/</url>
+      <mavenDependency groupId="org.apache.tomee" artifactId="arquillian-tomee-remote"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="managed.wildFly" name="WildFly Managed" kind="Managed">
+      <url>http://arquillian.org/modules/wildfly-arquillian-wildfly-managed-container-adapter/</url>
+      <mavenDependency groupId="org.wildfly.arquillian" artifactId="wildfly-arquillian-container-managed"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="remote.wildFly" name="WildFly Remote" kind="Remote">
+      <url>http://arquillian.org/modules/wildfly-arquillian-wildfly-remote-container-adapter/</url>
+      <mavenDependency groupId="org.wildfly.arquillian" artifactId="wildfly-arquillian-container-remote"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="managed.wildFly.domain" name="WildFly Managed Domain" kind="Managed">
+      <url>http://arquillian.org/modules/wildfly-arquillian-wildfly-domain-managed-container-adapter/</url>
+      <mavenDependency groupId="org.wildfly.arquillian" artifactId="wildfly-arquillian-container-domain-managed"/>
+    </jboss.arquillian.container>
+
+    <jboss.arquillian.container id="remote.wildFly.domain" name="WildFly Remote Domain" kind="Remote">
+      <url>http://arquillian.org/modules/wildfly-arquillian-wildfly-domain-remote-container-adapter/</url>
+      <mavenDependency groupId="org.wildfly.arquillian" artifactId="wildfly-arquillian-container-domain-remote"/>
+    </jboss.arquillian.container>
+    `
+    <repositoryLibrary name="Arquillian Cloudbees Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-cloudbees</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian GlassFish Managed 3.1 Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-glassfish-managed-3.1</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian GlassFish Remote 3.1 Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-glassfish-remote-3.1</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian GlassFish Embedded 3.1 Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-glassfish-embedded-3.1</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian JBoss AS Managed 4.2.x Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-jbossas-managed-4.2</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian JBoss AS Remote 4.2.x Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-jbossas-remote-4.2</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian JBoss AS Remote 5.x Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-jbossas-remote-5</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian JBoss AS Managed 5.1.x Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-jbossas-managed-5.1</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian JBoss AS Remote 5.1.x Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-jbossas-remote-5.1</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian JBoss AS Embedded 6.x Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-jbossas-embedded-6</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian JBoss AS Managed 6.x Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-jbossas-managed-6</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian JBoss AS Remote 6.x Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-jbossas-remote-6</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian Chameleon Container Adapter">
+      <groupId>org.arquillian.container</groupId>
+      <artifactId>arquillian-container-chameleon</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian Jetty Embedded 6.1.x Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-jetty-embedded-6.1</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian Jetty Embedded 7.x Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-jetty-embedded-7</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian Jetty Embedded 8.x Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-jetty-embedded-8</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian Jetty Embedded 9.x Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-jetty-embedded-9</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian OpenShift Express Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-openshift-express</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian OpenWebBeans Embedded 1.x Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-openwebbeans-embedded-1</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian OSGi :: Container :: JBoss :: Embedded">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-container-jbosgi-embedded</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian OSGi :: Container :: Felix :: Embedded">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-container-felix-embedded</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian OSGi :: Container :: Equinox :: Embedded">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-container-equinox-embedded</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian OSGi :: Container :: Karaf :: Managed">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-container-karaf-managed</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian OSGi :: Container :: Karaf :: Remote">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-container-karaf-remote</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian Resin Embedded 4 Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-resin-embedded-4</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian Tomcat Managed 5.5.x Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-tomcat-managed-5.5</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian Tomcat Embedded 6.x Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-tomcat-embedded-6</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian Tomcat Remote 6.x Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-tomcat-remote-6</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian Tomcat Managed 6.x Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-tomcat-managed-6</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian Tomcat Embedded 7.x Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-tomcat-embedded-7</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian Tomcat Managed 7.x Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-tomcat-managed-7</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian Tomcat Remote 7.x Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-tomcat-remote-7</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian Tomcat Embedded 8.x Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-tomcat-embedded-8</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian Undertow Embedded Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>undertow-embedded</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian WebSphere AS Remote 7.x Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-was-remote-7</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian WebSphere AS Embedded 8.x Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-was-embedded-8</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian WebSphere AS Remote 8.0 Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-was-remote-8</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian WebSphere AS Remote 8.5 Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-was-remote-8.5</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian WebSphere Liberty Profile Managed 8.5 Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-wlp-managed-8.5</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian WebSphere Liberty Profile Remote 8.5 Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-wlp-remote-8.5</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian Weld EE Embedded 1.1.x Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-weld-ee-embedded-1.1</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian Weld SE Embedded 1.x Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-weld-se-embedded-1</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian Weld SE Embedded 1.1.x Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-weld-se-embedded-1.1</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian WebLogic Embedded 12.1 Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-wls-embedded-12.1</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian WebLogic Remote 10.3.x Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-wls-remote-10.3.x</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian WebLogic Remote 12.1.x Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-wls-remote-12.1.x</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian WebLogic Remote REST Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-wls-remote-rest</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian WebLogic Managed 10.3.x Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-wls-managed-10.3.x</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian WebLogic Managed 12.1.x Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-wls-managed-12.1.x</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian WebLogic Managed REST Container Adapter">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-wls-managed-rest</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Relocation wls-remote-10.3 &gt; 10.3.x">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-wls-remote-10.3</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Relocation wls-remote-12.1 &gt; 12.1.x">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-wls-remote-12.1</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Relocation wls-remote-12.1.2 &gt; 12.1.x">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-wls-remote-12.1.2</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Relocation wls-managed-10.3 &gt; 10.3.x">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-wls-managed-10.3</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Relocation wls-managed-12.1 &gt; 12.1.x">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-wls-managed-12.1</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Relocation wls-managed-12.1.2 &gt; 12.1.x">
+      <groupId>org.jboss.arquillian.container</groupId>
+      <artifactId>arquillian-wls-managed-12.1.2</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian TomEE Embedded Container Adapter">
+      <groupId>org.apache.tomee</groupId>
+      <artifactId>arquillian-tomee-embedded</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian TomEE Remote Container Adapter">
+      <groupId>org.apache.tomee</groupId>
+      <artifactId>arquillian-tomee-remote</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian OpenEJB Container Adapter">
+      <groupId>org.apache.tomee</groupId>
+      <artifactId>arquillian-openejb-embedded</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian WildFly Embedded Container Adapter">
+      <groupId>org.wildfly.arquillian</groupId>
+      <artifactId>wildfly-arquillian-container-embedded</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian WildFly Managed Container Adapter">
+      <groupId>org.wildfly.arquillian</groupId>
+      <artifactId>wildfly-arquillian-container-managed</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian WildFly Remote Container Adapter">
+      <groupId>org.wildfly.arquillian</groupId>
+      <artifactId>wildfly-arquillian-container-remote</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian WildFly Remote Domain Container Adapter">
+      <groupId>org.wildfly.arquillian</groupId>
+      <artifactId>wildfly-arquillian-container-domain-remote</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian WildFly Managed Domain Container Adapter">
+      <groupId>org.wildfly.arquillian</groupId>
+      <artifactId>wildfly-arquillian-container-domain-managed</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian JUnit">
+      <groupId>org.jboss.arquillian.junit</groupId>
+      <artifactId>arquillian-junit-container</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Arquillian TestNG">
+      <groupId>org.jboss.arquillian.testng</groupId>
+      <artifactId>arquillian-testng-container</artifactId>
+    </repositoryLibrary>
+    <repositoryLibrary name="Simple Logging Facade for Java">
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+    </repositoryLibrary>
+
+    <dependencySupport kind="java" coordinate="org.jboss.arquillian.core:arquillian-core-api" displayName="Arquillian"/>
+  </extensions>
+</idea-plugin>

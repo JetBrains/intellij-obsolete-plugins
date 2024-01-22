@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<frameworks>
+  <framework name="GlassFish Embedded 3.1">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-glassfish-embedded-3.1</artifactId>
+  </framework>
+  <framework name="JBoss AS Embedded 6.x">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-jbossas-embedded-6</artifactId>
+  </framework>
+  <framework name="Jetty Embedded 6.1.x">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-jetty-embedded-6.1</artifactId>
+  </framework>
+  <framework name="Jetty Embedded 7.x and 8.x">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-jetty-embedded-7</artifactId>
+  </framework>
+  <framework name="Jetty Embedded 9.x">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-jetty-embedded-9</artifactId>
+  </framework>
+  <framework name="OpenWebBeans Embedded 1.x">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-openwebbeans-embedded-1</artifactId>
+  </framework>
+  <framework name="OSGi JBoss Embedded">
+    <groupId>org.jboss.arquillian.osgi</groupId>
+    <artifactId>arquillian-container-jbosgi-embedded</artifactId>
+  </framework>
+  <framework name="OSGi Felix Embedded">
+    <groupId>org.jboss.arquillian.osgi</groupId>
+    <artifactId>arquillian-container-felix-embedded</artifactId>
+  </framework>
+  <framework name="OSGi Equinox Embedded">
+    <groupId>org.jboss.arquillian.osgi</groupId>
+    <artifactId>arquillian-container-equinox-embedded</artifactId>
+  </framework>
+  <framework name="OSGi Karaf Embedded">
+    <groupId>org.jboss.arquillian.osgi</groupId>
+    <artifactId>arquillian-container-karaf-embedded</artifactId>
+  </framework>
+  <framework name="Resin Embedded 4">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-resin-embedded-4</artifactId>
+  </framework>
+  <framework name="Tomcat Embedded 6.x">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-tomcat-embedded-6</artifactId>
+  </framework>
+  <framework name="Tomcat Embedded 7.x">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-tomcat-embedded-7</artifactId>
+  </framework>
+  <framework name="Tomcat Embedded 8.x">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-tomcat-embedded-8</artifactId>
+  </framework>
+  <framework name="Undertow Embedded">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>undertow-embedded</artifactId>
+  </framework>
+  <framework name=" WebSphere AS Embedded 8.x">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-was-embedded-8</artifactId>
+  </framework>
+  <framework name="Weld EE Embedded 1.1.x">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-weld-ee-embedded-1.1</artifactId>
+  </framework>
+  <framework name="Weld SE Embedded 1.x">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-weld-se-embedded-1</artifactId>
+  </framework>
+  <framework name="Weld SE Embedded 1.1.x">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-weld-se-embedded-1.1</artifactId>
+  </framework>
+  <framework name="WebLogic Embedded 12.1">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-wls-embedded-12.1</artifactId>
+  </framework>
+  <framework name="TomEE Embedded">
+    <groupId>org.apache.openejb</groupId>
+    <artifactId>arquillian-tomee-embedded</artifactId>
+  </framework>
+  <framework name="OpenEJB">
+    <groupId>org.apache.openejb</groupId>
+    <artifactId>arquillian-openejb-embedded-4</artifactId>
+  </framework>
+</frameworks>

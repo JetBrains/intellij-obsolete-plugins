@@ -1,0 +1,22 @@
+<idea-plugin package="com.intellij.plugins.jboss.arquillian.testng">
+  <dependencies>
+    <plugin id="TestNG-J"/>
+    <plugin id="org.jetbrains.idea.maven"/>
+  </dependencies>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <testFramework implementation="com.intellij.plugins.jboss.arquillian.testng.testFramework.ArquillianTestNGFramework"
+                   order="before testNG"/>
+    <configurationType implementation="com.intellij.plugins.jboss.arquillian.testng.runConfiguration.ArquillianTestNGRunConfigurationType"/>
+    <codeInsight.unresolvedReferenceQuickFixProvider
+      implementation="com.intellij.plugins.jboss.arquillian.testng.quickFix.ArquillianTestNGUnresolvedReference"/>
+    <runConfigurationProducer
+      implementation="com.intellij.plugins.jboss.arquillian.testng.producer.ArquillianTestNGPatternConfigurationProducer"/>
+    <runConfigurationProducer
+      implementation="com.intellij.plugins.jboss.arquillian.testng.producer.ArquillianTestNGInClassConfigurationProducer"/>
+    <runConfigurationProducer
+      implementation="com.intellij.plugins.jboss.arquillian.testng.producer.ArquillianTestNGPackageConfigurationProducer"/>
+    <runConfigurationProducer
+      implementation="com.intellij.plugins.jboss.arquillian.testng.producer.ArquillianTestNGSuiteConfigurationProducer"/>
+  </extensions>
+</idea-plugin>

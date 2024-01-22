@@ -1,0 +1,23 @@
+<idea-plugin package="com.intellij.plugins.jboss.arquillian.junit">
+  <dependencies>
+    <plugin id="JUnit"/>
+    <plugin id="org.jetbrains.idea.maven"/>
+  </dependencies>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <testFramework implementation="com.intellij.plugins.jboss.arquillian.junit.testFramework.ArquillianJUnitFramework"
+                   order="before junit4"/>
+    <configurationType implementation="com.intellij.plugins.jboss.arquillian.junit.runConfiguration.ArquillianJUnitRunConfigurationType"/>
+    <codeInsight.unresolvedReferenceQuickFixProvider
+      implementation="com.intellij.plugins.jboss.arquillian.junit.quickFix.ArquillianJUnitUnresolvedReference"/>
+    <runConfigurationProducer implementation="com.intellij.plugins.jboss.arquillian.junit.producer.ArquillianInClassConfigurationProducer"/>
+    <runConfigurationProducer
+      implementation="com.intellij.plugins.jboss.arquillian.junit.producer.ArquillianAllInPackageConfigurationProducer"/>
+    <runConfigurationProducer
+      implementation="com.intellij.plugins.jboss.arquillian.junit.producer.ArquillianAllInDirectoryConfigurationProducer"/>
+  </extensions>
+</idea-plugin>
+
+
+
+

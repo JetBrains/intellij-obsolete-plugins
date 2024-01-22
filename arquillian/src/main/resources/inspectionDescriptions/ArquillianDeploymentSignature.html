@@ -1,0 +1,42 @@
+<html>
+<body>
+<p>Reports incorrect signature of methods annotated with <code>@Deployment</code>.</p>
+<p>
+  According to the <a href="https://docs.jboss.org/arquillian/reference/1.0.0.Alpha5/en-US/html/gettingstarted.html#d0e451">Arquillian
+  documentation</a>, Arquillian test classes should define the deployment archive using a public static method with a specific signature,
+  annotated with <code>@Deployment</code>.
+</p>
+
+<p><b>Example:</b></p>
+<pre><code>
+  // this test case can't be launched by Arquillian, the Deployment method is not static
+  @RunWith(Arquillian.class)
+  public class SomeTest {
+    @Deployment
+    public JavaArchive createDeployment() {
+      throw new UnsupportedOperationException("Implement me");
+    }
+
+    @Test
+    public void testSomething() {
+      Assert.fail("To be implemented");
+    }
+  }
+</code></pre>
+<p>After the quick-fix is applied:</p>
+<pre><code>
+  @RunWith(Arquillian.class)
+  public class SomeTest {
+    @Deployment
+    public static JavaArchive createDeployment() {
+      throw new UnsupportedOperationException("Implement me");
+    }
+
+    @Test
+    public void testSomething() {
+      Assert.fail("To be implemented");
+    }
+  }
+</code></pre>
+</body>
+</html>
