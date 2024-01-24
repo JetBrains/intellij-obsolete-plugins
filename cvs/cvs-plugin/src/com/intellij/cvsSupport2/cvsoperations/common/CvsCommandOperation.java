@@ -134,7 +134,10 @@ public abstract class CvsCommandOperation extends CvsOperation implements IFileI
           @Override
           public void setProgress(double value) {
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
-            if (progressIndicator != null) progressIndicator.setFraction(value);
+            if (progressIndicator != null) {
+              if (progressIndicator.isIndeterminate()) progressIndicator.setIndeterminate(false);
+              progressIndicator.setFraction(value);
+            }
           }
         };
         int count = 0;
