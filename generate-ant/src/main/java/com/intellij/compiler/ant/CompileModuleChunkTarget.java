@@ -4,6 +4,7 @@
 package com.intellij.compiler.ant;
 
 import com.intellij.compiler.ant.taskdefs.*;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
@@ -176,7 +177,10 @@ public class CompileModuleChunkTarget extends CompositeGenerator {
     final CompositeGenerator composite = new CompositeGenerator();
     final Map<String, Copy> outputDirToTaskMap = new HashMap<>();
     for (final VirtualFile root : sourceRoots) {
-      final String packagePrefix = fileIndex.getPackageNameByDirectory(root);
+      final String packagePrefix = ReadAction
+              .nonBlocking(() -> fileIndex.getPackageNameByDirectory(root))
+              .expireWith(project)
+              .executeSynchronously();
       final String targetDir =
         packagePrefix != null && packagePrefix.length() > 0 ? toDir + "/" + packagePrefix.replace('.', '/') : toDir;
       Copy copy = outputDirToTaskMap.get(targetDir);
