@@ -15,14 +15,13 @@
  */
 package com.intellij.cvsSupport2.config;
 
+import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.util.DefaultJDOMExternalizer;
-import com.intellij.openapi.util.InvalidDataException;
-import com.intellij.openapi.util.JDOMExternalizable;
-import com.intellij.openapi.util.WriteExternalException;
-import org.jdom.Element;
+import com.intellij.util.xmlb.XmlSerializerUtil;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public class ProxySettings implements JDOMExternalizable, Cloneable {
+public class ProxySettings implements PersistentStateComponent<ProxySettings>, Cloneable {
   private static final Logger LOG = Logger.getInstance(ProxySettings.class);
 
   public static final int HTTP = 0;
@@ -47,10 +46,10 @@ public class ProxySettings implements JDOMExternalizable, Cloneable {
       return true;
     }
     return PROXY_PORT == that.PROXY_PORT &&
-           TYPE == that.TYPE &&
-           LOGIN.equals(that.LOGIN) &&
-           PASSWORD.equals(that.PASSWORD) &&
-           PROXY_HOST.equals(that.PROXY_HOST);
+            TYPE == that.TYPE &&
+            LOGIN.equals(that.LOGIN) &&
+            PASSWORD.equals(that.PASSWORD) &&
+            PROXY_HOST.equals(that.PROXY_HOST);
   }
 
   @Override
@@ -67,13 +66,13 @@ public class ProxySettings implements JDOMExternalizable, Cloneable {
   }
 
   @Override
-  public void readExternal(Element element) throws InvalidDataException {
-    DefaultJDOMExternalizer.readExternal(this, element);
+  public @Nullable ProxySettings getState() {
+    return this;
   }
 
   @Override
-  public void writeExternal(Element element) throws WriteExternalException {
-    DefaultJDOMExternalizer.writeExternal(this, element);
+  public void loadState(@NotNull ProxySettings state) {
+    XmlSerializerUtil.copyBean(state, this);
   }
 
   @Override
