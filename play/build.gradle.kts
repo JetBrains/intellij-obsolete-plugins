@@ -35,4 +35,12 @@ intellijPlatform {
             untilBuild = "243.*"
         }
     }
+    signing {
+        certificateChain = System.getenv("CERTIFICATE_CHAIN")
+        privateKey = System.getenv("PRIVATE_KEY")
+        password = System.getenv("PRIVATE_KEY_PASSWORD")
+    }
+    publishing {
+        token = System.getenv("PUBLISH_TOKEN")
+    }
 }
