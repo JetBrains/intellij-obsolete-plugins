@@ -22,6 +22,8 @@ import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
+import com.intellij.ui.content.ContentManagerEvent;
+import com.intellij.ui.content.ContentManagerListener;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,12 +33,14 @@ import java.awt.*;
 /**
  * author: lesya
  */
-public class CvsTabbedWindowComponent extends JPanel implements DataProvider, CvsTabbedWindow.DeactivateListener {
+public class CvsTabbedWindowComponent extends JPanel implements DataProvider, CvsTabbedWindow.DeactivateListener, ContentManagerListener {
   private final JComponent myComponent;
   private final ContentManager myContentManager;
   private Content myContent;
   private final boolean myAddToolbar;
   private final String myHelpId;
+
+  private JComponentReleasable myComponentWrapper;
 
 
   public CvsTabbedWindowComponent(JComponent component, boolean addDefaultToolbar,
@@ -60,6 +64,24 @@ public class CvsTabbedWindowComponent extends JPanel implements DataProvider, Cv
       add(ActionManager.getInstance().
           createActionToolbar("DefaultCvsComponentToolbar", actionGroup, false).getComponent(),
           BorderLayout.WEST);
+    }
+  }
+
+  public CvsTabbedWindowComponent(JComponentReleasable componentWrapper, boolean addDefaultToolbar,
+                                  @Nullable ActionGroup toolbarActions,
+                                  ContentManager contentManager, String helpId) {
+    this(componentWrapper.getComponent(), addDefaultToolbar, toolbarActions, contentManager, helpId);
+    this.myComponentWrapper = componentWrapper;
+  }
+
+  @Override
+  public void contentRemoved(@NotNull ContentManagerEvent event) {
+    //ContentManagerListener.super.contentRemoved(event);
+    if (myComponentWrapper == null) return;
+    final JComponent toBeRemovedComponent = event.getContent().getComponent();
+    if (toBeRemovedComponent instanceof CvsTabbedWindowComponent
+            && ((CvsTabbedWindowComponent) toBeRemovedComponent).getComponent() == myComponentWrapper.getComponent()) {
+      myComponentWrapper.releaseComponent();
     }
   }
 
@@ -101,6 +123,12 @@ public class CvsTabbedWindowComponent extends JPanel implements DataProvider, Cv
   public void deactivated() {
     if (myComponent instanceof CvsTabbedWindow.DeactivateListener) {
       ((CvsTabbedWindow.DeactivateListener) myComponent).deactivated();
+    }
+  }
+
+  public interface JComponentReleasable {
+    JComponent getComponent();
+    default void releaseComponent() {
     }
   }
 }
