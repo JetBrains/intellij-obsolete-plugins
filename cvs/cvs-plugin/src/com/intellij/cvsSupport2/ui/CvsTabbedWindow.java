@@ -24,8 +24,8 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.content.ContentManagerEvent;
 import com.intellij.ui.content.ContentManagerListener;
-import com.intellij.ui.errorView.ContentManagerProvider;
-import com.intellij.ui.errorView.ErrorViewFactory;
+import com.intellij.cvsSupport2.ui.errorView.ContentManagerProvider;
+import com.intellij.cvsSupport2.ui.errorView.ErrorViewFactoryImpl;
 import com.intellij.util.ui.ErrorTreeView;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
@@ -134,7 +134,7 @@ public class CvsTabbedWindow implements Disposable {
 
   public ErrorTreeView getErrorsTreeView() {
     if (myErrorsView == null) {
-      myErrorsView = ErrorViewFactory.SERVICE.getInstance()
+      myErrorsView = ErrorViewFactoryImpl
         .createErrorTreeView(myProject, null, true, new AnAction[]{ActionManager.getInstance().getAction("CvsActions")},
                              new AnAction[]{new GlobalCvsSettingsAction(), new ReconfigureCvsRootAction()}, new ContentManagerProvider() {
           @Override

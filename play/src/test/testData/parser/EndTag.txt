@@ -1,0 +1,8 @@
+PlayPsiFile: EndTag.html
+  PsiElement(TEMPLATE_TEXT)('inner content ')
+  PsiElement(END_TAG_START)('#{/')
+  PsiErrorElement:Expected start tag 'cache'
+    <empty list>
+  PsiElement(TAG_NAME)('cache')
+  PsiElement(TAG_END)('}')
+  PsiElement(TEMPLATE_TEXT)('   outer')

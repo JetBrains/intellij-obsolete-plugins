@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<frameworks>
+  <framework name="GlassFish Remote 3.1">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-glassfish-remote-3.1</artifactId>
+  </framework>
+  <framework name="JBoss AS Remote 4.2.x">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-jbossas-remote-4.2</artifactId>
+  </framework>
+  <framework name="JBoss AS Remote 5.x">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-jbossas-remote-5</artifactId>
+  </framework>
+  <framework name="JBoss AS Remote 5.1.x">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-jbossas-remote-5.1</artifactId>
+  </framework>
+  <framework name="JBoss AS Remote 6.x">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-jbossas-remote-6</artifactId>
+  </framework>
+  <framework name="OSGi :: Container :: Karaf :: Remote">
+    <groupId>org.jboss.arquillian.osgi</groupId>
+    <artifactId>arquillian-container-karaf-remote</artifactId>
+  </framework>
+  <framework name="Tomcat Remote 6.x">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-tomcat-remote-6</artifactId>
+  </framework>
+  <framework name="Tomcat Remote 7.x">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-tomcat-remote-7</artifactId>
+  </framework>
+  <framework name="WebSphere AS Remote 7.x">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-was-remote-7</artifactId>
+  </framework>
+  <framework name="WebSphere AS Remote 8.0">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-was-remote-8</artifactId>
+  </framework>
+  <framework name="WebSphere AS Remote 8.5">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-was-remote-8.5</artifactId>
+  </framework>
+  <framework name="WebSphere Liberty Profile Remote 8.5">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-wlp-remote-8.5</artifactId>
+  </framework>
+  <framework name="WebLogic Remote 10.3">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-wls-remote-10.3</artifactId>
+  </framework>
+  <framework name="WebLogic Remote 12.1">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-wls-remote-12.1</artifactId>
+  </framework>
+  <framework name="WebLogic Remote 12.1.2">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-wls-remote-12.1.2</artifactId>
+  </framework>
+  <framework name="TomEE Remote">
+    <groupId>org.apache.openejb</groupId>
+    <artifactId>arquillian-tomee-remote</artifactId>
+  </framework>
+  <framework name="WildFly Remote">
+    <groupId>org.wildfly.arquillian</groupId>
+    <artifactId>wildfly-arquillian-container-remote</artifactId>
+  </framework>
+  <framework name="WildFly Remote Domain">
+    <groupId>org.wildfly.arquillian</groupId>
+    <artifactId>wildfly-arquillian-container-domain-remote</artifactId>
+  </framework>
+</frameworks>

@@ -1,0 +1,52 @@
+PlayPsiFile: ActionAttributes.html
+  TAG
+    PsiElement(TAG_START)('#{')
+    PsiElement(TAG_NAME)('form')
+    PsiWhiteSpace(' ')
+    NameValuePair
+      PsiElement(ATTR_NAME)('foo')
+      PsiElement(COLON)(':')
+      TAG_EXPRESSION
+        Method call
+          Reference expression
+            Reference expression
+              PsiElement(identifier)('Application')
+            PsiElement(.)('.')
+            PsiElement(identifier)('index')
+          Arguments
+            PsiElement(()('(')
+            PsiElement())(')')
+    PsiElement(COMMA)(',')
+    PsiWhiteSpace(' ')
+    NameValuePair
+      PsiElement(ATTR_NAME)('boo')
+      PsiElement(COLON)(':')
+      PsiElement(AT)('@')
+      ACTION_SCRIPT
+        Method call
+          Reference expression
+            Reference expression
+              PsiElement(identifier)('Administration')
+            PsiElement(.)('.')
+            PsiElement(identifier)('authenticate')
+          Arguments
+            PsiElement(()('(')
+            PsiElement())(')')
+    PsiElement(COMMA)(',')
+    PsiWhiteSpace(' ')
+    PsiElement(AT)('@')
+    ACTION_SCRIPT
+      Method call
+        Reference expression
+          Reference expression
+            PsiElement(identifier)('Application')
+          PsiElement(.)('.')
+          PsiElement(identifier)('companyLogo')
+        Arguments
+          PsiElement(()('(')
+          PsiElement())(')')
+    PsiElement(TAG_END)('}')
+    PsiElement(TEMPLATE_TEXT)('\n')
+    PsiElement(END_TAG_START)('#{/')
+    PsiElement(TAG_NAME)('form')
+    PsiElement(TAG_END)('}')

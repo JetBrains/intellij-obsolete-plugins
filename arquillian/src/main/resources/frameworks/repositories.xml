@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<repositories>
+  <repository>
+    <id>caucho</id>
+    <name>Caucho Maven Repository</name>
+    <url>http://caucho.com/m2/</url>
+    <layout>default</layout>
+  </repository>
+</repositories>

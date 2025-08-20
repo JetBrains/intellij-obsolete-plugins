@@ -1,0 +1,5 @@
+TEMPLATE_TEXT ('Connected user is ')
+EL_START ('${')
+EL_EXPRESSION ('user')
+EL_END ('}')
+TEMPLATE_TEXT ('.')

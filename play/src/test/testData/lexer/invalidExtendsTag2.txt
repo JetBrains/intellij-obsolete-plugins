@@ -1,0 +1,4 @@
+TAG_START ('#{')
+TAG_NAME ('extends')
+WHITE_SPACE (' ')
+TAG_EXPRESSION ('/')

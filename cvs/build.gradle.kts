@@ -1,7 +1,3 @@
-plugins {
-    id("java")
-}
-
 sourceSets {
     main {
         java.srcDirs(listOf("cvs-core/src", "cvs-plugin/src", "javacvs-src", "smartcvs-src"))
@@ -17,6 +13,8 @@ dependencies {
     implementation(files("lib/trilead-ssh2-build213.jar"))
 }
 
+version = "223.0"
+
 intellij {
-    version.set("2020.2.1")
+    version.set("2022.3")
 }

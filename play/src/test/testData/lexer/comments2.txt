@@ -1,0 +1,7 @@
+TEMPLATE_TEXT (' html text ')
+COMMENT_START ('*{')
+COMMENT_TEXT (' %{foo}% &{action} co*{mm')
+COMMENT_END ('}*')
+TEMPLATE_TEXT ('ent }')
+TEMPLATE_TEXT ('*')
+TEMPLATE_TEXT (' bbb>')

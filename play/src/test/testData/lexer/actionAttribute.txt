@@ -1,0 +1,8 @@
+TAG_START ('#{')
+TAG_NAME ('myTag')
+WHITE_SPACE ('  ')
+ATTR_NAME ('action')
+COLON (':')
+AT ('@')
+ACTION_SCRIPT ('MyController.action() ')
+CLOSE_TAG ('/}')

@@ -1,0 +1,6 @@
+TEMPLATE_TEXT ('how many percent? that many: ')
+EL_START ('${')
+EL_EXPRESSION ('value')
+EL_END ('}')
+PERCENT ('%')
+TEMPLATE_TEXT (' xxxx this is an error ')

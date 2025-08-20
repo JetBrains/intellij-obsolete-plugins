@@ -1,0 +1,5 @@
+<idea-plugin package="com.intellij.play.persistence">
+  <extensions defaultExtensionNs="com.intellij">
+    <persistence.packagesProvider implementation="com.intellij.play.persistence.PlayPersistencePackageProvider"/>
+  </extensions>
+</idea-plugin>

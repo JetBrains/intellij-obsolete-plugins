@@ -1,0 +1,7 @@
+TEMPLATE_TEXT ('var waitMessages = ')
+TAG_START ('#{')
+TAG_NAME ('jsAction')
+WHITE_SPACE (' ')
+AT ('@')
+ACTION_SCRIPT ('waitMessages(':lastReceived') ')
+CLOSE_TAG ('/}')

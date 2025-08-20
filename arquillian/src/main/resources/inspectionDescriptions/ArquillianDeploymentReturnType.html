@@ -1,0 +1,43 @@
+<html>
+<body>
+<p>Reports incorrect return types for methods annotated with <code>@Deployment</code>.</p>
+<p>
+  According to the <a href="https://docs.jboss.org/arquillian/reference/1.0.0.Alpha5/en-US/html/gettingstarted.html#d0e451">Arquillian
+  documentation</a>, methods annotated with <code>@Deployment</code> must have a return type inherited from the ShrinkWrap Archive.
+</p>
+
+<p><b>Example:</b></p>
+<pre><code>
+  // this test case can't be launched by Arquillian
+  @RunWith(Arquillian.class)
+  public class SomeTest {
+    @Deployment
+    public static ZipFile createDeployment() {
+      throw new UnsupportedOperationException("Implement me");
+    }
+
+    @Test
+    public void testSomething() {
+      Assert.fail("To be implemented");
+    }
+  }
+</code></pre>
+<p>After the quick-fix is applied:</p>
+<pre><code>
+  import org.jboss.shrinkwrap.api.Archive;
+
+  @RunWith(Arquillian.class)
+  public class SomeTest {
+    @Deployment
+    public static Archive createDeployment() {
+      throw new UnsupportedOperationException("Implement me");
+    }
+
+    @Test
+    public void testSomething() {
+      Assert.fail("To be implemented");
+    }
+  }
+</code></pre>
+</body>
+</html>

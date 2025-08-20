@@ -18,7 +18,6 @@ package com.intellij.cvsSupport2.actions.cvsContext;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.FilePath;
-import com.intellij.openapi.vcs.actions.VcsContext;
 import com.intellij.openapi.vcs.changes.Change;
 import com.intellij.openapi.vcs.changes.ChangeList;
 import com.intellij.openapi.vcs.ui.Refreshable;
@@ -37,7 +36,7 @@ public class CachedCvsContext implements CvsContext{
   private final Collection<String> myDeletedFileNames;
   private final CvsLightweightFile[] myCvsLightweightFiles;
 
-  private final VcsContext myVcsContext;
+  private final CvsContext myVcsContext;
 
   public CachedCvsContext(CvsContext baseContext){
     myIsActive = baseContext.cvsIsActive();

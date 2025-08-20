@@ -1,0 +1,19 @@
+PlayPsiFile: UnclosedTagError.html
+  PsiElement(TEMPLATE_TEXT)('aaa ')
+  PsiElement(TAG_START)('#{')
+  PsiElement(TAG_NAME)('foo')
+  PsiWhiteSpace(' ')
+  TAG_EXPRESSION
+    Reference expression
+      PsiElement(identifier)('fooExpr')
+    PsiWhiteSpace('  ')
+  PsiErrorElement:Closing element for 'foo' tag expected
+    <empty list>
+  TAG
+    PsiElement(TAG_START)('#{')
+    PsiElement(TAG_NAME)('boo')
+    PsiElement(TAG_END)('}')
+    PsiElement(TEMPLATE_TEXT)(' boo ')
+    PsiElement(END_TAG_START)('#{/')
+    PsiElement(TAG_NAME)('boo')
+    PsiElement(TAG_END)('}')

@@ -1,0 +1,13 @@
+PlayPsiFile: IncorrectTagClosingError.html
+  TAG
+    PsiElement(TAG_START)('#{')
+    PsiElement(TAG_NAME)('foo')
+    PsiElement(TAG_END)('}')
+    PsiElement(TEMPLATE_TEXT)(' ')
+    PsiElement(TAG_START)('#{')
+    PsiErrorElement:Tag Name expected
+      <empty list>
+    PsiWhiteSpace(' ')
+    PsiElement(END_TAG_START)('#{/')
+    PsiElement(TAG_NAME)('foo')
+    PsiElement(TAG_END)('}')

@@ -1,0 +1,19 @@
+PlayPsiFile: TagWithAction.html
+  PsiElement(TEMPLATE_TEXT)('foo ')
+  TAG
+    PsiElement(TAG_START)('#{')
+    PsiElement(TAG_NAME)('form')
+    PsiWhiteSpace(' ')
+    PsiElement(AT)('@')
+    ACTION_SCRIPT
+      Method call
+        Reference expression
+          PsiElement(identifier)('get')
+        Arguments
+          PsiElement(()('(')
+          Reference expression
+            PsiElement(identifier)('events')
+          PsiElement())(')')
+      PsiWhiteSpace(' ')
+    PsiElement(CLOSE_TAG)('/}')
+  PsiElement(TEMPLATE_TEXT)(' boo')

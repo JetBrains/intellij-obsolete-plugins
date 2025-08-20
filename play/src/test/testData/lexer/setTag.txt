@@ -1,0 +1,7 @@
+TAG_START ('#{')
+TAG_NAME ('foo')
+WHITE_SPACE (' ')
+ATTR_NAME ('a')
+COLON (':')
+COMMA (',')
+CLOSE_TAG ('/}')

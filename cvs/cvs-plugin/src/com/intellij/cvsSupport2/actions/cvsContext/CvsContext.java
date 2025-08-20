@@ -16,6 +16,7 @@
 package com.intellij.cvsSupport2.actions.cvsContext;
 
 import com.intellij.openapi.vcs.actions.VcsContext;
+import com.intellij.openapi.vcs.ui.Refreshable;
 
 import java.util.Collection;
 
@@ -26,4 +27,6 @@ public interface CvsContext extends VcsContext {
   Collection<String> getDeletedFileNames();
 
   CvsLightweightFile[] getSelectedLightweightFiles();
+
+  Refreshable getRefreshableDialog();
 }

@@ -1,0 +1,29 @@
+PlayPsiFile: SetTag.html
+  TAG
+    PsiElement(TAG_START)('#{')
+    PsiElement(TAG_NAME)('extends')
+    PsiWhiteSpace(' ')
+    TAG_EXPRESSION
+      Literal
+        PsiElement(single quoted string)(''main.html'')
+      PsiWhiteSpace(' ')
+    PsiElement(CLOSE_TAG)('/}')
+  PsiElement(TEMPLATE_TEXT)('\n')
+  TAG
+    PsiElement(TAG_START)('#{')
+    PsiElement(TAG_NAME)('set')
+    PsiWhiteSpace(' ')
+    NameValuePair
+      PsiElement(ATTR_NAME)('aaa')
+      PsiElement(COLON)(':')
+      TAG_EXPRESSION
+        Literal
+          PsiElement(single quoted string)(''Basic Chat room'')
+    PsiElement(CLOSE_TAG)('/}')
+  PsiElement(TEMPLATE_TEXT)('  as ')
+  PsiElement(EL_START)('${')
+  EL_EXPRESSION
+    Reference expression
+      PsiElement(identifier)('user')
+  PsiElement(EL_END)('}')
+  PsiElement(TEMPLATE_TEXT)(' sss')

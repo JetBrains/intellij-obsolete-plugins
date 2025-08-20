@@ -1,0 +1,7 @@
+TEMPLATE_TEXT ('foo ')
+MESSAGE_START ('&{')
+MESSAGE_EXPRESSION (''extends'')
+COMMA (',')
+COMMA (',')
+COMMA (',')
+MESSAGE_EXPRESSION (' bar')

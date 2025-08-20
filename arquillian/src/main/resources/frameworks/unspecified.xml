@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<frameworks>
+  <framework name="Chameleon">
+    <groupId>org.arquillian.container</groupId>
+    <artifactId>arquillian-container-chameleon</artifactId>
+  </framework>
+  <framework name="Cloudbees">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-cloudbees</artifactId>
+  </framework>
+  <framework name="OpenShift Express">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-openshift-express</artifactId>
+  </framework>
+</frameworks>

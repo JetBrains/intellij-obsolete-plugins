@@ -118,7 +118,7 @@ public class CvsContextWrapper implements CvsContext {
 
   @Override
   public Refreshable getRefreshableDialog() {
-    return myVcsContext.getRefreshableDialog();
+    return Refreshable.PANEL_KEY.getData(myContext);
   }
 
   @Override

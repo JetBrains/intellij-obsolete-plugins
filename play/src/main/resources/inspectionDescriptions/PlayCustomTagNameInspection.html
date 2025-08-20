@@ -1,0 +1,15 @@
+<html>
+<body>
+<p>Reports custom tags that do not exist.</p>
+
+<p>
+  You can create custom tags for your application using simple template files stored in the <code>app/views/tags</code> directory.
+  The template's file name is used as the tag name.
+  For example, to create a <code>hello</code> tag, just create the <code>app/views/tags/hello.html</code> file.
+  Reference the tag directly: <code>#{hello /}</code>.
+</p>
+
+<p>This inspection will report the <code>#{hello /}</code> reference if <code>app/views/tags/hello.html</code> does not exist.</p>
+
+</body>
+</html>

@@ -1,0 +1,5 @@
+TAG_START ('#{')
+TAG_NAME ('c')
+WHITE_SPACE (' ')
+TAG_EXPRESSION ('new String[]{'aa', 'bbb',''}')
+CLOSE_TAG ('/}')

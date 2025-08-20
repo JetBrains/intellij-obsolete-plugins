@@ -1,0 +1,7 @@
+TAG_START ('#{')
+TAG_NAME ('crud.table')
+WHITE_SPACE (' ')
+ATTR_NAME ('fields')
+COLON (':')
+TAG_EXPRESSION ('['name', 'email'] ')
+CLOSE_TAG ('/}')

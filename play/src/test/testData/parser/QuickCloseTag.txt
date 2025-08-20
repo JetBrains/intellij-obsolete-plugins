@@ -1,0 +1,89 @@
+PlayPsiFile: QuickCloseTag.html
+  TAG
+    PsiElement(TAG_START)('#{')
+    PsiElement(TAG_NAME)('if')
+    PsiWhiteSpace(' ')
+    TAG_EXPRESSION
+      Logical expression
+        Reference expression
+          PsiElement(identifier)('a')
+        PsiWhiteSpace(' ')
+        PsiElement(&&)('&&')
+        PsiWhiteSpace(' ')
+        Reference expression
+          PsiElement(identifier)('b')
+    PsiElement(TAG_END)('}')
+    PsiElement(TEMPLATE_TEXT)('\n')
+    TAG
+      PsiElement(TAG_START)('#{')
+      PsiElement(TAG_NAME)('if')
+      PsiWhiteSpace(' ')
+      TAG_EXPRESSION
+        Relational expression
+          Reference expression
+            PsiElement(identifier)('c')
+          PsiElement(==)('==')
+          Literal
+            PsiElement(Integer)('2')
+      PsiElement(TAG_END)('}')
+      PsiElement(TEMPLATE_TEXT)('\n')
+      TAG
+        PsiElement(TAG_START)('#{')
+        PsiElement(TAG_NAME)('if')
+        PsiWhiteSpace(' ')
+        TAG_EXPRESSION
+          Relational expression
+            Reference expression
+              PsiElement(identifier)('zz')
+            PsiWhiteSpace(' ')
+            PsiElement(>)('>')
+            PsiWhiteSpace(' ')
+            Literal
+              PsiElement(Integer)('0')
+        PsiElement(TAG_END)('}')
+        PsiElement(TEMPLATE_TEXT)('\n')
+        PsiElement(EL_START)('${')
+        EL_EXPRESSION
+          Reference expression
+            Reference expression
+              PsiElement(identifier)('contactData')
+            PsiElement(.)('.')
+            PsiElement(identifier)('name')
+          PsiWhiteSpace(' ')
+        PsiElement(EL_END)('}')
+        PsiElement(TEMPLATE_TEXT)('\n')
+        PsiElement(END_TAG_START)('#{/')
+        PsiElement(TAG_END)('}')
+      PsiElement(TEMPLATE_TEXT)('\n')
+      TAG
+        PsiElement(TAG_START)('#{')
+        PsiElement(TAG_NAME)('else')
+        PsiElement(TAG_END)('}')
+        PsiElement(TEMPLATE_TEXT)('Nicht angegeben\n')
+        PsiElement(END_TAG_START)('#{/')
+        PsiElement(TAG_END)('}')
+      PsiElement(TEMPLATE_TEXT)('\n')
+      PsiElement(END_TAG_START)('#{/')
+      PsiElement(TAG_NAME)('if')
+      PsiElement(TAG_END)('}')
+    PsiElement(TEMPLATE_TEXT)('\n')
+    TAG
+      PsiElement(TAG_START)('#{')
+      PsiElement(TAG_NAME)('else')
+      PsiElement(TAG_END)('}')
+      PsiElement(TEMPLATE_TEXT)('Nicht angegeben\n')
+      PsiElement(END_TAG_START)('#{/')
+      PsiElement(TAG_NAME)('else')
+      PsiElement(TAG_END)('}')
+    PsiElement(TEMPLATE_TEXT)('\n')
+    PsiElement(END_TAG_START)('#{/')
+    PsiElement(TAG_END)('}')
+  PsiElement(TEMPLATE_TEXT)('\n')
+  TAG
+    PsiElement(TAG_START)('#{')
+    PsiElement(TAG_NAME)('else')
+    PsiElement(TAG_END)('}')
+    PsiElement(TEMPLATE_TEXT)('Nicht angegeben\n')
+    PsiElement(END_TAG_START)('#{/')
+    PsiElement(TAG_NAME)('else')
+    PsiElement(TAG_END)('}')

@@ -6,6 +6,9 @@
   <category>VCS Integration</category>
   <description>
       <![CDATA[
+      CVS support <a href="https://blog.jetbrains.com/idea/2020/11/cvs-integration-deprecation">is deprecated</a>, the plugin is provided as is.
+      The source code is available on <a href="https://github.com/JetBrains/intellij-obsolete-plugins/tree/master/cvs">GitHub</a><br><br>
+
       Allows working with CVS version control system.
       The following features are available:
         <ul>

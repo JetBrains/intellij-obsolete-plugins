@@ -1,0 +1,7 @@
+PlayPsiFile: Action.html
+  PsiElement(ACTION_START)('@{')
+  ACTION_SCRIPT
+    Reference expression
+      PsiElement(identifier)('aaa')
+  PsiElement(ACTION_END)('}')
+  PsiElement(TEMPLATE_TEXT)(' bbb')

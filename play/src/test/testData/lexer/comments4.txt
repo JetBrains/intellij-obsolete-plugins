@@ -1,0 +1,6 @@
+TAG_START ('#{')
+TAG_NAME ('foo')
+TAG_END ('}')
+COMMENT_START ('*{')
+COMMENT_TEXT ('text')
+COMMENT_END ('}*')

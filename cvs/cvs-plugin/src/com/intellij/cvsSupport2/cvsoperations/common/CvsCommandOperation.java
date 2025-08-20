@@ -297,7 +297,10 @@ public abstract class CvsCommandOperation extends CvsOperation implements IFileI
 
   private static void setProgressText(String text) {
     final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
-    if (progressIndicator != null) progressIndicator.setText(text);
+    if (progressIndicator != null) {
+      progressIndicator.setText(text);
+      progressIndicator.setIndeterminate(false);
+    }
   }
 
   private IClientEnvironment createEnvironment(IConnection connection,

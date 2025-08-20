@@ -1,0 +1,22 @@
+PlayPsiFile: StringExpression.html
+  TAG
+    PsiElement(TAG_START)('#{')
+    PsiElement(TAG_NAME)('tag')
+    PsiWhiteSpace(' ')
+    NameValuePair
+      PsiElement(ATTR_NAME)('aa')
+      PsiElement(COLON)(':')
+      TAG_EXPRESSION
+        Literal
+          PsiElement(single quoted string)(''aa'')
+    PsiElement(COMMA)(',')
+    PsiWhiteSpace(' ')
+    NameValuePair
+      PsiElement(ATTR_NAME)('bb')
+      PsiElement(COLON)(':')
+      TAG_EXPRESSION
+        Literal
+          PsiElement(single quoted string)(''bb'')
+        PsiWhiteSpace(' ')
+    PsiElement(CLOSE_TAG)('/}')
+  PsiElement(TEMPLATE_TEXT)(' text')

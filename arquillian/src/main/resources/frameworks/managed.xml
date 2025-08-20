@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<frameworks>
+  <framework name="GlassFish Managed 3.1">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-glassfish-managed-3.1</artifactId>
+  </framework>
+  <framework name="JBoss AS Managed 4.2.x">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-jbossas-managed-4.2</artifactId>
+  </framework>
+  <framework name="JBoss AS Managed 5.1.x">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-jbossas-managed-5.1</artifactId>
+  </framework>
+  <framework name="JBoss AS Managed 6.x">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-jbossas-managed-6</artifactId>
+  </framework>
+  <framework name="OSGi :: Container :: Karaf :: Managed">
+    <groupId>org.jboss.arquillian.osgi</groupId>
+    <artifactId>arquillian-container-karaf-managed</artifactId>
+  </framework>
+  <framework name=" Tomcat Managed 5.5.x">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-tomcat-managed-5.5</artifactId>
+  </framework>
+  <framework name="Tomcat Managed 6.x">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-tomcat-managed-6</artifactId>
+  </framework>
+  <framework name=" Tomcat Managed 7.x">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-tomcat-managed-7</artifactId>
+  </framework>
+  <framework name="WebSphere Liberty Profile Managed 8.5">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-wlp-managed-8.5</artifactId>
+  </framework>
+  <framework name="WebLogic Managed 10.3">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-wls-managed-10.3</artifactId>
+  </framework>
+  <framework name="WebLogic Managed 12.1">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-wls-managed-12.1</artifactId>
+  </framework>
+  <framework name="WebLogic Managed 12.1.2">
+    <groupId>org.jboss.arquillian.container</groupId>
+    <artifactId>arquillian-wls-managed-12.1.2</artifactId>
+  </framework>
+  <framework name="WildFly Managed">
+    <groupId>org.wildfly.arquillian</groupId>
+    <artifactId>wildfly-arquillian-container-managed</artifactId>
+  </framework>
+  <framework name="WildFly Managed Domain">
+    <groupId>org.wildfly.arquillian</groupId>
+    <artifactId>wildfly-arquillian-container-domain-managed</artifactId>
+  </framework>
+</frameworks>

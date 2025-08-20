@@ -1,6 +1,7 @@
 // Copyright 2000-2018 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package com.intellij.compiler.ant;
 
+import com.intellij.ModuleChunks;
 import com.intellij.application.options.ReplacePathToMacroMap;
 import com.intellij.compiler.ModuleCompilerUtil;
 import com.intellij.openapi.application.PathMacros;
@@ -17,10 +18,7 @@ import com.intellij.openapi.util.io.FileUtilRt;
 import com.intellij.util.Chunk;
 import com.intellij.util.IncorrectOperationException;
 import com.intellij.util.containers.ContainerUtil;
-import com.intellij.util.graph.CachingSemiGraph;
-import com.intellij.util.graph.Graph;
-import com.intellij.util.graph.GraphGenerator;
-import com.intellij.util.graph.InboundSemiGraph;
+import com.intellij.util.graph.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -203,7 +201,7 @@ public class GenerationOptionsImpl extends GenerationOptions {
 
   private ModuleChunk[] createModuleChunks(String[] representativeModuleNames) {
     final Set<String> mainModuleNames = ContainerUtil.set(representativeModuleNames);
-    final Graph<Chunk<Module>> chunkGraph = ModuleCompilerUtil.toChunkGraph(ModuleManager.getInstance(myProject).moduleGraph());
+    final Graph<Chunk<Module>> chunkGraph = ModuleChunks.toChunkGraph(ModuleManager.getInstance(myProject).moduleGraph());
     final Map<Chunk<Module>, ModuleChunk> map = new HashMap<>();
     final Map<ModuleChunk, Chunk<Module>> reverseMap = new HashMap<>();
     for (final Chunk<Module> chunk : chunkGraph.getNodes()) {
