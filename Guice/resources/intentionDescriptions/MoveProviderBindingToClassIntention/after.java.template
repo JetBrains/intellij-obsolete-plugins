@@ -1,0 +1,5 @@
+@ProvidedBy(XProvider.class)
+public class X {
+}
+
+bind(X.class).in(ServletScopes.SESSION)

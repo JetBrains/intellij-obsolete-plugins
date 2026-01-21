@@ -1,0 +1,76 @@
+{
+  "inspections": [
+    {
+      "id": "InterceptionAnnotationWithoutRuntimeRetention",
+      "codeQualityCategory": "Security"
+    },
+    {
+      "id": "InvalidProvidedBy",
+      "codeQualityCategory": "Sanity"
+    },
+    {
+      "id": "InvalidImplementedBy",
+      "codeQualityCategory": "Sanity"
+    },
+    {
+      "id": "SingletonInjectsScoped",
+      "codeQualityCategory": "Reliability"
+    },
+    {
+      "id": "PointlessBinding",
+      "codeQualityCategory": "Code Style"
+    },
+    {
+      "id": "RedundantToProviderBinding",
+      "codeQualityCategory": "Code Style"
+    },
+    {
+      "id": "ConflictingAnnotations",
+      "codeQualityCategory": "Sanity"
+    },
+    {
+      "id": "RedundantToBinding",
+      "codeQualityCategory": "Code Style"
+    },
+    {
+      "id": "MultipleBindingAnnotations",
+      "codeQualityCategory": "Code Style"
+    },
+    {
+      "id": "InvalidRequestParameters",
+      "codeQualityCategory": "Code Style"
+    },
+    {
+      "id": "RedundantScopeBinding",
+      "codeQualityCategory": "Code Style"
+    },
+    {
+      "id": "UninstantiableProvidedByClass",
+      "codeQualityCategory": "Reliability"
+    },
+    {
+      "id": "BindingAnnotationWithoutInject",
+      "codeQualityCategory": "Reliability"
+    },
+    {
+      "id": "MultipleInjectedConstructorsForClass",
+      "codeQualityCategory": "Sanity"
+    },
+    {
+      "id": "UninstantiableBinding",
+      "codeQualityCategory": "Sanity"
+    },
+    {
+      "id": "SessionScopedInjectsRequestScoped",
+      "codeQualityCategory": "Reliability"
+    },
+    {
+      "id": "UninstantiableImplementedByClass",
+      "codeQualityCategory": "Sanity"
+    },
+    {
+      "id": "UnnecessaryStaticInjection",
+      "codeQualityCategory": "Reliability"
+    }
+  ]
+}

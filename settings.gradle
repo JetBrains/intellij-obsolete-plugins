@@ -11,4 +11,4 @@ include 'generate-ant'
 include 'cvs'
 include 'restClient-legacy'
 include 'IDEtalk'
-
+include 'Guice'

@@ -1,0 +1,10 @@
+<html>
+<body>
+<p>
+  Reports <code>com.google.inject.Inject</code> annotations on non-public fields and methods.
+  While Guice can handle such injections, it may not work correctly during deployment due to security restrictions.
+  In general, it is best to avoid such injections,
+  either by making the injected field or method public, or by creating a public setter and annotating it with <code>@Inject</code>.
+</p>
+</body>
+</html>

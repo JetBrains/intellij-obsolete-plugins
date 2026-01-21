@@ -1,0 +1,9 @@
+public class X {
+  private int foo;
+
+  <spot>@Inject</spot>
+  public void setFoo(foo)
+  {
+    this.foo = foo;
+  }
+}

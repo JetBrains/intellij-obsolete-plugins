@@ -1,0 +1,4 @@
+public class X {
+}
+
+<spot>bind(X.class).to(SubclassOfX.class).in(ServletScopes.SESSION)</spot>

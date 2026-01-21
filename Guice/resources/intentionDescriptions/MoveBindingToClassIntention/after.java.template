@@ -1,0 +1,5 @@
+@ImplementedBy(SubclassOfX)
+public class X {
+}
+
+bind(X.class).in(ServletScopes.SESSION)

@@ -1,0 +1,5 @@
+@SessionScoped
+public class X {
+}
+
+bind(X.class).toProvider(XProvider.class)

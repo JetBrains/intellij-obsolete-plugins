@@ -1,0 +1,4 @@
+public class X {
+}
+
+<spot>bind(X.class).toProvider(XProvider.class).in(ServletScopes.SESSION)</spot>
