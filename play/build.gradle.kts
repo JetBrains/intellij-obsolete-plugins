@@ -1,20 +1,32 @@
 plugins {
     id("java")
-    id("org.jetbrains.intellij") version "1.15.0"
+    id("org.jetbrains.intellij") version "1.17.3"
 }
 
 group = "com.intellij"
-version = "2023.2.1"
+version = "2025.3.1"
 
 repositories {
     mavenCentral()
 }
 
 intellij {
-    version.set("2023.2.1")
+    version.set("2025.3.1")
     type.set("IU") // Target IDE Platform
 
     plugins.set(listOf("org.intellij.groovy", "com.intellij.persistence"))
+}
+
+// Configure Java toolchain to auto-download Java 21 if not available
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
+}
+
+// Enable toolchain auto-provisioning
+tasks.withType<JavaCompile>().configureEach {
+    options.isFork = true
 }
 
 java.sourceSets["main"].java {
@@ -26,11 +38,17 @@ tasks {
     withType<JavaCompile> {
         sourceCompatibility = "17"
         targetCompatibility = "17"
+        options.release.set(17)
     }
 
     patchPluginXml {
-        sinceBuild.set("232")
-        untilBuild.set("241.*")
+        sinceBuild.set("253")
+        untilBuild.set("253.*")
+    }
+
+    // Skip buildSearchableOptions if it fails (optional task)
+    buildSearchableOptions {
+        enabled = false
     }
 
     signPlugin {

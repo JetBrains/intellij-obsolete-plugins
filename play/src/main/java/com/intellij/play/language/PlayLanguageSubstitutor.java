@@ -10,7 +10,6 @@ import com.intellij.openapi.fileTypes.FileTypeRegistry;
 import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.play.utils.PlayUtils;
 import com.intellij.psi.LanguageSubstitutor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -20,14 +19,16 @@ public class PlayLanguageSubstitutor extends LanguageSubstitutor {
   @Override
   public Language getLanguage(@NotNull final VirtualFile file, @NotNull final Project project) {
     if (file instanceof VirtualFileWindow) return null;
-
-    if (FileTypeRegistry.getInstance().isFileOfType(file, StdFileTypes.HTML) && checkViewsParent(file) && PlayUtils.isPlayInstalled(project)) {
+    
+    // Avoid calling isPlayInstalled() here to prevent circular dependency during indexing
+    // File path structure (views directory) is sufficient to identify Play projects
+    if (FileTypeRegistry.getInstance().isFileOfType(file, StdFileTypes.HTML) && checkViewsParent(file)) {
       return PlayLanguage.INSTANCE;
     }
 
     if ("tag".equals(file.getExtension())) {
       final VirtualFile tagsDir = file.getParent();
-      if (checkDirName(tagsDir, "tags") && checkDirName(tagsDir.getParent(), "views") && PlayUtils.isPlayInstalled(project)) {
+      if (checkDirName(tagsDir, "tags") && checkDirName(tagsDir.getParent(), "views")) {
         return PlayLanguage.INSTANCE;
       }
     }

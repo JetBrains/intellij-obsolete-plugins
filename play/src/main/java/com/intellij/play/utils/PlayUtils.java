@@ -1,7 +1,6 @@
 package com.intellij.play.utils;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.PackageIndex;
 import com.intellij.play.constants.PlayConstants;
 import com.intellij.play.language.psi.PlayPsiFile;
 import com.intellij.play.language.psi.PlayTag;
@@ -44,8 +43,13 @@ public final class PlayUtils {
   }
 
   public static boolean isPlayInstalled(Project project) {
-    return !project.isDefault() && PackageIndex.getInstance(project).getDirectoriesByPackageName("play.mvc", true).length > 0 &&
-           PackageIndex.getInstance(project).getDirectoriesByPackageName("play.api.mvc", true).length == 0;
+    if (project.isDefault()) {
+      return false;
+    }
+    JavaPsiFacade psiFacade = JavaPsiFacade.getInstance(project);
+    PsiPackage playMvcPackage = psiFacade.findPackage("play.mvc");
+    PsiPackage playApiMvcPackage = psiFacade.findPackage("play.api.mvc");
+    return playMvcPackage != null && playApiMvcPackage == null;
   }
 
   public static @Nullable PsiClass getObjectClass(Project project) {
