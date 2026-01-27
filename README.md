@@ -28,3 +28,4 @@ This repository includes the following plugins:
   * [arquillian](https://plugins.jetbrains.com/plugin/16872-arquillian)
   * [jbpm](https://plugins.jetbrains.com/plugin/14588-jboss-jbpm)
   * [Guice](https://plugins.jetbrains.com/plugin/16876-guice)
+  * [Spring OSGi](https://plugins.jetbrains.com/plugin/16877-spring-osgi)

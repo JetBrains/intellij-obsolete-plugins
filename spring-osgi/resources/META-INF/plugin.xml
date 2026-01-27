@@ -1,0 +1,53 @@
+<!-- Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.-->
+<idea-plugin>
+  <id>com.intellij.spring.osgi</id>
+  <name>Spring OSGi</name>
+
+  <description>Provides support for OSGi deployment for Spring applications.</description>
+
+  <category>JVM Frameworks</category>
+  <vendor>JetBrains</vendor>
+
+  <depends>com.intellij.spring</depends>
+  <depends>com.intellij.modules.ultimate</depends>
+
+  <extensions defaultExtensionNs="com.intellij">
+
+    <spring.effective.types.provider implementation="com.intellij.spring.osgi.model.ReferenceEffectiveTypeProvider"/>
+
+    <localInspection language="XML" shortName="SpringOsgiElementsInconsistencyInspection" bundle="messages.SpringOsgiBundle"
+                     key="model.inspection.service.inconsistency" groupBundle="messages.SpringOsgiBundle"
+                     groupKey="osgi.inspection.group.name" groupPath="Spring" applyToDialects="false"
+                     enabledByDefault="true" level="ERROR"
+                     implementationClass="com.intellij.spring.osgi.inspections.SpringOsgiElementsInconsistencyInspection"/>
+    <localInspection language="XML" shortName="SpringOsgiServiceCommonInspection" bundle="messages.SpringOsgiBundle"
+                     key="model.inspection.service.common" groupBundle="messages.SpringOsgiBundle"
+                     groupKey="osgi.inspection.group.name" groupPath="Spring" applyToDialects="false"
+                     enabledByDefault="true" level="ERROR"
+                     implementationClass="com.intellij.spring.osgi.inspections.SpringOsgiServiceCommonInspection"/>
+    <localInspection language="XML" shortName="SpringOsgiListenerInspection" bundle="messages.SpringOsgiBundle"
+                     key="model.inspection.listener.common" groupBundle="messages.SpringOsgiBundle"
+                     groupKey="osgi.inspection.group.name" groupPath="Spring" applyToDialects="false"
+                     enabledByDefault="true" level="ERROR"
+                     implementationClass="com.intellij.spring.osgi.inspections.SpringOsgiListenerInspection"/>
+
+    <spring.customBeanScope implementation="com.intellij.spring.osgi.model.scope.SpringBundleCustomBeanScope"/>
+
+    <spring.customNamespaces implementation="com.intellij.spring.osgi.model.SpringOsgiCustomNamespaces"/>
+
+    <dom.implementation interfaceClass="com.intellij.spring.osgi.model.xml.Interfaces"
+                        implementationClass="com.intellij.spring.osgi.model.xml.impl.InterfacesImpl"/>
+    <dom.implementation interfaceClass="com.intellij.spring.osgi.model.xml.Service"
+                        implementationClass="com.intellij.spring.model.xml.DomSpringBeanImpl"/>
+    <dom.implementation interfaceClass="com.intellij.spring.osgi.model.xml.Reference"
+                        implementationClass="com.intellij.spring.model.xml.DomSpringBeanImpl"/>
+    <dom.implementation interfaceClass="com.intellij.spring.osgi.model.xml.List"
+                        implementationClass="com.intellij.spring.model.xml.DomSpringBeanImpl"/>
+    <dom.implementation interfaceClass="com.intellij.spring.osgi.model.xml.Set"
+                        implementationClass="com.intellij.spring.model.xml.DomSpringBeanImpl"/>
+    <dom.implementation interfaceClass="com.intellij.spring.osgi.model.xml.Bundle"
+                        implementationClass="com.intellij.spring.model.xml.DomSpringBeanImpl"/>
+    <dependencySupport kind="java" coordinate="org.springframework.osgi:spring-osgi-core" displayName="Spring OSGi"/>
+  </extensions>
+
+</idea-plugin>

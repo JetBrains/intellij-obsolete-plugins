@@ -1,0 +1,16 @@
+{
+  "inspections": [
+    {
+      "id": "SpringOsgiElementsInconsistencyInspection",
+      "codeQualityCategory": "Reliability"
+    },
+    {
+      "id": "SpringOsgiListenerInspection",
+      "codeQualityCategory": "Sanity"
+    },
+    {
+      "id": "SpringOsgiServiceCommonInspection",
+      "codeQualityCategory": "Sanity"
+    }
+  ]
+}
