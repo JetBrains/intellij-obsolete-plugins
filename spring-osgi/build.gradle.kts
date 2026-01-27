@@ -19,7 +19,7 @@ repositories {
 dependencies {
   intellijPlatform {
     intellijIdea("2025.3.1")
-    plugin("com.intellij.spring", "253.29346.138") // must match intellijIdea version
+    bundledPlugin("com.intellij.spring")
     bundledPlugin("com.intellij.java")
     bundledPlugin("com.intellij.modules.ultimate")
 
