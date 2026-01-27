@@ -6,7 +6,7 @@ plugins {
   id("org.jetbrains.intellij.platform") version "2.11.0"
 }
 
-group = "com.intellij.guice"
+group = "com.intellij.spring.osgi"
 version = "253.0.0"
 
 repositories {
