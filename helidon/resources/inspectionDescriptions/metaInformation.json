@@ -1,0 +1,12 @@
+{
+  "inspections": [
+    {
+      "id": "HelidonPropertiesConfig",
+      "codeQualityCategory": "Sanity"
+    },
+    {
+      "id": "HelidonYamlConfig",
+      "codeQualityCategory": "Sanity"
+    }
+  ]
+}

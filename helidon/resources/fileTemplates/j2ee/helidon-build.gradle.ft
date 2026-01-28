@@ -1,0 +1,82 @@
+#set ($D = '$')
+plugins {
+    id 'java'
+    id 'org.kordamp.gradle.jandex' version '${context.getBomProperty("gradle.jandex.version")}'
+    id 'application'
+#if ($context.hasLanguage("kotlin"))
+    id 'org.jetbrains.kotlin.jvm' version '${context.getVersion("org.jetbrains.kotlin", "kotlin-gradle-plugin")}'
+#end
+}
+
+group '${context.group}'
+version '${context.version}'
+
+repositories {
+    mavenCentral()
+}
+
+sourceCompatibility = '11'
+targetCompatibility = '11'
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+#if ($context.hasLanguage("kotlin"))
+
+[compileKotlin, compileTestKotlin].forEach {
+    it.kotlinOptions {
+        jvmTarget = '11'
+    }
+}
+#end
+
+dependencies {
+    implementation platform("io.helidon:helidon-dependencies:${context.getVersion("io.helidon", "helidon-dependencies")}")
+
+    implementation('io.helidon.microprofile.server:helidon-microprofile-server')
+    implementation('io.helidon.microprofile.bundles:helidon-microprofile')
+    implementation('org.glassfish.jersey.media:jersey-media-json-binding')
+
+    runtimeOnly('org.jboss:jandex')
+    runtimeOnly('jakarta.activation:jakarta.activation-api')
+
+    testImplementation('io.helidon.microprofile.tests:helidon-microprofile-tests-junit5')
+    testCompileOnly('org.junit.jupiter:junit-jupiter-api:')
+    testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:')
+}
+
+application {
+    mainClass = 'io.helidon.microprofile.cdi.Main'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+task copyLibs(type: Copy) {
+    from configurations.runtimeClasspath
+    into 'build/libs/libs'
+}
+
+copyLibs.dependsOn jar
+assemble.dependsOn copyLibs
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    archiveFileName = "${D}{project.name}.jar"
+    manifest {
+        attributes (
+                'Main-Class': "${D}{application.mainClass}",
+                'Class-Path': configurations.runtimeClasspath.files.collect { "libs/${D}it.name" }.join(' ')
+        )
+    }
+}
+
+task copyBeansXML {
+  doLast {
+    ant.copy file: "${D}{projectDir}/src/main/resources/META-INF/beans.xml",
+             todir: "${D}{buildDir}/classes/java/main/META-INF"
+  }
+}
+
+classes.dependsOn copyBeansXML
