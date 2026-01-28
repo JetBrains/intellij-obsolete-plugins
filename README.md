@@ -29,3 +29,4 @@ This repository includes the following plugins:
   * [jbpm](https://plugins.jetbrains.com/plugin/14588-jboss-jbpm)
   * [Guice](https://plugins.jetbrains.com/plugin/16876-guice)
   * [Spring OSGi](https://plugins.jetbrains.com/plugin/16877-spring-osgi)
+  * [Properties Resource Bundle Editor](https://plugins.jetbrains.com/plugin/17035-resource-bundle-editor)
