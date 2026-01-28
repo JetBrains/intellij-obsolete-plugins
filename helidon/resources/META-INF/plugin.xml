@@ -1,0 +1,155 @@
+<!-- Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.-->
+<idea-plugin package="com.intellij.helidon">
+  <id>com.intellij.helidon</id>
+  <name>Helidon</name>
+  <vendor>JetBrains</vendor>
+  <category>JVM Frameworks</category>
+
+  <description><![CDATA[
+    <p>Adds support for the <a href="https://helidon.io/">Helidon</a> framework for writing microservices in Java.</p>
+    <p>Features:</p>
+    <ul>
+      <li>New project wizard.</p>
+      <li>Coding assistance: code completion, inspections, quick fixes.</li>
+      <li>Autocompletion for YAML/Properties configuration files.</li>
+      <li>Display of application endpoints in the Endpoints tool window.</li>
+    </ul>
+  ]]></description>
+
+  <dependencies>
+    <plugin id="com.intellij.java"/>
+    <plugin id="com.intellij.modules.ultimate"/>
+<!--    TODO not working -->
+<!--    <plugin id="com.intellij.cdi"/>-->
+    <plugin id="com.intellij.microservices.jvm"/>
+    <plugin id="com.intellij.properties"/>
+    <module name="intellij.spellchecker"/>
+    <module name="intellij.properties.backend"/>
+    <module name="intellij.properties.backend.psi"/>
+    <module name="intellij.json.backend"/>
+    <plugin id="org.jetbrains.idea.maven"/>
+    <module name="intellij.yaml.backend"/>
+  </dependencies>
+
+  <resource-bundle>messages.HelidonBundle</resource-bundle>
+
+  <extensionPoints>
+    <extensionPoint
+            name="configFileContributor"
+            interface="com.intellij.helidon.config.HelidonConfigFileContributor"
+            dynamic="true" />
+  </extensionPoints>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <psi.referenceContributor language="UAST" implementation="com.intellij.helidon.providers.HelidonReferenceContributor"/>
+    <codeInsight.lineMarkerProvider language="JAVA" order="last"
+                                    implementationClass="com.intellij.helidon.providers.HelidonClassAnnotator"/>
+
+    <microservices.urlResolverFactory implementation="com.intellij.helidon.providers.HelidonResolverFactory"/>
+    <microservices.endpointsProvider implementation="com.intellij.helidon.providers.view.HelidonUrlFramework"/>
+    <semContributor implementation="com.intellij.helidon.providers.HelidonInlaySemContributor"/>
+
+    <!-- Config -->
+    <psi.referenceContributor language="UAST"
+                              implementation="com.intellij.helidon.config.HelidonConfigPropertyReferenceContributor"/>
+
+    <!-- Properties -->
+    <annotator language="Properties"
+               implementationClass="com.intellij.helidon.config.properties.HelidonPropertiesAnnotator"/>
+
+    <completion.confidence language="Properties"
+                           implementationClass="com.intellij.helidon.config.properties.HelidonPropertiesSkipAutopopupInParameters"/>
+    <completion.contributor language="Properties" order="first"
+                            implementationClass="com.intellij.helidon.config.properties.HelidonPropertiesSmartClassReferenceCompletionContributor"/>
+    <completion.contributor language="Properties"
+                            implementationClass="com.intellij.helidon.config.properties.HelidonPropertiesCompletionContributor"/>
+
+    <helidon.configFileContributor id="propertiesConfigFileContributor"
+                                   implementation="com.intellij.helidon.config.properties.HelidonPropertiesConfigFileContributor"/>
+
+    <iconProvider implementation="com.intellij.helidon.config.HelidonIconProvider"/>
+
+    <lang.documentationProvider language="Properties"
+                                order="first"
+                                implementationClass="com.intellij.helidon.config.properties.HelidonPropertiesDocumentationProvider"/>
+
+    <properties.alphaUnsortedInspectionSuppressor
+      implementation="com.intellij.helidon.config.properties.HelidonAlphaUnsortedPropertiesFileInspectionSuppressor"/>
+    <properties.implicitPropertyUsageProvider
+      implementation="com.intellij.helidon.config.properties.HelidonPropertiesImplicitPropertyUsageProvider"/>
+
+    <psi.referenceContributor language="Properties"
+                              implementation="com.intellij.helidon.config.properties.HelidonPropertiesReferenceContributor"/>
+    <spellchecker.support language="Properties" order="before propertiesSpellcheckingStrategy"
+                          implementationClass="com.intellij.helidon.config.properties.HelidonPropertiesSpellcheckingStrategy"/>
+
+    <vetoRenameCondition implementation="com.intellij.helidon.config.HelidonConfigKeyPsiRenameVetoCondition"/>
+
+    <localInspection
+      language="Properties"
+      shortName="HelidonPropertiesConfig"
+      bundle="messages.HelidonBundle"
+      key="helidon.inspections.config.properties"
+      groupKey="helidon.inspections.group"
+      enabledByDefault="true"
+      level="WARNING"
+      implementationClass="com.intellij.helidon.config.properties.HelidonPropertiesConfigInspection"/>
+
+    <moduleBuilder builderClass="com.intellij.helidon.newproject.HelidonModuleBuilder"/>
+    <fileTemplateGroup implementation="com.intellij.helidon.newproject.HelidonFileTemplateGroup"/>
+
+    <externalProjectDataService implementation="com.intellij.helidon.newproject.HelidonExternalSystemDataService"/>
+
+    <dependencySupport coordinate="io.helidon.config:helidon-config" kind="java" displayName="Helidon"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="org.jetbrains.idea.maven">
+    <importing.afterImportConfigurator implementation="com.intellij.helidon.maven.HelidonMavenImporter"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <annotator language="yaml" implementationClass="com.intellij.helidon.config.yaml.HelidonYamlAnnotator"/>
+
+    <completion.contributor
+            language="yaml"
+            implementationClass="com.intellij.helidon.config.yaml.HelidonYamlKeyCompletionContributor"/>
+    <completion.contributor
+            language="yaml"
+            order="first"
+            implementationClass="com.intellij.helidon.config.yaml.HelidonYamlSmartClassReferenceCompletionContributor"/>
+    <completion.contributor
+            language="yaml"
+            order="last, before javaClassName"
+            implementationClass="com.intellij.helidon.config.yaml.HelidonYamlClassNameCompletionSuppressor"/>
+
+    <helidon.configFileContributor
+            order="after propertiesConfigFileContributor"
+            implementation="com.intellij.helidon.config.yaml.HelidonYamlConfigFileContributor"/>
+
+    <iconProvider implementation="com.intellij.helidon.config.yaml.HelidonYamlIconProvider"/>
+
+    <json.jsonWidgetSuppressor implementation="com.intellij.helidon.config.yaml.HelidonYamlJsonWidgetSuppressor"/>
+
+    <lang.documentationProvider
+            language="yaml"
+            order="first"
+            implementationClass="com.intellij.helidon.config.yaml.HelidonYamlDocumentationProvider"/>
+
+    <psi.referenceContributor
+            language="yaml"
+            implementation="com.intellij.helidon.config.yaml.HelidonYamlReferenceContributor"/>
+
+    <vetoRenameCondition
+            implementation="com.intellij.helidon.config.yaml.HelidonYamlKeyRenameVetoCondition"/>
+
+    <localInspection
+            shortName="HelidonYamlConfig"
+            language="yaml"
+            bundle="messages.HelidonBundle"
+            key="helidon.inspections.config.yaml"
+            groupKey="helidon.inspections.group"
+            enabledByDefault="true"
+            level="WARNING"
+            implementationClass="com.intellij.helidon.config.yaml.HelidonYamlConfigInspection"/>
+  </extensions>
+</idea-plugin>

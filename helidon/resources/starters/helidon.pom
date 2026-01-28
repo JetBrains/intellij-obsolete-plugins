@@ -1,0 +1,42 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.intellij</groupId>
+  <artifactId>helidon-starter</artifactId>
+  <version>1.0</version>
+
+  <properties>
+    <helidon.version>3.1.0</helidon.version>
+    <gradle.version>7.4.2</gradle.version>
+    <maven.version>3.8.5</maven.version>
+    <maven.wrapper.version>3.1.0</maven.wrapper.version>
+    <kotlin.version>1.7.20</kotlin.version>
+    <gradle.jandex.version>1.0.0</gradle.jandex.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.helidon.applications</groupId>
+        <artifactId>helidon-mp</artifactId>
+        <version>${helidon.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.helidon</groupId>
+        <artifactId>helidon-dependencies</artifactId>
+        <version>${helidon.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jetbrains.kotlin</groupId>
+        <artifactId>kotlin-maven-plugin</artifactId>
+        <version>${kotlin.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jetbrains.kotlin</groupId>
+        <artifactId>kotlin-gradle-plugin</artifactId>
+        <version>${kotlin.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+</project>
