@@ -1,0 +1,79 @@
+### auto-generated section `build intellij.osgi.jps` start
+load("@rules_jvm//:jvm.bzl", "jvm_library", "resourcegroup")
+
+resourcegroup(
+  name = "osgi-jps_resources",
+  srcs = glob(["resources/**/*"]),
+  strip_prefix = "resources"
+)
+
+jvm_library(
+  name = "osgi-jps",
+  module_name = "intellij.osgi.jps",
+  visibility = ["//visibility:public"],
+  srcs = glob(["src/**/*.kt", "src/**/*.java", "src/**/*.form"], allow_empty = True),
+  resources = [":osgi-jps_resources"],
+  kotlinc_opts = "@community//:k11",
+  deps = [
+    "@community//jps/model-api:model",
+    "@community//jps/model-serialization",
+    "@community//jps/jps-builders:build",
+    "@community//platform/util",
+    "@community//plugins/maven/jps-plugin:jps",
+    "@ultimate_lib//:osgi-jps-bndlib",
+    "@ultimate_lib//:osgi-jps-bndlib-repository",
+    "@ultimate_lib//:osgi-jps-bndlib-resolve",
+    "@community//libraries/plexus-utils",
+    "@community//platform/util/jdom",
+    "//contrib/osmorc/lib:osgi-jps-bundlor",
+    "@community//libraries/hash4j",
+  ],
+  exports = [
+    "@ultimate_lib//:osgi-jps-bndlib",
+    "@ultimate_lib//:osgi-jps-bndlib-repository",
+    "@ultimate_lib//:osgi-jps-bndlib-resolve",
+  ]
+)
+
+jvm_library(
+  name = "osgi-jps_test_lib",
+  visibility = ["//visibility:public"],
+  srcs = glob(["test/**/*.kt", "test/**/*.java", "test/**/*.form"], allow_empty = True),
+  kotlinc_opts = "@community//:k11",
+  associates = [":osgi-jps"],
+  deps = [
+    "@community//jps/model-api:model",
+    "@community//jps/model-serialization",
+    "@community//jps/jps-builders:build",
+    "@community//platform/util",
+    "@community//plugins/maven/jps-plugin:jps",
+    "@community//plugins/maven/jps-plugin:jps_test_lib",
+    "@ultimate_lib//:osgi-jps-bndlib",
+    "@ultimate_lib//:osgi-jps-bndlib-repository",
+    "@ultimate_lib//:osgi-jps-bndlib-resolve",
+    "@community//libraries/plexus-utils",
+    "@community//platform/util/jdom",
+    "//contrib/osmorc/lib:osgi-jps-bundlor",
+    "@community//platform/testFramework",
+    "@community//platform/testFramework:testFramework_test_lib",
+    "@lib//:kotlin-stdlib",
+    "@community//jps/jps-builders:build-tests_test_lib",
+    "@lib//:assert_j",
+    "@community//libraries/hash4j",
+  ],
+  exports = [
+    "@ultimate_lib//:osgi-jps-bndlib",
+    "@ultimate_lib//:osgi-jps-bndlib-repository",
+    "@ultimate_lib//:osgi-jps-bndlib-resolve",
+  ]
+)
+### auto-generated section `build intellij.osgi.jps` end
+
+### auto-generated section `test intellij.osgi.jps` start
+load("@community//build:tests-options.bzl", "jps_test")
+
+jps_test(
+  name = "osgi-jps_test",
+  runtime_deps = [":osgi-jps_test_lib"]
+)
+### auto-generated section `test intellij.osgi.jps` end
