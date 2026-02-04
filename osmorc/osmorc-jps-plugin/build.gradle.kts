@@ -1,6 +1,4 @@
 // Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
-import jdk.jfr.internal.JVM.exclude
-import org.gradle.internal.classpath.Instrumented.systemProperty
 import org.gradle.kotlin.dsl.implementation
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 
@@ -11,7 +9,6 @@ plugins {
 }
 
 group = "com.intellij.osgi"
-version = "253.0.0"
 
 repositories {
   mavenCentral()
@@ -83,7 +80,4 @@ tasks {
     systemProperty("idea.home.path", "/Users/yann/idea-ultimate/ultimate/community")
   }
 
-  buildPlugin {
-    archiveFileName = "osmorc-jps-plugin"
-  }
 }
