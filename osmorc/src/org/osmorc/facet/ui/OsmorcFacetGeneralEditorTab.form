@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="org.osmorc.facet.ui.OsmorcFacetGeneralEditorTab">
+  <grid id="bbf5b" binding="myRoot" layout-manager="GridLayoutManager" row-count="4" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="0" left="0" bottom="0" right="0"/>
+    <constraints>
+      <xy x="20" y="20" width="608" height="499"/>
+    </constraints>
+    <properties/>
+    <border type="none">
+      <size top="4" left="4" bottom="4" right="4"/>
+      <color color="-16777216"/>
+    </border>
+    <children>
+      <grid id="a1e8b" layout-manager="GridLayoutManager" row-count="7" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="0" left="0" bottom="0" right="0"/>
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <clientProperties>
+          <BorderFactoryClass class="java.lang.String" value="com.intellij.ui.IdeBorderFactory$PlainSmallWithoutIndent"/>
+        </clientProperties>
+        <border type="etched" title-resource-bundle="messages/OsmorcBundle" title-key="facet.form.general.group.creation"/>
+        <children>
+          <component id="6837c" class="javax.swing.JRadioButton" binding="myControlledByOsmorcRadioButton" default-binding="true">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text resource-bundle="messages/OsmorcBundle" key="facet.form.general.plugin.controlled"/>
+            </properties>
+          </component>
+          <component id="51bd0" class="javax.swing.JRadioButton" binding="myManuallyEditedRadioButton" default-binding="true">
+            <constraints>
+              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <selected value="true"/>
+              <text resource-bundle="messages/OsmorcBundle" key="facet.form.general.existing"/>
+            </properties>
+          </component>
+          <grid id="d87a3" binding="myManifestPanel" layout-manager="GridLayoutManager" row-count="2" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
+            <constraints>
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="3" use-parent-layout="true"/>
+            </constraints>
+            <properties/>
+            <clientProperties>
+              <BorderFactoryClass class="java.lang.String" value="com.intellij.ui.IdeBorderFactory$PlainSmallWithIndent"/>
+            </clientProperties>
+            <border type="none"/>
+            <children>
+              <component id="70cf9" class="javax.swing.JRadioButton" binding="myUseProjectDefaultManifestFileLocation">
+                <constraints>
+                  <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <selected value="true"/>
+                  <text resource-bundle="messages/OsmorcBundle" key="facet.form.general.project.default"/>
+                </properties>
+              </component>
+              <grid id="e8153" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                <margin top="0" left="0" bottom="0" right="0"/>
+                <constraints>
+                  <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="ba183" class="javax.swing.JRadioButton" binding="myUseModuleSpecificManifestFileLocation">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <horizontalAlignment value="10"/>
+                      <text resource-bundle="messages/OsmorcBundle" key="facet.form.general.custom"/>
+                    </properties>
+                  </component>
+                  <component id="c3c4b" class="com.intellij.openapi.ui.TextFieldWithBrowseButton" binding="myManifestFileChooser">
+                    <constraints>
+                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <enabled value="false"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+              <grid id="189ad" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="0">
+                <margin top="0" left="0" bottom="0" right="0"/>
+                <constraints>
+                  <grid row="0" column="0" row-span="2" col-span="1" vsize-policy="3" hsize-policy="3" anchor="1" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="bd644" class="com.intellij.ui.components.JBLabel">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text resource-bundle="messages/OsmorcBundle" key="facet.form.general.custom.path"/>
+                    </properties>
+                  </component>
+                  <component id="48b31" class="com.intellij.ui.components.JBLabel">
+                    <constraints>
+                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <componentStyle value="SMALL"/>
+                      <fontColor value="BRIGHTER"/>
+                      <text resource-bundle="messages/OsmorcBundle" key="facet.form.general.custom.comment"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+            </children>
+          </grid>
+          <component id="9f11" class="javax.swing.JRadioButton" binding="myUseBndFileRadioButton" default-binding="true">
+            <constraints>
+              <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text resource-bundle="messages/OsmorcBundle" key="facet.form.general.bnd"/>
+            </properties>
+          </component>
+          <grid id="c756d" binding="myBndPanel" layout-manager="GridLayoutManager" row-count="2" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
+            <constraints>
+              <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="3" use-parent-layout="true"/>
+            </constraints>
+            <properties/>
+            <clientProperties>
+              <BorderFactoryClass class="java.lang.String" value="com.intellij.ui.IdeBorderFactory$PlainSmallWithoutIndent"/>
+            </clientProperties>
+            <border type="none"/>
+            <children>
+              <component id="8cb2f" class="com.intellij.openapi.ui.TextFieldWithBrowseButton" binding="myBndFile">
+                <constraints>
+                  <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="d57d0" class="com.intellij.ui.components.JBLabel">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text resource-bundle="messages/OsmorcBundle" key="facet.form.general.bnd.path"/>
+                </properties>
+              </component>
+              <component id="ade9b" class="javax.swing.JCheckBox" binding="myUseBndMavenPluginCheckBox">
+                <constraints>
+                  <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text resource-bundle="messages/OsmorcBundle" key="facet.form.general.bndmavenplugin"/>
+                </properties>
+              </component>
+            </children>
+          </grid>
+          <component id="b9f29" class="javax.swing.JRadioButton" binding="myUseBundlorFileRadioButton">
+            <constraints>
+              <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text resource-bundle="messages/OsmorcBundle" key="facet.form.general.bundlor"/>
+            </properties>
+          </component>
+          <grid id="66303" binding="myBundlorPanel" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
+            <constraints>
+              <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="3" use-parent-layout="true"/>
+            </constraints>
+            <properties/>
+            <clientProperties>
+              <BorderFactoryClass class="java.lang.String" value="com.intellij.ui.IdeBorderFactory$PlainSmallWithoutIndent"/>
+            </clientProperties>
+            <border type="none"/>
+            <children>
+              <component id="f2475" class="com.intellij.openapi.ui.TextFieldWithBrowseButton" binding="myBundlorFile">
+                <constraints>
+                  <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="cb698" class="com.intellij.ui.components.JBLabel">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text resource-bundle="messages/OsmorcBundle" key="facet.form.general.bundlor.path"/>
+                </properties>
+              </component>
+            </children>
+          </grid>
+        </children>
+      </grid>
+      <grid id="3f65b" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="0" left="0" bottom="0" right="0"/>
+        <constraints>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <clientProperties>
+          <BorderFactoryClass class="java.lang.String" value="com.intellij.ui.IdeBorderFactory$PlainSmallWithoutIndent"/>
+        </clientProperties>
+        <border type="etched" title-resource-bundle="messages/OsmorcBundle" title-key="facet.form.general.group.maven"/>
+        <children>
+          <component id="ae6b9" class="javax.swing.JCheckBox" binding="myDoNotSynchronizeFacetCheckBox" default-binding="true">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text resource-bundle="messages/OsmorcBundle" key="facet.form.general.no.sync"/>
+            </properties>
+          </component>
+        </children>
+      </grid>
+      <component id="fa27a" class="com.intellij.ui.components.ActionLink" binding="mySetupCoreLibLink" custom-create="true">
+        <constraints>
+          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text resource-bundle="messages/OsmorcBundle" key="facet.form.general.core.conf"/>
+        </properties>
+      </component>
+      <vspacer id="ea011">
+        <constraints>
+          <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+        </constraints>
+      </vspacer>
+    </children>
+  </grid>
+  <buttonGroups>
+    <group name="_creationPolicy">
+      <member id="444b1"/>
+      <member id="444b1"/>
+      <member id="6837c"/>
+      <member id="51bd0"/>
+      <member id="9f11"/>
+      <member id="b9f29"/>
+    </group>
+    <group name="_manifestFile">
+      <member id="ba183"/>
+      <member id="70cf9"/>
+    </group>
+    <group name="_bndVariantGroup">
+      <member id="c09b8"/>
+      <member id="51a9"/>
+    </group>
+  </buttonGroups>
+</form>
