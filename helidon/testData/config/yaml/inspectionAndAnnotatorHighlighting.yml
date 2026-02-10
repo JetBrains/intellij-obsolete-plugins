@@ -1,0 +1,13 @@
+server:
+  shutdown-hook: <info descr="DEFAULT_KEYWORD">true</info>
+
+  backlog: <error descr="Cannot convert 'INVALID_VALUE' to java.lang.Integer"><info descr="DEFAULT_NUMBER">INVALID_VALUE</info></error>
+
+---
+# duplicate keys
+security:
+  <warning descr="Duplicate configuration key 'security.enabled'">enabled: <info descr="DEFAULT_KEYWORD">true</info></warning>
+  <warning descr="Duplicate configuration key 'security.enabled'">enabled: <info descr="DEFAULT_KEYWORD">false</info></warning>
+---
+server:
+  backlog: <info descr="DEFAULT_NUMBER">10_00</info>
