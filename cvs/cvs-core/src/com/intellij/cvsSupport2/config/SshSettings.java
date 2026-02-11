@@ -16,38 +16,49 @@
 package com.intellij.cvsSupport2.config;
 
 import com.intellij.cvsSupport2.connections.ssh.SshTypesToUse;
+import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.util.DefaultJDOMExternalizer;
-import com.intellij.openapi.util.InvalidDataException;
-import com.intellij.openapi.util.JDOMExternalizable;
-import com.intellij.openapi.util.WriteExternalException;
-import org.jdom.Element;
-import org.jetbrains.annotations.NonNls;
+import com.intellij.util.xmlb.Converter;
+import com.intellij.util.xmlb.XmlSerializerUtil;
+import com.intellij.util.xmlb.annotations.Attribute;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * author: lesya
  */
-public class SshSettings implements JDOMExternalizable, Cloneable {
+
+public class SshSettings implements PersistentStateComponent<SshSettings>, Cloneable {
 
   private static final Logger LOG = Logger.getInstance(SshSettings.class);
 
   public boolean USE_PPK = false;
   public String PATH_TO_PPK = "";
 
+  @Attribute(converter = SshTypesToUseConverter.class)
   public SshTypesToUse SSH_TYPE = SshTypesToUse.ALLOW_BOTH;
-  @NonNls private static final String SSH_TYPE_ATTRIBUTE = "SSH_TYPE";
+
+  private static class SshTypesToUseConverter extends Converter<SshTypesToUse> {
+
+    @Override
+    public @Nullable SshTypesToUse fromString(@NotNull String value) {
+      return SshTypesToUse.fromName(value);
+    }
+
+    @Override
+    public @Nullable String toString(@NotNull SshTypesToUse value) {
+      return value.toString();
+    }
+  }
 
   @Override
-  public void readExternal(Element element) throws InvalidDataException {
-    DefaultJDOMExternalizer.readExternal(this, element);
-    String sshType = element.getAttributeValue(SSH_TYPE_ATTRIBUTE);
-    SSH_TYPE = SshTypesToUse.fromName(sshType);
+  public @Nullable SshSettings getState() {
+    return this;
   }
-  
+
   @Override
-  public void writeExternal(Element element) throws WriteExternalException {
-    DefaultJDOMExternalizer.writeExternal(this, element);
-    element.setAttribute(SSH_TYPE_ATTRIBUTE, SSH_TYPE.toString());
+  public void loadState(@NotNull SshSettings state) {
+    XmlSerializerUtil.copyBean(state, this);
   }
 
   @Override

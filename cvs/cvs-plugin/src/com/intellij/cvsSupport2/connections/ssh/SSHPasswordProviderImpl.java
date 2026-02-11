@@ -15,14 +15,15 @@
  */
 package com.intellij.cvsSupport2.connections.ssh;
 
-import com.intellij.openapi.components.NamedComponent;
-import com.intellij.openapi.components.ServiceManager;
-import com.intellij.openapi.util.InvalidDataException;
-import com.intellij.openapi.util.JDOMExternalizable;
-import com.intellij.openapi.util.WriteExternalException;
+import com.intellij.credentialStore.CredentialAttributes;
+import com.intellij.credentialStore.CredentialAttributesKt;
+import com.intellij.credentialStore.Credentials;
+import com.intellij.ide.passwordSafe.PasswordSafe;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.components.*;
+
 import java.util.HashMap;
-import org.jdom.Element;
-import org.jetbrains.annotations.NonNls;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.netbeans.lib.cvsclient.connection.PServerPasswordScrambler;
@@ -32,142 +33,128 @@ import java.util.Map;
 /**
  * author: lesya
  */
-public class SSHPasswordProviderImpl implements NamedComponent, JDOMExternalizable, SSHPasswordProvider {
-  private final Map<String, String> myCvsRootToPasswordMap = new HashMap<>();
-  private final Map<String, String> myCvsRootToStoringPasswordMap = new HashMap<>();
+public class SSHPasswordProviderImpl implements SSHPasswordProvider, NamedComponent {
 
-  private final Map<String, String> myCvsRootToPPKPasswordMap = new HashMap<>();
-  private final Map<String, String> myCvsRootToStoringPPKPasswordMap = new HashMap<>();
+  private static final PasswordSafe PASSWORD_SAFE = PasswordSafe.getInstance();
+  private static final PServerPasswordScrambler PASSWORD_SCRAMBLER = PServerPasswordScrambler.getInstance();
+  private static final String SUBSYSTEM_SSH = "SSHPasswordProvider";
+  private static final String SUBSYSTEM_SSH_PPK = "SSHPasswordProviderPPK";
+
+  private final Map<String, Credentials> myCvsRootToPasswordMap = new HashMap<>();
+
+  private final Map<String, Credentials> myCvsRootToPPKPasswordMap = new HashMap<>();
 
   private final Object myLock = new Object();
 
-  @NonNls private static final String PASSWORDS = "passwords";
-  @NonNls private static final String PASSWORD = "password";
-
-  @NonNls private static final String PPKPASSWORDS = "ppkpasswords";
-
-  @NonNls private static final String CVSROOT_ATTR = "CVSROOT";
-  @NonNls private static final String PASSWORD_ATTR = "PASSWORD";
-
   public static SSHPasswordProviderImpl getInstance() {
-    return ServiceManager.getService(SSHPasswordProviderImpl.class);
+    return ApplicationManager.getApplication().getService(SSHPasswordProviderImpl.class);
   }
 
   @Override
   @NotNull
   public String getComponentName() {
-    return "SSHPasswordProvider";
+    return SUBSYSTEM_SSH;
   }
 
   @Override
   @Nullable
   public String getPasswordForCvsRoot(String cvsRoot) {
-    synchronized (myLock) {
-      String password = myCvsRootToStoringPasswordMap.get(cvsRoot);
-      if (password != null) {
-        return password;
-      }
-      return myCvsRootToPasswordMap.get(cvsRoot);
-    }
-  }
-
-  public void storePasswordForCvsRoot(String cvsRoot, String password, boolean storeInWorkspace) {
-    synchronized (myLock) {
-      if (storeInWorkspace) {
-        myCvsRootToStoringPasswordMap.put(cvsRoot, password);
-      }
-      else {
-        myCvsRootToPasswordMap.put(cvsRoot, password);
-      }
-    }
+    return getPasswordFor(SUBSYSTEM_SSH, cvsRoot, myCvsRootToPasswordMap);
   }
 
   @Override
   @Nullable
   public String getPPKPasswordForCvsRoot(String cvsRoot) {
-    synchronized (myLock) {
-      String password = myCvsRootToStoringPPKPasswordMap.get(cvsRoot);
-      if (password != null) {
-        return password;
-      }
-      return myCvsRootToPPKPasswordMap.get(cvsRoot);
-    }
+    return getPasswordFor(SUBSYSTEM_SSH_PPK, cvsRoot, myCvsRootToPPKPasswordMap);
+  }
+
+  public void storePasswordForCvsRoot(String cvsRoot, String password, boolean storeInWorkspace) {
+    storePasswordFor(SUBSYSTEM_SSH, cvsRoot, password, storeInWorkspace, myCvsRootToPasswordMap);
   }
 
   public void storePPKPasswordForCvsRoot(String cvsRoot, String password, boolean storeInWorkspace) {
+    storePasswordFor(SUBSYSTEM_SSH_PPK, cvsRoot, password, storeInWorkspace, myCvsRootToPPKPasswordMap);
+  }
+
+  public void removePasswordFor(String cvsRoot) {
+    removePasswordFor(SUBSYSTEM_SSH, cvsRoot, myCvsRootToPasswordMap);
+  }
+
+  public void removePPKPasswordFor(String cvsRoot) {
+    removePasswordFor(SUBSYSTEM_SSH_PPK, cvsRoot, myCvsRootToPPKPasswordMap);
+  }
+
+  //
+
+  private String getPasswordFor(String subSystem, String key, Map<String, Credentials> passwordMap) {
     synchronized (myLock) {
+      Credentials credentials;
+      if (passwordMap.containsKey(key)) {
+        credentials = passwordMap.get(key);
+      } else {
+        credentials = retrieveCredentials(
+                createCredentialAttributes(subSystem, key)
+        );
+        if (credentials != null) {
+          passwordMap.put(key, credentials);
+        }
+      }
+      if (credentials != null) {
+        return unscramblePassword(credentials.getPasswordAsString());
+      }
+      return null;
+    }
+  }
+
+  private void storePasswordFor(String subSystem, String key, String password, boolean storeInWorkspace, Map<String, Credentials> passwordMap) {
+    synchronized (myLock) {
+      final Credentials credentials = new Credentials(key, scramblePassword(password));
       if (storeInWorkspace) {
-        myCvsRootToStoringPPKPasswordMap.put(cvsRoot, password);
+        storeCredentials(
+                createCredentialAttributes(subSystem, key),
+                credentials
+        );
       }
-      else {
-        myCvsRootToPPKPasswordMap.put(cvsRoot, password);
-      }
+      passwordMap.put(key, credentials);
     }
   }
 
-  @Override
-  public void writeExternal(Element element) throws WriteExternalException {
-    if (!myCvsRootToStoringPasswordMap.isEmpty()) {
-      Element passwords = new Element(PASSWORDS);
-      for (final String cvsRoot : myCvsRootToStoringPasswordMap.keySet()) {
-        Element password = new Element(PASSWORD);
-        password.setAttribute(CVSROOT_ATTR, cvsRoot);
-        password.setAttribute(PASSWORD_ATTR, PServerPasswordScrambler.getInstance().scramble(myCvsRootToStoringPasswordMap.get(cvsRoot)));
-        passwords.addContent(password);
-      }
-      element.addContent(passwords);
-    }
-
-    if (!myCvsRootToStoringPPKPasswordMap.isEmpty()) {
-      Element ppkPasswords = new Element(PPKPASSWORDS);
-      for (final String cvsRoot : myCvsRootToStoringPPKPasswordMap.keySet()) {
-        Element password = new Element(PASSWORD);
-        password.setAttribute(CVSROOT_ATTR, cvsRoot);
-        password
-          .setAttribute(PASSWORD_ATTR, PServerPasswordScrambler.getInstance().scramble(myCvsRootToStoringPPKPasswordMap.get(cvsRoot)));
-        ppkPasswords.addContent(password);
-      }
-      element.addContent(ppkPasswords);
-    }
-  }
-
-  @Override
-  public void readExternal(Element element) throws InvalidDataException {
-    Element passwords = element.getChild(PASSWORDS);
-    if (passwords != null) {
-      for (Element passElement : passwords.getChildren(PASSWORD)) {
-        String cvsRoot = passElement.getAttributeValue(CVSROOT_ATTR);
-        String password = passElement.getAttributeValue(PASSWORD_ATTR);
-        if ((cvsRoot != null) && (password != null)) {
-          myCvsRootToStoringPasswordMap.put(cvsRoot, PServerPasswordScrambler.getInstance().unscramble(password));
-        }
-      }
-    }
-
-    Element ppkPasswords = element.getChild(PPKPASSWORDS);
-    if (ppkPasswords != null) {
-      for (Element passElement : ppkPasswords.getChildren(PASSWORD)) {
-        String cvsRoot = passElement.getAttributeValue(CVSROOT_ATTR);
-        String password = passElement.getAttributeValue(PASSWORD_ATTR);
-        if ((cvsRoot != null) && (password != null)) {
-          myCvsRootToStoringPPKPasswordMap.put(cvsRoot, PServerPasswordScrambler.getInstance().unscramble(password));
-        }
-      }
-    }
-
-  }
-
-  public void removePasswordFor(String stringRepresentation) {
+  private void removePasswordFor(String subSystem, String key, Map<String, Credentials> passwordMap) {
     synchronized (myLock) {
-      myCvsRootToPasswordMap.remove(stringRepresentation);
-      myCvsRootToStoringPasswordMap.remove(stringRepresentation);
+      passwordMap.remove(key);
+      removeCredentials(
+              createCredentialAttributes(subSystem, key)
+      );
     }
   }
 
-  public void removePPKPasswordFor(String stringRepresentation) {
-    synchronized (myLock) {
-      myCvsRootToPPKPasswordMap.remove(stringRepresentation);
-      myCvsRootToStoringPPKPasswordMap.remove(stringRepresentation);
+  private static String scramblePassword(String password) {
+    return PASSWORD_SCRAMBLER.scramble(password);
+  }
+
+  private static String unscramblePassword(String password) {
+    return PASSWORD_SCRAMBLER.unscramble(password);
+  }
+
+  private static CredentialAttributes createCredentialAttributes(String subSystem, String key) {
+    return new CredentialAttributes(
+            CredentialAttributesKt.generateServiceName(subSystem, key)
+    );
+  }
+
+  private static @Nullable Credentials retrieveCredentials(CredentialAttributes credentialAttributes) {
+    return PASSWORD_SAFE.get(credentialAttributes);
+  }
+
+  private static void storeCredentials(CredentialAttributes credentialAttributes, Credentials credentials) {
+    PASSWORD_SAFE.set(credentialAttributes, credentials);
+  }
+
+  private static void removeCredentials(CredentialAttributes credentialAttributes) {
+    final Credentials credentials = retrieveCredentials(credentialAttributes);
+    if (credentials != null) {
+      PASSWORD_SAFE.set(credentialAttributes, null);
     }
   }
+
 }

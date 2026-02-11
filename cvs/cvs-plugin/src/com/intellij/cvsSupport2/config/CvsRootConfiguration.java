@@ -14,6 +14,8 @@ import com.intellij.cvsSupport2.cvsoperations.dateOrRevision.RevisionOrDate;
 import com.intellij.cvsSupport2.cvsoperations.dateOrRevision.RevisionOrDateImpl;
 import com.intellij.cvsSupport2.errorHandling.CvsException;
 import com.intellij.cvsSupport2.javacvsImpl.io.ReadWriteStatistics;
+import com.intellij.openapi.components.NamedComponent;
+import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.cvsIntegration.CvsRepository;
 import com.intellij.openapi.cvsIntegration.CvsResult;
 import com.intellij.openapi.diagnostic.Logger;
@@ -21,6 +23,9 @@ import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.VcsException;
+import com.intellij.util.xmlb.XmlSerializerUtil;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.netbeans.lib.cvsclient.CvsRoot;
 import org.netbeans.lib.cvsclient.ValidRequestsExpectedException;
 import org.netbeans.lib.cvsclient.command.CommandException;
@@ -32,7 +37,7 @@ import org.netbeans.lib.cvsclient.util.BugLog;
 import java.io.IOException;
 import java.util.List;
 
-public class CvsRootConfiguration extends AbstractConfiguration implements CvsEnvironment, Cloneable {
+public class CvsRootConfiguration implements PersistentStateComponent<CvsRootConfiguration>, NamedComponent, CvsEnvironment, Cloneable {
   private static final Logger LOG = Logger.getInstance(CvsRootConfiguration.class);
 
   public String CVS_ROOT = "";
@@ -48,10 +53,6 @@ public class CvsRootConfiguration extends AbstractConfiguration implements CvsEn
 
   private static final String SEPARATOR = ":";
   private static final String AT = "@";
-
-  public CvsRootConfiguration() {
-    super("CvsRootConfiguration");
-  }
 
   public CvsConnectionSettings createSettings() {
     return new IDEARootFormatter(this).createConfiguration();
@@ -69,10 +70,10 @@ public class CvsRootConfiguration extends AbstractConfiguration implements CvsEn
 
   private static String createFieldByFieldCvsRoot(CvsRepository cvsRepository) {
     return createStringRepresentationOn(CvsMethod.getValue(cvsRepository.getMethod()),
-                                        cvsRepository.getUser(),
-                                        cvsRepository.getHost(),
-                                        cvsRepository.getPort(),
-                                        cvsRepository.getRepository());
+            cvsRepository.getUser(),
+            cvsRepository.getHost(),
+            cvsRepository.getPort(),
+            cvsRepository.getRepository());
   }
 
   public static String createStringRepresentationOn(CvsMethod method, String user, String host, int port, String repository) {
@@ -100,11 +101,11 @@ public class CvsRootConfiguration extends AbstractConfiguration implements CvsEn
   public String toString() {
     if (useBranch()) {
       return CvsBundle.message("cvs.root.configuration.on.branch.string.representation", getCvsRootAsString(),
-                                DATE_OR_REVISION_SETTINGS.BRANCH);
+              DATE_OR_REVISION_SETTINGS.BRANCH);
     }
     else if (useDate()) {
       return CvsBundle.message("cvs.root.configuration.on.date.string.representation", getCvsRootAsString(),
-                                DATE_OR_REVISION_SETTINGS.getDate());
+              DATE_OR_REVISION_SETTINGS.getDate());
     }
     else {
       return getCvsRootAsString();
@@ -123,7 +124,7 @@ public class CvsRootConfiguration extends AbstractConfiguration implements CvsEn
     final IConnection connection = createSettings().createConnection(new ReadWriteStatistics());
     final ErrorMessagesProcessor errorProcessor = new ErrorMessagesProcessor();
     final CvsExecutionEnvironment cvsExecutionEnvironment =
-      new CvsExecutionEnvironment(errorProcessor, CvsExecutionEnvironment.DUMMY_STOPPER, errorProcessor, PostCvsActivity.DEAF, project);
+            new CvsExecutionEnvironment(errorProcessor, CvsExecutionEnvironment.DUMMY_STOPPER, errorProcessor, PostCvsActivity.DEAF, project);
     final CvsResult result = new CvsResultEx();
     try {
       ProgressManager.getInstance().runProcessWithProgressSynchronously(() -> {
@@ -188,12 +189,12 @@ public class CvsRootConfiguration extends AbstractConfiguration implements CvsEn
     final CvsRootConfiguration another = (CvsRootConfiguration)obj;
 
     return CVS_ROOT.equals(another.CVS_ROOT) &&
-           DATE_OR_REVISION_SETTINGS.equals(another.DATE_OR_REVISION_SETTINGS) &&
-           EXT_CONFIGURATION.equals(another.EXT_CONFIGURATION) &&
-           SSH_CONFIGURATION.equals(another.SSH_CONFIGURATION) &&
-           SSH_FOR_EXT_CONFIGURATION.equals(another.SSH_FOR_EXT_CONFIGURATION) &&
-           LOCAL_CONFIGURATION.equals(another.LOCAL_CONFIGURATION) &&
-           PROXY_SETTINGS.equals(another.PROXY_SETTINGS);
+            DATE_OR_REVISION_SETTINGS.equals(another.DATE_OR_REVISION_SETTINGS) &&
+            EXT_CONFIGURATION.equals(another.EXT_CONFIGURATION) &&
+            SSH_CONFIGURATION.equals(another.SSH_CONFIGURATION) &&
+            SSH_FOR_EXT_CONFIGURATION.equals(another.SSH_FOR_EXT_CONFIGURATION) &&
+            LOCAL_CONFIGURATION.equals(another.LOCAL_CONFIGURATION) &&
+            PROXY_SETTINGS.equals(another.PROXY_SETTINGS);
   }
 
   @Override
@@ -224,7 +225,7 @@ public class CvsRootConfiguration extends AbstractConfiguration implements CvsEn
   public CvsRepository createCvsRepository() {
     final CvsConnectionSettings settings = createSettings();
     return new CvsRepository(settings.getCvsRootAsString(), (settings.METHOD == null) ? "" : settings.METHOD.getName(), settings.USER,
-                             settings.HOST, settings.REPOSITORY, settings.PORT, DATE_OR_REVISION_SETTINGS);
+            settings.HOST, settings.REPOSITORY, settings.PORT, DATE_OR_REVISION_SETTINGS);
 
   }
 
@@ -260,5 +261,21 @@ public class CvsRootConfiguration extends AbstractConfiguration implements CvsEn
   @Override
   public boolean isOffline() {
     return createSettings().isOffline();
+  }
+
+  @Override
+  @NotNull
+  public String getComponentName() {
+    return "CvsRootConfiguration";
+  }
+
+  @Override
+  public @Nullable CvsRootConfiguration getState() {
+    return this;
+  }
+
+  @Override
+  public void loadState(@NotNull CvsRootConfiguration state) {
+    XmlSerializerUtil.copyBean(state, this);
   }
 }

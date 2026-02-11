@@ -26,6 +26,10 @@ import com.intellij.cvsSupport2.cvshandlers.CommandCvsHandler;
 import com.intellij.cvsSupport2.cvshandlers.CvsHandler;
 import com.intellij.cvsSupport2.ui.experts.checkout.CheckoutWizard;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vcs.CheckoutProvider;
@@ -80,13 +84,22 @@ public class CvsCheckoutProvider implements CheckoutProvider {
   public void refreshAfterCheckout(final Listener listener, final CvsElement[] selectedElements, final File checkoutDirectory,
                                    final boolean useAlternateCheckoutPath) {
 
-    VirtualFileManager.getInstance().asyncRefresh(() -> ApplicationManager.getApplication().invokeLater(() -> {
-      for (CvsElement element : selectedElements) {
-        final File path = useAlternateCheckoutPath ? checkoutDirectory : new File(checkoutDirectory, element.getCheckoutPath());
-        listener.directoryCheckedOut(path, CvsVcs2.getKey());
+    final Task.Backgroundable task = new Task.Backgroundable(null, CvsBundle.message("checkout.provider.refresh.after.checkout")) {
+      @Override
+      public void run(@NotNull ProgressIndicator indicator) {
+        for (CvsElement element : selectedElements) {
+          final File path = useAlternateCheckoutPath ? checkoutDirectory : new File(checkoutDirectory, element.getCheckoutPath());
+          // not allowed on EDT
+          listener.directoryCheckedOut(path, CvsVcs2.getKey());
+        }
+        listener.checkoutCompleted();
       }
-      listener.checkoutCompleted();
-    }));
+    };
+    final BackgroundableProcessIndicator processIndicator = new BackgroundableProcessIndicator(task);
+    processIndicator.setIndeterminate(true);
+    VirtualFileManager.getInstance().asyncRefresh(() ->
+            ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, processIndicator)
+    );
   }
 
   private static String[] collectCheckoutPaths(final CvsElement[] mySelectedElements) {

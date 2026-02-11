@@ -1,7 +1,7 @@
 // Copyright 2000-2018 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package com.intellij.cvsSupport2.connections.ssh;
 
-import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.application.ApplicationManager;
 import com.trilead.ssh2.Connection;
 import com.trilead.ssh2.Session;
 import com.trilead.ssh2.StreamGobbler;
@@ -16,7 +16,7 @@ import java.io.OutputStream;
 
 public class EmptyPool implements ConnectionPoolI {
   public static EmptyPool getInstance() {
-    return ServiceManager.getService(EmptyPool.class);
+    return ApplicationManager.getApplication().getService(EmptyPool.class);
   }
 
   @Override
