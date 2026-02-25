@@ -5,7 +5,7 @@ import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 plugins {
   id("java")
   id("org.jetbrains.kotlin.jvm") version "2.3.0"
-  id("org.jetbrains.intellij.platform") version "2.11.0"
+  id("org.jetbrains.intellij.platform.module")
 }
 
 group = "com.intellij.osgi"
@@ -15,10 +15,6 @@ repositories {
   intellijPlatform {
     defaultRepositories()
   }
-}
-
-intellijPlatform {
-  buildSearchableOptions = false
 }
 
 dependencies {
@@ -55,16 +51,6 @@ java.sourceSets["main"].resources {
 
 java.sourceSets["test"].java {
   srcDir("test")
-}
-
-intellijPlatform {
-  pluginConfiguration {
-    ideaVersion {
-      sinceBuild = "253"
-    }
-
-    changeNotes = ""
-  }
 }
 
 tasks {
