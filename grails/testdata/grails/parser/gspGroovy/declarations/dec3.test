@@ -1,0 +1,56 @@
+<html>
+<%while (true) {%>
+!{ def foo = 5 }
+<%} %>
+</html>
+-----
+GspGroovyDummyHolder
+  GspClass
+    GspRunMethod
+      GspRunBlock
+        Outer: GSP TEMPLATE STATEMENTS('<html>\n')
+        PsiElement(JSCRIPT_BEGIN)('<%')
+        WHILE statement
+          PsiElement(while)('while')
+          PsiWhiteSpace(' ')
+          PsiElement(()('(')
+          Literal
+            PsiElement(true)('true')
+          PsiElement())(')')
+          PsiWhiteSpace(' ')
+          Block statement
+            Open block
+              PsiElement({)('{')
+              PsiElement(JSCRIPT_END)('%>')
+              Outer: GSP TEMPLATE STATEMENTS('\n')
+              PsiElement(GDECLAR_BEGIN)('!{')
+              Groovy class level declaration element
+                PsiWhiteSpace(' ')
+                Variable definitions
+                  Modifiers
+                    PsiElement(def)('def')
+                  PsiWhiteSpace(' ')
+                  Field
+                    PsiElement(identifier)('foo')
+                    PsiWhiteSpace(' ')
+                    PsiElement(=)('=')
+                    PsiWhiteSpace(' ')
+                    Literal
+                      PsiElement(Integer)('5')
+                PsiWhiteSpace(' ')
+                PsiErrorElement:';', new line or '}' expected, got '}'
+                  PsiElement(})('}')
+                PsiElement(DUMMY_BLOCK)
+                  PsiElement(new line)('\n')
+                  PsiElement(<)('<')
+                  PsiElement(%)('%')
+                  PsiElement(})('}')
+                  PsiWhiteSpace(' ')
+                  PsiElement(%)('%')
+                  PsiElement(>)('>')
+                  PsiElement(new line)('\n')
+                  PsiElement(<)('<')
+                  PsiElement(regex begin)('/')
+                  PsiElement(regex content)('html>')
+              PsiErrorElement:Expression closing tag expected
+                <empty list>

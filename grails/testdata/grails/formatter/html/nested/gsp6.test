@@ -1,0 +1,15 @@
+<g:a>
+         some_text
+          <a>
+          some_text
+           </a>
+           some_text
+</g:a>
+-----
+<g:a>
+  some_text
+  <a>
+    some_text
+  </a>
+  some_text
+</g:a>

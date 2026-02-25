@@ -1,0 +1,15 @@
+<html>
+  ${c<caret>}
+</html>
+-----
+captureTagOutput
+char
+checkBox
+class
+cleanup
+controllerName
+cookie
+createLink
+createLinkTo
+createOutputCapturingClosure
+currencySelect

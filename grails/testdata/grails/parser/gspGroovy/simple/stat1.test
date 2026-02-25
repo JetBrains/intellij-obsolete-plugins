@@ -1,0 +1,51 @@
+<abc>
+<% println (1) %> <% println (2) %> <% println (3) %>
+</abc>
+-----
+GspGroovyDummyHolder
+  GspClass
+    GspRunMethod
+      GspRunBlock
+        Outer: GSP TEMPLATE STATEMENTS('<abc>\n')
+        PsiElement(JSCRIPT_BEGIN)('<%')
+        PsiWhiteSpace(' ')
+        Method call
+          Reference expression
+            PsiElement(identifier)('println')
+          PsiWhiteSpace(' ')
+          Arguments
+            PsiElement(()('(')
+            Literal
+              PsiElement(Integer)('1')
+            PsiElement())(')')
+        PsiWhiteSpace(' ')
+        PsiElement(JSCRIPT_END)('%>')
+        Outer: GSP TEMPLATE STATEMENTS(' ')
+        PsiElement(JSCRIPT_BEGIN)('<%')
+        PsiWhiteSpace(' ')
+        Method call
+          Reference expression
+            PsiElement(identifier)('println')
+          PsiWhiteSpace(' ')
+          Arguments
+            PsiElement(()('(')
+            Literal
+              PsiElement(Integer)('2')
+            PsiElement())(')')
+        PsiWhiteSpace(' ')
+        PsiElement(JSCRIPT_END)('%>')
+        Outer: GSP TEMPLATE STATEMENTS(' ')
+        PsiElement(JSCRIPT_BEGIN)('<%')
+        PsiWhiteSpace(' ')
+        Method call
+          Reference expression
+            PsiElement(identifier)('println')
+          PsiWhiteSpace(' ')
+          Arguments
+            PsiElement(()('(')
+            Literal
+              PsiElement(Integer)('3')
+            PsiElement())(')')
+        PsiWhiteSpace(' ')
+        PsiElement(JSCRIPT_END)('%>')
+        Outer: GSP TEMPLATE STATEMENTS('\n</abc>')

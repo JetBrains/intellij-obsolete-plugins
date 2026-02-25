@@ -1,0 +1,3 @@
+Product.findByDatebetw<caret>
+-----
+findByDateBetween

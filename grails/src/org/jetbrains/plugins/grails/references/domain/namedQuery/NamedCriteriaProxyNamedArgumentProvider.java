@@ -1,0 +1,22 @@
+// Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+
+package org.jetbrains.plugins.grails.references.domain.namedQuery;
+
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiMethod;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.plugins.grails.references.domain.GormPersistentPropertiesNamedArgProvider;
+import org.jetbrains.plugins.grails.references.domain.GormUtils;
+import org.jetbrains.plugins.groovy.lang.psi.api.GroovyResolveResult;
+import org.jetbrains.plugins.groovy.lang.psi.api.statements.expressions.GrMethodCall;
+
+public class NamedCriteriaProxyNamedArgumentProvider extends GormPersistentPropertiesNamedArgProvider {
+
+  @Override
+  protected PsiClass getDomainClass(@NotNull GrMethodCall call, PsiMethod resolve, GroovyResolveResult resolveResult) {
+    NamedQueryDescriptor queryDescriptor = GormUtils.getQueryDescriptorByProxyMethod(call);
+    if (queryDescriptor == null) return null;
+
+    return queryDescriptor.getDomainClass();
+  }
+}

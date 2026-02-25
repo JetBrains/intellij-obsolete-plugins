@@ -1,0 +1,23 @@
+<td><g:while><a/></g:while></td>
+-----
+GspHtmlFileImpl
+  PsiElement(HTML_DOCUMENT)
+    PsiElement(XML_PROLOG)
+      <empty list>
+    HtmlTag:td
+      XmlToken:XML_START_TAG_START('<')
+      XmlToken:XML_NAME('td')
+      XmlToken:XML_TAG_END('>')
+      Outer: GSP FRAGMENT('<')
+      Outer: GSP FRAGMENT('g:while')
+      Outer: GSP FRAGMENT('>')
+      HtmlTag:a
+        XmlToken:XML_START_TAG_START('<')
+        XmlToken:XML_NAME('a')
+        XmlToken:XML_EMPTY_ELEMENT_END('/>')
+      Outer: GSP FRAGMENT('</')
+      Outer: GSP FRAGMENT('g:while')
+      Outer: GSP FRAGMENT('>')
+      XmlToken:XML_END_TAG_START('</')
+      XmlToken:XML_NAME('td')
+      XmlToken:XML_TAG_END('>')

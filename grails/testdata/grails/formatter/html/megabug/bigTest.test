@@ -1,0 +1,508 @@
+<%@ page contentType="text/html;charset=UTF-8" %>
+<html>
+<head>
+    <meta name="layout" content="pageWide">
+    <r:require modules="core, graphics, jqplot, jqplot-category"/>
+    <r:script>
+        function getAjaxData(url) {
+            var ret = null;
+            $.ajax({
+                async:false,
+                url:url,
+                dataType:"json",
+                success:function(data) {
+                    ret = data;
+                }
+            });
+            return ret;
+        }
+        function createLineChartOptions(jsonObj) {
+            var optionsObj = {
+                title:'Season statistics',
+                axes:{
+                    xaxis:{
+                        renderer:$.jqplot.CategoryAxisRenderer,
+                        ticks:jsonObj.xAxis
+                    }
+                },
+                series:[
+                    {label:'Page Hits'},
+                    {label:'RSS Hits'}
+                ],
+                seriesDefaults:{
+                    markerOptions:{
+                        show:true,
+                        style:'diamond'
+                    }
+                },
+                legend:{
+                    show:true,
+                    location:'nw'
+                },
+                highlighter:{
+                    showTooltip:true,
+                    tooltipFade:true
+                }
+            };
+            return optionsObj;
+        }
+        function createSeasonSummaryChartOptions(jsonObj) {
+            var optionsObj = {
+                title:'Season statistics',
+                axes:{
+                    xaxis:{
+                        renderer: $.jqplot.CategoryAxisRenderer,
+                        ticks: jsonObj.xAxis
+                    }
+                },
+                seriesDefaults: {
+                    markerOptions: {
+                        show: false,
+                        style: 'diamond'
+                    }
+                },
+                legend: {
+                    show: false,
+                    location: 'nw'
+                },
+                highlighter: {
+                    showTooltip: true,
+                    tooltipFade: true
+                }
+            };
+            return optionsObj;
+        }
+        $(document).ready(function() {
+            /*
+            var jsonObj = { "pageHits": [30, 60, 22, 5, 60, 88, 102], "rssHits": [33, 45, 121, 23, 55, 35, 77], "xAxis": ['Jan 2009', 'Feb 2009', 'Mar 2009', 'Apr 2009', 'May 2009', 'June 2009', 'Jul 2009'] };
+            $.jqplot('season-summary-graph', [jsonObj.pageHits, jsonObj.rssHits], createLineChartOptions(jsonObj));
+            */
+            var ajaxData = getAjaxData("/pkcount/dashboard/ajaxSeasonResults");
+            $.jqplot('chart2', [ajaxData.values], createSeasonSummaryChartOptions(ajaxData));
+        });
+    </r:script>
+</head>
+<body>
+<div class="row">
+    <div class="column grid_12">
+        <g:render template="/common/inlineMenu"/>
+    </div>
+</div>
+<div class="row">
+    <div class="column grid_4">
+        <pkui:box title="${message(code: 'dashboard.title.timeSummary')}">
+            <table class="summary time">
+                <tr>
+                    <th><g:message code="dashboard.title.timeSummary.today"/></th>
+                    <th><g:message code="dashboard.title.timeSummary.elapsedDays"/></th>
+                </tr>
+                <tr>
+                    <td><g:formatDate date="${today}" format="dd/MM/yyyy"/></td>
+                    <td>${seasonDays}</td>
+                </tr>
+            </table>
+        </pkui:box>
+        <br/>
+        <br/>
+        <pkui:box title="${message(code: 'dashboard.title.dailyResults')}">
+            <table class="summary daily">
+                <tr>
+                    <th><g:message code="dashboard.title.dailyResults.date"/></th>
+                    <th><g:message code="dashboard.title.dailyResults.amount"/></th>
+                </tr>
+                <g:each in="${dailyResults}" var="item">
+                    <tr class="${item.dailyTotal > 0 ? 'profit' : 'loss'}">
+                        <td><g:formatDate date="${item.date}" format="dd/MM/yyyy"/></td>
+                        <td><g:formatNumber number="${item.dailyTotal}" format="#,###.00"/></td>
+                    </tr>
+                </g:each>
+            </table>
+        </pkui:box>
+        <br/>
+        <br/>
+        <pkui:box title="${message(code: 'dashboard.title.latestRegistrations')}">
+            <g:if test="${latestRegistrations}">
+                <table class="summary latest">
+                    <tr>
+                        <th><g:message code="dashboard.title.latestRegistrations.date"/></th>
+                        <th><g:message code="dashboard.title.latestRegistrations.game"/></th>
+                        <th><g:message code="dashboard.title.latestRegistrations.outcome"/></th>
+                    </tr>
+                    <g:each in="${latestRegistrations}" var="r">
+                        <tr class="${r.profitType == org.gualdi.pkcount.base.TypeOfAmount.LOSS ? 'loss' : 'profit'}">
+                            <td><g:formatDate date="${r.registrationDate}" format="dd/MM/yyyy"/></td>
+                            <td>${message(code: 'dataEntryCommand.type.' + r.type)}</td>
+                            <td>${r.profitType}</td>
+                        </tr>
+                    </g:each>
+                </table>
+            </g:if>
+            <g:else>
+                <g:message code="dashboard.message.noRegistrations"/>
+            </g:else>
+        </pkui:box>
+    </div>
+    <div class="column grid_8">
+        <pkui:box title="${message(code: 'dashboard.title.monthlySummary')}">
+            <table class="summary monthly">
+                <tr>
+                    <th><g:message code="dashboard.title.monthlySummary.month"/></th>
+                    <th><g:message code="dashboard.title.monthlySummary.gamesPlayed"/></th>
+                    <th><g:message code="dashboard.title.monthlySummary.profit"/></th>
+                    <th><g:message code="dashboard.title.monthlySummary.D"/></th>
+                    <th><g:message code="dashboard.title.monthlySummary.ROI"/></th>
+                </tr>
+                <g:each in="${monthlyResults}" var="item">
+                    <tr class="${item.profit > 0 ? 'profit' : 'loss'}">
+                        <td><g:message code="dashboard.month.${item.month}"/></td>
+                        <td><g:formatNumber number="${item.gamesPlayed}" format="#,###.##"/></td>
+                        <td><g:formatNumber number="${item.profit}" format="#,###.00"/></td>
+                        <td>${item.d}</td>
+                        <td>${item.roi}</td>
+                    </tr>
+                </g:each>
+            </table>
+        </pkui:box>
+        <br/>
+        <br/>
+        <pkui:box title="${message(code: 'dashboard.title.buyInSummary')}">
+            <table class="summary buyin">
+                <tr>
+                    <th><g:message code="dashboard.title.buyInSummary.month"/></th>
+                    <th><g:message code="dashboard.title.buyInSummary.avgStake"/></th>
+                    <th colspan="2"><g:message code="dashboard.title.buyInSummary.limitsControl"/></th>
+                    <th><g:message code="dashboard.title.buyInSummary.targetControl"/></th>
+                </tr>
+                <tr>
+                    <th>&nbsp;</th>
+                    <th>&nbsp;</th>
+                    <th><g:message code="dashboard.title.buyInSummary.limitsControl.min"/></th>
+                    <th><g:message code="dashboard.title.buyInSummary.limitsControl.max"/></th>
+                    <th>&nbsp;</th>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </table>
+        </pkui:box>
+        <br/>
+        <br/>
+        <pkui:box title="${message(code: 'dashboard.title.tiltSummary')}">
+            <table class="summary tilt">
+                <tr>
+                    <th><g:message code="dashboard.title.tiltSummary.day"/></th>
+                    <th colspan="2"><g:message code="dashboard.title.tiltSummary.maxMoneyLoss"/></th>
+                    <th colspan="2"><g:message code="dashboard.title.tiltSummary.breaks"/></th>
+                </tr>
+                <tr>
+                    <th>&nbsp;</th>
+                    <th><g:message code="dashboard.title.tiltSummary.maxMoneyLoss.daily"/></th>
+                    <th><g:message code="dashboard.title.tiltSummary.maxMoneyLoss.monthly"/></th>
+                    <th><g:message code="dashboard.title.tiltSummary.breaks.today"/></th>
+                    <th><g:message code="dashboard.title.tiltSummary.breaks.nextDays"/></th>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </table>
+        </pkui:box>
+        <br/>
+        <br/>
+        <pkui:box title="${message(code: 'dashboard.title.seasonSummary')}">
+            <table class="summary season">
+                <tr>
+                    <th><g:message code="dashboard.title.seasonSummary.season"/></th>
+                    <th><g:message code="dashboard.title.seasonSummary.gamesPlayed"/></th>
+                    <th><g:message code="dashboard.title.seasonSummary.profit"/></th>
+                    <th><g:message code="dashboard.title.seasonSummary.avgStake"/></th>
+                    <th><g:message code="dashboard.title.seasonSummary.gameProfit"/></th>
+                </tr>
+                <g:each in="${seasonResults}" var="item">
+                    <tr class="${item.profit > 0 ? 'profit' : 'loss'}">
+                        <td>${item.seasonYear}</td>
+                        <td><g:formatNumber number="${item.gamesPlayed}" format="#,###.##"/></td>
+                        <td><g:formatNumber number="${item.profit}" format="#,###.00"/></td>
+                        <td>${item.avgStake}</td>
+                        <td>${item.gameProfit}</td>
+                    </tr>
+                </g:each>
+            </table>
+        </pkui:box>
+        <br/>
+        <br/>
+        <pkui:box title="${message(code: 'dashboard.title.seasonSummary')}">
+            <div id="season-summary-graph"/>
+        </pkui:box>
+        <br/>
+        <br/>
+        <pkui:box title="${message(code: 'dashboard.title.seasonSummary')}">
+            <div id="chart2"/>
+        </pkui:box>
+    </div>
+</div>
+</body>
+</html>
+-----
+<%@ page contentType="text/html;charset=UTF-8" %>
+<html>
+<head>
+  <meta name="layout" content="pageWide">
+  <r:require modules="core, graphics, jqplot, jqplot-category"/>
+  <r:script>
+    function getAjaxData(url) {
+      var ret = null;
+      $.ajax({
+        async: false,
+        url: url,
+        dataType: "json",
+        success: function (data) {
+          ret = data;
+        }
+      });
+      return ret;
+    }
+    function createLineChartOptions(jsonObj) {
+      var optionsObj = {
+        title: 'Season statistics',
+        axes: {
+          xaxis: {
+            renderer: $.jqplot.CategoryAxisRenderer,
+            ticks: jsonObj.xAxis
+          }
+        },
+        series: [
+          {label: 'Page Hits'},
+          {label: 'RSS Hits'}
+        ],
+        seriesDefaults: {
+          markerOptions: {
+            show: true,
+            style: 'diamond'
+          }
+        },
+        legend: {
+          show: true,
+          location: 'nw'
+        },
+        highlighter: {
+          showTooltip: true,
+          tooltipFade: true
+        }
+      };
+      return optionsObj;
+    }
+    function createSeasonSummaryChartOptions(jsonObj) {
+      var optionsObj = {
+        title: 'Season statistics',
+        axes: {
+          xaxis: {
+            renderer: $.jqplot.CategoryAxisRenderer,
+            ticks: jsonObj.xAxis
+          }
+        },
+        seriesDefaults: {
+          markerOptions: {
+            show: false,
+            style: 'diamond'
+          }
+        },
+        legend: {
+          show: false,
+          location: 'nw'
+        },
+        highlighter: {
+          showTooltip: true,
+          tooltipFade: true
+        }
+      };
+      return optionsObj;
+    }
+    $(document).ready(function () {
+      /*
+      var jsonObj = { "pageHits": [30, 60, 22, 5, 60, 88, 102], "rssHits": [33, 45, 121, 23, 55, 35, 77], "xAxis": ['Jan 2009', 'Feb 2009', 'Mar 2009', 'Apr 2009', 'May 2009', 'June 2009', 'Jul 2009'] };
+      $.jqplot('season-summary-graph', [jsonObj.pageHits, jsonObj.rssHits], createLineChartOptions(jsonObj));
+      */
+      var ajaxData = getAjaxData("/pkcount/dashboard/ajaxSeasonResults");
+      $.jqplot('chart2', [ajaxData.values], createSeasonSummaryChartOptions(ajaxData));
+    });
+  </r:script>
+</head>
+
+<body>
+<div class="row">
+  <div class="column grid_12">
+    <g:render template="/common/inlineMenu"/>
+  </div>
+</div>
+
+<div class="row">
+  <div class="column grid_4">
+    <pkui:box title="${message(code: 'dashboard.title.timeSummary')}">
+      <table class="summary time">
+        <tr>
+          <th><g:message code="dashboard.title.timeSummary.today"/></th>
+          <th><g:message code="dashboard.title.timeSummary.elapsedDays"/></th>
+        </tr>
+        <tr>
+          <td><g:formatDate date="${today}" format="dd/MM/yyyy"/></td>
+          <td>${seasonDays}</td>
+        </tr>
+      </table>
+    </pkui:box>
+    <br/>
+    <br/>
+    <pkui:box title="${message(code: 'dashboard.title.dailyResults')}">
+      <table class="summary daily">
+        <tr>
+          <th><g:message code="dashboard.title.dailyResults.date"/></th>
+          <th><g:message code="dashboard.title.dailyResults.amount"/></th>
+        </tr>
+        <g:each in="${dailyResults}" var="item">
+          <tr class="${item.dailyTotal > 0 ? 'profit' : 'loss'}">
+            <td><g:formatDate date="${item.date}" format="dd/MM/yyyy"/></td>
+            <td><g:formatNumber number="${item.dailyTotal}" format="#,###.00"/></td>
+          </tr>
+        </g:each>
+      </table>
+    </pkui:box>
+    <br/>
+    <br/>
+    <pkui:box title="${message(code: 'dashboard.title.latestRegistrations')}">
+      <g:if test="${latestRegistrations}">
+        <table class="summary latest">
+          <tr>
+            <th><g:message code="dashboard.title.latestRegistrations.date"/></th>
+            <th><g:message code="dashboard.title.latestRegistrations.game"/></th>
+            <th><g:message code="dashboard.title.latestRegistrations.outcome"/></th>
+          </tr>
+          <g:each in="${latestRegistrations}" var="r">
+            <tr class="${r.profitType == org.gualdi.pkcount.base.TypeOfAmount.LOSS ? 'loss' : 'profit'}">
+              <td><g:formatDate date="${r.registrationDate}" format="dd/MM/yyyy"/></td>
+              <td>${message(code: 'dataEntryCommand.type.' + r.type)}</td>
+              <td>${r.profitType}</td>
+            </tr>
+          </g:each>
+        </table>
+      </g:if>
+      <g:else>
+        <g:message code="dashboard.message.noRegistrations"/>
+      </g:else>
+    </pkui:box>
+  </div>
+
+  <div class="column grid_8">
+    <pkui:box title="${message(code: 'dashboard.title.monthlySummary')}">
+      <table class="summary monthly">
+        <tr>
+          <th><g:message code="dashboard.title.monthlySummary.month"/></th>
+          <th><g:message code="dashboard.title.monthlySummary.gamesPlayed"/></th>
+          <th><g:message code="dashboard.title.monthlySummary.profit"/></th>
+          <th><g:message code="dashboard.title.monthlySummary.D"/></th>
+          <th><g:message code="dashboard.title.monthlySummary.ROI"/></th>
+        </tr>
+        <g:each in="${monthlyResults}" var="item">
+          <tr class="${item.profit > 0 ? 'profit' : 'loss'}">
+            <td><g:message code="dashboard.month.${item.month}"/></td>
+            <td><g:formatNumber number="${item.gamesPlayed}" format="#,###.##"/></td>
+            <td><g:formatNumber number="${item.profit}" format="#,###.00"/></td>
+            <td>${item.d}</td>
+            <td>${item.roi}</td>
+          </tr>
+        </g:each>
+      </table>
+    </pkui:box>
+    <br/>
+    <br/>
+    <pkui:box title="${message(code: 'dashboard.title.buyInSummary')}">
+      <table class="summary buyin">
+        <tr>
+          <th><g:message code="dashboard.title.buyInSummary.month"/></th>
+          <th><g:message code="dashboard.title.buyInSummary.avgStake"/></th>
+          <th colspan="2"><g:message code="dashboard.title.buyInSummary.limitsControl"/></th>
+          <th><g:message code="dashboard.title.buyInSummary.targetControl"/></th>
+        </tr>
+        <tr>
+          <th>&nbsp;</th>
+          <th>&nbsp;</th>
+          <th><g:message code="dashboard.title.buyInSummary.limitsControl.min"/></th>
+          <th><g:message code="dashboard.title.buyInSummary.limitsControl.max"/></th>
+          <th>&nbsp;</th>
+        </tr>
+        <tr>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+      </table>
+    </pkui:box>
+    <br/>
+    <br/>
+    <pkui:box title="${message(code: 'dashboard.title.tiltSummary')}">
+      <table class="summary tilt">
+        <tr>
+          <th><g:message code="dashboard.title.tiltSummary.day"/></th>
+          <th colspan="2"><g:message code="dashboard.title.tiltSummary.maxMoneyLoss"/></th>
+          <th colspan="2"><g:message code="dashboard.title.tiltSummary.breaks"/></th>
+        </tr>
+        <tr>
+          <th>&nbsp;</th>
+          <th><g:message code="dashboard.title.tiltSummary.maxMoneyLoss.daily"/></th>
+          <th><g:message code="dashboard.title.tiltSummary.maxMoneyLoss.monthly"/></th>
+          <th><g:message code="dashboard.title.tiltSummary.breaks.today"/></th>
+          <th><g:message code="dashboard.title.tiltSummary.breaks.nextDays"/></th>
+        </tr>
+        <tr>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+      </table>
+    </pkui:box>
+    <br/>
+    <br/>
+    <pkui:box title="${message(code: 'dashboard.title.seasonSummary')}">
+      <table class="summary season">
+        <tr>
+          <th><g:message code="dashboard.title.seasonSummary.season"/></th>
+          <th><g:message code="dashboard.title.seasonSummary.gamesPlayed"/></th>
+          <th><g:message code="dashboard.title.seasonSummary.profit"/></th>
+          <th><g:message code="dashboard.title.seasonSummary.avgStake"/></th>
+          <th><g:message code="dashboard.title.seasonSummary.gameProfit"/></th>
+        </tr>
+        <g:each in="${seasonResults}" var="item">
+          <tr class="${item.profit > 0 ? 'profit' : 'loss'}">
+            <td>${item.seasonYear}</td>
+            <td><g:formatNumber number="${item.gamesPlayed}" format="#,###.##"/></td>
+            <td><g:formatNumber number="${item.profit}" format="#,###.00"/></td>
+            <td>${item.avgStake}</td>
+            <td>${item.gameProfit}</td>
+          </tr>
+        </g:each>
+      </table>
+    </pkui:box>
+    <br/>
+    <br/>
+    <pkui:box title="${message(code: 'dashboard.title.seasonSummary')}">
+      <div id="season-summary-graph"/>
+    </pkui:box>
+    <br/>
+    <br/>
+    <pkui:box title="${message(code: 'dashboard.title.seasonSummary')}">
+      <div id="chart2"/>
+    </pkui:box>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,13 @@
+<html>
+  <%=re<caret>%>
+</html>
+-----
+registerSitemeshPreprocessMode
+remoteField
+remoteFunction
+remoteLink
+render
+renderErrors
+request
+resource
+response

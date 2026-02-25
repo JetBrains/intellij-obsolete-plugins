@@ -1,0 +1,36 @@
+<g:each in="['a', 'b', 'c']" var="zzz">
+  ${it} ${zzz}
+</g:each>
+-----
+GspGroovyDummyHolder
+  GspClass
+    GspRunMethod
+      GspRunBlock
+        Outer: GSP TEMPLATE STATEMENTS('<g:each in="')
+        GrMapAttrValueImpl
+          Generalized list
+            PsiElement([)('[')
+            Literal
+              PsiElement(single quoted string)(''a'')
+            PsiElement(,)(',')
+            PsiWhiteSpace(' ')
+            Literal
+              PsiElement(single quoted string)(''b'')
+            PsiElement(,)(',')
+            PsiWhiteSpace(' ')
+            Literal
+              PsiElement(single quoted string)(''c'')
+            PsiElement(])(']')
+        Outer: GSP TEMPLATE STATEMENTS('" var="zzz">\n  ')
+        PsiElement(GEXPR_BEGIN)('${')
+        Groovy Expression Injection
+          Reference expression
+            PsiElement(identifier)('it')
+        PsiElement(GEXPR_END)('}')
+        Outer: GSP TEMPLATE STATEMENTS(' ')
+        PsiElement(GEXPR_BEGIN)('${')
+        Groovy Expression Injection
+          Reference expression
+            PsiElement(identifier)('zzz')
+        PsiElement(GEXPR_END)('}')
+        Outer: GSP TEMPLATE STATEMENTS('\n</g:each>')

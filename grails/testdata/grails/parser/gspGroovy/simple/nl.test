@@ -1,0 +1,25 @@
+<% %>
+<%
+1 + 1
+%>
+-----
+GspGroovyDummyHolder
+  GspClass
+    GspRunMethod
+      GspRunBlock
+        PsiElement(JSCRIPT_BEGIN)('<%')
+        PsiWhiteSpace(' ')
+        PsiElement(JSCRIPT_END)('%>')
+        Outer: GSP TEMPLATE STATEMENTS('\n')
+        PsiElement(JSCRIPT_BEGIN)('<%')
+        PsiElement(new line)('\n')
+        Additive expression
+          Literal
+            PsiElement(Integer)('1')
+          PsiWhiteSpace(' ')
+          PsiElement(+)('+')
+          PsiWhiteSpace(' ')
+          Literal
+            PsiElement(Integer)('1')
+        PsiElement(new line)('\n')
+        PsiElement(JSCRIPT_END)('%>')

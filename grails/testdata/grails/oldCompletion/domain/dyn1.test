@@ -1,0 +1,6 @@
+Product p = new Product()
+p.sa<caret>
+-----
+save
+save
+save

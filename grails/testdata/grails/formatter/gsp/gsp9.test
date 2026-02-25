@@ -1,0 +1,13 @@
+<html>
+<body>
+<g:if a= >
+aaa
+</body>
+</html>
+-----
+<html>
+<body>
+<g:if a=>
+  aaa
+  </body>
+  </html>

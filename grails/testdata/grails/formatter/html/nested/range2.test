@@ -1,0 +1,23 @@
+<html>
+some_text
+    <g:a>
+         some_text
+          <a>
+          some_text
+           </a>
+           some_text
+    </g:a>
+    some_text
+</html>
+-----
+<html>
+some_text
+<g:a>
+  some_text
+  <a>
+    some_text
+  </a>
+  some_text
+</g:a>
+some_text
+</html>

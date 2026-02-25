@@ -1,0 +1,51 @@
+<html>
+<%!
+  def foo = 5
+  def bar() {println "preved!"}
+%>
+</html>
+-----
+GspGroovyDummyHolder
+  GspClass
+    GspRunMethod
+      GspRunBlock
+        Outer: GSP TEMPLATE STATEMENTS('<html>\n')
+        PsiElement(JDECLAR_BEGIN)('<%!')
+        Groovy class level declaration element
+          PsiElement(new line)('\n  ')
+          Variable definitions
+            Modifiers
+              PsiElement(def)('def')
+            PsiWhiteSpace(' ')
+            Field
+              PsiElement(identifier)('foo')
+              PsiWhiteSpace(' ')
+              PsiElement(=)('=')
+              PsiWhiteSpace(' ')
+              Literal
+                PsiElement(Integer)('5')
+          PsiElement(new line)('\n  ')
+          Method
+            Modifiers
+              PsiElement(def)('def')
+            PsiWhiteSpace(' ')
+            PsiElement(identifier)('bar')
+            Parameter list
+              PsiElement(()('(')
+              PsiElement())(')')
+            Throw clause
+              <empty list>
+            PsiWhiteSpace(' ')
+            Open block
+              PsiElement({)('{')
+              Call expression
+                Reference expression
+                  PsiElement(identifier)('println')
+                PsiWhiteSpace(' ')
+                Command arguments
+                  Literal
+                    PsiElement(double quoted string)('"preved!"')
+              PsiElement(})('}')
+          PsiElement(new line)('\n')
+        PsiElement(JDECLAR_END)('%>')
+        Outer: GSP TEMPLATE STATEMENTS('\n</html>')

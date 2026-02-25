@@ -1,0 +1,15 @@
+<html>
+<g:if>
+<span><g:actionSubmit/>
+<span><g:actionSubmit/>
+</g:if>
+<br/>
+</html>
+-----
+<html>
+<g:if>
+  <span><g:actionSubmit/>
+  <span><g:actionSubmit/>
+</g:if>
+<br/>
+</html>

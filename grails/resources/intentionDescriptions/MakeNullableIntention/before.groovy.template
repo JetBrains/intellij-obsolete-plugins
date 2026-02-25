@@ -1,0 +1,7 @@
+class City {
+
+    String <spot>name</spot>
+
+    static constraints = {
+    }
+}

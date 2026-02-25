@@ -1,0 +1,907 @@
+<%@ page import="de.bechtle.semkat.model.*" %>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta name="layout" content="backoffice_main" />
+<title>Kurs '${kurs?.name}' editieren</title>
+</head>
+<%
+String open = "";
+if (openbox1 != null && !openbox1)
+{ open = "close_box(document.getElementById('box1'));" }
+if (openbox2 != null && !openbox2)
+{ open += "close_box(document.getElementById('box2'));" }
+if (openbox3 != null && !openbox3)
+{ open += "close_box(document.getElementById('box3'));" }
+if (openbox4 != null && !openbox4)
+{ open += "close_box(document.getElementById('box4'));" }
+%>
+<body onload="${open}">
+<div id="content_1_2_3">
+<h1>Kurs '${kurs?.name}' editieren</h1>
+<div style="text-align:right; float:right;"><a class="button" href="#this" onclick="this.blur();"><span>Zuordnungen</span></a></div>
+<g:if test="${flash.message}">
+<div class="message">${flash.message}</div>
+</g:if>
+<g:hasErrors bean="${kurs}">
+<div class="errors">
+<g:renderErrors bean="${kurs}" as="list" />
+</div>
+</g:hasErrors>
+<g:form controller="kurs" method="post" name="KursForm" >
+<input type="hidden" name="id" value="${kurs?.id}" />
+<div>
+<table class="edit">
+<tbody>
+<!--<tr>
+<td colspan="2">
+<span class="name">Id:</span>
+</td>
+<td colspan="4">
+<span class="value">${kurs?.id}</span>
+</td>
+</tr>-->
+<tr class='prop'><td valign='top' class='name' colspan="2"><label for='nummer'>Nummer:</label></td><td colspan="4" valign='top' class='value ${hasErrors(bean:kurs,field:'nummer','errors')}'><input type='text' name='nummer' value="${kurs?.nummer}" /></td></tr>
+<tr class='prop'><td valign='top' class='name' colspan="2"><label for='name'>Name:</label></td><td colspan="4" valign='top' class='value ${hasErrors(bean:kurs,field:'name','errors')}'><textarea name='name' value="${kurs?.name?.encodeAsHTML()}" cols="50">${kurs?.name?.encodeAsHTML()}</textarea> </td></tr>
+<tr class='prop'><td valign='top' class='name' colspan="2"><label for='ausgabe'>Ausgabe:</label></td><td colspan="4" valign='top' class='value ${hasErrors(bean:kurs,field:'ausgabe','errors')}'><input type='text' name='ausgabe' value="${kurs?.ausgabe?.encodeAsHTML()}" /></td></tr>
+
+<tr class='prop'><td valign='top' class='name' colspan="2"><label for='dauer'>Dauer:</label></td><td colspan="4" valign='top' class='value ${hasErrors(bean:kurs,field:'dauer','errors')}'><input type='text' name='dauer' value="${kurs?.dauer}" /></td></tr>
+<tr class='prop'><td valign='top' class='name'><label for='kursArt'>Kursart:</label></td><td valign='top' class='value ${hasErrors(bean:kurs,field:'kursArt','errors')}'><g:select optionKey="id" from="${de.bechtle.semkat.model.KursArt.list()}" name='kursArt.id' value="${kurs?.kursArt?.id}"></g:select></td><td valign='top' class='name'><label for='topSchulung'>Top Schulung?:</label></td><td valign='top' class='value ${hasErrors(bean:kurs,field:'topSchulung','errors')}'><g:checkBox name='topSchulung' value="${kurs?.topSchulung}"></g:checkBox></td></tr>
+<tr class='prop'><td valign='top' class='name' colspan="2"><label for='durchfuehrungsGarantie'>Durchfuehrungsgarantie:</label></td><td colspan="4" valign='top' class='value ${hasErrors(bean:kurs,field:'durchfuehrungsGarantie','errors')}'><g:select noSelection="['':'Auswahl']" value="${kurs?.durchfuehrungsGarantie}" from="${['1','3','5']}" name="durchfuehrungsGarantie"></g:select> oder Freitext: <input type='text' name='durchfuehrungsGarantie'/></td></tr>
+<tr class='prop'><td valign='top' class='name'><label for='gebuehr'>Gebuehr:</label></td><td valign='top' class='value ${hasErrors(bean:kurs,field:'gebuehr','errors')}'><input type='text' name='gebuehr' value="${kurs?.gebuehr?.encodeAsHTML()}" /></td><td valign='top' class='name'><label for='waehrung'>Waehrung:</label></td><td valign='top' class='value ${hasErrors(bean:kurs,field:'waehrung','errors')}'><g:select optionKey="id" from="${de.bechtle.semkat.model.Waehrung.list()}" name='waehrung.id' value="${kurs?.waehrung?.id}"></g:select></td><td valign='top' class='name'><label for='mehrwertsteuer'>Mehrwertsteuer:</label></td><td valign='top' class='value ${hasErrors(bean:kurs,field:'mehrwertsteuer','errors')}'><input type='text' name='mehrwertsteuer' value="${kurs?.mehrwertsteuer}" />%</td></tr>
+
+<tr class='prop'><td valign='top' class='name' colspan="2"><label for='inhalt'>Inhalt:</label></td><td colspan="4" valign='top' class='value ${hasErrors(bean:kurs,field:'inhalt','errors')}'><textarea name='inhalt' value="${kurs?.inhalt?.encodeAsHTML()}" cols="50" rows="8">${kurs?.inhalt?.encodeAsHTML()}</textarea> </td></tr>
+
+<!--<tr class='prop'><td valign='top' class='name'><label for='pdf'>Pdf:</label></td><td valign='top' class='value ${hasErrors(bean:kurs,field:'pdf','errors')}'><g:select optionKey="id" from="${Media.findAllWhere(mediaTyp:MediaTyp.findByCode('pdf'))}" name='pdf.id' value="${kurs?.pdf?.id}"></g:select></td>-->
+
+
+<!-<td colspan="4">->
+<!-<g:form name="UploadPDFForm" method="post" action="uploadPDF" enctype="multipart/form-data" class="">->
+<!-<div>->
+<!-Dateiname auf dem Server<span style="color: green;">***</span>:->
+<!-<br/>->
+<!-<input type="text" name="filename" style="width: 250px;"/>->
+<!-<br/>->
+<!-<div class="button">->
+<Unable to render embedded object: File (--<input type="file" name="file" accept="application/pdf"/> --><) not found.-<a href="#this" onclick="javascript:this.blur(); document.forms.UploadPDFForm.action = '${createLink(controller:'kurs', action:'uploadPDF')}'; document.forms.UploadPDFForm.submit();" class="button"><span>Hochladen</span></a>->
+<!-<input type="submit" value="Hochladen"/>->
+<!-</div>->
+<!-<br />->
+<!-<br />->
+<!-<span style="color: green;">*** wenn nicht vergeben, dann wird der urpruengliche Dateiname genommen.</span>->
+<!-</div>->
+<!-</g:form>->
+<!-</td>->
+<!-</tr>->
+
+
+<tr class='prop'><td valign='top' class='name' colspan="2"><label for='voraussetzung'>Voraussetzung:</label></td><td colspan="4" valign='top' class='value ${hasErrors(bean:kurs,field:'voraussetzung','errors')}'><textarea name='voraussetzung' value="${kurs?.voraussetzung?.encodeAsHTML()}" cols="50">${kurs?.voraussetzung?.encodeAsHTML()}</textarea> </td></tr>
+
+<tr class='prop'><td valign='top' class='name' colspan="2"><label for='ziel'>Ziel:</label></td><td colspan="4" valign='top' class='value ${hasErrors(bean:kurs,field:'ziel','errors')}'><textarea name='ziel' value="${kurs?.ziel?.encodeAsHTML()}" cols="50">${kurs?.ziel?.encodeAsHTML()}</textarea> </td></tr>
+<tr class='prop'><td valign='top' class='name' colspan="2"><label for='bemerkung'>Bemerkung:</label></td><td colspan="4" valign='top' class='value ${hasErrors(bean:kurs,field:'bemerkung','errors')}'><textarea name='bemerkung' value="${kurs?.bemerkung?.encodeAsHTML()}" cols="50" rows="2">${kurs?.bemerkung?.encodeAsHTML()}</textarea> </td></tr>
+</tbody>
+</table>
+</div>
+<br/>
+<br/>
+<div class="button">
+
+<a href="#this" onclick="javascript:this.blur(); document.forms.KursForm.action = '${createLink(controller:'kurs', action:'update')}'; document.forms.KursForm.submit();" class="button"><span>Update</span></a>
+
+<a href="#this" onclick="javascript:this.blur(); if (confirm('Sind Sie sicher?')) {document.forms.KursForm.action = '${createLink(controller:'kurs', action:'delete')}'; document.forms.KursForm.submit()};" class="button"><span>Loeschen</span></a>
+
+<a href="#this" onclick="javascript:this.blur(); document.forms.KursForm.action = '${createLink(controller:'kurs', action:'show')}'; document.forms.KursForm.submit();" class="button"><span>Anzeigen</span></a>
+<a href="#this" onclick="javascript:this.blur(); document.forms.KursForm.action = '${createLink(controller:'kurs', action:'save')}'; document.forms.KursForm.submit();" class="button"><span>Als neuen Kurs speichern</span></a>
+<a href="#this" onclick="javascript:this.blur(); document.forms.KursForm.action = '${createLink(controller:'kurs', action:'toXML')}'; document.forms.KursForm.submit();" class="button"><span>XML</span></a>
+</div>
+</g:form>
+<div style="margin-top: 48px;">
+<h2>Zuordnungen:</h2>
+<br/>
+<!-- und hier kommt die box: -->
+<a name="box1_anker"/>
+<div class="box"><div class="hd"><div class="c">Profil... <a class="close" href="#this" onclick="close_box(this);"> </a> <a class="open" href="#this" onclick="open_box(this);" id="box1"> </a></div></div><div class="bd"><div class="c">
+<!-- hier der box inhalt -->
+<table class="edit" style="margin-top: 0px;">
+<tr>
+<th>
+Der Kurs '${kurs?.name}' wurde folgendem Profil zugeordnet:
+</th>
+</tr>
+<tr>
+<td>
+
+</td>
+</tr>
+<tr>
+<td>
+<hr>
+</td>
+</tr>
+<tr>
+<td>
+<g:link controller="profil" action="list" class="more">Alle im System verfuegbaren Profile als Liste anzeigen</g:link>
+</td>
+</tr>
+</table>
+<!-- ende des box inhalts -->
+</div></div><div class="ft"><div class="c"></div></div></div>
+<!-- ende der box -->
+<!-- und hier kommt die box: -->
+<a name="box1_anker"/>
+<div class="box"><div class="hd"><div class="c">Zielgruppen... <a class="close" href="#this" onclick="close_box(this);"> </a> <a class="open" href="#this" onclick="open_box(this);" id="box1"> </a></div></div><div class="bd"><div class="c">
+<!-- hier der box inhalt -->
+<table class="edit" style="margin-top: 0px;">
+<tr>
+<th>
+Dem Kurs '${kurs?.name}' wurden folgende Zielgruppen zugeordnet:
+</th>
+</tr>
+<tr>
+<td>
+<g:if test="${kurs?.zielgruppen.isEmpty()}">
+Keine Zielgruppen zugeordnet!
+</g:if>
+<g:else>
+<g:form controller="kurs" action="removeZielgruppe" name="RemoveZgForm" method="post">
+<g:each var="z" in="${kurs?.zielgruppen}">
+<div>
+<g:checkBox name="${z.id}"/> <g:link controller='zielgruppe' action='show' id='${z.id}' style="text-decoration: underline;">${z}</g:link> <g:link action="removeZielgruppe" params="[kursId:kurs?.id, zielgruppeId:z.id]" class="more"> direkt entfernen</g:link>
+</div>
+</g:each>
+<g:hiddenField name="kursId" value="${kurs?.id}" />
+<br/>
+<a href="#this" onclick="javascript:document.forms.RemoveZgForm.submit();" class="more">Markierte entfernen</a>
+</g:form>
+</g:else>
+</td>
+</tr>
+<tr>
+<td>
+<hr>
+</td>
+</tr>
+<tr>
+<th>
+Folgende Zielgruppen sind noch verfuegbar:
+</th>
+</tr>
+<tr>
+<td>
+<g:if test="${!verbleibendeZielgruppen.isEmpty()}">
+<g:form controller="kurs" action="addZielgruppe" name="AddZgForm" method="post">
+<g:each var="z" in="${verbleibendeZielgruppen}">
+<div>
+<g:checkBox name="${z.id}"/> <g:link controller='zielgruppe' action='show' id='${z.id}' style="text-decoration: underline;">${z}</g:link> <g:link action="addZielgruppe" params="[kursId:kurs?.id, zielgruppeId:z.id]" class="more"> direkt hinzufuegen</g:link>
+</div>
+</g:each>
+<g:hiddenField name="kursId" value="${kurs?.id}" />
+<br/>
+<a href="#this" onclick="javascript:document.forms.AddZgForm.submit();" class="more">Markierte hinzufuegen</a>
+</g:form>
+</g:if>
+<g:else>
+Keine Zielgruppen verfuegbar!
+</g:else>
+</td>
+</tr>
+<tr>
+<td>
+<hr>
+</td>
+</tr>
+<tr>
+<td>
+<g:link controller='zielGruppe' action='list' class="more">Alle im System verfuegbaren Zielgruppen als Liste anzeigen</g:link>
+</td>
+</tr>
+</table>
+<!-- ende des box inhalts -->
+</div></div><div class="ft"><div class="c"></div></div></div>
+<!-- ende der box -->
+<!-- und hier kommt die box: -->
+<a name="box2_anker"/>
+<div class="box"><div class="hd"><div class="c">Stichworte... <a class="close" href="#this" onclick="close_box(this);"> </a> <a class="open" href="#this" onclick="open_box(this);" id="box2"> </a></div></div><div class="bd"><div class="c">
+<!-- hier der box inhalt -->
+<table class="edit" style="margin-top: 0px;">
+<tr>
+<th>
+Dem Kurs '${kurs?.name}' wurden folgende Stichworte zugeordnet:
+</th>
+</tr>
+<tr>
+<td>
+<g:if test="${kurs?.stichworte.isEmpty()}">
+Keine Stichworte zugeordnet!
+</g:if>
+<g:else>
+<g:form controller="kurs" action="removeStichwort" name="RemoveStForm" method="post">
+<g:each var="s" in="${kurs?.stichworte?}">
+<div>
+<g:checkBox name="${s.id}"/> <g:link controller='stichwort' action='show' id='${s.id}' style="text-decoration: underline;">${s}</g:link><g:link action="removeStichwort" params="[kursId:kurs?.id, stichwortId:s.id]" class="more"> direkt entfernen</g:link>
+</div>
+</g:each>
+<g:hiddenField name="kursId" value="${kurs?.id}" />
+<br/>
+<a href="#this" onclick="javascript:document.forms.RemoveStForm.submit();" class="more">Markierte entfernen</a>
+</g:form>
+</g:else>
+</td>
+</tr>
+<tr>
+<td>
+<hr>
+</td>
+</tr>
+<tr>
+<th>
+Folgende Stichworte sind noch verfuegbar:
+</th>
+</tr>
+<tr>
+<td>
+<g:if test="${!verbleibendeStichworte.isEmpty()}">
+<g:form controller="kurs" action="addZielgruppe" name="AddStForm" method="post">
+<g:each var="s" in="${verbleibendeStichworte}">
+<div>
+<g:checkBox name="${s.id}"/> <g:link controller='stichwort' action='show' id='${s.id}' style="text-decoration: underline;">${s}</g:link><g:link action="addStichwort" params="[kursId:kurs?.id, stichwortId:s.id]" class="more"> direkt hinzufuegen</g:link>
+</div>
+</g:each>
+<g:hiddenField name="kursId" value="${kurs?.id}" />
+<br/>
+<a href="#this" onclick="javascript:document.forms.AddStForm.submit();" class="more">Markierte hinzufuegen</a>
+</g:form>
+</g:if>
+<g:else>
+Keine Stichworte verfuegbar!
+</g:else>
+</td>
+</tr>
+<tr>
+<td>
+<hr>
+</td>
+</tr>
+<tr>
+<td>
+<g:link controller='zielGruppe' action='list' class="more">Alle im System verfuegbaren Stichworte als Liste anzeigen</g:link>
+</td>
+</tr>
+</table>
+<!-- ende des box inhalts -->
+</div></div><div class="ft"><div class="c"></div></div></div>
+<!-- ende der box -->
+<!-- und hier kommt die box: -->
+<a name="box3_anker"/>
+<div class="box"><div class="hd"><div class="c">PDF... <a class="close" href="#this" onclick="close_box(this);"> </a> <a class="open" href="#this" onclick="open_box(this);" id="box3"> </a></div></div><div class="bd"><div class="c">
+<!-- hier der box inhalt -->
+<table class="edit" style="margin-top: 0px;">
+<tr>
+<th>
+Dem Kurs '${kurs?.name}' wurde folgendes PDF zugeordnet:
+</th>
+</tr>
+<tr class='prop'>
+<td>
+<g:if test="${kurs?.pdf != null}">
+${kurs.pdf}
+</g:if>
+<g:else>
+Kein PDF zugeordnet!
+</g:else>
+</td>
+</tr>
+<tr>
+<td>
+<hr>
+</td>
+</tr>
+<tr>
+<th>
+Dem Kurs '${kurs?.name}' koennen folgende PDF zugeordnet werden:
+</th>
+</tr>
+<tr>
+<td>
+<g:form controller="kurs" action="addPDF" name="AddPDFForm" method="post">
+<g:select class="button" noSelection="['':'Auswahl']" optionKey="id" from="${Media.findAllWhere(mediaTyp:MediaTyp.findByCode('pdf'))}" name='pdfId' value="${kurs?.pdf?.id}"/>
+<g:hiddenField name="kursId" value="${kurs?.id}" />
+<a href="#this" onclick="javascript:this.blur(); document.forms.AddPDFForm.action = '${createLink(controller:'kurs', action:'addPDF')}'; document.forms.AddPDFForm.submit();" class="button"><span>Zuweisen</span></a>
+</g:form>
+</td>
+</tr>
+<tr>
+<td>
+<hr>
+</td>
+</tr>
+<tr>
+<th>
+Moechten Sie ein neues PDF auf den Server laden?
+</th>
+</tr>
+<tr>
+<td>
+<g:form name="UploadPDFForm" method="post" action="uploadPDF" enctype="multipart/form-data" class="">
+<g:hiddenField name="kursId" value="${kurs?.id}" />
+<div>
+Dateiname auf dem Server<span style="color: green;">***</span>:
+<br/>
+<input type="text" name="filename" style="width: 250px;"/>
+<br/>
+<div class="button">
+<input class="button" type="file" name="file" accept="application/pdf"/> <a href="#this" onclick="javascript:this.blur(); document.forms.UploadPDFForm.action = '${createLink(controller:'kurs', action:'uploadPDF')}'; document.forms.UploadPDFForm.submit();" class="button"><span>Hochladen</span></a>
+</div>
+<br />
+<br />
+<span style="color: green;">*** wenn nicht vergeben, dann wird der urpruengliche Dateiname genommen.</span>
+</div>
+</g:form>
+</td>
+</tr>
+<tr>
+<td>
+<hr>
+</td>
+</tr>
+<tr>
+<td>
+<g:link controller='media' class="more">Zur Media-Verwaltung</g:link>
+</td>
+</tr>
+</table>
+<!-- ende des box inhalts -->
+</div></div><div class="ft"><div class="c"></div></div></div>
+<!-- ende der box -->
+<!-- und hier kommt die box: -->
+<a name="box4_anker"/>
+<div class="box"><div class="hd"><div class="c">Termine... <a class="close" href="#this" onclick="close_box(this);"> </a> <a class="open" href="#this" onclick="open_box(this);" id="box4"> </a></div></div><div class="bd"><div class="c">
+<!-- hier der box inhalt -->
+<table class="edit" style="margin-top: 0px;">
+<tr>
+<th>
+Der Kurs '${kurs?.name}' hat eine Verknuepfung zu folgenden Terminen:
+</th>
+</tr>
+<tr>
+<td>
+<g:if test="${kursTermine.isEmpty()}">
+Keine Termin-Zuordnung gefunden!
+</g:if>
+<g:else>
+<g:form controller="kurs" action="removeZielgruppe" name="RemoveZgForm" method="post">
+${kurs?.profil}
+<g:hiddenField name="kursId" value="${kurs?.id}" />
+<br/>
+<a href="#this" onclick="javascript:document.forms.RemoveZgForm.submit();" class="more">Markierte entfernen</a>
+</g:form>
+</g:else>
+</td>
+</tr>
+<tr>
+<td>
+<hr>
+</td>
+</tr>
+<tr>
+<th>
+Folgende Zielgruppen sind noch verfuegbar:
+</th>
+</tr>
+<tr>
+<td>
+<g:if test="${!verbleibendeZielgruppen.isEmpty()}">
+<g:form controller="kurs" action="addZielgruppe" name="AddZgForm" method="post">
+<g:each var="z" in="${verbleibendeZielgruppen}">
+<div>
+<g:checkBox name="${z.id}"/> <g:link controller='zielgruppe' action='show' id='${z.id}' style="text-decoration: underline;">${z}</g:link> <g:link action="addZielgruppe" params="[kursId:kurs?.id, zielgruppeId:z.id]" class="more">direkt hinzufuegen</g:link>
+</div>
+</g:each>
+<g:hiddenField name="kursId" value="${kurs?.id}" />
+<br/>
+<a href="#this" onclick="javascript:document.forms.AddZgForm.submit();" class="more">Markierte hinzufuegen</a>
+</g:form>
+</g:if>
+<g:else>
+Keine Zielgruppen verfuegbar!
+</g:else>
+</td>
+</tr>
+<tr>
+<td>
+<hr>
+</td>
+</tr>
+<tr>
+<td>
+<g:link controller='zielGruppe' action='list' class="more">Alle im System verfuegbaren Zielgruppen als Liste anzeigen</g:link>
+</td>
+</tr>
+</table>
+<!-- ende des box inhalts -->
+</div></div><div class="ft"><div class="c"></div></div></div>
+<!-- ende der box -->
+</div>
+</div>
+</body>
+</html>
+-----
+<%@ page import="de.bechtle.semkat.model.*" %>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <meta name="layout" content="backoffice_main"/>
+  <title>Kurs '${kurs?.name}' editieren</title>
+</head>
+<%
+  String open = "";
+  if (openbox1 != null && !openbox1) {
+    open = "close_box(document.getElementById('box1'));"
+  }
+  if (openbox2 != null && !openbox2) {
+    open += "close_box(document.getElementById('box2'));"
+  }
+  if (openbox3 != null && !openbox3) {
+    open += "close_box(document.getElementById('box3'));"
+  }
+  if (openbox4 != null && !openbox4) {
+    open += "close_box(document.getElementById('box4'));"
+  }
+%>
+<body onload="${open}">
+<div id="content_1_2_3">
+  <h1>Kurs '${kurs?.name}' editieren</h1>
+
+  <div style="text-align:right; float:right;"><a class="button" href="#this" onclick="this.blur();"><span>Zuordnungen</span></a></div>
+  <g:if test="${flash.message}">
+    <div class="message">${flash.message}</div>
+  </g:if>
+  <g:hasErrors bean="${kurs}">
+    <div class="errors">
+      <g:renderErrors bean="${kurs}" as="list"/>
+    </div>
+  </g:hasErrors>
+  <g:form controller="kurs" method="post" name="KursForm">
+    <input type="hidden" name="id" value="${kurs?.id}"/>
+
+    <div>
+      <table class="edit">
+        <tbody>
+        <!--<tr>
+<td colspan="2">
+<span class="name">Id:</span>
+</td>
+<td colspan="4">
+<span class="value">${kurs?.id}</span>
+</td>
+</tr>-->
+        <tr class='prop'><td valign='top' class='name' colspan="2"><label for='nummer'>Nummer:</label></td><td colspan="4" valign='top' class='value ${hasErrors(bean: kurs, field: 'nummer', 'errors')}'><input type='text' name='nummer' value="${kurs?.nummer}"/></td></tr>
+        <tr class='prop'><td valign='top' class='name' colspan="2"><label for='name'>Name:</label></td><td colspan="4" valign='top' class='value ${hasErrors(bean: kurs, field: 'name', 'errors')}'><textarea name='name' value="${kurs?.name?.encodeAsHTML()}" cols="50">${kurs?.name?.encodeAsHTML()}</textarea></td></tr>
+        <tr class='prop'><td valign='top' class='name' colspan="2"><label for='ausgabe'>Ausgabe:</label></td><td colspan="4" valign='top' class='value ${hasErrors(bean: kurs, field: 'ausgabe', 'errors')}'><input type='text' name='ausgabe' value="${kurs?.ausgabe?.encodeAsHTML()}"/></td></tr>
+
+        <tr class='prop'><td valign='top' class='name' colspan="2"><label for='dauer'>Dauer:</label></td><td colspan="4" valign='top' class='value ${hasErrors(bean: kurs, field: 'dauer', 'errors')}'><input type='text' name='dauer' value="${kurs?.dauer}"/></td></tr>
+        <tr class='prop'><td valign='top' class='name'><label for='kursArt'>Kursart:</label></td><td valign='top' class='value ${hasErrors(bean: kurs, field: 'kursArt', 'errors')}'><g:select optionKey="id" from="${de.bechtle.semkat.model.KursArt.list()}" name='kursArt.id' value="${kurs?.kursArt?.id}"></g:select></td><td valign='top' class='name'><label for='topSchulung'>Top Schulung?:</label></td><td valign='top' class='value ${hasErrors(bean: kurs, field: 'topSchulung', 'errors')}'><g:checkBox name='topSchulung' value="${kurs?.topSchulung}"></g:checkBox></td></tr>
+        <tr class='prop'><td valign='top' class='name' colspan="2"><label for='durchfuehrungsGarantie'>Durchfuehrungsgarantie:</label></td><td colspan="4" valign='top' class='value ${hasErrors(bean: kurs, field: 'durchfuehrungsGarantie', 'errors')}'><g:select noSelection="['': 'Auswahl']" value="${kurs?.durchfuehrungsGarantie}" from="${['1', '3', '5']}" name="durchfuehrungsGarantie"></g:select> oder Freitext: <input type='text' name='durchfuehrungsGarantie'/></td></tr>
+        <tr class='prop'><td valign='top' class='name'><label for='gebuehr'>Gebuehr:</label></td><td valign='top' class='value ${hasErrors(bean: kurs, field: 'gebuehr', 'errors')}'><input type='text' name='gebuehr' value="${kurs?.gebuehr?.encodeAsHTML()}"/></td><td valign='top' class='name'><label for='waehrung'>Waehrung:</label></td><td valign='top' class='value ${hasErrors(bean: kurs, field: 'waehrung', 'errors')}'><g:select optionKey="id" from="${de.bechtle.semkat.model.Waehrung.list()}" name='waehrung.id' value="${kurs?.waehrung?.id}"></g:select></td><td valign='top' class='name'><label for='mehrwertsteuer'>Mehrwertsteuer:</label></td><td valign='top' class='value ${hasErrors(bean: kurs, field: 'mehrwertsteuer', 'errors')}'><input type='text' name='mehrwertsteuer' value="${kurs?.mehrwertsteuer}"/>%</td></tr>
+
+        <tr class='prop'><td valign='top' class='name' colspan="2"><label for='inhalt'>Inhalt:</label></td><td colspan="4" valign='top' class='value ${hasErrors(bean: kurs, field: 'inhalt', 'errors')}'><textarea name='inhalt' value="${kurs?.inhalt?.encodeAsHTML()}" cols="50" rows="8">${kurs?.inhalt?.encodeAsHTML()}</textarea></td></tr>
+
+        <!--<tr class='prop'><td valign='top' class='name'><label for='pdf'>Pdf:</label></td><td valign='top' class='value ${hasErrors(bean: kurs, field: 'pdf', 'errors')}'><g:select optionKey="id" from="${Media.findAllWhere(mediaTyp: MediaTyp.findByCode('pdf'))}" name='pdf.id' value="${kurs?.pdf?.id}"></g:select></td>-->
+
+
+        <!-<td colspan="4">->
+        <!-<g:form name="UploadPDFForm" method="post" action="uploadPDF" enctype="multipart/form-data" class="">->
+<!-<div>->
+          <!-Dateiname auf dem Server<span style="color: green;">***</span>:->
+          <!-<br/>->
+          <!-<input type="text" name="filename" style="width: 250px;"/>->
+          <!-<br/>->
+          <!-<div class="button">->
+            <Unable to render embedded object: File (--<input type="file" name="file" accept="application/pdf"/> --><) not found.-<a href="#this" onclick="javascript:this.blur();
+                document.forms.UploadPDFForm.action = '${createLink(controller:'kurs', action:'uploadPDF')}';
+                document.forms.UploadPDFForm.submit();" class="button"><span>Hochladen</span></a>->
+            <!-<input type="submit" value="Hochladen"/>->
+            <!-</div>->
+          <!-<br/>->
+          <!-<br/>->
+          <!-<span style="color: green;">*** wenn nicht vergeben, dann wird der urpruengliche Dateiname genommen.</span>->
+          <!-</div>->
+<!-</g:form>->
+          <!-</td>->
+        <!-</tr>->
+
+
+        <tr class='prop'><td valign='top' class='name' colspan="2"><label for='voraussetzung'>Voraussetzung:</label></td><td colspan="4" valign='top' class='value ${hasErrors(bean: kurs, field: 'voraussetzung', 'errors')}'><textarea name='voraussetzung' value="${kurs?.voraussetzung?.encodeAsHTML()}" cols="50">${kurs?.voraussetzung?.encodeAsHTML()}</textarea></td></tr>
+
+        <tr class='prop'><td valign='top' class='name' colspan="2"><label for='ziel'>Ziel:</label></td><td colspan="4" valign='top' class='value ${hasErrors(bean: kurs, field: 'ziel', 'errors')}'><textarea name='ziel' value="${kurs?.ziel?.encodeAsHTML()}" cols="50">${kurs?.ziel?.encodeAsHTML()}</textarea></td></tr>
+        <tr class='prop'><td valign='top' class='name' colspan="2"><label for='bemerkung'>Bemerkung:</label></td><td colspan="4" valign='top' class='value ${hasErrors(bean: kurs, field: 'bemerkung', 'errors')}'><textarea name='bemerkung' value="${kurs?.bemerkung?.encodeAsHTML()}" cols="50" rows="2">${kurs?.bemerkung?.encodeAsHTML()}</textarea></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <br/>
+    <br/>
+
+    <div class="button">
+
+      <a href="#this" onclick="javascript:this.blur();
+      document.forms.KursForm.action = '${createLink(controller:'kurs', action:'update')}';
+      document.forms.KursForm.submit();" class="button"><span>Update</span></a>
+
+      <a href="#this" onclick="javascript:this.blur();
+      if (confirm('Sind Sie sicher?')) {
+          document.forms.KursForm.action = '${createLink(controller:'kurs', action:'delete')}';
+          document.forms.KursForm.submit()
+      }
+      ;" class="button"><span>Loeschen</span></a>
+
+      <a href="#this" onclick="javascript:this.blur();
+      document.forms.KursForm.action = '${createLink(controller:'kurs', action:'show')}';
+      document.forms.KursForm.submit();" class="button"><span>Anzeigen</span></a>
+      <a href="#this" onclick="javascript:this.blur();
+      document.forms.KursForm.action = '${createLink(controller:'kurs', action:'save')}';
+      document.forms.KursForm.submit();" class="button"><span>Als neuen Kurs speichern</span></a>
+      <a href="#this" onclick="javascript:this.blur();
+      document.forms.KursForm.action = '${createLink(controller:'kurs', action:'toXML')}';
+      document.forms.KursForm.submit();" class="button"><span>XML</span></a>
+    </div>
+  </g:form>
+  <div style="margin-top: 48px;">
+    <h2>Zuordnungen:</h2>
+    <br/>
+    <!-- und hier kommt die box: -->
+    <a name="box1_anker"/>
+
+    <div class="box"><div class="hd"><div class="c">Profil... <a class="close" href="#this" onclick="close_box(this);"></a> <a class="open" href="#this" onclick="open_box(this);" id="box1"></a></div></div>
+
+      <div class="bd"><div class="c">
+        <!-- hier der box inhalt -->
+        <table class="edit" style="margin-top: 0px;">
+          <tr>
+            <th>
+              Der Kurs '${kurs?.name}' wurde folgendem Profil zugeordnet:
+            </th>
+          </tr>
+          <tr>
+            <td>
+
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <hr>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <g:link controller="profil" action="list" class="more">Alle im System verfuegbaren Profile als Liste anzeigen</g:link>
+            </td>
+          </tr>
+        </table>
+        <!-- ende des box inhalts -->
+      </div></div>
+
+      <div class="ft"><div class="c"></div></div></div>
+    <!-- ende der box -->
+    <!-- und hier kommt die box: -->
+    <a name="box1_anker"/>
+
+    <div class="box"><div class="hd"><div class="c">Zielgruppen... <a class="close" href="#this" onclick="close_box(this);"></a> <a class="open" href="#this" onclick="open_box(this);" id="box1"></a></div></div>
+
+      <div class="bd"><div class="c">
+        <!-- hier der box inhalt -->
+        <table class="edit" style="margin-top: 0px;">
+          <tr>
+            <th>
+              Dem Kurs '${kurs?.name}' wurden folgende Zielgruppen zugeordnet:
+            </th>
+          </tr>
+          <tr>
+            <td>
+              <g:if test="${kurs?.zielgruppen.isEmpty()}">
+                Keine Zielgruppen zugeordnet!
+              </g:if>
+              <g:else>
+                <g:form controller="kurs" action="removeZielgruppe" name="RemoveZgForm" method="post">
+                  <g:each var="z" in="${kurs?.zielgruppen}">
+                    <div>
+                      <g:checkBox name="${z.id}"/> <g:link controller='zielgruppe' action='show' id='${z.id}' style="text-decoration: underline;">${z}</g:link> <g:link action="removeZielgruppe" params="[kursId: kurs?.id, zielgruppeId: z.id]" class="more">direkt entfernen</g:link>
+                    </div>
+                  </g:each>
+                  <g:hiddenField name="kursId" value="${kurs?.id}"/>
+                  <br/>
+                  <a href="#this" onclick="javascript:document.forms.RemoveZgForm.submit();" class="more">Markierte entfernen</a>
+                </g:form>
+              </g:else>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <hr>
+            </td>
+          </tr>
+          <tr>
+            <th>
+              Folgende Zielgruppen sind noch verfuegbar:
+            </th>
+          </tr>
+          <tr>
+            <td>
+              <g:if test="${!verbleibendeZielgruppen.isEmpty()}">
+                <g:form controller="kurs" action="addZielgruppe" name="AddZgForm" method="post">
+                  <g:each var="z" in="${verbleibendeZielgruppen}">
+                    <div>
+                      <g:checkBox name="${z.id}"/> <g:link controller='zielgruppe' action='show' id='${z.id}' style="text-decoration: underline;">${z}</g:link> <g:link action="addZielgruppe" params="[kursId: kurs?.id, zielgruppeId: z.id]" class="more">direkt hinzufuegen</g:link>
+                    </div>
+                  </g:each>
+                  <g:hiddenField name="kursId" value="${kurs?.id}"/>
+                  <br/>
+                  <a href="#this" onclick="javascript:document.forms.AddZgForm.submit();" class="more">Markierte hinzufuegen</a>
+                </g:form>
+              </g:if>
+              <g:else>
+                Keine Zielgruppen verfuegbar!
+              </g:else>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <hr>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <g:link controller='zielGruppe' action='list' class="more">Alle im System verfuegbaren Zielgruppen als Liste anzeigen</g:link>
+            </td>
+          </tr>
+        </table>
+        <!-- ende des box inhalts -->
+      </div></div>
+
+      <div class="ft"><div class="c"></div></div></div>
+    <!-- ende der box -->
+    <!-- und hier kommt die box: -->
+    <a name="box2_anker"/>
+
+    <div class="box"><div class="hd"><div class="c">Stichworte... <a class="close" href="#this" onclick="close_box(this);"></a> <a class="open" href="#this" onclick="open_box(this);" id="box2"></a></div></div>
+
+      <div class="bd"><div class="c">
+        <!-- hier der box inhalt -->
+        <table class="edit" style="margin-top: 0px;">
+          <tr>
+            <th>
+              Dem Kurs '${kurs?.name}' wurden folgende Stichworte zugeordnet:
+            </th>
+          </tr>
+          <tr>
+            <td>
+              <g:if test="${kurs?.stichworte.isEmpty()}">
+                Keine Stichworte zugeordnet!
+              </g:if>
+              <g:else>
+                <g:form controller="kurs" action="removeStichwort" name="RemoveStForm" method="post">
+                  <g:each var="s" in="${kurs?.stichworte ?}">
+                    <div>
+                      <g:checkBox name="${s.id}"/> <g:link controller='stichwort' action='show' id='${s.id}' style="text-decoration: underline;">${s}</g:link><g:link action="removeStichwort" params="[kursId: kurs?.id, stichwortId: s.id]" class="more">direkt entfernen</g:link>
+                    </div>
+                  </g:each>
+                  <g:hiddenField name="kursId" value="${kurs?.id}"/>
+                  <br/>
+                  <a href="#this" onclick="javascript:document.forms.RemoveStForm.submit();" class="more">Markierte entfernen</a>
+                </g:form>
+              </g:else>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <hr>
+            </td>
+          </tr>
+          <tr>
+            <th>
+              Folgende Stichworte sind noch verfuegbar:
+            </th>
+          </tr>
+          <tr>
+            <td>
+              <g:if test="${!verbleibendeStichworte.isEmpty()}">
+                <g:form controller="kurs" action="addZielgruppe" name="AddStForm" method="post">
+                  <g:each var="s" in="${verbleibendeStichworte}">
+                    <div>
+                      <g:checkBox name="${s.id}"/> <g:link controller='stichwort' action='show' id='${s.id}' style="text-decoration: underline;">${s}</g:link><g:link action="addStichwort" params="[kursId: kurs?.id, stichwortId: s.id]" class="more">direkt hinzufuegen</g:link>
+                    </div>
+                  </g:each>
+                  <g:hiddenField name="kursId" value="${kurs?.id}"/>
+                  <br/>
+                  <a href="#this" onclick="javascript:document.forms.AddStForm.submit();" class="more">Markierte hinzufuegen</a>
+                </g:form>
+              </g:if>
+              <g:else>
+                Keine Stichworte verfuegbar!
+              </g:else>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <hr>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <g:link controller='zielGruppe' action='list' class="more">Alle im System verfuegbaren Stichworte als Liste anzeigen</g:link>
+            </td>
+          </tr>
+        </table>
+        <!-- ende des box inhalts -->
+      </div></div>
+
+      <div class="ft"><div class="c"></div></div></div>
+    <!-- ende der box -->
+    <!-- und hier kommt die box: -->
+    <a name="box3_anker"/>
+
+    <div class="box"><div class="hd"><div class="c">PDF... <a class="close" href="#this" onclick="close_box(this);"></a> <a class="open" href="#this" onclick="open_box(this);" id="box3"></a></div></div>
+
+      <div class="bd"><div class="c">
+        <!-- hier der box inhalt -->
+        <table class="edit" style="margin-top: 0px;">
+          <tr>
+            <th>
+              Dem Kurs '${kurs?.name}' wurde folgendes PDF zugeordnet:
+            </th>
+          </tr>
+          <tr class='prop'>
+            <td>
+              <g:if test="${kurs?.pdf != null}">
+                ${kurs.pdf}
+              </g:if>
+              <g:else>
+                Kein PDF zugeordnet!
+              </g:else>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <hr>
+            </td>
+          </tr>
+          <tr>
+            <th>
+              Dem Kurs '${kurs?.name}' koennen folgende PDF zugeordnet werden:
+            </th>
+          </tr>
+          <tr>
+            <td>
+              <g:form controller="kurs" action="addPDF" name="AddPDFForm" method="post">
+                <g:select class="button" noSelection="['': 'Auswahl']" optionKey="id" from="${Media.findAllWhere(mediaTyp: MediaTyp.findByCode('pdf'))}" name='pdfId' value="${kurs?.pdf?.id}"/>
+                <g:hiddenField name="kursId" value="${kurs?.id}"/>
+                <a href="#this" onclick="javascript:this.blur();
+                document.forms.AddPDFForm.action = '${createLink(controller:'kurs', action:'addPDF')}';
+                document.forms.AddPDFForm.submit();" class="button"><span>Zuweisen</span></a>
+              </g:form>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <hr>
+            </td>
+          </tr>
+          <tr>
+            <th>
+              Moechten Sie ein neues PDF auf den Server laden?
+            </th>
+          </tr>
+          <tr>
+            <td>
+              <g:form name="UploadPDFForm" method="post" action="uploadPDF" enctype="multipart/form-data" class="">
+                <g:hiddenField name="kursId" value="${kurs?.id}"/>
+                <div>
+                  Dateiname auf dem Server<span style="color: green;">***</span>:
+                  <br/>
+                  <input type="text" name="filename" style="width: 250px;"/>
+                  <br/>
+
+                  <div class="button">
+                    <input class="button" type="file" name="file" accept="application/pdf"/> <a href="#this" onclick="javascript:this.blur();
+                  document.forms.UploadPDFForm.action = '${createLink(controller:'kurs', action:'uploadPDF')}';
+                  document.forms.UploadPDFForm.submit();" class="button"><span>Hochladen</span></a>
+                  </div>
+                  <br/>
+                  <br/>
+                  <span style="color: green;">*** wenn nicht vergeben, dann wird der urpruengliche Dateiname genommen.</span>
+                </div>
+              </g:form>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <hr>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <g:link controller='media' class="more">Zur Media-Verwaltung</g:link>
+            </td>
+          </tr>
+        </table>
+        <!-- ende des box inhalts -->
+      </div></div>
+
+      <div class="ft"><div class="c"></div></div></div>
+    <!-- ende der box -->
+    <!-- und hier kommt die box: -->
+    <a name="box4_anker"/>
+
+    <div class="box"><div class="hd"><div class="c">Termine... <a class="close" href="#this" onclick="close_box(this);"></a> <a class="open" href="#this" onclick="open_box(this);" id="box4"></a></div></div>
+
+      <div class="bd"><div class="c">
+        <!-- hier der box inhalt -->
+        <table class="edit" style="margin-top: 0px;">
+          <tr>
+            <th>
+              Der Kurs '${kurs?.name}' hat eine Verknuepfung zu folgenden Terminen:
+            </th>
+          </tr>
+          <tr>
+            <td>
+              <g:if test="${kursTermine.isEmpty()}">
+                Keine Termin-Zuordnung gefunden!
+              </g:if>
+              <g:else>
+                <g:form controller="kurs" action="removeZielgruppe" name="RemoveZgForm" method="post">
+                  ${kurs?.profil}
+                  <g:hiddenField name="kursId" value="${kurs?.id}"/>
+                  <br/>
+                  <a href="#this" onclick="javascript:document.forms.RemoveZgForm.submit();" class="more">Markierte entfernen</a>
+                </g:form>
+              </g:else>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <hr>
+            </td>
+          </tr>
+          <tr>
+            <th>
+              Folgende Zielgruppen sind noch verfuegbar:
+            </th>
+          </tr>
+          <tr>
+            <td>
+              <g:if test="${!verbleibendeZielgruppen.isEmpty()}">
+                <g:form controller="kurs" action="addZielgruppe" name="AddZgForm" method="post">
+                  <g:each var="z" in="${verbleibendeZielgruppen}">
+                    <div>
+                      <g:checkBox name="${z.id}"/> <g:link controller='zielgruppe' action='show' id='${z.id}' style="text-decoration: underline;">${z}</g:link> <g:link action="addZielgruppe" params="[kursId: kurs?.id, zielgruppeId: z.id]" class="more">direkt hinzufuegen</g:link>
+                    </div>
+                  </g:each>
+                  <g:hiddenField name="kursId" value="${kurs?.id}"/>
+                  <br/>
+                  <a href="#this" onclick="javascript:document.forms.AddZgForm.submit();" class="more">Markierte hinzufuegen</a>
+                </g:form>
+              </g:if>
+              <g:else>
+                Keine Zielgruppen verfuegbar!
+              </g:else>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <hr>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <g:link controller='zielGruppe' action='list' class="more">Alle im System verfuegbaren Zielgruppen als Liste anzeigen</g:link>
+            </td>
+          </tr>
+        </table>
+        <!-- ende des box inhalts -->
+      </div></div>
+
+      <div class="ft"><div class="c"></div></div></div>
+    <!-- ende der box -->
+  </div>
+</div>
+</body>
+</html>

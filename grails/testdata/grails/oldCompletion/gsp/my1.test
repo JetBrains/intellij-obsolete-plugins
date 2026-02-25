@@ -1,0 +1,6 @@
+<html>
+  ${my.<caret>}
+</html>
+-----
+bar
+foo

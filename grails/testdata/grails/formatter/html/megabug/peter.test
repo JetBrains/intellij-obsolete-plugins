@@ -1,0 +1,17 @@
+<div>
+  <g:hasErrors>
+        <div/>
+  </g:hasErrors>
+  <g:form>
+     <input/>
+  </g:form>
+</div>
+-----
+<div>
+  <g:hasErrors>
+    <div/>
+  </g:hasErrors>
+  <g:form>
+    <input/>
+  </g:form>
+</div>

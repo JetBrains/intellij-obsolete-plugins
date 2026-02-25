@@ -1,0 +1,6 @@
+import aaa.Book
+
+Book b = new Book()
+b.ref<caret>
+-----
+refresh

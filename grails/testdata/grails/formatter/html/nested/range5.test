@@ -1,0 +1,21 @@
+<html>
+<g:b>
+</g:b>
+    <g:a>
+          <a>
+           </a>
+    </g:a>
+    <g:b>
+    </g:b>
+</html>
+-----
+<html>
+<g:b>
+</g:b>
+<g:a>
+  <a>
+  </a>
+</g:a>
+<g:b>
+</g:b>
+</html>

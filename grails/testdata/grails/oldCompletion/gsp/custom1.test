@@ -1,0 +1,6 @@
+${42}
+<html>
+  ${bu<caret>}
+</html>
+-----
+bugoga

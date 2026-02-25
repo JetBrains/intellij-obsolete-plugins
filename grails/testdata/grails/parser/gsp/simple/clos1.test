@@ -1,0 +1,24 @@
+<g:while>
+some_text
+<g:each
+</g:while>
+-----
+Groovy Server Pages file
+  PsiElement(XML_DOCUMENT)
+    PsiElement(XML_PROLOG)
+      <empty list>
+    Gsp root tag
+      Grails tag
+        XmlToken:XML_START_TAG_START('<')
+        XmlToken:XML_TAG_NAME('g:while')
+        XmlToken:XML_TAG_END('>')
+        Outer: GSP TEMPLATE STATEMENTS('\nsome_text\n')
+        Grails tag
+          XmlToken:XML_START_TAG_START('<')
+          XmlToken:XML_TAG_NAME('g:each')
+          PsiErrorElement:'>' or '/>' expected
+            <empty list>
+        PsiWhiteSpace('\n')
+        XmlToken:XML_END_TAG_START('</')
+        XmlToken:XML_TAG_NAME('g:while')
+        XmlToken:XML_TAG_END('>')

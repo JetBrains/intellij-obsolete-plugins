@@ -1,0 +1,35 @@
+<span><g:link class="list" action="list">User List</g:link></span>
+-----
+GspHtmlFileImpl
+  PsiElement(HTML_DOCUMENT)
+    PsiElement(XML_PROLOG)
+      <empty list>
+    HtmlTag:span
+      XmlToken:XML_START_TAG_START('<')
+      XmlToken:XML_NAME('span')
+      XmlToken:XML_TAG_END('>')
+      XmlText
+        Outer: GSP FRAGMENT('<')
+        Outer: GSP FRAGMENT('g:link')
+        Outer: GSP FRAGMENT(' ')
+        Outer: GSP FRAGMENT('class')
+        Outer: GSP FRAGMENT('=')
+        Outer: GSP FRAGMENT('"')
+        Outer: GSP FRAGMENT('list')
+        Outer: GSP FRAGMENT('"')
+        Outer: GSP FRAGMENT(' ')
+        Outer: GSP FRAGMENT('action')
+        Outer: GSP FRAGMENT('=')
+        Outer: GSP FRAGMENT('"')
+        Outer: GSP FRAGMENT('list')
+        Outer: GSP FRAGMENT('"')
+        Outer: GSP FRAGMENT('>')
+        XmlToken:XML_DATA_CHARACTERS('User')
+        PsiWhiteSpace(' ')
+        XmlToken:XML_DATA_CHARACTERS('List')
+      Outer: GSP FRAGMENT('</')
+      Outer: GSP FRAGMENT('g:link')
+      Outer: GSP FRAGMENT('>')
+      XmlToken:XML_END_TAG_START('</')
+      XmlToken:XML_NAME('span')
+      XmlToken:XML_TAG_END('>')

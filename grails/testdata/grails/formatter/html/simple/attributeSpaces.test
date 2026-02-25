@@ -1,0 +1,34 @@
+<g:link action   =   "sadasd"
+        controller=
+
+
+
+
+        "asdasddsf"
+        url="sdadsjdlka"
+        accesskey="asdasdasddas"/>
+
+<link action   =   "sadasd"
+      controller=
+
+
+
+      "asdasddsf"
+      url="sdadsjdlka"
+      accesskey="asdasdasddas"/>
+-----
+<g:link action = "sadasd"
+        controller =
+
+
+        "asdasddsf"
+        url = "sdadsjdlka"
+        accesskey = "asdasdasddas" />
+
+<link action = "sadasd"
+      controller =
+
+
+      "asdasddsf"
+      url = "sdadsjdlka"
+      accesskey = "asdasdasddas" />

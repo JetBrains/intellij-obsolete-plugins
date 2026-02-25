@@ -1,0 +1,32 @@
+<span><%--
+    --%><g:if><i></i> </g:if><%--
+--%></span>
+-----
+GspHtmlFileImpl
+  PsiElement(HTML_DOCUMENT)
+    PsiElement(XML_PROLOG)
+      <empty list>
+    HtmlTag:span
+      XmlToken:XML_START_TAG_START('<')
+      XmlToken:XML_NAME('span')
+      XmlToken:XML_TAG_END('>')
+      Outer: GSP FRAGMENT('<%--\n    --%>')
+      Outer: GSP FRAGMENT('<')
+      Outer: GSP FRAGMENT('g:if')
+      Outer: GSP FRAGMENT('>')
+      HtmlTag:i
+        XmlToken:XML_START_TAG_START('<')
+        XmlToken:XML_NAME('i')
+        XmlToken:XML_TAG_END('>')
+        XmlToken:XML_END_TAG_START('</')
+        XmlToken:XML_NAME('i')
+        XmlToken:XML_TAG_END('>')
+      XmlText
+        PsiWhiteSpace(' ')
+      Outer: GSP FRAGMENT('</')
+      Outer: GSP FRAGMENT('g:if')
+      Outer: GSP FRAGMENT('>')
+      Outer: GSP FRAGMENT('<%--\n--%>')
+      XmlToken:XML_END_TAG_START('</')
+      XmlToken:XML_NAME('span')
+      XmlToken:XML_TAG_END('>')

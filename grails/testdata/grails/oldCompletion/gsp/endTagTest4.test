@@ -1,0 +1,6 @@
+<g:link>
+<span>abc</<caret>
+</g:link>
+-----
+g:link
+span

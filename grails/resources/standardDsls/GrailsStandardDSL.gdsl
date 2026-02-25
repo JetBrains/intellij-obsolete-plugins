@@ -1,0 +1,51 @@
+package standardDsls
+
+def grailsParameterMap = context(ctype: "org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap")
+
+contributor(grailsParameterMap) {
+  method name: 'byte', params: [name: 'String'], type: 'byte'
+  method name: 'short', params: [name: 'String'], type: 'short'
+  method name: 'long', params: [name: 'String'], type: 'long'
+  method name: 'int', params: [name: 'String'], type: 'int'
+  method name: 'double', params: [name: 'String'], type: 'double'
+  method name: 'float', params: [name: 'String'], type: 'float'
+  method name: 'boolean', params: [name: 'String'], type: 'boolean'
+}
+
+def grailsApplication = context(ctype: "org.codehaus.groovy.grails.commons.GrailsApplication")
+
+class Constants {
+  /**
+   * List of artifact get from org.codehaus.groovy.grails.commons.DefaultGrailsApplication#initArtefactHandlers()
+   * #CHECK#
+   */
+  static final String[] artifacts = ['Domain', 'Controller', 'Service', 'TagLib', 'Bootstrap', 'Codec', 'UrlMappings'];
+
+  private static String[] createNames(String prefix, String suffix) {
+    List res = [];
+    for (artifact in artifacts) {
+      res << prefix + artifact + suffix;
+    }
+
+    return res.toArray(new String[res.size()]);
+  }
+
+  static final String[] names_getXxxClasses = createNames("get", "Classes");
+  static final String[] names_getXxxClass = createNames("get", "Class");
+  static final String[] names_isXxxClass = createNames("is", "Class");
+}
+
+contributor(grailsApplication) {
+  for (name in Constants.names_getXxxClasses) {
+    method name: name, type: "org.codehaus.groovy.grails.commons.GrailsClass[]"
+  }
+
+  for (name in Constants.names_getXxxClass) {
+    method name: name, params: [name: 'CharSequence'], type: "org.codehaus.groovy.grails.commons.GrailsClass"
+  }
+
+  for (name in Constants.names_isXxxClass) {
+    method name: name, params: [aClass: 'Class'], type: "boolean"
+  }
+
+}

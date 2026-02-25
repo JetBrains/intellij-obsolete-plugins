@@ -1,0 +1,134 @@
+<%@ page import="fr.generali.radb.*" %>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta name="layout" content="main" />
+<title>Consulter une fonction</title>
+</head>
+<body>
+<div class="nav">
+<g:navigationMenu/>
+</div>
+<div class="body">
+<h1>Consulter une fonction</h1>
+<g:if test="${flash.message}">
+<div class="message">${flash.message}</div>
+</g:if>
+<div class="dialog">
+<table>
+<tbody>
+<tr class="prop">
+<td valign="top" class="name">Libel court:</td>
+<td valign="top" class="value">${fonction.libelleCourt}</td>
+</tr>
+<tr class="prop">
+<td valign="top" class="name">Libel long:</td>
+<td valign="top" class="value">${fonction.libelleLong}</td>
+</tr>
+<tr class="prop">
+<td valign="top" class="name">Type de:</td>
+<td valign="top" class="value"><g:link controller="typeRole" action="show" id="${fonction?.typeRole?.id}">${fonction?.typeRole}</g:link></td>
+</tr>
+<tr class="prop">
+<td valign="top" class="name">Date de:</td>
+<td valign="top" class="value">${fonction.dateCreation}</td>
+</tr>
+<tr class="prop">
+<td valign="top" class="name">les:</td>
+<td valign="top" style="text-align:left;" class="value">
+<ul>
+<g:each var="r" in="${fonction.roles.sort{ it.personne.nom }}">
+<li><g:link controller="role" action="show" id="${r.id}">${r}</g:link></li>
+</g:each>
+<g:each var="r" in="${appli.roles.sort{ it.personne.nom }}">
+<li>
+<g:link controller="personne" action="show" id="${r.personne.id}">${r.personne.nom} ${r.personne.prenom}</g:link> -
+<g:link controller="role" action="show" id="${r.id}">${r.fonction.libelleLong}</g:link>
+</li>
+</g:each>
+
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="buttons">
+<g:form controller="fonction">
+<input type="hidden" name="id" value="${fonction?.id}" />
+<span class="button"><g:actionSubmit value="Edit" /></span>
+<span class="button"><g:actionSubmit value="Delete" /></span>
+</g:form>
+</div>
+</div>
+</body>
+</html>
+-----
+<%@ page import="fr.generali.radb.*" %>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <meta name="layout" content="main"/>
+  <title>Consulter une fonction</title>
+</head>
+
+<body>
+<div class="nav">
+  <g:navigationMenu/>
+</div>
+
+<div class="body">
+  <h1>Consulter une fonction</h1>
+  <g:if test="${flash.message}">
+    <div class="message">${flash.message}</div>
+  </g:if>
+  <div class="dialog">
+    <table>
+      <tbody>
+      <tr class="prop">
+        <td valign="top" class="name">Libel court:</td>
+        <td valign="top" class="value">${fonction.libelleCourt}</td>
+      </tr>
+      <tr class="prop">
+        <td valign="top" class="name">Libel long:</td>
+        <td valign="top" class="value">${fonction.libelleLong}</td>
+      </tr>
+      <tr class="prop">
+        <td valign="top" class="name">Type de:</td>
+        <td valign="top" class="value"><g:link controller="typeRole" action="show" id="${fonction?.typeRole?.id}">${fonction?.typeRole}</g:link></td>
+      </tr>
+      <tr class="prop">
+        <td valign="top" class="name">Date de:</td>
+        <td valign="top" class="value">${fonction.dateCreation}</td>
+      </tr>
+      <tr class="prop">
+        <td valign="top" class="name">les:</td>
+        <td valign="top" style="text-align:left;" class="value">
+          <ul>
+            <g:each var="r" in="${fonction.roles.sort { it.personne.nom }}">
+              <li><g:link controller="role" action="show" id="${r.id}">${r}</g:link></li>
+            </g:each>
+            <g:each var="r" in="${appli.roles.sort { it.personne.nom }}">
+              <li>
+                <g:link controller="personne" action="show" id="${r.personne.id}">${r.personne.nom} ${r.personne.prenom}</g:link> -
+                <g:link controller="role" action="show" id="${r.id}">${r.fonction.libelleLong}</g:link>
+              </li>
+            </g:each>
+
+          </ul>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="buttons">
+    <g:form controller="fonction">
+      <input type="hidden" name="id" value="${fonction?.id}"/>
+      <span class="button"><g:actionSubmit value="Edit"/></span>
+      <span class="button"><g:actionSubmit value="Delete"/></span>
+    </g:form>
+  </div>
+</div>
+</body>
+</html>

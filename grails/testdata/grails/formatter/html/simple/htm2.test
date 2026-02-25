@@ -1,0 +1,11 @@
+<g:do>
+<g:for>
+html_text
+</g:for>
+</g:do>
+-----
+<g:do>
+  <g:for>
+    html_text
+  </g:for>
+</g:do>

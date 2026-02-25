@@ -1,0 +1,5 @@
+<g:aaa        times     =       "[a:5, b:{}]"       arg = "t"  >
+</g:aaa>
+-----
+<g:aaa times="[a: 5, b: {}]" arg="t">
+</g:aaa>

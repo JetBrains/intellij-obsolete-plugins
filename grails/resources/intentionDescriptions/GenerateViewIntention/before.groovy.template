@@ -1,0 +1,9 @@
+// grails-app/controllers/appPackage/BookController.groovy
+package appPackage
+
+class BookController {
+
+    def index() {
+        render "Some text"
+    }
+}

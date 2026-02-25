@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templateSet group="GSP">
+  <template name="each"
+            resource-bundle="messages.GrailsBundle" key="livetemplate.description.surround.gsp.each"
+            toReformat="true" toShortenFQNames="false" value="&lt;g:each in=&quot;$END$&quot; &gt;&#10;$SELECTION$&#10;&lt;/g:each&gt;">
+    <context>
+      <option name="JAVA_CODE" value="false"/>
+      <option name="JAVA_COMMENT" value="false"/>
+      <option name="JAVA_STRING" value="false"/>
+      <option name="XML" value="false"/>
+      <option name="HTML" value="false"/>
+      <option name="JSP" value="false"/>
+      <option name="GSP" value="true"/>
+      <option name="COMPLETION" value="false"/>
+      <option name="OTHER" value="false"/>
+    </context>
+  </template>
+
+  <template name="if"
+            resource-bundle="messages.GrailsBundle" key="livetemplate.description.surround.gsp.if"
+            toReformat="true" toShortenFQNames="false" value="&lt;g:if test=&quot;$END$&quot; &gt;&#10;$SELECTION$&#10;&lt;/g:if&gt;">
+    <context>
+      <option name="JAVA_CODE" value="false"/>
+      <option name="JAVA_COMMENT" value="false"/>
+      <option name="JAVA_STRING" value="false"/>
+      <option name="XML" value="false"/>
+      <option name="HTML" value="false"/>
+      <option name="JSP" value="false"/>
+      <option name="GSP" value="true"/>
+      <option name="COMPLETION" value="false"/>
+      <option name="OTHER" value="false"/>
+    </context>
+  </template>
+
+</templateSet>
+

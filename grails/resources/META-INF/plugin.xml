@@ -1,0 +1,498 @@
+<!-- Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.-->
+<idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude" package="org.jetbrains.plugins.grails">
+  <id>org.intellij.grails</id>
+  <name>Grails</name>
+  <category>JVM Frameworks</category>
+  <description>
+    <![CDATA[
+   Provides integration with the <a href="https://grails.org">Grails</a> framework.
+   <ul>
+     <li>Import a generated Grails Application Forge project or create a new one directly from the IDE</li>
+     <li>Switch to the <b>Grails</b> view in the <b>Project</b> tool window</li>
+     <li>Edit Grails files with coding assistance features, such as code completion, navigation, inspections, refactoring, and much more</li>
+     <li>Use dedicated Grails run/debug configurations</li>
+   </ul>
+    ]]>
+  </description>
+  <vendor>JetBrains</vendor>
+
+  <dependencies>
+    <module name="intellij.javaee.platform"/>
+    <module name="intellij.javaee.platform.impl"/>
+    <plugin id="com.intellij.persistence"/>
+    <plugin id="com.intellij.javaee.jpa"/>
+    <plugin id="com.intellij.jsp"/>
+    <plugin id="com.intellij.javaee.el"/>
+    <plugin id="org.intellij.groovy"/>
+    <plugin id="com.intellij.properties"/>
+    <plugin id="com.intellij.database"/>
+
+    <module name="intellij.spring"/>
+    <module name="intellij.spring.core"/>
+
+    <plugin id="org.jetbrains.plugins.gradle"/>
+    <plugin id="com.intellij.modules.ultimate"/>
+    <plugin id="com.intellij.microservices.jvm"/>
+    <module name="intellij.properties.backend"/>
+    <module name="intellij.properties.backend.psi"/>
+    <module name="intellij.regexp"/>
+  </dependencies>
+
+  <content namespace="jetbrains">
+    <module name="intellij.groovy.grails.copyright"/>
+    <module name="intellij.groovy.grails.i18n"/>
+    <module name="intellij.groovy.grails.maven"/>
+    <module name="intellij.groovy.grails.hibernate"/>
+    <module name="intellij.groovy.grails.langInjection"/>
+    <module name="intellij.groovy.grails.coverage"/>
+  </content>
+
+  <depends optional="true" config-file="grails-js-integration.xml">JavaScript</depends>
+  <depends optional="true" config-file="grails-css-integration.xml">com.intellij.css</depends>
+
+  <resource-bundle>messages.GrailsBundle</resource-bundle>
+
+  <extensionPoints>
+    <extensionPoint name="facetProvider" dynamic="true" interface="org.jetbrains.plugins.grails.util.GrailsFacetProvider"/>
+    <extensionPoint name="applicationProvider" dynamic="true" interface="org.jetbrains.plugins.grails.structure.GrailsApplicationProvider"/>
+    <extensionPoint name="commandExecutor" dynamic="true" interface="org.jetbrains.plugins.grails.runner.GrailsCommandExecutor"/>
+    <extensionPoint name="commandProvider" dynamic="true" interface="org.jetbrains.plugins.grails.commands.GrailsCommandProvider"/>
+    <extensionPoint name="artefactHandler" dynamic="true" interface="org.jetbrains.plugins.grails.artefact.api.GrailsArtefactHandler"/>
+    <extensionPoint name="viewNodeProvider" dynamic="true" interface="org.jetbrains.plugins.grails.projectView.api.GrailsViewNodeProvider"/>
+  </extensionPoints>
+
+  <extensions defaultExtensionNs="org.jetbrains.plugins.gradle">
+    <projectResolve implementation="org.jetbrains.plugins.grails.gradle.GrailsProjectResolverExtension"/>
+    <taskManager implementation="org.jetbrains.plugins.grails.gradle.GrailsTaskManagerExtension"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="org.intellij.grails">
+    <commandExecutor implementation="org.jetbrains.plugins.grails.runner.impl.Grails3GradleCommandExecutor"/>
+    <commandExecutor implementation="org.jetbrains.plugins.grails.runner.impl.GrailsInstallationCommandExecutor"/>
+    <commandExecutor implementation="org.jetbrains.plugins.grails.runner.impl.Grails3InstallationCommandExecutor"/>
+    <facetProvider implementation="org.jetbrains.plugins.grails.spring.GrailsSpringFacetProvider"/>
+    <facetProvider implementation="org.jetbrains.plugins.grails.util.GrailsWebFacetProvider"/> <!--j2ee plugin-->
+    <applicationProvider id="default" implementation="org.jetbrains.plugins.grails.structure.impl.PlainGrailsApplicationProvider"/>
+    <applicationProvider implementation="org.jetbrains.plugins.grails.structure.impl.Grails3ApplicationProvider"/>
+    <commandProvider implementation="org.jetbrains.plugins.grails.commands.OldGrailsCommandProvider"/>
+    <commandProvider implementation="org.jetbrains.plugins.grails.commands.Grails3CommandProvider"/>
+    <viewNodeProvider implementation="org.jetbrains.plugins.grails.projectView.impl.GrailsAppNodeProvider"/>
+    <viewNodeProvider implementation="org.jetbrains.plugins.grails.projectView.impl.OldGrailsNodeProvider"/>
+    <viewNodeProvider implementation="org.jetbrains.plugins.grails.projectView.impl.Grails3NodeProvider"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="org.intellij.groovy">
+    <membersContributor implementation="org.jetbrains.plugins.grails.references.GrailsArtifactNonCodeMemberProcessor"/>
+    <membersContributor implementation="org.jetbrains.plugins.grails.references.CodecNonCodeMemberContributor"/>
+    <membersContributor implementation="org.jetbrains.plugins.grails.references.pluginClass.GrailsPluginClassMemberContributor"/>
+    <membersContributor implementation="org.jetbrains.plugins.grails.references.GrailsResourceClassMemberContributor"/>
+    <membersContributor implementation="org.jetbrains.plugins.grails.references.filter.GrailsFilterClosureMemberContributor"/>
+    <membersContributor implementation="org.jetbrains.plugins.grails.references.domain.criteria.CriteriaBuilderImplicitMemberContributor"/>
+    <membersContributor implementation="org.jetbrains.plugins.grails.config.BuildConfigMemberContributor"/>
+    <membersContributor implementation="org.jetbrains.plugins.grails.config.ConfigMemberContributor"/>
+    <membersContributor implementation="org.jetbrains.plugins.grails.spring.GrailsWebApplicationContextMembersContributor"/> <!-- Spring Support -->
+    <membersContributor implementation="org.jetbrains.plugins.grails.tests.GrailsTestMemberContributor"/>
+    <membersContributor implementation="org.jetbrains.plugins.grails.references.constraints.GrailsValidationMethodsContributor"/>
+    <membersContributor implementation="org.jetbrains.plugins.grails.pluginSupport.seachable.SearchableMemberMethodContributor"/>
+    <membersContributor implementation="org.jetbrains.plugins.grails.pluginSupport.webflow.WebFlowMethodContributor"/>
+    <membersContributor implementation="org.jetbrains.plugins.grails.references.domain.criteria.CriteriaClosureMemberContributor"/>
+    <membersContributor implementation="org.jetbrains.plugins.grails.references.domain.namedQuery.NamedCriteriaProxyMembersContributor"/>
+    <membersContributor implementation="org.jetbrains.plugins.grails.pluginSupport.resources.GrailsResourcesClosureMethodContributor"/>
+    <membersContributor implementation="org.jetbrains.plugins.grails.references.domain.detachedCriteria.DetachedCriteriaClosureMemberProvider"/>
+    <membersContributor implementation="org.jetbrains.plugins.grails.references.domain.detachedCriteria.DetachedCriteriaMemberProvider"/>
+    <membersContributor implementation="org.jetbrains.plugins.grails.references.controller.HttpRequestMemberContributor"/>
+    <membersContributor implementation="org.jetbrains.plugins.grails.references.controller.HttpResponseMemberContributor"/>
+    <membersContributor implementation="org.jetbrains.plugins.grails.spring.GrailsResourcesGroovyMemberContributor"/>
+    <astTransformationSupport implementation="org.jetbrains.plugins.grails.lang.Grails3TraitInjectorContributor"/>
+
+    <closureMissingMethodContributor implementation="org.jetbrains.plugins.grails.pluginSupport.webflow.WebFlowEventDefinitionMethodContributor"/>
+    <closureMissingMethodContributor implementation="org.jetbrains.plugins.grails.references.GrailsClosureMemberContributor"/>
+    <closureMissingMethodContributor implementation="org.jetbrains.plugins.grails.references.constraints.GrailsConstraintsClosureMemberProvider"/>
+    <closureMissingMethodContributor implementation="org.jetbrains.plugins.grails.references.urlMappings.UrlMappingConstraintClosureMemberProvider"/>
+    <closureMissingMethodContributor implementation="org.jetbrains.plugins.grails.references.constraints.GrailsConstraintsGroupClosureMemberProvider"/>
+
+    <closureMissingMethodContributor implementation="org.jetbrains.plugins.grails.config.BuildConfigClosureMemberContributor"/>
+
+    <methodComparator implementation="org.jetbrains.plugins.grails.references.controller.GspTagMethodComparator"/>
+    <overloadResolver implementation="org.jetbrains.plugins.grails.references.controller.GspTagMethodOverloadResolver"/>
+
+    <typeCalculator forClass="org.jetbrains.plugins.groovy.lang.psi.api.statements.expressions.GrMethodCall"
+                    implementationClass="org.jetbrains.plugins.grails.references.domain.criteria.CriteriaReturnTypeCalculator"/>
+
+    <groovySourceFolderDetector implementation="org.jetbrains.plugins.grails.actions.GrailsGroovySourceFolderDetector"/>
+
+    <referenceTypeEnhancer implementation="org.jetbrains.plugins.grails.pluginSupport.spock.GrailsSpockEnhancer"/>
+    <referenceTypeEnhancer implementation="org.jetbrains.plugins.grails.tests.GrailsTestVariableEnhancer"/>
+    <referenceTypeEnhancer implementation="org.jetbrains.plugins.grails.util.PredefinedTypeReferenceEnhancer"/>
+    <variableEnhancer implementation="org.jetbrains.plugins.grails.references.pluginClass.GrailsPluginParameterEnhancer"/>
+    <variableEnhancer implementation="org.jetbrains.plugins.grails.spring.InjectedSpringBeanProvider"/>
+    <variableEnhancer implementation="org.jetbrains.plugins.grails.references.taglib.TaglibClosureParamEnhancer"/>
+    <variableEnhancer implementation="org.jetbrains.plugins.grails.references.constraints.GrailsValidatorParamTypeEnhancer"/>
+
+    <scriptTypeDetector implementation="org.jetbrains.plugins.grails.GantFileDetector"/>
+
+    <mapContentProvider implementation="org.jetbrains.plugins.grails.GrailsFlashMapContentProvider"/>
+
+    <namedArgumentProvider implementation="org.jetbrains.plugins.grails.references.domain.criteria.CriteriaBuilderNamedArgumentProvider"/>
+    <namedArgumentProvider implementation="org.jetbrains.plugins.grails.references.urlMappings.UrlMappingNamedArgumentProvider"/>
+
+    <astTransformationSupport implementation="org.jetbrains.plugins.grails.references.domain.GormAstTransformationContributor"
+                              order="before defaultSupport"/>
+
+    <unresolvedHighlightFileFilter implementation="org.jetbrains.plugins.grails.config.GrailsConfigUnresolvedFileFilter"/>
+    <unresolvedHighlightFilter implementation="org.jetbrains.plugins.grails.references.urlMappings.UrlMappingUnresolvedHighlightingFilter"/>
+
+    <configSlurperSupport implementation="org.jetbrains.plugins.grails.config.BuildConfigSupport"/>
+    <configSlurperSupport implementation="org.jetbrains.plugins.grails.config.ConfigSupport"/>
+    <configSlurperSupport implementation="org.jetbrains.plugins.grails.config.DataSourcesSupport"/>
+
+    <methodMayBeStaticInspectionFilter implementation="org.jetbrains.plugins.grails.inspections.GrailsMethodMayBeStaticFilter" />
+    <astTransformationSupport implementation="org.jetbrains.plugins.grails.lang.DirtyCheckableContributor"/>
+    <astTransformationSupport implementation="org.jetbrains.plugins.grails.lang.GormTraitContributor"/>
+    <gdslScriptProvider implementation="org.jetbrains.plugins.groovy.dsl.GrailsScriptProvider"/>
+
+    <!--grails.rest.Linkable-->
+    <astTransformationSupport implementation="org.jetbrains.plugins.grails.feature.linkable.LinkableTransformationSupport"/>
+    <namedArgumentProvider implementation="org.jetbrains.plugins.grails.feature.linkable.LinkableNamedArgumentsProvider"/>
+
+    <delegatesToProvider
+        implementation="org.jetbrains.plugins.grails.references.domain.detachedCriteria.DetachedCriteriaDelegatesToProvider"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <registryKey key="grails.advanced.mode" defaultValue="false"/>
+    <registryKey key="grails.simple.debug" defaultValue="false"
+                 description="Use simple debug strategy: pass --debug-jvm and then poll 5005. This switch works only for Grails &gt;= 3.1.5."/>
+    <registryKey key="grails.add.plain.output" defaultValue="true"
+                 description="Add --plain-output to Grails commands even it was not specified explicitly. This switch works only for Grails &gt;= 3.0"/>
+    <registryKey key="grails.create.run.configurations" defaultValue="true"
+                 description="Create run configurations on startup"/>
+    <registryKey key="grails.cli.project.wizard" defaultValue="false"
+                 description="Show new project Grails wizard"/>
+
+    <internalFileTemplate name="Groovy Server Page"/>
+    <externalProjectDataService implementation="org.jetbrains.plugins.grails.gradle.GrailsModuleGradleDataService"/>
+
+    <fileBasedIndex implementation="org.jetbrains.plugins.grails.lang.gsp.gspIndex.GspIncludeIndex" />
+
+    <referencesSearch implementation="org.jetbrains.plugins.grails.lang.gsp.search.JspPageReferenceSearcher"/> <!--j2ee plugin-->
+
+    <consoleFilterProvider implementation="org.jetbrains.plugins.grails.GrailsConsoleFilterProvider"/>
+
+    <library.presentationProvider implementation="org.jetbrains.plugins.grails.config.GrailsLibraryPresentationProvider"/>
+
+    <!--suppress PluginXmlValidity -->
+    <moduleBuilder builderClass="org.jetbrains.plugins.grails.config.GrailsModuleBuilder" order="before griffonModuleBuilder"/>
+    <moduleBuilder builderClass="org.jetbrains.plugins.grails.feature.forge.GrailsForgeModuleBuilder"/>
+    <projectStructureDetector implementation="org.jetbrains.plugins.grails.config.GrailsProjectStructureDetector" order="before groovyDetector"/>
+
+    <programRunner implementation="org.jetbrains.plugins.grails.runner.GrailsAppEngineDebuggerRunner"/>
+    <programRunner implementation="org.jetbrains.plugins.grails.runner.GrailsDebuggerRunner" id="grailsDebuggerRunner"/>
+
+    <editorNotificationProvider implementation="org.jetbrains.plugins.groovy.grails.annotator.GrailsForkSettingsNotificator"/>
+
+    <fileType name="GSP" language="GSP" extensions="gsp"
+              implementationClass="org.jetbrains.plugins.grails.fileType.GspFileType" fieldName="GSP_FILE_TYPE"/>
+    <fileEditorProvider implementation="org.jetbrains.plugins.grails.perspectives.DomainClassesRelationsEditorProvider"/>
+    <annotator language="Groovy" implementationClass="org.jetbrains.plugins.groovy.grails.annotator.GrailsDomainAnnotator"/>
+    <annotator language="Groovy" implementationClass="org.jetbrains.plugins.groovy.grails.annotator.GrailsSynchronizeStructureAnnotator"/>
+    <annotator language="Groovy" implementationClass="org.jetbrains.plugins.groovy.grails.annotator.GrailsControllerAnnotator"/>
+    <liveTemplateContext contextId="GSP" implementation="org.jetbrains.plugins.grails.GspTemplateContextType"/>
+
+    <lang.inspectionSuppressor language="GSP" implementationClass="org.jetbrains.plugins.grails.inspections.GspSuppressionProvider"/>
+
+    <completion.contributor language="Groovy" implementationClass="org.jetbrains.plugins.grails.GrailsCompletionContributor"/>
+    <completion.contributor language="Groovy" implementationClass="org.jetbrains.plugins.grails.references.controller.ControllerAllowedMethodCompletionProvider" order="before groovyBasic"/>
+    <completion.contributor language="Groovy" implementationClass="org.jetbrains.plugins.grails.config.GrailsPluginNameCompletionContributor"/>
+    <completion.contributor language="GSP" implementationClass="org.jetbrains.plugins.grails.GspCompletionContributor"/>
+    <completion.contributor language="HTML" implementationClass="org.jetbrains.plugins.grails.GspCompletionContributor"/>
+
+    <renamePsiElementProcessor implementation="org.jetbrains.plugins.grails.references.controller.ActionRenameProcessor" order="last"/>
+    <renamePsiElementProcessor implementation="org.jetbrains.plugins.grails.references.controller.ControllerRenameProcessor" order="last"/>
+    <renamePsiElementProcessor implementation="org.jetbrains.plugins.grails.references.GrailsArtifactRenameProcessor" order="last"/>
+    <renamePsiElementProcessor implementation="org.jetbrains.plugins.grails.references.domain.DomainFieldRenameProcessor"
+                               order="first, before groovyFieldRenameProcessor, before jpaAttributeRenameProcessor"/>
+
+    <attachSourcesProvider implementation="org.jetbrains.plugins.grails.GrailsAttachSourcesProvider" />
+
+    <xml.xmlTagRuleProvider implementation="org.jetbrains.plugins.grails.lang.gsp.psi.gsp.impl.gtag.GspTagRuleProvider" />
+    <xml.xmlExtension implementation="org.jetbrains.plugins.grails.lang.gsp.psi.html.impl.GspHtmlXmlExtension"
+                      id="gsp-html" order="after poly-symbols"/>
+
+    <localInspection language="GSP" enabledByDefault="true"
+                     groupPathKey="inspections.groupPath" groupKey="inspections.groupName" key="language.gsp"
+                     shortName="GspInspection" implementationClass="org.jetbrains.plugins.grails.lang.gsp.GspTagInspection"/>
+
+    <syntaxHighlighter key="GSP" implementationClass="org.jetbrains.plugins.grails.lang.gsp.highlighter.GspSyntaxHighlighter"/>
+    <editorHighlighterProvider filetype="GSP"
+                               implementationClass="org.jetbrains.plugins.grails.lang.gsp.highlighter.GspEditorHighlighterProvider"/>
+    <lang.braceMatcher language="GSP" implementationClass="org.jetbrains.plugins.grails.lang.gsp.highlighter.GspPairedBraceMatcher"/>
+    <braceMatcher filetype="GSP" implementationClass="org.jetbrains.plugins.grails.lang.gsp.highlighter.GspFileBraceMatcher"/>
+    <lang.commenter language="GSP" implementationClass="org.jetbrains.plugins.grails.lang.gsp.highlighter.GspCommenter"/>
+    <lang.foldingBuilder language="GSP" implementationClass="org.jetbrains.plugins.grails.lang.gsp.folding.GspFoldingBuilder"/>
+    <lang.formatter language="GSP" implementationClass="org.jetbrains.plugins.grails.lang.gsp.formatter.GspFormattingModelBuilder"/>
+    <lang.parserDefinition language="GSP" implementationClass="org.jetbrains.plugins.grails.lang.gsp.parsing.gsp.GspParserDefinition"/>
+    <lang.fileViewProviderFactory language="GSP" implementationClass="org.jetbrains.plugins.grails.lang.gsp.GspFileviewProviderFactory"/>
+    <codeStyleSettingsProvider implementation="org.jetbrains.plugins.grails.lang.gsp.formatter.settings.GspCodeStyleSettingsProvider"/>
+    <langCodeStyleSettingsProvider implementation="org.jetbrains.plugins.grails.lang.gsp.formatter.settings.GspLanguageCodeStyleSettingsProvider"/>
+
+    <psi.referenceContributor language="Groovy" implementation="org.jetbrains.plugins.grails.GrailsGroovyCodeReferenceContributor"/>
+
+    <psi.referenceContributor language="HTML" implementation="org.jetbrains.plugins.grails.GrailsHtmlReferenceContributor"/>
+    <psi.referenceContributor language="GSP" implementation="org.jetbrains.plugins.grails.GrailsGspReferenceContributor"/>
+
+    <referencesSearch implementation="org.jetbrains.plugins.grails.lang.gsp.search.GspPageReferenceSearcher"/>
+    <referencesSearch implementation="org.jetbrains.plugins.grails.lang.gsp.search.GspControllerReferenceSearcher"/>
+    <referencesSearch implementation="org.jetbrains.plugins.grails.references.common.ArtifactFieldReferenceSearcher"/>
+    <methodReferencesSearch implementation="org.jetbrains.plugins.grails.references.common.ArtifactPropertyGetterReferenceSearcher"/>
+    <referencesSearch implementation="org.jetbrains.plugins.grails.lang.gsp.resolve.taglib.BuiltInTagReferenceSearcher"/>
+
+    <methodReferencesSearch implementation="org.jetbrains.plugins.grails.pluginSupport.resources.GrailsResourceReferenceSearcher"/>
+
+    <debugger.codeFragmentFactory implementation="org.jetbrains.plugins.grails.lang.gsp.debug.GspCodeFragmentFactory"/>
+
+    <problemHighlightFilter implementation="org.jetbrains.plugins.grails.TemplateHighlightErrorFilter"/>
+
+    <lang.findUsagesProvider language="GSP" implementationClass="org.jetbrains.plugins.grails.GspFindUsagesProvider"/>
+
+    <lang.unwrapDescriptor language="GSP" implementationClass="com.intellij.lang.xml.XmlUnwrapDescriptor"/>
+
+    <gotoClassContributor implementation="org.jetbrains.plugins.grails.actions.GrailsGoToClassContributor"/>
+
+    <codeInsight.parameterInfo language="GSP"
+                               implementationClass="org.jetbrains.plugins.groovy.lang.parameterInfo.GroovyParameterInfoHandler"/>
+
+    <enterHandlerDelegate implementation="org.jetbrains.plugins.grails.lang.gsp.editor.actions.GspEnterHandler"/>
+    <typedHandler implementation="org.jetbrains.plugins.grails.lang.gsp.editor.actions.GspTypedHandler" order="last" />
+    <braceMatcher filetype="GSP" implementationClass="com.intellij.xml.impl.XmlBraceMatcher"/>
+
+    <configurationType implementation="org.jetbrains.plugins.grails.runner.GrailsRunConfigurationType"/>
+
+    <runConfigurationProducer implementation="org.jetbrains.plugins.grails.runner.GrailsScriptRunConfigurationProducer"/>
+    <runConfigurationProducer implementation="org.jetbrains.plugins.grails.tests.runner.GrailsTestConfigurationProducer"/>
+
+    <projectService serviceInterface="org.jetbrains.plugins.grails.lang.gsp.psi.GspPsiElementFactory"
+                    serviceImplementation="org.jetbrains.plugins.grails.lang.gsp.psi.GspPsiElementFactoryImpl"/>
+
+    <xml.fileNSInfoProvider implementation="org.jetbrains.plugins.grails.lang.gsp.completion.GspXmlFileNSInfoProvider"/>
+    <xml.elementDescriptorProvider implementation="org.jetbrains.plugins.grails.lang.gsp.psi.gsp.impl.gtag.GspContentTagDescriptorProvider"
+                                   order="first"/>
+
+    <extendWordSelectionHandler implementation="org.jetbrains.plugins.grails.editor.selection.GrailsGroovyInjectionSelectioner"/>
+    <extendWordSelectionHandler implementation="org.jetbrains.plugins.grails.editor.selection.GrailsDependencySelectioner"/>
+
+    <highlightErrorFilter implementation="org.jetbrains.plugins.grails.lang.gsp.GspErrorFilter" />
+
+    <projectService serviceImplementation="org.jetbrains.plugins.grails.config.GrailsSettingsService"/>
+
+    <projectService serviceImplementation="org.jetbrains.plugins.grails.lang.gsp.psi.gsp.impl.gtag.GspTagDescriptorService"/>
+
+    <pom.declarationSearcher implementation="org.jetbrains.plugins.grails.lang.gsp.psi.groovy.impl.ModelVariableDeclarationSearcher"/>
+    <pom.declarationSearcher implementation="org.jetbrains.plugins.grails.lang.gsp.psi.gsp.impl.gtag.GspTagVariableDeclarationSearcher"/>
+    <pom.declarationSearcher implementation="org.jetbrains.plugins.grails.references.domain.namedQuery.GormNamedQueryDeclarationSearcher"/>
+    <pom.declarationSearcher implementation="org.jetbrains.plugins.grails.references.domain.GrailsSyntheticFieldDeclarationSearcher"/>
+    <pom.declarationSearcher implementation="org.jetbrains.plugins.grails.pluginSupport.resources.GrailsResourcesPomDeclarationSearcher"/>
+
+    <pom.declarationSearcher implementation="org.jetbrains.plugins.grails.pluginSupport.webflow.WebFlowPomDeclarationSearcher"/>
+
+    <compileServer.plugin classpath="Grails.jps-plugin.jar;Grails.grails-compiler-patch.jar"/>
+
+    <multiHostInjector implementation="org.jetbrains.plugins.grails.lang.gsp.GspCssInjector"/>
+    <multiHostInjector implementation="org.jetbrains.plugins.grails.references.constraints.GormRegexInjector"/>
+
+    <gotoRelatedProvider implementation="org.jetbrains.plugins.grails.actions.GrailsGotoRelatedProvider"/>
+
+    <indexPatternBuilder implementation="org.jetbrains.plugins.grails.lang.gsp.highlighter.GspIndexPatternBuilder" />
+
+    <junitRecognizer implementation="org.jetbrains.plugins.grails.tests.GrailsJUnitRecognizer" />
+
+    <lang.elementManipulator forClass="org.jetbrains.plugins.grails.lang.gsp.psi.groovy.impl.GspOuterHtmlElementImpl"
+                             implementationClass="org.jetbrains.plugins.grails.lang.gsp.psi.groovy.impl.GspOuterHtmlElementManipulator"/>
+
+    <implicitUsageProvider implementation="org.jetbrains.plugins.grails.GrailsImplicitUsageProvider"/>
+
+    <lang.documentationProvider language="GSP" implementationClass="org.jetbrains.plugins.grails.lang.gsp.GspTagDocumentationProvider"/>
+    <lang.documentationProvider language="Groovy" implementationClass="org.jetbrains.plugins.grails.lang.gsp.GspTagDocumentationProvider"/>
+
+    <database.dataSourceDetector implementation="org.jetbrains.plugins.grails.database.GrailsDataSourceDetector"/>
+
+    <intentionAction>
+      <language>Groovy</language>
+      <className>org.jetbrains.plugins.grails.actions.GenerateViewIntention</className>
+      <categoryKey>library.name</categoryKey>
+    </intentionAction>
+
+    <intentionAction>
+      <language>Groovy</language>
+      <className>org.jetbrains.plugins.grails.actions.MakeNullableIntention</className>
+      <categoryKey>library.name</categoryKey>
+    </intentionAction>
+
+    <intentionAction>
+      <language>Groovy</language>
+      <className>org.jetbrains.plugins.grails.actions.MakeUniqueIntention</className>
+      <categoryKey>library.name</categoryKey>
+    </intentionAction>
+
+    <intentionAction>
+      <language>Groovy</language>
+      <className>org.jetbrains.plugins.grails.actions.GrailsCreateActionByUsageIntention</className>
+      <categoryKey>library.name</categoryKey>
+    </intentionAction>
+
+    <!-- Spring Support -->
+    <renamePsiElementProcessor implementation="org.jetbrains.plugins.grails.spring.GrLightVariableRenameProcessor" id="GrLightVariableRenameProcessor"/>
+    <spring.customModuleComponentsDiscoverer implementation="org.jetbrains.plugins.grails.spring.GrailsSpringBeanDiscoverer"/>
+
+    <codeInsight.lineMarkerProvider language="Groovy" implementationClass="org.jetbrains.plugins.grails.spring.SpringInjectionAnnotator"/>
+
+    <completion.contributor language="Groovy" implementationClass="org.jetbrains.plugins.grails.spring.GrailsInjectedBeanCompletionContributor" order="before groovyBasic"/>
+    <aliasingPsiTargetMapper implementation="org.jetbrains.plugins.grails.spring.SpringGrailsTargetMapper"/>
+    <aliasingPsiTargetMapper implementation="org.jetbrains.plugins.grails.spring.GrailsSpringStereotypeAliasingPsiTargetMapper"/>
+    <referencesSearch implementation="org.jetbrains.plugins.grails.spring.SpringBeanReferenceSearcher"/>
+
+    <debugger.positionManagerFactory implementation="org.jetbrains.plugins.grails.lang.gsp.debug.GspPositionManagerFactory"/>
+
+    <defaultLiveTemplates file="liveTemplates/gsp.xml"/>
+    <iconProvider implementation="org.jetbrains.plugins.grails.projectView.GrailsIconProvider"/>
+    <postStartupActivity implementation="org.jetbrains.plugins.grails.structure.sync.GrailsStartupActivity"/>
+    <postStartupActivity implementation="org.jetbrains.plugins.grails.structure.GrailsApplicationManagerRefresher"/>
+    <backgroundPostStartupActivity implementation="org.jetbrains.plugins.grails.structure.sync.GrailsMvcStructureRefresher"/>
+    <editorNotificationProvider implementation="org.jetbrains.plugins.grails.editor.GrailsEditorDecorator"/>
+    <projectViewPane implementation="org.jetbrains.plugins.grails.projectView.GrailsProjectViewPane"/>
+    <treeStructureProvider implementation="org.jetbrains.plugins.grails.projectView.GrailsTreeStructureProvider"/>
+    <multiHostInjector implementation="org.jetbrains.plugins.grails.pluginSupport.assetPipeline.AssetScriptInjector"/>
+    <psi.referenceContributor language="GSP"
+                              implementation="org.jetbrains.plugins.grails.pluginSupport.assetPipeline.AssetReferenceContributor"/>
+    <semContributor implementation="org.jetbrains.plugins.grails.spring.GrailsSpringSemContributor"/>
+
+    <ignoredFileProvider implementation="org.jetbrains.plugins.grails.config.GrailsIgnoredProvider"/>
+    <notificationGroup id="Grails notifications" displayType="TOOL_WINDOW" toolWindowId="Grails Console" bundle="messages.GrailsBundle" key="notification.group.grails.notifications"/>
+    <notificationGroup id="grails" displayType="BALLOON" bundle="messages.GrailsBundle" key="notification.group.grails"/>
+    <notificationGroup id="Grails Configure" displayType="BALLOON" key="notification.group.display.name.grails.configure"/>
+    <postStartupActivity implementation="org.jetbrains.plugins.groovy.mvc.MvcModuleStructureSynchronizer$MyPostStartUpActivity"/>
+    <roots.watchedRootsProvider implementation="org.jetbrains.plugins.groovy.mvc.MvcWatchedRootProvider"/>
+    <pathMacroContributor implementation="org.jetbrains.plugins.groovy.mvc.MvcPathMacros"/>
+
+    <dependencySupport coordinate="org.grails:grails-core" kind="java" displayName="Grails Framework"/>
+    <dependencySupport coordinate="org.grails:grails-datastore-gorm" kind="java" displayName="GORM"/>
+  </extensions>
+
+  <actions>
+    <action id="grails.ViewGrailsEditorToolbarAction" class="org.jetbrains.plugins.grails.editor.ViewGrailsEditorToolbarAction">
+      <add-to-group group-id="UIToggleActions" anchor="after" relative-to-action="ViewToolButtons"/>
+    </action>
+
+    <group id="grails.toolbar">
+      <group
+        id="grails.goto.domain"
+        class="org.jetbrains.plugins.grails.editor.toolbar.GoToDomainAction"
+        icon="AllIcons.Nodes.DataTables"/>
+      <group
+        id="grails.goto.controller"
+        class="org.jetbrains.plugins.grails.editor.toolbar.GoToControllerAction"
+        icon="AllIcons.Nodes.Controller"/>
+      <group
+        id="grails.goto.service"
+        class="org.jetbrains.plugins.grails.editor.toolbar.GoToServiceAction"
+        icon="AllIcons.FileTypes.Config"/>
+      <group
+        id="grails.goto.view"
+        class="org.jetbrains.plugins.grails.editor.toolbar.GoToViewAction"
+        icon="org.jetbrains.plugins.grails.GroovyMvcIcons.Gsp_logo"/>
+      <group
+        id="grails.goto.test"
+        class="org.jetbrains.plugins.grails.editor.toolbar.GoToTestAction"
+        icon="org.jetbrains.plugins.grails.GroovyMvcIcons.Grails_test"/>
+    </group>
+
+    <group id="Grails" class="org.jetbrains.plugins.grails.actions.GrailsActionGroup"
+           icon="org.jetbrains.plugins.grails.GroovyMvcIcons.Grails">
+      <action
+        id="Grails.DomainClass"
+        class="org.jetbrains.plugins.grails.actions.NewGrailsDomainClassAction"
+        icon="AllIcons.Nodes.DataTables"/>
+      <action
+        id="Grails.Controller"
+        class="org.jetbrains.plugins.grails.actions.NewGrailsControllerAction"
+        icon="AllIcons.Nodes.Controller"/>
+      <action
+        id="Grails.Service"
+        class="org.jetbrains.plugins.grails.actions.NewGrailsServiceAction"
+        icon="AllIcons.FileTypes.Config"/>
+      <action
+        id="Grails.Interceptor"
+        class="org.jetbrains.plugins.grails.actions.NewGrailsInterceptorAction"
+        icon="AllIcons.General.Filter"/>
+      <action
+        id="Grails.Filter"
+        class="org.jetbrains.plugins.grails.actions.NewGrailsFilterAction"
+        icon="AllIcons.General.Filter"/>
+      <action
+        id="Grails.Script"
+        class="org.jetbrains.plugins.grails.actions.NewGrailsScriptAction"
+        icon="org.jetbrains.plugins.grails.GroovyMvcIcons.Grails"/>
+      <action
+        id="Grails.TagLib"
+        class="org.jetbrains.plugins.grails.actions.NewGrailsTagLibAction"
+        icon="org.jetbrains.plugins.grails.GroovyMvcIcons.Taglib"/>
+      <action id="Grails.GSP" class="org.jetbrains.plugins.grails.actions.NewGspAction"
+              icon="org.jetbrains.plugins.grails.GroovyMvcIcons.Gsp_logo"/>
+      <separator/>
+      <add-to-group group-id="NewGroup" anchor="first"/>
+    </group>
+
+    <!-- old id kept to avoid breaking user keymaps -->
+    <action id="Mvc.RunTarget" class="org.jetbrains.plugins.grails.actions.GrailsRunCommandAction">
+      <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt G"/>
+      <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="AddFrameworkSupport"/>
+      <add-to-group group-id="NavbarPopupMenu" anchor="after" relative-to-action="AddFrameworkSupport"/>
+      <add-to-group group-id="ToolsMenu" anchor="last"/>
+    </action>
+
+    <group id="Grails.Actions" class="org.jetbrains.plugins.grails.actions.GrailsActionGroup"
+           icon="org.jetbrains.plugins.grails.GroovyMvcIcons.Grails" popup="true">
+      <action id="Grails.Plugins"
+              class="org.jetbrains.plugins.groovy.mvc.plugins.MvcPluginsAction"
+              icon="org.jetbrains.plugins.grails.GroovyMvcIcons.Groovy_mvc_plugin"/>
+      <action id="Grails.ChangeSDK" class="org.jetbrains.plugins.grails.actions.GrailsConfigureSDKAction"
+              icon="org.jetbrains.plugins.grails.GroovyMvcIcons.Grails"/>
+      <action id="Grails.UpdateSettings" class="org.jetbrains.plugins.grails.actions.UpdateGrailsSettingsAction"
+              icon="AllIcons.Actions.Refresh"/>
+      <reference ref="Mvc.RunTarget"/>
+      <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="AddFrameworkSupport"/>
+      <add-to-group group-id="NavbarPopupMenu" anchor="after" relative-to-action="AddFrameworkSupport"/>
+      <add-to-group group-id="ToolsMenu" anchor="last"/>
+    </group>
+
+    <action id="Generate.GrailsView"
+            class="org.jetbrains.plugins.grails.actions.GrailsGenerateViewAction">
+      <add-to-group group-id="GenerateGroup"/>
+    </action>
+
+    <action id="Grails.WAR" class="org.jetbrains.plugins.grails.actions.GrailsWarAction">
+      <add-to-group group-id="BuildMenu" anchor="last"/>
+    </action>
+  </actions>
+
+  <xi:include href="grails-method-descriptors.xml"/>
+
+  <!-- GSON -->
+  <extensions defaultExtensionNs="com.intellij">
+    <fileType name="Groovy" extensions="gson"/>
+    <psi.referenceContributor language="Groovy" implementation="org.jetbrains.plugins.grails.gson.GsonReferenceContributor"/>
+    <readWriteAccessDetector id="gson" order="before defaultGroovy"
+                             implementation="org.jetbrains.plugins.grails.gson.GsonRWAccessDetector"/>
+    <referencesSearch implementation="org.jetbrains.plugins.grails.gson.GsonTemplateReferenceQueryExecutor"/>
+  </extensions>
+  <extensions defaultExtensionNs="org.intellij.groovy">
+    <expectedPackageNameProvider implementation="org.jetbrains.plugins.grails.gson.GsonExpectedPackageProvider"/>
+    <importContributor implementation="org.jetbrains.plugins.grails.gson.GsonImportContributor"/>
+    <astTransformationSupport implementation="org.jetbrains.plugins.grails.gson.GsonTransformationSupport" order="before defaultSupport"/>
+    <membersContributor implementation="org.jetbrains.plugins.grails.gson.GrailsStreamingJsonBuilderContributor"/>
+    <membersContributor implementation="org.jetbrains.plugins.grails.gson.GsonTemplateRendererContributor"/>
+    <namedArgumentProvider implementation="org.jetbrains.plugins.grails.gson.GsonModelArgumentsProvider"/>
+    <namedArgumentProvider implementation="org.jetbrains.plugins.grails.gson.GsonRenderNamedArgumentsProvider"/>
+    <positionManagerDelegate implementation="org.jetbrains.plugins.grails.gson.GsonPositionManagerDelegate"/>
+  </extensions>
+</idea-plugin>

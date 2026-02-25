@@ -1,0 +1,14 @@
+<html>
+  ${get<caret>}
+</html>
+-----
+get1_gsp
+getBinding
+getClass
+getGroovyPageFileName
+getHtmlParts
+getMetaClass
+getOut
+getOutputStack
+getPluginContextPath
+getProperty

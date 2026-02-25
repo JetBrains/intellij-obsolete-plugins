@@ -1,0 +1,18 @@
+<!-- Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.-->
+<idea-plugin>
+
+  <dependencies>
+    <plugin id="org.jetbrains.idea.maven"/>
+  </dependencies>
+
+  <extensions defaultExtensionNs="org">
+    <intellij.grails.commandExecutor implementation="com.intellij.groovy.grails.maven.MavenCommandExecutor" order="FIRST"/>
+    <jetbrains.idea.maven.importer implementation="com.intellij.groovy.grails.maven.GrailsMavenImporter" order="after web"/>
+    <intellij.grails.applicationProvider implementation="com.intellij.groovy.grails.maven.GrailsMavenApplicationProvider" order="first"/>
+    <intellij.grails.viewNodeProvider implementation="com.intellij.groovy.grails.maven.MavenNodeProvider"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <programRunner implementation="com.intellij.groovy.grails.maven.GrailsMavenDebuggerRunner" order="before grailsDebuggerRunner"/>
+  </extensions>
+</idea-plugin>

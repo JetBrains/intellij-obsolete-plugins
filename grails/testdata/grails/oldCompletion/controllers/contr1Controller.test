@@ -1,0 +1,20 @@
+class MyController {
+  def foo = {
+    re<caret>
+  }
+}
+-----
+redirect
+remoteField
+remoteFunction
+remoteLink
+render
+render
+render
+render
+render
+renderErrors
+request
+resource
+response
+return

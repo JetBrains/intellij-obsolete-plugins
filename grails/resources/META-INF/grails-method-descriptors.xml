@@ -1,0 +1,237 @@
+<idea-plugin>
+  <extensions defaultExtensionNs="org.intellij.groovy">
+    <methodDescriptor lightMethodKey="ControllerMembersProvider_controller_method" name="render">
+      <namedArgument name="view" referenceProvider="org.jetbrains.plugins.grails.references.common.GrailsViewFileReferenceSet$Provider"/>
+      <namedArgument name="plugin" referenceProvider="org.jetbrains.plugins.grails.references.common.PluginReference$Provider"/>
+      <namedArgument name="contextPath" referenceProvider="org.jetbrains.plugins.grails.references.common.ContextPathReferenceProvider"/>
+      <namedArgument name="template"
+                     referenceProvider="org.jetbrains.plugins.grails.references.controller.ControllerRenderTemplateRefProvider"/>
+      <namedArgument name="encoding" referenceProvider="org.jetbrains.plugins.grails.references.common.GrailsEncodingReferenceProvider"/>
+      <namedArgument name="contentType" referenceProvider="org.jetbrains.plugins.grails.references.common.ContentTypeReferenceProvider"/>
+    </methodDescriptor>
+
+    <methodDescriptor lightMethodKey="Grails:GSP_TAG"
+                      namedArgsProvider="org.jetbrains.plugins.grails.lang.gsp.resolve.taglib.GrailsTaglibNamedArgumentProvider"/>
+
+    <methodDescriptor lightMethodKey="Grails:Constraint:method"
+                      namedArgsProvider="org.jetbrains.plugins.grails.references.constraints.GrailsConstraintNamedArgumentProvider">
+      <namedArgument name="shared"
+                     referenceProvider="org.jetbrains.plugins.grails.references.constraints.GrailsConstraintsSharedReferenceProvider"/>
+    </methodDescriptor>
+
+    <methodDescriptor lightMethodKey="Grails:ConstraintGroup:method"
+                      namedArgsProvider="org.jetbrains.plugins.grails.references.constraints.GrailsConstraintGroupNamedArgumentProvider"/>
+
+    <methodDescriptor lightMethodKey="Gorm:DomainDescriptor:addToMethod"
+                      namedArgsProvider="org.jetbrains.plugins.grails.references.domain.GormAddToNamedArgumentProvider"/>
+
+    <methodDescriptor lightMethodKey="GormMappingMethodProvider.gormMappingMethod">
+      <namedArgument name="sort"
+                     referenceProvider="org.jetbrains.plugins.grails.references.domain.GormMappingMethodProvider$SortAttributeReferenceProvider"/>
+      <namedArgument name="enumType" values="ordinal, string"/>
+    </methodDescriptor>
+
+    <!--suppress PluginXmlValidity -->
+    <classDescriptor class="org.codehaus.groovy.grails.plugins.web.api.ControllersApi">
+      <method name="redirect" namedArgs="url, uri, action, controller, id, fragment, params"/>
+      <method name="chain" namedArgs="uri, action, controller, id, model, params"/>
+      <method name="forward" namedArgs="action, controller, id, params"/>
+      <method name="render" namedArgs="text, builder, view, template, var, bean, model, collection, converter, plugin, status, contextPath">
+        <namedArgument name="layout"
+                       referenceProvider="org.jetbrains.plugins.grails.references.controller.ControllerLayoutReferenceProvider"/>
+      </method>
+    </classDescriptor>
+
+    <!--suppress PluginXmlValidity -->
+    <classDescriptor class="org.codehaus.groovy.grails.orm.hibernate.cfg.HibernateMappingBuilder">
+      <method name="cache" namedArgs="usage, include"/>
+      <method name="discriminator" namedArgs="value, column, type, insert, formula"/>
+      <method name="table" namedArgs="name, schema, catalog"/>
+      <method name="hibernateCustomUserType" namedArgs="type, class"/>
+      <method name="id" namedArgs="composite, compositeClass, generator, name, params, natural"/>
+    </classDescriptor>
+
+    <!--suppress PluginXmlValidity -->
+    <classDescriptor class="org.codehaus.groovy.grails.webflow.engine.builder.FlowInfoCapturer">
+      <method name="redirect" namedArgs="url, uri, action, controller, id, params"/>
+      <method name="subflow" namedArgs="action, controller"/>
+      <method name="render" namedArgs="view"/>
+    </classDescriptor>
+
+    <!--suppress PluginXmlValidity -->
+    <classDescriptor class="org.codehaus.groovy.grails.web.mapping.LinkGenerator">
+      <method name="link" namedArgs="controller, action, uri, url, base, absolute, contextPath, id, fragment, params, mapping, event"/>
+      <method name="resource" namedArgs="base, absolute">
+        <namedArgument name="plugin" referenceProvider="org.jetbrains.plugins.grails.references.common.PluginReference$Provider"/>
+        <namedArgument name="contextPath" referenceProvider="org.jetbrains.plugins.grails.references.common.ContextPathReferenceProvider"/>
+        <namedArgument name="dir" referenceProvider="org.jetbrains.plugins.grails.references.tagSupport.GspResourceDirAttributeSupport"/>
+        <namedArgument name="file" referenceProvider="org.jetbrains.plugins.grails.references.tagSupport.GspResourceFileAttributeSupport"/>
+      </method>
+    </classDescriptor>
+
+    <!--suppress PluginXmlValidity -->
+    <classDescriptor class="grails.gsp.PageRenderer">
+      <method name="render" namedArgs="model">
+        <namedArgument name="view" referenceProvider="org.jetbrains.plugins.grails.references.common.GrailsViewFileReferenceSet$Provider"/>
+        <namedArgument name="template"
+                       referenceProvider="org.jetbrains.plugins.grails.references.other.GrailsTemplateNamedArgumentReferenceProvider"/>
+      </method>
+      <method name="renderTo" namedArgs="model">
+        <namedArgument name="view" referenceProvider="org.jetbrains.plugins.grails.references.common.GrailsViewFileReferenceSet$Provider"/>
+        <namedArgument name="template"
+                       referenceProvider="org.jetbrains.plugins.grails.references.other.GrailsTemplateNamedArgumentReferenceProvider"/>
+      </method>
+    </classDescriptor>
+
+    <!--suppress PluginXmlValidity -->
+    <methodDescriptor class="org.codehaus.groovy.grails.plugins.web.api.ControllersMimeTypesApi"
+                      name="withFormat"
+                      returnType="java.util.Map"/>
+
+    <!--suppress PluginXmlValidity -->
+    <methodDescriptor class="org.grails.plugins.web.rest.api.ControllersRestApi"
+                      name="respond" namedArgs="status, model, formats">
+      <namedArgument name="view" referenceProvider="org.jetbrains.plugins.grails.references.common.GrailsViewFileReferenceSet$Provider"/>
+    </methodDescriptor>
+
+    <!--suppress PluginXmlValidity -->
+    <classDescriptor class="org.grails.datastore.gorm.GormInstanceApi">
+      <method name="flush" namedArgs="flush"/>
+      <method name="mutex" returnTypeCalculator="org.jetbrains.plugins.groovy.util.GroovyStdTypeCalculators$ClosureTypeExtractor"/>
+    </classDescriptor>
+
+    <methodDescriptor lightMethodKey="Gorm:DomainDescriptor:DynamicMethod"
+                      name="getPersistentValue"
+                      returnTypeCalculator="org.jetbrains.plugins.grails.references.domain.GormGetPersistentValueReturnTypeCalculator"/>
+
+    <!--suppress PluginXmlValidity -->
+    <methodDescriptor class="org.codehaus.groovy.grails.orm.hibernate.HibernateGormInstanceApi" name="getDirtyPropertyNames"
+                      returnType="java.util.List&lt;String&gt;"/>
+
+    <methodDescriptor lightMethodKey="Gorm:DomainDescriptor:DynamicMethod"
+                      name="list"
+                      namedArgs="max, offset, order, sort, ignoreCase, fetch"/>
+
+    <!--suppress PluginXmlValidity -->
+    <classDescriptor class="grails.gorm.DetachedCriteria">
+      <!-- See org.grails.datastore.gorm.finders.DynamicFinder#populateArgumentsForCriteria -->
+      <method name="list, get, count"
+              namedArgs="max, offset, order, sort"/>
+
+      <method name="updateAll"
+              namedArgsProvider="org.jetbrains.plugins.grails.references.domain.detachedCriteria.DetachedCriteriaPropertyNamedArgProvider"/>
+    </classDescriptor>
+
+    <methodDescriptor lightMethodKey="Gorm:DomainDescriptor:DynamicMethod"
+                      name="delete"
+                      namedArgs="flush"/>
+
+    <methodDescriptor lightMethodKey="Gorm:DomainDescriptor:DynamicMethod"
+                      name="merge"
+                      namedArgs="validate, failOnError, flush"/>
+
+    <methodDescriptor lightMethodKey="Gorm:DomainDescriptor:DynamicMethod"
+                      name="save"
+                      namedArgs="validate, flush, insert, failOnError"/>
+
+    <methodDescriptor lightMethodKey="Gorm:DomainDescriptor:DynamicMethod"
+                      name="createCriteria"
+                      returnType="grails.orm.HibernateCriteriaBuilder"/>
+
+    <methodDescriptor lightMethodKey="Gorm:DomainDescriptor:DynamicMethod"
+                      name="withSession, withTransaction, withNewTransaction, withNewSession, withDatastoreSession"
+                      returnTypeCalculator="org.jetbrains.plugins.groovy.util.GroovyStdTypeCalculators$ClosureTypeExtractor"/>
+
+    <methodDescriptor lightMethodKey="Gorm:DomainDescriptor:DynamicMethod"
+                      name="findAllWhere, findWhere, findOrCreateWhere, findOrSaveWhere"
+                      namedArgsProvider="org.jetbrains.plugins.grails.references.domain.GormPersistentPropertiesNamedArgProvider"/>
+
+    <methodDescriptor lightMethodKey="grails:plugins:buildTestData"
+                      name="build, buildLazy, buildWithoutSave"
+                      namedArgsProvider="org.jetbrains.plugins.grails.references.domain.GormPersistentPropertiesNamedArgProvider"/>
+
+    <!--suppress PluginXmlValidity -->
+    <classDescriptor class="SearchableService">
+      <method name="suggestQuery" returnType="java.util.String"/>
+      <method name="termFreqs" returnType="org.compass.core.CompassTermFreq[]"/>
+      <method name="countHits" returnType="java.lang.Integer"/>
+      <method name="search, moreLikeThis"
+              returnTypeCalculator="org.jetbrains.plugins.grails.pluginSupport.seachable.GrailsSearchableReturnTypeCalculator"/>
+    </classDescriptor>
+
+    <methodDescriptor lightMethodKey="grails:plugins:searchable:seachmethod"
+                      name="search, moreLikeThis"
+                      returnTypeCalculator="org.jetbrains.plugins.grails.pluginSupport.seachable.GrailsSearchableReturnTypeCalculator"/>
+
+    <methodDescriptor lightMethodKey="Gorm:DomainDescriptor:NamedQueryMethod"
+                      returnTypeCalculator="org.jetbrains.plugins.grails.references.domain.namedQuery.GormNamedQueryCallTypeCalculator"/>
+
+    <!--suppress PluginXmlValidity -->
+    <classDescriptor class="org.codehaus.groovy.grails.orm.hibernate.cfg.NamedCriteriaProxy">
+      <method returnTypeCalculator="org.jetbrains.plugins.grails.references.domain.namedQuery.NamedCriteriaProxyTypeCalculator"/>
+
+      <method name="findWhere, findAllWhere"
+              namedArgsProvider="org.jetbrains.plugins.grails.references.domain.namedQuery.NamedCriteriaProxyNamedArgumentProvider"/>
+    </classDescriptor>
+
+    <!--suppress PluginXmlValidity -->
+    <methodDescriptor class="org.grails.plugin.resource.module.ModuleBuilder" name="resource"
+                      namedArgs="url, exclude, bundle, disposition, attrs, id, linkOverride, wrapper"/>  <!-- See http://grails-plugins.github.com/grails-resources/guide/3.%20Declaring%20resources.html -->
+
+    <!--suppress PluginXmlValidity -->
+    <methodDescriptor class="org.codehaus.groovy.grails.orm.hibernate.cfg.HibernateMappingBuilder" name="sort"
+                      namedArgsProvider="org.jetbrains.plugins.grails.references.domain.GormSortNamedArgumentProvider"/>
+
+    <!--suppress PluginXmlValidity -->
+    <methodDescriptor class="org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil"
+                      name="unwrapIfProxy"
+                      returnTypeCalculator="org.jetbrains.plugins.groovy.util.GroovyStdTypeCalculators$TypeSameAsFirstArgument"/>
+
+    <!--suppress PluginXmlValidity -->
+    <classDescriptor class="org.apache.shiro.grails.AccessControlBuilder">
+      <method name="role, permission">
+        <namedArgument name="action, only"
+                       referenceProvider="org.jetbrains.plugins.grails.pluginSupport.shiro.GrailsShiroReferenceProvider"/>
+      </method>
+    </classDescriptor>
+    <!--suppress PluginXmlValidity -->
+    <classDescriptor class="org.jsecurity.grails.AccessControlBuilder">
+      <method name="role, permission">
+        <namedArgument name="action, only"
+                       referenceProvider="org.jetbrains.plugins.grails.pluginSupport.shiro.GrailsShiroReferenceProvider"/>
+      </method>
+    </classDescriptor>
+
+    <methodDescriptor lightMethodKey="grails:environments">
+      <closureArgument index="0" methodContributor="org.jetbrains.plugins.grails.config.GrailsEnvironmentClosureMemberContributor"/>
+    </methodDescriptor>
+
+    <methodDescriptor name="withFormat" lightMethodKey="ControllerMembersProvider_controller_method">
+      <closureArgument index="0"
+                       methodContributor="org.jetbrains.plugins.grails.references.controller.GrailsWithFormatClosureMethodContributor"/>
+    </methodDescriptor>
+
+    <!--suppress PluginXmlValidity -->
+    <methodDescriptor name="plugins" class="org.codehaus.groovy.grails.resolve.config.DependencyConfigurationConfigurer">
+      <closureArgument index="0" methodContributor="org.jetbrains.plugins.grails.config.GrailsPluginConfigMethodContributor"/>
+    </methodDescriptor>
+
+    <!--suppress PluginXmlValidity -->
+    <methodDescriptor class="grails.artefact.controller.support.ResponseRenderer" name="render"
+                      namedArgs="text, model, var, bean, collection, file, fileName, status, plugin, builder, contextPath">
+      <namedArgument name="view" referenceProvider="org.jetbrains.plugins.grails.references.common.GrailsViewFileReferenceSet$Provider"/>
+      <namedArgument name="template"
+                     referenceProvider="org.jetbrains.plugins.grails.references.controller.ControllerRenderTemplateRefProvider"/>
+      <namedArgument name="layout"
+                     referenceProvider="org.jetbrains.plugins.grails.references.controller.ControllerLayoutReferenceProvider"/>
+      <namedArgument name="contentType" referenceProvider="org.jetbrains.plugins.grails.references.common.ContentTypeReferenceProvider"/>
+      <namedArgument name="encoding" referenceProvider="org.jetbrains.plugins.grails.references.common.GrailsEncodingReferenceProvider"/>
+    </methodDescriptor>
+
+    <!--suppress PluginXmlValidity -->
+    <methodDescriptor class="grails.artefact.controller.RestResponder" name="respond"
+                      namedArgs="status, model, formats">
+      <namedArgument name="view" referenceProvider="org.jetbrains.plugins.grails.references.common.GrailsViewFileReferenceSet$Provider"/>
+    </methodDescriptor>
+  </extensions>
+</idea-plugin>

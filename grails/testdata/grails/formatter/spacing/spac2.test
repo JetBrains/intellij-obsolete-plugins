@@ -1,0 +1,3 @@
+<%@    import file   =   "a.b.c"    %>
+-----
+<%@ import file="a.b.c" %>

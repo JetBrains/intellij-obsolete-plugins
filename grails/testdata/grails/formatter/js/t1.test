@@ -1,0 +1,46 @@
+    ddd = 43;
+        ddd = 4344;
+
+    function getAjaxData(url) {
+        var ret = null;
+        $.ajax(   {
+            async:     false,
+            url:url,
+       dataType:"json",
+            success:function (data) {
+                ret = data;
+            }
+        });
+        return ret;
+    }
+
+    function createLineChartOptions(jsonObj  ) {
+        var optionsObj = {
+            title:'Season statistics',
+            axes:     {
+                xaxis:{
+                    renderer:$.jqplot.CategoryAxisRenderer,
+                    ticks:jsonObj.xAxis
+                }
+            },
+            series:[
+                {label:'Page Hits'},
+                {label:'RSS Hits'}
+            ],
+            seriesDefaults:{
+                markerOptions:{
+                    show:true,
+                    style:'diamond'
+                }
+            },
+            legend:{
+                show:true,
+                location:'nw'
+            },
+            highlighter:{
+                showTooltip:true,tooltipFade:true
+            }
+        };
+
+       return     optionsObj;
+    }

@@ -1,0 +1,96 @@
+<%@ page contentType="text/html;charset=UTF-8" %>
+<html>
+<head><title>Choose action below</title></head>
+<body>
+<g:if test="${flash.message}">
+<div class="message"><h3>${flash.message}</h3></div>
+</g:if>
+
+<g:form controller="fixup">
+<g:if test="${results.size() == 0}">
+<span class="button"><g:actionSubmit value="Update Link" />
+<span class="button"><g:actionSubmit value="Skip" />
+<span class="button"><g:actionSubmit value="Back" />
+<br/> HERE IT IS
+<label for='newID'>No suggestions found, enter a SNAP Subject ID for title or skip <b> ${session.links_title} </b>:</label>
+<input type="text" name='newID' maxlength='128' size='16' name='newID'/>
+</g:if>
+<g:else>
+Suggestions found, click radio button below for your selection<br/>
+If no choice is good, press skip and we'll fix it up later.<br/><br/>
+    <b> ${session.links_title}</b>
+Linksadmin ID: <b>${session.links_id}</b>
+<br/> <br/>
+<span class="button"><g:actionSubmit value="Update Pick" />
+<span class="button"><g:actionSubmit value="Skip" />
+<span class="button"><g:actionSubmit value="Back" />
+
+<br/> <br/>
+<table border>
+<tr><th>SNAP title</th><th>SNAP ID</th></tr>
+<g:each in="${results}"><tr>
+<td><g:radio name='sugg' value='${it.SUBJECTNO}' checked='${session.links_id.equals(it.SUBJECTNO)}'/>
+${it.SUBJECT}</td>
+<td>${it.SUBJECTNO}</td></tr>
+</g:each>
+</table>
+<br><br>
+
+</g:else>
+</g:form>
+<br/><br/>
+<g:if test="${flash.togo}">
+There are ${flash.togo} linksadmin subjects left to reconcile.
+</g:if>
+
+</body>
+</html>
+-----
+<%@ page contentType="text/html;charset=UTF-8" %>
+<html>
+<head><title>Choose action below</title></head>
+
+<body>
+<g:if test="${flash.message}">
+  <div class="message"><h3>${flash.message}</h3></div>
+</g:if>
+
+<g:form controller="fixup">
+  <g:if test="${results.size() == 0}">
+    <span class="button"><g:actionSubmit value="Update Link"/>
+    <span class="button"><g:actionSubmit value="Skip"/>
+    <span class="button"><g:actionSubmit value="Back"/>
+    <br/> HERE IT IS
+    <label for='newID'>No suggestions found, enter a SNAP Subject ID for title or skip <b>${session.links_title}</b>:</label>
+    <input type="text" name='newID' maxlength='128' size='16' name='newID'/>
+  </g:if>
+  <g:else>
+    Suggestions found, click radio button below for your selection<br/>
+    If no choice is good, press skip and we'll fix it up later.<br/><br/>
+    <b>${session.links_title}</b>
+    Linksadmin ID: <b>${session.links_id}</b>
+    <br/> <br/>
+    <span class="button"><g:actionSubmit value="Update Pick"/>
+    <span class="button"><g:actionSubmit value="Skip"/>
+    <span class="button"><g:actionSubmit value="Back"/>
+
+    <br/> <br/>
+    <table border>
+      <tr><th>SNAP title</th><th>SNAP ID</th></tr>
+      <g:each in="${results}"><tr>
+        <td><g:radio name='sugg' value='${it.SUBJECTNO}' checked='${session.links_id.equals(it.SUBJECTNO)}'/>
+          ${it.SUBJECT}</td>
+        <td>${it.SUBJECTNO}</td></tr>
+      </g:each>
+    </table>
+    <br><br>
+
+  </g:else>
+</g:form>
+<br/><br/>
+<g:if test="${flash.togo}">
+  There are ${flash.togo} linksadmin subjects left to reconcile.
+</g:if>
+
+</body>
+</html>

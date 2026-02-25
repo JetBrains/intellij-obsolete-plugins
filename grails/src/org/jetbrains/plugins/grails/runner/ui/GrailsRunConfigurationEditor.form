@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="org.jetbrains.plugins.grails.runner.ui.GrailsRunConfigurationEditor">
+  <grid id="27dc6" binding="myMainPanel" layout-manager="GridLayoutManager" row-count="7" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="0" left="0" bottom="0" right="0"/>
+    <constraints>
+      <xy x="20" y="20" width="549" height="199"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <component id="273eb" class="com.intellij.ui.components.JBLabel" binding="myApplicationLabel">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <labelFor value="906a7"/>
+          <text resource-bundle="messages/GrailsBundle" key="run.form.label.application"/>
+        </properties>
+      </component>
+      <component id="906a7" class="org.jetbrains.plugins.grails.runner.ui.GrailsApplicationCombobox" binding="myApplicationsCombo">
+        <constraints>
+          <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="bb2b7" class="com.intellij.ui.components.JBLabel" binding="myCommandLineLabel">
+        <constraints>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <labelFor value="25c6f"/>
+          <text resource-bundle="messages/GrailsBundle" key="run.form.label.command.line"/>
+        </properties>
+      </component>
+      <component id="25c6f" class="com.intellij.ui.components.JBTextField" binding="myCommandLine">
+        <constraints>
+          <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="c5c05" class="com.intellij.ui.components.JBLabel" binding="myVMParametersLabel">
+        <constraints>
+          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <labelFor value="3b65f"/>
+          <text resource-bundle="messages/GrailsBundle" key="run.form.label.vm.options"/>
+        </properties>
+      </component>
+      <component id="3b65f" class="com.intellij.ui.RawCommandLineEditor" binding="myVMParameters">
+        <constraints>
+          <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="7" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="16626" class="com.intellij.execution.configuration.EnvironmentVariablesComponent" binding="myEnvVariablesComponent">
+        <constraints>
+          <grid row="3" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <labelLocation value="West"/>
+        </properties>
+      </component>
+      <component id="ffbc3" class="com.intellij.ui.components.JBCheckBox" binding="myLaunchBrowser" default-binding="true">
+        <constraints>
+          <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text resource-bundle="messages/GrailsBundle" key="run.form.label.launch.browser"/>
+        </properties>
+      </component>
+      <component id="1708d" class="com.intellij.ui.components.JBTextField" binding="myLaunchBrowserUrl">
+        <constraints>
+          <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="253c2" class="com.intellij.ui.components.JBLabel" binding="myOptionsLabel">
+        <constraints>
+          <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text resource-bundle="messages/GrailsBundle" key="run.form.label.options"/>
+        </properties>
+      </component>
+      <grid id="b41fd" binding="myExtensionPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+        <constraints>
+          <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children/>
+      </grid>
+      <vspacer id="b7bf1">
+        <constraints>
+          <grid row="6" column="0" row-span="1" col-span="2" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+        </constraints>
+      </vspacer>
+    </children>
+  </grid>
+</form>

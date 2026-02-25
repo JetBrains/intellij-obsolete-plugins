@@ -1,0 +1,25 @@
+<her:nya preved = "\${${medved}}"/>
+-----
+Groovy Server Pages file
+  PsiElement(XML_DOCUMENT)
+    PsiElement(XML_PROLOG)
+      <empty list>
+    Gsp root tag
+      Grails tag
+        XmlToken:XML_START_TAG_START('<')
+        XmlToken:XML_TAG_NAME('her:nya')
+        PsiWhiteSpace(' ')
+        GSP attribute
+          XmlToken:XML_NAME('preved')
+          PsiWhiteSpace(' ')
+          XmlToken:XML_EQ('=')
+          PsiWhiteSpace(' ')
+          PsiElement(GSP_ATTRIBUTE_VALUE)
+            XmlToken:XML_ATTRIBUTE_VALUE_START_DELIMITER('"')
+            XmlToken:XML_ATTRIBUTE_VALUE_TOKEN('\${')
+            PsiElement(GEXPR_BEGIN)('${')
+            Outer: GSP_GROOVY_CODE('medved')
+            PsiElement(GEXPR_END)('}')
+            XmlToken:XML_ATTRIBUTE_VALUE_TOKEN('}')
+            XmlToken:XML_ATTRIBUTE_VALUE_END_DELIMITER('"')
+        XmlToken:XML_EMPTY_ELEMENT_END('/>')

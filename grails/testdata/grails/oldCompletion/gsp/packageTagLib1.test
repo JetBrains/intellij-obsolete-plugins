@@ -1,0 +1,6 @@
+<html>
+  ${ppp.<caret>}
+</html>
+-----
+bar
+foo

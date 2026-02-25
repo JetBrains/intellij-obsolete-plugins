@@ -1,0 +1,3 @@
+<span   ><g:link    class  =   "list" action   =  "list"    >User List</g:link></span   >
+-----
+<span><g:link class="list" action="list">User List</g:link></span>

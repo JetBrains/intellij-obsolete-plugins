@@ -1,0 +1,8 @@
+class MeetingController {
+
+    def index() {
+        redirect(action: "foo")
+    }
+
+    <spot>def foo() {}</spot>
+}

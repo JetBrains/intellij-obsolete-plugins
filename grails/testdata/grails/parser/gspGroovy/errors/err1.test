@@ -1,0 +1,65 @@
+<abc>
+<%for(int i=1; i<10; i++) %>
+printsmth
+<%{ println 3%>
+<%}%>
+</abc>
+-----
+GspGroovyDummyHolder
+  GspClass
+    GspRunMethod
+      GspRunBlock
+        Outer: GSP TEMPLATE STATEMENTS('<abc>\n')
+        PsiElement(JSCRIPT_BEGIN)('<%')
+        For statement
+          PsiElement(for)('for')
+          PsiElement(()('(')
+          Traditional FOR clause
+            Variable definitions
+              Modifiers
+                <empty list>
+              Built in type
+                PsiElement(int)('int')
+              PsiWhiteSpace(' ')
+              Variable
+                PsiElement(identifier)('i')
+                PsiElement(=)('=')
+                Literal
+                  PsiElement(Integer)('1')
+            PsiElement(;)(';')
+            PsiWhiteSpace(' ')
+            Relational expression
+              Reference expression
+                PsiElement(identifier)('i')
+              PsiElement(<)('<')
+              Literal
+                PsiElement(Integer)('10')
+            PsiElement(;)(';')
+            PsiWhiteSpace(' ')
+            Expression list
+              Unary expression
+                Reference expression
+                  PsiElement(identifier)('i')
+                PsiElement(++)('++')
+          PsiElement())(')')
+        PsiWhiteSpace(' ')
+        PsiElement(JSCRIPT_END)('%>')
+        Outer: GSP TEMPLATE STATEMENTS('\nprintsmth\n')
+        PsiElement(JSCRIPT_BEGIN)('<%')
+        Block statement
+          Open block
+            PsiElement({)('{')
+            PsiWhiteSpace(' ')
+            Call expression
+              Reference expression
+                PsiElement(identifier)('println')
+              PsiWhiteSpace(' ')
+              Command arguments
+                Literal
+                  PsiElement(Integer)('3')
+            PsiElement(JSCRIPT_END)('%>')
+            Outer: GSP TEMPLATE STATEMENTS('\n')
+            PsiElement(JSCRIPT_BEGIN)('<%')
+            PsiElement(})('}')
+        PsiElement(JSCRIPT_END)('%>')
+        Outer: GSP TEMPLATE STATEMENTS('\n</abc>')

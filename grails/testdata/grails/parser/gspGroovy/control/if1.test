@@ -1,0 +1,53 @@
+<%
+def k = 2
+if (k)  {
+%>
+<%
+println "preved!"  }
+%>
+-----
+GspGroovyDummyHolder
+  GspClass
+    GspRunMethod
+      GspRunBlock
+        PsiElement(JSCRIPT_BEGIN)('<%')
+        PsiElement(new line)('\n')
+        Variable definitions
+          Modifiers
+            PsiElement(def)('def')
+          PsiWhiteSpace(' ')
+          Variable
+            PsiElement(identifier)('k')
+            PsiWhiteSpace(' ')
+            PsiElement(=)('=')
+            PsiWhiteSpace(' ')
+            Literal
+              PsiElement(Integer)('2')
+        PsiElement(new line)('\n')
+        IF statement
+          PsiElement(if)('if')
+          PsiWhiteSpace(' ')
+          PsiElement(()('(')
+          Reference expression
+            PsiElement(identifier)('k')
+          PsiElement())(')')
+          PsiWhiteSpace('  ')
+          Block statement
+            Open block
+              PsiElement({)('{')
+              PsiWhiteSpace('\n')
+              PsiElement(JSCRIPT_END)('%>')
+              Outer: GSP TEMPLATE STATEMENTS('\n')
+              PsiElement(JSCRIPT_BEGIN)('<%')
+              PsiElement(new line)('\n')
+              Call expression
+                Reference expression
+                  PsiElement(identifier)('println')
+                PsiWhiteSpace(' ')
+                Command arguments
+                  Literal
+                    PsiElement(double quoted string)('"preved!"')
+              PsiWhiteSpace('  ')
+              PsiElement(})('}')
+        PsiElement(new line)('\n')
+        PsiElement(JSCRIPT_END)('%>')

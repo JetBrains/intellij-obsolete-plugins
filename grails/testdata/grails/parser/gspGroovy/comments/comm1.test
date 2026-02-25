@@ -1,0 +1,43 @@
+<abc>
+<% 1
+%{-- %><% --}%
+2 %>
+</abc>
+-----
+GspGroovyDummyHolder
+  GspClass
+    GspRunMethod
+      GspRunBlock
+        Outer: GSP TEMPLATE STATEMENTS('<abc>\n')
+        PsiElement(JSCRIPT_BEGIN)('<%')
+        PsiWhiteSpace(' ')
+        Multiplicative expression
+          Multiplicative expression
+            Literal
+              PsiElement(Integer)('1')
+            PsiElement(new line)('\n')
+            PsiElement(%)('%')
+            Closable block
+              PsiElement({)('{')
+              Parameter list
+                <empty list>
+              Unary expression
+                PsiElement(--)('--')
+                PsiErrorElement:<expression> expected, got '%>'
+                  <empty list>
+              PsiWhiteSpace(' ')
+              PsiElement(JSCRIPT_END)('%>')
+              PsiElement(JSCRIPT_BEGIN)('<%')
+              PsiWhiteSpace(' ')
+              Unary expression
+                PsiElement(--)('--')
+                PsiErrorElement:<expression> expected, got '}'
+                  <empty list>
+              PsiElement(})('}')
+          PsiElement(%)('%')
+          PsiElement(new line)('\n')
+          Literal
+            PsiElement(Integer)('2')
+        PsiWhiteSpace(' ')
+        PsiElement(JSCRIPT_END)('%>')
+        Outer: GSP TEMPLATE STATEMENTS('\n</abc>')

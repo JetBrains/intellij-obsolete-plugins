@@ -1,0 +1,23 @@
+!{int a;
+IntellijIdeaRulezzz}!
+-----
+GspGroovyDummyHolder
+  GspClass
+    GspRunMethod
+      GspRunBlock
+        PsiElement(GDECLAR_BEGIN)('!{')
+        Groovy class level declaration element
+          Variable definitions
+            Modifiers
+              <empty list>
+            Built in type
+              PsiElement(int)('int')
+            PsiWhiteSpace(' ')
+            Field
+              PsiElement(identifier)('a')
+          PsiElement(;)(';')
+          PsiElement(new line)('\n')
+          PsiElement(identifier)('IntellijIdeaRulezzz')
+          PsiErrorElement:'(' expected
+            <empty list>
+        PsiElement(GDECLAR_END)('}!')

@@ -1,0 +1,45 @@
+<g:ttt/>
+<g:/ttt//>
+<g:/ttt/>
+<g:tt/ttt//>
+<g:tt/ttt/>
+<g:tt/ttt> </g:tt/ttt>
+-----
+Groovy Server Pages file
+  PsiElement(XML_DOCUMENT)
+    PsiElement(XML_PROLOG)
+      <empty list>
+    Gsp root tag
+      Grails tag
+        XmlToken:XML_START_TAG_START('<')
+        XmlToken:XML_TAG_NAME('g:ttt')
+        XmlToken:XML_EMPTY_ELEMENT_END('/>')
+      Outer: GSP TEMPLATE STATEMENTS('\n')
+      Grails tag
+        XmlToken:XML_START_TAG_START('<')
+        XmlToken:XML_TAG_NAME('g:/ttt/')
+        XmlToken:XML_EMPTY_ELEMENT_END('/>')
+      Outer: GSP TEMPLATE STATEMENTS('\n')
+      Grails tag
+        XmlToken:XML_START_TAG_START('<')
+        XmlToken:XML_TAG_NAME('g:/ttt')
+        XmlToken:XML_EMPTY_ELEMENT_END('/>')
+      Outer: GSP TEMPLATE STATEMENTS('\n')
+      Grails tag
+        XmlToken:XML_START_TAG_START('<')
+        XmlToken:XML_TAG_NAME('g:tt/ttt/')
+        XmlToken:XML_EMPTY_ELEMENT_END('/>')
+      Outer: GSP TEMPLATE STATEMENTS('\n')
+      Grails tag
+        XmlToken:XML_START_TAG_START('<')
+        XmlToken:XML_TAG_NAME('g:tt/ttt')
+        XmlToken:XML_EMPTY_ELEMENT_END('/>')
+      Outer: GSP TEMPLATE STATEMENTS('\n')
+      Grails tag
+        XmlToken:XML_START_TAG_START('<')
+        XmlToken:XML_TAG_NAME('g:tt/ttt')
+        XmlToken:XML_TAG_END('>')
+        Outer: GSP TEMPLATE STATEMENTS(' ')
+        XmlToken:XML_END_TAG_START('</')
+        XmlToken:XML_TAG_NAME('g:tt/ttt')
+        XmlToken:XML_TAG_END('>')

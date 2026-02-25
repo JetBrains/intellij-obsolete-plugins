@@ -1,0 +1,49 @@
+<br/>
+<a onclick="action = '${3}';"><span></span></a>
+-----
+GspHtmlFileImpl
+  PsiElement(HTML_DOCUMENT)
+    PsiElement(XML_PROLOG)
+      <empty list>
+    HtmlTag:br
+      XmlToken:XML_START_TAG_START('<')
+      XmlToken:XML_NAME('br')
+      XmlToken:XML_EMPTY_ELEMENT_END('/>')
+    PsiWhiteSpace('\n')
+    HtmlTag:a
+      XmlToken:XML_START_TAG_START('<')
+      XmlToken:XML_NAME('a')
+      PsiWhiteSpace(' ')
+      PsiElement(XML_ATTRIBUTE)
+        XmlToken:XML_NAME('onclick')
+        XmlToken:XML_EQ('=')
+        PsiElement(XML_ATTRIBUTE_VALUE)
+          XmlToken:XML_ATTRIBUTE_VALUE_START_DELIMITER('"')
+          JSEmbeddedContent
+            JSExpressionStatement
+              JSAssignmentExpression
+                JSDefinitionExpression
+                  JSReferenceExpression
+                    PsiElement(JS:IDENTIFIER)('action')
+                PsiWhiteSpace(' ')
+                PsiElement(JS:EQ)('=')
+                PsiWhiteSpace(' ')
+                JSLiteralExpression
+                  PsiElement(JS:STRING_LITERAL)(''')
+                  Outer: GSP FRAGMENT('${')
+                  Outer: GSP FRAGMENT('3')
+                  Outer: GSP FRAGMENT('}')
+                  PsiElement(JS:STRING_LITERAL)(''')
+              PsiElement(JS:SEMICOLON)(';')
+          XmlToken:XML_ATTRIBUTE_VALUE_END_DELIMITER('"')
+      XmlToken:XML_TAG_END('>')
+      HtmlTag:span
+        XmlToken:XML_START_TAG_START('<')
+        XmlToken:XML_NAME('span')
+        XmlToken:XML_TAG_END('>')
+        XmlToken:XML_END_TAG_START('</')
+        XmlToken:XML_NAME('span')
+        XmlToken:XML_TAG_END('>')
+      XmlToken:XML_END_TAG_START('</')
+      XmlToken:XML_NAME('a')
+      XmlToken:XML_TAG_END('>')

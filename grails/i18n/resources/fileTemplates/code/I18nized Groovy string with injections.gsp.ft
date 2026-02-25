@@ -1,0 +1,1 @@
+message(code:"${PROPERTY_KEY}", args:[${ARGS_KEY}])

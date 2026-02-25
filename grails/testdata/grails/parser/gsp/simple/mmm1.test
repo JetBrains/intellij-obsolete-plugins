@@ -1,0 +1,28 @@
+<!-<td>->
+<!-<g:form>->
+<!-<div>->
+<!-<input type="text" name="filename" style="width: 250px;"/>->
+<!-<div class="button">->
+  <input/>->
+<!-</div>->
+  <span>*** wenn nicht vergeben, dann wird der urpruengliche Dateiname genommen.</span>->
+<!-</div>->
+<!-</g:form>->
+<!-</td>->
+<!-</tr>->
+-----
+Groovy Server Pages file
+  PsiElement(XML_DOCUMENT)
+    PsiElement(XML_PROLOG)
+      <empty list>
+    Gsp root tag
+      Outer: GSP TEMPLATE STATEMENTS('<!-<td>->\n<!-')
+      Grails tag
+        XmlToken:XML_START_TAG_START('<')
+        XmlToken:XML_TAG_NAME('g:form')
+        XmlToken:XML_TAG_END('>')
+        Outer: GSP TEMPLATE STATEMENTS('->\n<!-<div>->\n<!-<input type="text" name="filename" style="width: 250px;"/>->\n<!-<div class="button">->\n  <input/>->\n<!-</div>->\n  <span>*** wenn nicht vergeben, dann wird der urpruengliche Dateiname genommen.</span>->\n<!-</div>->\n<!-')
+        XmlToken:XML_END_TAG_START('</')
+        XmlToken:XML_TAG_NAME('g:form')
+        XmlToken:XML_TAG_END('>')
+      Outer: GSP TEMPLATE STATEMENTS('->\n<!-</td>->\n<!-</tr>->')

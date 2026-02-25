@@ -1,0 +1,5 @@
+new Product().sav<caret>
+-----
+save
+save
+save

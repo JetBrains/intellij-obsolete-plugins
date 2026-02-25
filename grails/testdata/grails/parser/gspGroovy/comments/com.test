@@ -1,0 +1,9 @@
+<abc>
+%{-- abc --}%
+</abc>
+-----
+GspGroovyDummyHolder
+  GspClass
+    GspRunMethod
+      GspRunBlock
+        Outer: GSP TEMPLATE STATEMENTS('<abc>\n%{-- abc --}%\n</abc>')

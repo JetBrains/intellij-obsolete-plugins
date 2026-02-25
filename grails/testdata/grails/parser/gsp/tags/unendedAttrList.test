@@ -1,0 +1,139 @@
+<g:link>
+  <g:actionSubmit value=""  <g:applyLayout bean=""/>
+</g:link>
+<g:link>
+  <g:actionSubmit <g:applyLayout bean=""/>
+</g:link>
+<g:link>
+  <g:actionSubmit aaa <g:applyLayout bean=""/>
+</g:link>
+<g:link>
+  <g:actionSubmit aaa= <g:applyLayout bean=""/>
+</g:link>
+-----
+Groovy Server Pages file
+  PsiElement(XML_DOCUMENT)
+    PsiElement(XML_PROLOG)
+      <empty list>
+    Gsp root tag
+      Grails tag
+        XmlToken:XML_START_TAG_START('<')
+        XmlToken:XML_TAG_NAME('g:link')
+        XmlToken:XML_TAG_END('>')
+        Outer: GSP TEMPLATE STATEMENTS('\n  ')
+        Grails tag
+          XmlToken:XML_START_TAG_START('<')
+          XmlToken:XML_TAG_NAME('g:actionSubmit')
+          PsiWhiteSpace(' ')
+          GSP attribute
+            XmlToken:XML_NAME('value')
+            XmlToken:XML_EQ('=')
+            PsiElement(GSP_ATTRIBUTE_VALUE)
+              XmlToken:XML_ATTRIBUTE_VALUE_START_DELIMITER('"')
+              XmlToken:XML_ATTRIBUTE_VALUE_END_DELIMITER('"')
+          PsiErrorElement:'>' or '/>' expected
+            <empty list>
+        PsiWhiteSpace('  ')
+        Grails tag
+          XmlToken:XML_START_TAG_START('<')
+          XmlToken:XML_TAG_NAME('g:applyLayout')
+          PsiWhiteSpace(' ')
+          GSP attribute
+            XmlToken:XML_NAME('bean')
+            XmlToken:XML_EQ('=')
+            PsiElement(GSP_ATTRIBUTE_VALUE)
+              XmlToken:XML_ATTRIBUTE_VALUE_START_DELIMITER('"')
+              XmlToken:XML_ATTRIBUTE_VALUE_END_DELIMITER('"')
+          XmlToken:XML_EMPTY_ELEMENT_END('/>')
+        Outer: GSP TEMPLATE STATEMENTS('\n')
+        XmlToken:XML_END_TAG_START('</')
+        XmlToken:XML_TAG_NAME('g:link')
+        XmlToken:XML_TAG_END('>')
+      Outer: GSP TEMPLATE STATEMENTS('\n')
+      Grails tag
+        XmlToken:XML_START_TAG_START('<')
+        XmlToken:XML_TAG_NAME('g:link')
+        XmlToken:XML_TAG_END('>')
+        Outer: GSP TEMPLATE STATEMENTS('\n  ')
+        Grails tag
+          XmlToken:XML_START_TAG_START('<')
+          XmlToken:XML_TAG_NAME('g:actionSubmit')
+          PsiErrorElement:'>' or '/>' expected
+            <empty list>
+        PsiWhiteSpace(' ')
+        Grails tag
+          XmlToken:XML_START_TAG_START('<')
+          XmlToken:XML_TAG_NAME('g:applyLayout')
+          PsiWhiteSpace(' ')
+          GSP attribute
+            XmlToken:XML_NAME('bean')
+            XmlToken:XML_EQ('=')
+            PsiElement(GSP_ATTRIBUTE_VALUE)
+              XmlToken:XML_ATTRIBUTE_VALUE_START_DELIMITER('"')
+              XmlToken:XML_ATTRIBUTE_VALUE_END_DELIMITER('"')
+          XmlToken:XML_EMPTY_ELEMENT_END('/>')
+        Outer: GSP TEMPLATE STATEMENTS('\n')
+        XmlToken:XML_END_TAG_START('</')
+        XmlToken:XML_TAG_NAME('g:link')
+        XmlToken:XML_TAG_END('>')
+      Outer: GSP TEMPLATE STATEMENTS('\n')
+      Grails tag
+        XmlToken:XML_START_TAG_START('<')
+        XmlToken:XML_TAG_NAME('g:link')
+        XmlToken:XML_TAG_END('>')
+        Outer: GSP TEMPLATE STATEMENTS('\n  ')
+        Grails tag
+          XmlToken:XML_START_TAG_START('<')
+          XmlToken:XML_TAG_NAME('g:actionSubmit')
+          PsiWhiteSpace(' ')
+          GSP attribute
+            XmlToken:XML_NAME('aaa')
+            PsiErrorElement:'=' expected
+              <empty list>
+        PsiWhiteSpace(' ')
+        Grails tag
+          XmlToken:XML_START_TAG_START('<')
+          XmlToken:XML_TAG_NAME('g:applyLayout')
+          PsiWhiteSpace(' ')
+          GSP attribute
+            XmlToken:XML_NAME('bean')
+            XmlToken:XML_EQ('=')
+            PsiElement(GSP_ATTRIBUTE_VALUE)
+              XmlToken:XML_ATTRIBUTE_VALUE_START_DELIMITER('"')
+              XmlToken:XML_ATTRIBUTE_VALUE_END_DELIMITER('"')
+          XmlToken:XML_EMPTY_ELEMENT_END('/>')
+        Outer: GSP TEMPLATE STATEMENTS('\n')
+        XmlToken:XML_END_TAG_START('</')
+        XmlToken:XML_TAG_NAME('g:link')
+        XmlToken:XML_TAG_END('>')
+      Outer: GSP TEMPLATE STATEMENTS('\n')
+      Grails tag
+        XmlToken:XML_START_TAG_START('<')
+        XmlToken:XML_TAG_NAME('g:link')
+        XmlToken:XML_TAG_END('>')
+        Outer: GSP TEMPLATE STATEMENTS('\n  ')
+        Grails tag
+          XmlToken:XML_START_TAG_START('<')
+          XmlToken:XML_TAG_NAME('g:actionSubmit')
+          PsiWhiteSpace(' ')
+          GSP attribute
+            XmlToken:XML_NAME('aaa')
+            XmlToken:XML_EQ('=')
+            PsiErrorElement:''' or '"' expected
+              <empty list>
+        PsiWhiteSpace(' ')
+        Grails tag
+          XmlToken:XML_START_TAG_START('<')
+          XmlToken:XML_TAG_NAME('g:applyLayout')
+          PsiWhiteSpace(' ')
+          GSP attribute
+            XmlToken:XML_NAME('bean')
+            XmlToken:XML_EQ('=')
+            PsiElement(GSP_ATTRIBUTE_VALUE)
+              XmlToken:XML_ATTRIBUTE_VALUE_START_DELIMITER('"')
+              XmlToken:XML_ATTRIBUTE_VALUE_END_DELIMITER('"')
+          XmlToken:XML_EMPTY_ELEMENT_END('/>')
+        Outer: GSP TEMPLATE STATEMENTS('\n')
+        XmlToken:XML_END_TAG_START('</')
+        XmlToken:XML_TAG_NAME('g:link')
+        XmlToken:XML_TAG_END('>')

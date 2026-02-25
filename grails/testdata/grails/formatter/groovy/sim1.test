@@ -1,0 +1,15 @@
+<html>
+<%
+while (true)   {
+ foo()
+    }
+%>
+</html>
+-----
+<html>
+<%
+  while (true) {
+    foo()
+  }
+%>
+</html>

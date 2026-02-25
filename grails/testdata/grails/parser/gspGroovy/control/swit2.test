@@ -1,0 +1,53 @@
+<%switch (k) {%>
+<%case 1 :%> preved!
+<%case 2 :%> <%=medved%>
+%{}}%
+-----
+GspGroovyDummyHolder
+  GspClass
+    GspRunMethod
+      GspRunBlock
+        PsiElement(JSCRIPT_BEGIN)('<%')
+        Switch statement
+          PsiElement(switch)('switch')
+          PsiWhiteSpace(' ')
+          PsiElement(()('(')
+          Reference expression
+            PsiElement(identifier)('k')
+          PsiElement())(')')
+          PsiWhiteSpace(' ')
+          PsiElement({)('{')
+          PsiErrorElement:case or default expected, got '%>'
+            PsiElement(JSCRIPT_END)('%>')
+          Outer: GSP TEMPLATE STATEMENTS('\n')
+          PsiElement(JSCRIPT_BEGIN)('<%')
+          Case section
+            PsiElement(case)('case')
+            PsiWhiteSpace(' ')
+            Expression list
+              Literal
+                PsiElement(Integer)('1')
+            PsiWhiteSpace(' ')
+            PsiElement(:)(':')
+            PsiElement(JSCRIPT_END)('%>')
+            Outer: GSP TEMPLATE STATEMENTS(' preved!\n')
+            PsiElement(JSCRIPT_BEGIN)('<%')
+          Case section
+            PsiElement(case)('case')
+            PsiWhiteSpace(' ')
+            Expression list
+              Literal
+                PsiElement(Integer)('2')
+            PsiWhiteSpace(' ')
+            PsiElement(:)(':')
+            PsiElement(JSCRIPT_END)('%>')
+            Outer: GSP TEMPLATE STATEMENTS(' ')
+            PsiElement(JEXPR_BEGIN)('<%=')
+            Groovy Expression Injection
+              Reference expression
+                PsiElement(identifier)('medved')
+            PsiElement(JEXPR_END)('%>')
+            Outer: GSP TEMPLATE STATEMENTS('\n')
+            PsiElement(GSCRIPT_BEGIN)('%{')
+          PsiElement(})('}')
+        PsiElement(GSCRIPT_END)('}%')

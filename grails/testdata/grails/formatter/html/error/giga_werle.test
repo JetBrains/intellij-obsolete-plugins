@@ -1,0 +1,650 @@
+
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <meta name="layout" content="main" />
+        <title>Create Review</title>
+    </head>
+    <body>
+
+            <div id="container">
+
+            <div id="contents">
+            <div id="wrapper">
+
+            <div class="message" id="message" style="display: none;">
+              <ul>
+                <li><b>Thank You!</b> Your review of this property has been received and is pending moderation</li>
+              </ul>
+            </div>
+
+
+            <h2>Write Your Review For Property</h2>
+
+            <g:render template="/property/propertySummary" var="propertySummary"/>
+
+            <g:if test="${flash.message}">
+            <div class="message">${flash.message}</div>
+            </g:if>
+            <g:hasErrors bean="${review}">
+            <div class="errors">
+                <g:renderErrors bean="${review}" as="list" />
+            </div>
+            </g:hasErrors>
+
+            <div class="error" id="error" style="display: none; width: 468px; margin-top: 15px;">
+              <ul>
+                <li>E-mail is a required field</li>
+              </ul>
+            </div>
+
+             <g:form action="save" method="post" >
+
+            <table border="0" width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+                <td width="33%">
+
+                <div id="required" style="width: 500px;"><span class="requiredLabel">* indicates a required field</span></div>
+
+                <table cellpadding="2" cellspacing="0" border="0" width="500" class="dataTable">
+                  <tr class="blueHeader">
+                    <td colspan="2"><strong>Add Your Review</strong></td>
+                  </tr>
+                  <tr>
+                    <td width="5%" align="left" valign="top" class='value ${hasErrors(bean:review,field:'user.email','errors')}'>
+                      &nbsp;<g:if test="${hasErrors(bean:review,field:'user.email','errors')}"><img src="../images/error.gif"></g:if>
+                    </td>
+                    <td align="left">
+                      E-mail <span class="requiredIndicator">*</span><br/>
+                      <input name="review.email" type="text" size="40" onFocus="this.parentNode.parentNode.style.backgroundColor='#D5e5F5'"
+                             onBlur="this.parentNode.parentNode.style.backgroundColor='#f4f8fa'">
+                    </td>
+                  </tr>
+                  <tr>
+                    <td width="5%" align="left">
+                      &nbsp;<img src="images/error.gif" style="display: none">
+                    </td>
+                    <td align="left">
+                      Nickname <br/>
+                      <input name="" type="text" size="30" onFocus="this.parentNode.parentNode.style.backgroundColor='#D5e5F5'"
+                             onBlur="this.parentNode.parentNode.style.backgroundColor='#f4f8fa'">
+                    </td>
+                  </tr>
+                  <tr>
+                    <td width="5%" align="left" valign="top" class='value ${hasErrors(bean:review,field:'month','errors')}'>
+                      &nbsp;<g:if test="${hasErrors(bean:review,field:'month','errors')}"><img src="../images/error.gif"></g:if>
+                    </td>
+                    <td>
+                      When Did You Stay <span class="requiredIndicator">*</span> <br/>
+                      <select name="month" onFocus="this.parentNode.parentNode.style.backgroundColor='#D5e5F5'"
+                              onBlur="this.parentNode.parentNode.style.backgroundColor='#f4f8fa'">
+                        <option value="00" selected>Select a Month</option>
+                        <option value="01">January</option>
+                        <option value="02">February</option>
+                        <option value="03">March</option>
+                        <option value="04">April</option>
+                        <option value="05">May</option>
+                        <option value="06">June</option>
+                        <option value="07">July</option>
+                        <option value="08">August</option>
+                        <option value="09">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                      </select>
+
+                      <select name="year" onFocus="this.parentNode.parentNode.style.backgroundColor='#D5e5F5'"
+                              onBlur="this.parentNode.parentNode.style.backgroundColor='#f4f8fa'">
+                        <option value="SEL" selected>Select a Year</option>
+                        <option value="PRO">2005</option>
+                        <option value="CON">2006</option>
+                        <option value="MGR">2007</option>
+                      </select>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td align="left"class='value ${hasErrors(bean:review,field:'language','errors')}'>
+                      &nbsp;<g:if test="${hasErrors(bean:review,field:'language','errors')}"><img src="../images/error.gif"></g:if>
+                    </td>
+                    <td align="left">
+                      <label for='language'>Review Language:</label><br/>
+                        <g:select optionKey="id" from="${Language.list()}" name='language.id' value="${review?.language?.id}" onFocus="this.parentNode.parentNode.style.backgroundColor='#D5e5F5'" onBlur="this.parentNode.parentNode.style.backgroundColor='#f4f8fa'" ></g:select>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td width="5%" align="left" class='value ${hasErrors(bean:review,field:'overall','errors')}'>
+                      &nbsp;<g:if test="${hasErrors(bean:review,field:'overall','errors')}"><img src="../images/error.gif"></g:if>
+                    </td>
+                    <td>
+                      <label for="overall">Rate your overall experience for this rental property</label> <span class="requiredIndicator">*</span><br/>
+                      <input type="radio" id='overall' name='overall' value="${review?.overall}" onFocus="this.parentNode.parentNode.style.backgroundColor='#D5e5F5'"
+                             onBlur="this.parentNode.parentNode.style.backgroundColor='#f4f8fa'"> 5 Excelent
+                      <input type="radio" id='overall' name='overall' value="${review?.overall}" onFocus="this.parentNode.parentNode.style.backgroundColor='#D5e5F5'"
+                             onBlur="this.parentNode.parentNode.style.backgroundColor='#f4f8fa'"> 4 Good
+                      <input type="radio" id='overall' name='overall' value="${review?.overall}" onFocus="this.parentNode.parentNode.style.backgroundColor='#D5e5F5'"
+                             onBlur="this.parentNode.parentNode.style.backgroundColor='#f4f8fa'"> 3 Average
+                      <input type="radio" id='overall' name='overall' value="${review?.overall}" onFocus="this.parentNode.parentNode.style.backgroundColor='#D5e5F5'"
+                             onBlur="this.parentNode.parentNode.style.backgroundColor='#f4f8fa'"> 2 Fair
+                      <input type="radio" id='overall' name='overall' value="${review?.overall}" onFocus="this.parentNode.parentNode.style.backgroundColor='#D5e5F5'"
+                             onBlur="this.parentNode.parentNode.style.backgroundColor='#f4f8fa'"> 1 Poor
+                    </td>
+                  </tr>
+                  <tr>
+                    <td width="5%" align="left" class='value ${hasErrors(bean:review,field:'subject','errors')}'>
+                      &nbsp;<g:if test="${hasErrors(bean:review,field:'subject','errors')}"><img src="../images/error.gif"></g:if>
+                    </td>
+                    <td align="left"><label for='subject'>Title for Review</label> <span class="requiredIndicator">*</span><br/>
+                      <input id='subject' name='subject' value="${review?.subject?.encodeAsHTML()}" size="50" maxlength="120" onFocus="this.parentNode.parentNode.style.backgroundColor='#D5e5F5'"
+                             onBlur="this.parentNode.parentNode.style.backgroundColor='#f4f8fa'">
+                    </td>
+                  </tr>
+                  <tr>
+                    <td width="5%" align="left" valign="top" class='value ${hasErrors(bean:review,field:'review','errors')}'>
+                      &nbsp;<g:if test="${hasErrors(bean:review,field:'review','errors')}"><img src="../images/error.gif"></g:if>
+                    </td>
+                    <td align="left">
+                        <label for='review'>Write your Review</label> <span class="requiredIndicator">*</span>
+                        <span class="example"><a href="javascript:showExampleReview();">see example</a></span><br/>
+                        <textarea name="review" cols="55" rows="10" onFocus="this.parentNode.parentNode.style.backgroundColor='#D5e5F5'" onBlur="this.parentNode.parentNode.style.backgroundColor='#f4f8fa'">${review?.review?.encodeAsHTML()}</textarea>
+                    </td>
+                  </tr>
+                </table>
+
+
+                <br>
+
+                <table cellpadding="0" cellspacing="0" border="0" width="475" class="dataTable">
+                  <tr class="blueHeader">
+                    <td colspan="4">
+                      <b>Would you reccommend this property for:</b>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td width="15%" class="noBorder" align="right"><input type="checkbox" name=""></td>
+                    <td width="35%" class="noBorder">Families with young children</td>
+                    <td width="10%" class="noBorder" align="right"><input type="checkbox" name=""></td>
+                    <td class="noBorder">Girlfriend Getaway</td>
+                  </tr>
+                  <tr>
+                    <td align="right" class="noBorder"><input type="checkbox" name=""></td>
+                    <td class="noBorder">Families with teenagers</td>
+                    <td align="right" class="noBorder"><input type="checkbox" name=""></td>
+                    <td class="noBorder">Older Travelers</td>
+                  </tr>
+                  <tr>
+                    <td align="right" class="noBorder"><input type="checkbox" name=""></td>
+                    <td class="noBorder">Young Singles</td>
+                    <td align="right" class="noBorder"><input type="checkbox" name=""></td>
+                    <td class="noBorder">Pet Owners</td>
+                  </tr>
+                  <tr>
+                    <td align="right" class="noBorder"><input type="checkbox" name=""></td>
+                    <td class="noBorder">Romantic Getaway</td>
+                    <td align="right" class="noBorder"><input type="checkbox" name=""></td>
+                    <td class="noBorder">Tourist</td>
+                  </tr>
+                </table>
+
+                <br/>
+
+                <table cellpadding="0" cellspacing="0" border="0" id="iagree">
+                  <tr>
+                    <td>
+                      <input type="checkbox" name="terms"> <b>I agree to the terms and conditions</b><span class="requiredIndicator">*</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <input type="checkbox" name="opt-in"> <b>You can contact me for Traveler news and updates</b>
+                    </td>
+                  </tr>
+                </table>
+
+                <br/>
+
+                <input type="hidden" name="systemId" value="${params.systemId?.encodeAsHTML()}">
+                <input type="hidden" name="unitId" value="${params.unitId?.encodeAsHTML()}">
+
+                <div id="buttons" style="width: 475px;">
+                      <input type="button" value="Cancel Review"> &nbsp; <input class="save" type="submit" value="Submit Review"></input>
+                </div>
+                    <g:form/>
+            </td>
+            <td valign="top" id="guidelines">
+              <div style="margin-top: 18px; padding: 0px 5px 5px 12px; background:#e8e8e8; border: 1px solid #666666;">
+                <h1>We have zero tolerance for fake reviews!</h1>
+
+                <p>
+                  <b>A message to our travelers:</b><br/>
+                  We commit to you that we do everything we can to protect our property reviews from fraudulent submissions that
+                  affect ratings and rankings.
+                </p>
+
+                <p>
+                  In the rare case that we find a fake review, we remove it immediately and take steps to ensure that the property
+                  in question is penalized in our rankings and on our site. <a href="javascript:showfraud_rules()">Learn more</a>.
+                </p>
+
+                <p>
+                  <b>A message to property owners/management:</b><br/>
+                  Are you tempted to write your own review? <b>Don't do it! </b>
+                </p>
+
+                <p>
+                  While we support your efforts to encourage honest feedback from guests, we encourage you to submit information
+                  through one of our alternative methods set up exclusively for owners/management. <a
+                        href="javascript:showfraud_rules()">Learn more</a>.
+                </p>
+              </div>
+
+              <br/>
+
+              <div style="padding-top:4px;">
+                <b>NOTE: We will not post reviews containing:</b>
+
+                <br/>
+                <ul>
+                  <li>Profanity or threats</li>
+                  <li>Personal insults</li>
+                  <li>Reports of violent criminal activity</li>
+                  <li>Commercial web addresses, e-mail addresses or phone numbers</li>
+                  <li>Text entirely in ALL CAPS</li>
+                  <li>Hearsay</li>
+                  <li>Content not relevant to tourists</li>
+                  <li>HTML</li>
+                </ul>
+
+                See our <a href="javascript:showReviewGuidelines();">Review guidelines</a> for more information about our review
+                criteria.
+                <p>
+                  <b>NOTE:</b> If you represent the management of this property and would like to respond to a review, please use
+                  the <a
+                        href="/OwnerResponse-g315794-d316904-e__2F__Hotel_Review__2D__g315794__2D__d316904__2D__Reviews__2D__Chateau_de_Beaujeu__2D__Sens_Beaujeu_Centre__2E__html-Chateau_de_Beaujeu-Sens_Beaujeu_Centre.html">
+                  management&#160;response&#160;form</a>.
+                </p>
+              </div>
+            </td>
+          </tr>
+        </table>
+
+        </div>
+        </div>
+        </div>
+    </body>
+</html>
+
+
+        <div class="nav">
+            <span class="menuButton"><a class="home" href="${createLinkTo(dir:'')}">Home</a></span>
+            <span class="menuButton"><g:link class="list" action="list">Review List</g:link></span>
+        </div>
+        <div class="body">
+            <h1>Create Review</h1>
+
+
+                <div class="dialog">
+                    <table>
+                        <tbody>
+
+                            <tr class='prop'></tr>
+
+
+
+                            <tr class='prop'><td valign='top' class='name'><label for='helpful'>Helpful:</label></td><td valign='top' class='value ${hasErrors(bean:review,field:'helpful','errors')}'><input type='text' id='helpful' name='helpful' value="${review?.helpful}" /></td></tr>
+
+                            <tr class='prop'><td valign='top' class='name'><label for='unhelpful'>Unhelpful:</label></td><td valign='top' class='value ${hasErrors(bean:review,field:'unhelpful','errors')}'><input type='text' id='unhelpful' name='unhelpful' value="${review?.unhelpful}" /></td></tr>
+
+                            <tr class='prop'><td valign='top' class='name'><label for='created'>Created:</label></td><td valign='top' class='value ${hasErrors(bean:review,field:'created','errors')}'><g:datePicker name='created' value="${review?.created}" ></g:datePicker></td></tr>
+
+                            <tr class='prop'><td valign='top' class='name'><label for='disputed'>Disputed:</label></td><td valign='top' class='value ${hasErrors(bean:review,field:'disputed','errors')}'><g:datePicker name='disputed' value="${review?.disputed}" ></g:datePicker></td></tr>
+
+
+                            <tr class='prop'><td valign='top' class='name'><label for='moderatorRating'>Moderator Rating:</label></td><td valign='top' class='value ${hasErrors(bean:review,field:'moderatorRating','errors')}'><input type='text' id='moderatorRating' name='moderatorRating' value="${review?.moderatorRating}" /></td></tr>
+
+                            <tr class='prop'><td valign='top' class='name'><label for='ownerNotification'>Owner Notification:</label></td><td valign='top' class='value ${hasErrors(bean:review,field:'ownerNotification','errors')}'><g:datePicker name='ownerNotification' value="${review?.ownerNotification}" ></g:datePicker></td></tr>
+
+                            <tr class='prop'><td valign='top' class='name'><label for='property'>Property:</label></td><td valign='top' class='value ${hasErrors(bean:review,field:'property','errors')}'><g:select optionKey="id" from="${Property.list()}" name='property.id' value="${review?.property?.id}" ></g:select></td></tr>
+
+                            <tr class='prop'><td valign='top' class='name'><label for='response'>Response:</label></td><td valign='top' class='value ${hasErrors(bean:review,field:'response','errors')}'><g:select optionKey="id" from="${Response.list()}" name='response.id' value="${review?.response?.id}" ></g:select></td></tr>
+
+                            <tr class='prop'><td valign='top' class='name'><label for='sourceIp'>Source Ip:</label></td><td valign='top' class='value ${hasErrors(bean:review,field:'sourceIp','errors')}'><g:select optionKey="id" from="${SourceInetAddress.list()}" name='sourceIp.id' value="${review?.sourceIp?.id}" ></g:select></td></tr>
+
+                            <tr class='prop'><td valign='top' class='name'><label for='status'>Status:</label></td><td valign='top' class='value ${hasErrors(bean:review,field:'status','errors')}'><g:select optionKey="id" from="${ReviewStatus.list()}" name='status.id' value="${review?.status?.id}" ></g:select></td></tr>
+
+                            <tr class='prop'><td valign='top' class='name'><label for='stay'>Stay:</label></td><td valign='top' class='value ${hasErrors(bean:review,field:'stay','errors')}'><g:datePicker name='stay' value="${review?.stay}" ></g:datePicker></td></tr>
+
+                            <tr class='prop'><td valign='top' class='name'><label for='user'>User:</label></td><td valign='top' class='value ${hasErrors(bean:review,field:'user','errors')}'><g:select optionKey="id" from="${User.list()}" name='user.id' value="${review?.user?.id}" ></g:select></td></tr>
+
+                        </tbody>
+                    </table>
+                </div>
+                <div class="buttons">
+                    <span class="button"><input class="save" type="submit" value="Create"></input></span>
+                </div>
+            </g:form>
+        </div>
+-----
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta name="layout" content="main" />
+<title>Create Review</title>
+</head>
+<body>
+
+<div id="container">
+
+<div id="contents">
+<div id="wrapper">
+
+<div class="message" id="message" style="display: none;">
+<ul>
+<li><b>Thank You!</b> Your review of this property has been received and is pending moderation</li>
+</ul>
+</div>
+
+
+<h2>Write Your Review For Property</h2>
+
+<g:render template="/property/propertySummary" var="propertySummary"/>
+
+<g:if test="${flash.message}">
+  <div class="message">${flash.message}</div>
+</g:if>
+<g:hasErrors bean="${review}">
+  <div class="errors">
+    <g:renderErrors bean="${review}" as="list"/>
+  </div>
+</g:hasErrors>
+
+<div class="error" id="error" style="display: none; width: 468px; margin-top: 15px;">
+  <ul>
+    <li>E-mail is a required field</li>
+  </ul>
+</div>
+
+<g:form action="save" method="post">
+
+  <table border="0" width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+      <td width="33%">
+
+        <div id="required" style="width: 500px;"><span class="requiredLabel">* indicates a required field</span></div>
+
+        <table cellpadding="2" cellspacing="0" border="0" width="500" class="dataTable">
+          <tr class="blueHeader">
+            <td colspan="2"><strong>Add Your Review</strong></td>
+          </tr>
+          <tr>
+            <td width="5%" align="left" valign="top" class='value ${hasErrors(bean: review, field: 'user.email', 'errors')}'>
+              &nbsp;<g:if test="${hasErrors(bean:review,field:'user.email','errors')}"><img src="../images/error.gif"></g:if>
+            </td>
+            <td align="left">
+              E-mail <span class="requiredIndicator">*</span><br/>
+              <input name="review.email" type="text" size="40" onFocus="this.parentNode.parentNode.style.backgroundColor = '#D5e5F5'"
+                  onBlur="this.parentNode.parentNode.style.backgroundColor = '#f4f8fa'">
+            </td>
+          </tr>
+          <tr>
+            <td width="5%" align="left">
+              &nbsp;<img src="images/error.gif" style="display: none">
+            </td>
+            <td align="left">
+              Nickname <br/>
+              <input name="" type="text" size="30" onFocus="this.parentNode.parentNode.style.backgroundColor = '#D5e5F5'"
+                  onBlur="this.parentNode.parentNode.style.backgroundColor = '#f4f8fa'">
+            </td>
+          </tr>
+          <tr>
+            <td width="5%" align="left" valign="top" class='value ${hasErrors(bean: review, field: 'month', 'errors')}'>
+              &nbsp;<g:if test="${hasErrors(bean:review,field:'month','errors')}"><img src="../images/error.gif"></g:if>
+            </td>
+            <td>
+              When Did You Stay <span class="requiredIndicator">*</span> <br/>
+              <select name="month" onFocus="this.parentNode.parentNode.style.backgroundColor = '#D5e5F5'"
+                  onBlur="this.parentNode.parentNode.style.backgroundColor = '#f4f8fa'">
+                <option value="00" selected>Select a Month</option>
+                <option value="01">January</option>
+                <option value="02">February</option>
+                <option value="03">March</option>
+                <option value="04">April</option>
+                <option value="05">May</option>
+                <option value="06">June</option>
+                <option value="07">July</option>
+                <option value="08">August</option>
+                <option value="09">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+              </select>
+
+              <select name="year" onFocus="this.parentNode.parentNode.style.backgroundColor = '#D5e5F5'"
+                  onBlur="this.parentNode.parentNode.style.backgroundColor = '#f4f8fa'">
+                <option value="SEL" selected>Select a Year</option>
+                <option value="PRO">2005</option>
+                <option value="CON">2006</option>
+                <option value="MGR">2007</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" class='value ${hasErrors(bean: review, field: 'language', 'errors')}'>
+              &nbsp;<g:if test="${hasErrors(bean:review,field:'language','errors')}"><img src="../images/error.gif"></g:if>
+            </td>
+            <td align="left">
+              <label for='language'>Review Language:</label><br/>
+              <g:select optionKey="id" from="${Language.list()}" name='language.id' value="${review?.language?.id}" onFocus="this.parentNode.parentNode.style.backgroundColor='#D5e5F5'" onBlur="this.parentNode.parentNode.style.backgroundColor='#f4f8fa'"></g:select>
+            </td>
+          </tr>
+          <tr>
+            <td width="5%" align="left" class='value ${hasErrors(bean: review, field: 'overall', 'errors')}'>
+              &nbsp;<g:if test="${hasErrors(bean:review,field:'overall','errors')}"><img src="../images/error.gif"></g:if>
+            </td>
+            <td>
+              <label for="overall">Rate your overall experience for this rental property</label> <span class="requiredIndicator">*</span><br/>
+              <input type="radio" id='overall' name='overall' value="${review?.overall}" onFocus="this.parentNode.parentNode.style.backgroundColor = '#D5e5F5'"
+                  onBlur="this.parentNode.parentNode.style.backgroundColor = '#f4f8fa'"> 5 Excelent
+              <input type="radio" id='overall' name='overall' value="${review?.overall}" onFocus="this.parentNode.parentNode.style.backgroundColor = '#D5e5F5'"
+                  onBlur="this.parentNode.parentNode.style.backgroundColor = '#f4f8fa'"> 4 Good
+              <input type="radio" id='overall' name='overall' value="${review?.overall}" onFocus="this.parentNode.parentNode.style.backgroundColor = '#D5e5F5'"
+                  onBlur="this.parentNode.parentNode.style.backgroundColor = '#f4f8fa'"> 3 Average
+              <input type="radio" id='overall' name='overall' value="${review?.overall}" onFocus="this.parentNode.parentNode.style.backgroundColor = '#D5e5F5'"
+                  onBlur="this.parentNode.parentNode.style.backgroundColor = '#f4f8fa'"> 2 Fair
+              <input type="radio" id='overall' name='overall' value="${review?.overall}" onFocus="this.parentNode.parentNode.style.backgroundColor = '#D5e5F5'"
+                  onBlur="this.parentNode.parentNode.style.backgroundColor = '#f4f8fa'"> 1 Poor
+            </td>
+          </tr>
+          <tr>
+            <td width="5%" align="left" class='value ${hasErrors(bean: review, field: 'subject', 'errors')}'>
+              &nbsp;<g:if test="${hasErrors(bean:review,field:'subject','errors')}"><img src="../images/error.gif"></g:if>
+            </td>
+            <td align="left"><label for='subject'>Title for Review</label> <span class="requiredIndicator">*</span><br/>
+              <input id='subject' name='subject' value="${review?.subject?.encodeAsHTML()}" size="50" maxlength="120" onFocus="this.parentNode.parentNode.style.backgroundColor = '#D5e5F5'"
+                  onBlur="this.parentNode.parentNode.style.backgroundColor = '#f4f8fa'">
+            </td>
+          </tr>
+          <tr>
+            <td width="5%" align="left" valign="top" class='value ${hasErrors(bean: review, field: 'review', 'errors')}'>
+              &nbsp;<g:if test="${hasErrors(bean:review,field:'review','errors')}"><img src="../images/error.gif"></g:if>
+            </td>
+            <td align="left">
+              <label for='review'>Write your Review</label> <span class="requiredIndicator">*</span>
+              <span class="example"><a href="javascript:showExampleReview();">see example</a></span><br/>
+              <textarea name="review" cols="55" rows="10" onFocus="this.parentNode.parentNode.style.backgroundColor = '#D5e5F5'" onBlur="this.parentNode.parentNode.style.backgroundColor = '#f4f8fa'">${review?.review?.encodeAsHTML()}</textarea>
+            </td>
+          </tr>
+        </table>
+
+
+        <br>
+
+        <table cellpadding="0" cellspacing="0" border="0" width="475" class="dataTable">
+          <tr class="blueHeader">
+            <td colspan="4">
+              <b>Would you reccommend this property for:</b>
+            </td>
+          </tr>
+          <tr>
+            <td width="15%" class="noBorder" align="right"><input type="checkbox" name=""></td>
+            <td width="35%" class="noBorder">Families with young children</td>
+            <td width="10%" class="noBorder" align="right"><input type="checkbox" name=""></td>
+            <td class="noBorder">Girlfriend Getaway</td>
+          </tr>
+          <tr>
+            <td align="right" class="noBorder"><input type="checkbox" name=""></td>
+            <td class="noBorder">Families with teenagers</td>
+            <td align="right" class="noBorder"><input type="checkbox" name=""></td>
+            <td class="noBorder">Older Travelers</td>
+          </tr>
+          <tr>
+            <td align="right" class="noBorder"><input type="checkbox" name=""></td>
+            <td class="noBorder">Young Singles</td>
+            <td align="right" class="noBorder"><input type="checkbox" name=""></td>
+            <td class="noBorder">Pet Owners</td>
+          </tr>
+          <tr>
+            <td align="right" class="noBorder"><input type="checkbox" name=""></td>
+            <td class="noBorder">Romantic Getaway</td>
+            <td align="right" class="noBorder"><input type="checkbox" name=""></td>
+            <td class="noBorder">Tourist</td>
+          </tr>
+        </table>
+
+        <br/>
+
+        <table cellpadding="0" cellspacing="0" border="0" id="iagree">
+          <tr>
+            <td>
+              <input type="checkbox" name="terms"> <b>I agree to the terms and conditions</b><span class="requiredIndicator">*</span>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <input type="checkbox" name="opt-in"> <b>You can contact me for Traveler news and updates</b>
+            </td>
+          </tr>
+        </table>
+
+        <br/>
+
+        <input type="hidden" name="systemId" value="${params.systemId?.encodeAsHTML()}">
+        <input type="hidden" name="unitId" value="${params.unitId?.encodeAsHTML()}">
+
+        <div id="buttons" style="width: 475px;">
+          <input type="button" value="Cancel Review"> &nbsp; <input class="save" type="submit" value="Submit Review"></input>
+        </div>
+        <g:form/>
+      </td>
+      <td valign="top" id="guidelines">
+        <div style="margin-top: 18px; padding: 0px 5px 5px 12px; background:#e8e8e8; border: 1px solid #666666;">
+          <h1>We have zero tolerance for fake reviews!</h1>
+
+          <p>
+            <b>A message to our travelers:</b><br/>
+            We commit to you that we do everything we can to protect our property reviews from fraudulent submissions that
+            affect ratings and rankings.
+          </p>
+
+          <p>
+            In the rare case that we find a fake review, we remove it immediately and take steps to ensure that the property
+            in question is penalized in our rankings and on our site. <a href="javascript:showfraud_rules()">Learn more</a>.
+          </p>
+
+          <p>
+            <b>A message to property owners/management:</b><br/>
+            Are you tempted to write your own review? <b>Don't do it!</b>
+          </p>
+
+          <p>
+            While we support your efforts to encourage honest feedback from guests, we encourage you to submit information
+            through one of our alternative methods set up exclusively for owners/management. <a
+              href="javascript:showfraud_rules()">Learn more</a>.
+          </p>
+        </div>
+
+        <br/>
+
+        <div style="padding-top:4px;">
+          <b>NOTE: We will not post reviews containing:</b>
+
+          <br/>
+          <ul>
+            <li>Profanity or threats</li>
+            <li>Personal insults</li>
+            <li>Reports of violent criminal activity</li>
+            <li>Commercial web addresses, e-mail addresses or phone numbers</li>
+            <li>Text entirely in ALL CAPS</li>
+            <li>Hearsay</li>
+            <li>Content not relevant to tourists</li>
+            <li>HTML</li>
+          </ul>
+
+          See our <a href="javascript:showReviewGuidelines();">Review guidelines</a> for more information about our review
+        criteria.
+          <p>
+            <b>NOTE:</b> If you represent the management of this property and would like to respond to a review, please use
+          the <a
+              href="/OwnerResponse-g315794-d316904-e__2F__Hotel_Review__2D__g315794__2D__d316904__2D__Reviews__2D__Chateau_de_Beaujeu__2D__Sens_Beaujeu_Centre__2E__html-Chateau_de_Beaujeu-Sens_Beaujeu_Centre.html">
+            management&#160;response&#160;form</a>.
+          </p>
+        </div>
+      </td>
+    </tr>
+  </table>
+
+  </div>
+          </div>
+          </div>
+      </body>
+  </html>
+
+
+  <div class="nav">
+    <span class="menuButton"><a class="home" href="${createLinkTo(dir: '')}">Home</a></span>
+    <span class="menuButton"><g:link class="list" action="list">Review List</g:link></span>
+  </div>
+  <div class="body">
+<h1>Create Review</h1>
+
+
+<div class="dialog">
+<table>
+<tbody>
+
+<tr class='prop'></tr>
+
+
+
+<tr class='prop'><td valign='top' class='name'><label for='helpful'>Helpful:</label></td><td valign='top' class='value ${hasErrors(bean: review, field: 'helpful', 'errors')}'><input type='text' id='helpful' name='helpful' value="${review?.helpful}"/></td></tr>
+
+  <tr class='prop'><td valign='top' class='name'><label for='unhelpful'>Unhelpful:</label></td><td valign='top' class='value ${hasErrors(bean: review, field: 'unhelpful', 'errors')}'><input type='text' id='unhelpful' name='unhelpful' value="${review?.unhelpful}"/></td></tr>
+
+  <tr class='prop'><td valign='top' class='name'><label for='created'>Created:</label></td><td valign='top' class='value ${hasErrors(bean: review, field: 'created', 'errors')}'><g:datePicker name='created' value="${review?.created}"></g:datePicker></td></tr>
+
+  <tr class='prop'><td valign='top' class='name'><label for='disputed'>Disputed:</label></td><td valign='top' class='value ${hasErrors(bean: review, field: 'disputed', 'errors')}'><g:datePicker name='disputed' value="${review?.disputed}"></g:datePicker></td></tr>
+
+
+  <tr class='prop'><td valign='top' class='name'><label for='moderatorRating'>Moderator Rating:</label></td><td valign='top' class='value ${hasErrors(bean: review, field: 'moderatorRating', 'errors')}'><input type='text' id='moderatorRating' name='moderatorRating' value="${review?.moderatorRating}"/></td></tr>
+
+  <tr class='prop'><td valign='top' class='name'><label for='ownerNotification'>Owner Notification:</label></td><td valign='top' class='value ${hasErrors(bean: review, field: 'ownerNotification', 'errors')}'><g:datePicker name='ownerNotification' value="${review?.ownerNotification}"></g:datePicker></td></tr>
+
+  <tr class='prop'><td valign='top' class='name'><label for='property'>Property:</label></td><td valign='top' class='value ${hasErrors(bean: review, field: 'property', 'errors')}'><g:select optionKey="id" from="${Property.list()}" name='property.id' value="${review?.property?.id}"></g:select></td></tr>
+
+  <tr class='prop'><td valign='top' class='name'><label for='response'>Response:</label></td><td valign='top' class='value ${hasErrors(bean: review, field: 'response', 'errors')}'><g:select optionKey="id" from="${Response.list()}" name='response.id' value="${review?.response?.id}"></g:select></td></tr>
+
+  <tr class='prop'><td valign='top' class='name'><label for='sourceIp'>Source Ip:</label></td><td valign='top' class='value ${hasErrors(bean: review, field: 'sourceIp', 'errors')}'><g:select optionKey="id" from="${SourceInetAddress.list()}" name='sourceIp.id' value="${review?.sourceIp?.id}"></g:select></td></tr>
+
+  <tr class='prop'><td valign='top' class='name'><label for='status'>Status:</label></td><td valign='top' class='value ${hasErrors(bean: review, field: 'status', 'errors')}'><g:select optionKey="id" from="${ReviewStatus.list()}" name='status.id' value="${review?.status?.id}"></g:select></td></tr>
+
+  <tr class='prop'><td valign='top' class='name'><label for='stay'>Stay:</label></td><td valign='top' class='value ${hasErrors(bean: review, field: 'stay', 'errors')}'><g:datePicker name='stay' value="${review?.stay}"></g:datePicker></td></tr>
+
+  <tr class='prop'><td valign='top' class='name'><label for='user'>User:</label></td><td valign='top' class='value ${hasErrors(bean: review, field: 'user', 'errors')}'><g:select optionKey="id" from="${User.list()}" name='user.id' value="${review?.user?.id}"></g:select></td></tr>
+
+  </tbody>
+      </table>
+  </div>
+  <div class="buttons">
+    <span class="button"><input class="save" type="submit" value="Create"></input></span>
+  </div>
+</g:form>
+</div>

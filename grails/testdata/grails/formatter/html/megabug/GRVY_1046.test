@@ -1,0 +1,161 @@
+<%@ page import="com.h]omeaway.traveler.domain.ReviewSource" %>
+<%@ page import="com.homeaway.traveler.i18n.BrandManager" %>
+<%@ page import="com.homeaway.traveler.util.StaticTableCache" %>
+<div id="content">
+<h3>Note: All links open in new windows to minimize reloads of this page due to performance considerations.</h3>
+<g:set var="brandManager" value="${BrandManager.instance}"/>
+<h3><a href="${adminUrl}" target="_blank">Admin App</a></h3>
+<table id="reviewUrls">
+<thead>
+<tr>
+<th>Detail</th>
+<th>Reviews</th>
+<th>Write</th>
+<th>Confirm</th>
+<th>Respond</th>
+<th>By Author</th>
+<th>Solicited</th>
+<th> </th>
+</tr>
+</thead>
+<tbody>
+<g:each in="${reviewsMap}" var="item" status="i">
+<g:set var="name" value="${item.key}"/>
+<g:set var="infoMap" value="${item.value}"/>
+<g:set var="message" value="${infoMap['message']}"/>
+<g:set var="review" value="${infoMap['review']}"/>
+<g:set var="property" value="${infoMap['property']}"/>
+<g:set var="detailUrl" value="${infoMap['detailUrl']}"/>
+<g:set var="newDisplayUrl" value="${infoMap['newDisplayUrl']}"/>
+<g:set var="oldDisplayUrl" value="${infoMap['oldDisplayUrl']}"/>
+<g:set var="oldDisplayUrl" value="${infoMap['oldDisplayUrl']}"/>
+<g:set var="newWriteUrl" value="${infoMap['newWriteUrl']}"/>
+<g:set var="oldWriteUrl" value="${infoMap['oldWriteUrl']}"/>
+<g:set var="newConfirmUrl" value="${infoMap['newConfirmUrl']}"/>
+<g:set var="oldConfirmUrl" value="${infoMap['oldConfirmUrl']}"/>
+<g:set var="newRespondUrl" value="${infoMap['newRespondUrl']}"/>
+<g:set var="oldRespondUrl" value="${infoMap['oldRespondUrl']}"/>
+<g:set var="newAuthorUrl" value="${infoMap['newAuthorUrl']}"/>
+<g:set var="oldAuthorUrl" value="${infoMap['oldAuthorUrl']}"/>
+<g:if test="${message}">
+<tr>
+<td colspan="7">${message}</td>
+</tr>
+</g:if>
+<g:if test="${property}">
+<tr>
+<td style="white-space: nowrap"><g:if test="${detailUrl}"><a href="${detailUrl}" target="_blank">${property?.proNum}</a></g:if><g:else> </g:else></td>
+<td style="white-space: nowrap"><g:if test="${newDisplayUrl}">New: <a href="${newDisplayUrl}" target="_blank">${name}</a></g:if><g:else> </g:else></td>
+<td style="white-space: nowrap"><g:if test="${newWriteUrl}">New: <a href="${newWriteUrl}" target="_blank">Write</a></g:if><g:else> </g:else></td>
+<td style="white-space: nowrap"><g:if test="${newConfirmUrl}">New: <a href="${newConfirmUrl}" target="_blank">Confirm</a><br/>Old: <a href="${oldConfirmUrl}" target="_blank">Confirm</a></g:if><g:else> </g:else></td>
+<td style="white-space: nowrap"><g:if test="${newRespondUrl}">New: <a href="${newRespondUrl}" target="_blank">Respond</a><br/>Old: <a href="${oldRespondUrl}" target="_blank">Respond</a></g:if><g:else> </g:else></td>
+<td style="white-space: nowrap"><g:if test="${newAuthorUrl}">New: <a href="${newAuthorUrl}" target="_blank">${review.user.nickname}</a><br/>Old: <a href="${oldAuthorUrl}" target="_blank">${review.user.nickname}</a></g:if><g:else> </g:else></td>
+</tr>
+<tr>
+<td style="white-space: nowrap"> </td>
+<td style="white-space: nowrap"><g:if test="${oldDisplayUrl}">Old: <a href="${oldDisplayUrl}" target="_blank">${name}</a></g:if><g:else> </g:else></td>
+<td style="white-space: nowrap"><g:if test="${oldWriteUrl}">Old: <a href="${oldWriteUrl}" target="_blank">Write</a></g:if><g:else> </g:else></td>
+<td style="white-space: nowrap"><g:if test="${newConfirmUrl}">New: <a href="${newConfirmUrl}" target="_blank">Confirm</a><br/>Old: <a href="${oldConfirmUrl}" target="_blank">Confirm</a></g:if><g:else> </g:else></td>
+<td style="white-space: nowrap"><g:if test="${newRespondUrl}">New: <a href="${newRespondUrl}" target="_blank">Respond</a><br/>Old: <a href="${oldRespondUrl}" target="_blank">Respond</a></g:if><g:else> </g:else></td>
+<td style="white-space: nowrap"><g:if test="${newAuthorUrl}">New: <a href="${newAuthorUrl}" target="_blank">${review.user.nickname}</a><br/>Old: <a href="${oldAuthorUrl}" target="_blank">${review.user.nickname}</a></g:if><g:else> </g:else></td>
+<td style="white-space: nowrap">
+<g:if test="${property}">
+<g:form>
+<g:select from="${StaticTableCache.getAll(ReviewSource.class)}" optionKey="code" optionValue="name" name='reviewSource' noSelection="['':'-Select-']"/>
+<g:textField name="email" size="20"/>
+<g:hiddenField name="brandName" value="${brandManager.brandName}"/>
+<g:hiddenField name="appId" value="${property.appId}"/>
+<g:hiddenField name="unitId" value="${property.unitId}"/>
+<g:hiddenField name="lanCode" value="${property.lanCode}"/>
+<g:submitToRemote value="Review" error="error" update='[success:"solicitedLink${i}" ,failure:"error"]' controller="test" action="testSolicitedLink" before="resetPage('solicitedLink${i}')"/>
+</g:form>
+</g:if>
+<span id="solicitedLink${i}" style="white-space: nowrap"></span>
+</td>
+</tr>
+</g:if>
+</g:each>
+</tbody>
+</table>
+</div>
+-----
+<%@ page import="com.h]omeaway.traveler.domain.ReviewSource" %>
+<%@ page import="com.homeaway.traveler.i18n.BrandManager" %>
+<%@ page import="com.homeaway.traveler.util.StaticTableCache" %>
+<div id="content">
+  <h3>Note: All links open in new windows to minimize reloads of this page due to performance considerations.</h3>
+  <g:set var="brandManager" value="${BrandManager.instance}"/>
+  <h3><a href="${adminUrl}" target="_blank">Admin App</a></h3>
+  <table id="reviewUrls">
+    <thead>
+    <tr>
+      <th>Detail</th>
+      <th>Reviews</th>
+      <th>Write</th>
+      <th>Confirm</th>
+      <th>Respond</th>
+      <th>By Author</th>
+      <th>Solicited</th>
+      <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    <g:each in="${reviewsMap}" var="item" status="i">
+      <g:set var="name" value="${item.key}"/>
+      <g:set var="infoMap" value="${item.value}"/>
+      <g:set var="message" value="${infoMap['message']}"/>
+      <g:set var="review" value="${infoMap['review']}"/>
+      <g:set var="property" value="${infoMap['property']}"/>
+      <g:set var="detailUrl" value="${infoMap['detailUrl']}"/>
+      <g:set var="newDisplayUrl" value="${infoMap['newDisplayUrl']}"/>
+      <g:set var="oldDisplayUrl" value="${infoMap['oldDisplayUrl']}"/>
+      <g:set var="oldDisplayUrl" value="${infoMap['oldDisplayUrl']}"/>
+      <g:set var="newWriteUrl" value="${infoMap['newWriteUrl']}"/>
+      <g:set var="oldWriteUrl" value="${infoMap['oldWriteUrl']}"/>
+      <g:set var="newConfirmUrl" value="${infoMap['newConfirmUrl']}"/>
+      <g:set var="oldConfirmUrl" value="${infoMap['oldConfirmUrl']}"/>
+      <g:set var="newRespondUrl" value="${infoMap['newRespondUrl']}"/>
+      <g:set var="oldRespondUrl" value="${infoMap['oldRespondUrl']}"/>
+      <g:set var="newAuthorUrl" value="${infoMap['newAuthorUrl']}"/>
+      <g:set var="oldAuthorUrl" value="${infoMap['oldAuthorUrl']}"/>
+      <g:if test="${message}">
+        <tr>
+          <td colspan="7">${message}</td>
+        </tr>
+      </g:if>
+      <g:if test="${property}">
+        <tr>
+          <td style="white-space: nowrap"><g:if test="${detailUrl}"><a href="${detailUrl}" target="_blank">${property?.proNum}</a></g:if><g:else></g:else></td>
+          <td style="white-space: nowrap"><g:if test="${newDisplayUrl}">New: <a href="${newDisplayUrl}" target="_blank">${name}</a></g:if><g:else></g:else></td>
+          <td style="white-space: nowrap"><g:if test="${newWriteUrl}">New: <a href="${newWriteUrl}" target="_blank">Write</a></g:if><g:else></g:else></td>
+          <td style="white-space: nowrap"><g:if test="${newConfirmUrl}">New: <a href="${newConfirmUrl}" target="_blank">Confirm</a><br/>Old: <a href="${oldConfirmUrl}" target="_blank">Confirm</a></g:if><g:else></g:else></td>
+          <td style="white-space: nowrap"><g:if test="${newRespondUrl}">New: <a href="${newRespondUrl}" target="_blank">Respond</a><br/>Old: <a href="${oldRespondUrl}" target="_blank">Respond</a></g:if><g:else></g:else></td>
+          <td style="white-space: nowrap"><g:if test="${newAuthorUrl}">New: <a href="${newAuthorUrl}" target="_blank">${review.user.nickname}</a><br/>Old: <a href="${oldAuthorUrl}" target="_blank">${review.user.nickname}</a></g:if><g:else></g:else></td>
+        </tr>
+        <tr>
+          <td style="white-space: nowrap"></td>
+          <td style="white-space: nowrap"><g:if test="${oldDisplayUrl}">Old: <a href="${oldDisplayUrl}" target="_blank">${name}</a></g:if><g:else></g:else></td>
+          <td style="white-space: nowrap"><g:if test="${oldWriteUrl}">Old: <a href="${oldWriteUrl}" target="_blank">Write</a></g:if><g:else></g:else></td>
+          <td style="white-space: nowrap"><g:if test="${newConfirmUrl}">New: <a href="${newConfirmUrl}" target="_blank">Confirm</a><br/>Old: <a href="${oldConfirmUrl}" target="_blank">Confirm</a></g:if><g:else></g:else></td>
+          <td style="white-space: nowrap"><g:if test="${newRespondUrl}">New: <a href="${newRespondUrl}" target="_blank">Respond</a><br/>Old: <a href="${oldRespondUrl}" target="_blank">Respond</a></g:if><g:else></g:else></td>
+          <td style="white-space: nowrap"><g:if test="${newAuthorUrl}">New: <a href="${newAuthorUrl}" target="_blank">${review.user.nickname}</a><br/>Old: <a href="${oldAuthorUrl}" target="_blank">${review.user.nickname}</a></g:if><g:else></g:else></td>
+          <td style="white-space: nowrap">
+            <g:if test="${property}">
+              <g:form>
+                <g:select from="${StaticTableCache.getAll(ReviewSource.class)}" optionKey="code" optionValue="name" name='reviewSource' noSelection="['': '-Select-']"/>
+                <g:textField name="email" size="20"/>
+                <g:hiddenField name="brandName" value="${brandManager.brandName}"/>
+                <g:hiddenField name="appId" value="${property.appId}"/>
+                <g:hiddenField name="unitId" value="${property.unitId}"/>
+                <g:hiddenField name="lanCode" value="${property.lanCode}"/>
+                <g:submitToRemote value="Review" error="error" update='[success: "solicitedLink${i}", failure: "error"]' controller="test" action="testSolicitedLink" before="resetPage('solicitedLink${i}')"/>
+              </g:form>
+            </g:if>
+            <span id="solicitedLink${i}" style="white-space: nowrap"></span>
+          </td>
+        </tr>
+      </g:if>
+    </g:each>
+    </tbody>
+  </table>
+</div>

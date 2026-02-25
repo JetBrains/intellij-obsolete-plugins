@@ -1,0 +1,57 @@
+<html>
+<%
+  def boo = {}
+  boo
+  a.call()
+%>
+!{
+def a = {}
+def foo(int i) {return {}}
+}!
+<g:aaa times = " [a:5, b:{}]">
+asasdasdas ${it}
+</g:aaa
+ >
+</html>
+-----
+Groovy Server Pages file
+  PsiElement(XML_DOCUMENT)
+    PsiElement(XML_PROLOG)
+      <empty list>
+    Gsp root tag
+      Outer: GSP TEMPLATE STATEMENTS('<html>\n')
+      GSP scriptlet gtag
+        PsiElement(JSCRIPT_BEGIN)('<%')
+        Outer: GSP_GROOVY_CODE('\n  def boo = {}\n  boo\n  a.call()\n')
+        PsiElement(JSCRIPT_END)('%>')
+      Outer: GSP TEMPLATE STATEMENTS('\n')
+      GSP declaration gtag
+        PsiElement(GDECLAR_BEGIN)('!{')
+        Outer: GSP_GROOVY_CODE('\ndef a = {}\ndef foo(int i) {return {}}\n')
+        PsiElement(GDECLAR_END)('}!')
+      Outer: GSP TEMPLATE STATEMENTS('\n')
+      Grails tag
+        XmlToken:XML_START_TAG_START('<')
+        XmlToken:XML_TAG_NAME('g:aaa')
+        PsiWhiteSpace(' ')
+        GSP attribute
+          XmlToken:XML_NAME('times')
+          PsiWhiteSpace(' ')
+          XmlToken:XML_EQ('=')
+          PsiWhiteSpace(' ')
+          PsiElement(GSP_ATTRIBUTE_VALUE)
+            XmlToken:XML_ATTRIBUTE_VALUE_START_DELIMITER('"')
+            XmlToken:XML_ATTRIBUTE_VALUE_TOKEN(' [a:5, b:{}]')
+            XmlToken:XML_ATTRIBUTE_VALUE_END_DELIMITER('"')
+        XmlToken:XML_TAG_END('>')
+        Outer: GSP TEMPLATE STATEMENTS('\nasasdasdas ')
+        GspExprTagImpl
+          PsiElement(GEXPR_BEGIN)('${')
+          Outer: GSP_GROOVY_CODE('it')
+          PsiElement(GEXPR_END)('}')
+        Outer: GSP TEMPLATE STATEMENTS('\n')
+        XmlToken:XML_END_TAG_START('</')
+        XmlToken:XML_TAG_NAME('g:aaa')
+        PsiWhiteSpace('\n ')
+        XmlToken:XML_TAG_END('>')
+      Outer: GSP TEMPLATE STATEMENTS('\n</html>')

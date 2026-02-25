@@ -1,0 +1,23 @@
+<g:link action="sadasd">aaa</g:link>
+<a action="sadasd">aaa</a>
+
+<g:link>aaa</g:link>
+<a>aaa</a>
+
+<g:link action="sadasd"/>
+<a action="sadasd"/>
+
+<g:link/>
+<a/>
+-----
+<g:link action="sadasd" >aaa</g:link >
+<a action="sadasd" >aaa</a >
+
+<g:link >aaa</g:link >
+<a >aaa</a >
+
+<g:link action="sadasd" />
+<a action="sadasd" />
+
+<g:link />
+<a />

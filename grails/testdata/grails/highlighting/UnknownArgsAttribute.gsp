@@ -1,0 +1,1 @@
+<g:message args="asasdf"/>

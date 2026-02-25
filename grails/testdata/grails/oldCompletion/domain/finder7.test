@@ -1,0 +1,17 @@
+Product.findByNameLessThan<caret>
+-----
+findByNameLessThan
+findByNameLessThanAndDate
+findByNameLessThanAndId
+findByNameLessThanAndName
+findByNameLessThanAndQuality
+findByNameLessThanAndSize
+findByNameLessThanAndVersion
+findByNameLessThanAndWeight
+findByNameLessThanOrDate
+findByNameLessThanOrId
+findByNameLessThanOrName
+findByNameLessThanOrQuality
+findByNameLessThanOrSize
+findByNameLessThanOrVersion
+findByNameLessThanOrWeight

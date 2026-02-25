@@ -1,0 +1,19 @@
+<div>
+    <g:form>
+        <div>
+    </g:form>
+    <g:form>
+        <span/>
+    </g:form>
+</div>`
+</div>
+-----
+<div>
+  <g:form>
+    <div>
+  </g:form>
+  <g:form>
+    <span/>
+  </g:form>
+</div>`
+</div>

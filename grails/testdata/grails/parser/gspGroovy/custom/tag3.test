@@ -1,0 +1,45 @@
+<g:while test="[a: 1, b: [c:3, d: 4]]">
+</g:while>
+-----
+GspGroovyDummyHolder
+  GspClass
+    GspRunMethod
+      GspRunBlock
+        Outer: GSP TEMPLATE STATEMENTS('<g:while test="')
+        GrMapAttrValueImpl
+          Generalized list
+            PsiElement([)('[')
+            Named argument
+              Argument label
+                PsiElement(identifier)('a')
+              PsiElement(:)(':')
+              PsiWhiteSpace(' ')
+              Literal
+                PsiElement(Integer)('1')
+            PsiElement(,)(',')
+            PsiWhiteSpace(' ')
+            Named argument
+              Argument label
+                PsiElement(identifier)('b')
+              PsiElement(:)(':')
+              PsiWhiteSpace(' ')
+              Generalized list
+                PsiElement([)('[')
+                Named argument
+                  Argument label
+                    PsiElement(identifier)('c')
+                  PsiElement(:)(':')
+                  Literal
+                    PsiElement(Integer)('3')
+                PsiElement(,)(',')
+                PsiWhiteSpace(' ')
+                Named argument
+                  Argument label
+                    PsiElement(identifier)('d')
+                  PsiElement(:)(':')
+                  PsiWhiteSpace(' ')
+                  Literal
+                    PsiElement(Integer)('4')
+                PsiElement(])(']')
+            PsiElement(])(']')
+        Outer: GSP TEMPLATE STATEMENTS('">\n</g:while>')

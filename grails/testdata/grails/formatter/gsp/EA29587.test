@@ -1,0 +1,296 @@
+<%--
+  All Rights Reserved
+--%>
+<%@ page contentType="text/html;charset=UTF-8" %>
+<html>
+<head>
+    <title>New customer registration</title>
+    <meta name="layout" content="simple" />
+    <content tag="tabName">Setup</content>
+    <style type="text/css">
+        .details label {
+            width:120px; display:inline-block !important
+        }
+        .details input, .details select {
+            width:200px; display:inline-block !important
+        }
+    </style>
+    <grid:includejs src="jquery.combobox/ui.core.js"/>
+    <grid:includejs src="jquery.combobox/ui.combobox.js"/>
+    <link href="${createLinkTo(dir: 'js/jquery.combobox', file: 'ui.combobox.css')}" type="text/css" rel="stylesheet"/>
+    <grid:includejs src="gridmanager/weekdaySet.js" />
+    <grid:includejs src="jquery.sheepit/jquery.sheepItPlugin-1.0.0.js"/>
+
+<g:set var="measuringPoints" value="${customer.locations*.measuringPoints.flatten()}"/>
+      <label for="customer.measuringPoints[${pointIndex}].utilityCompanyMeter">
+          <g:message code="registration.danish.utility.meter.number"/>:
+      </label>
+      <g:textField name="customer.measuringPoints[${pointIndex}].utilityCompanyMeter"
+          value="${measuringPoint.utilityCompanyMeter}"
+
+    <script type="text/javascript">
+    $(document).ready(function() {
+        var measuringPointsForm = $('#measuringPointsForm').sheepIt({
+            separator: '',
+            allowRemoveLast: true,
+            allowRemoveCurrent: true,
+            allowRemoveAll: true,
+            allowAdd: true,
+            allowAddN: false,
+            maxFormsCount: 0,
+            minFormsCount: 0,
+            iniFormsCount: 1,
+            data: [
+<g:each in="${measuringPoints}" var="measuringPoint" status="pointIndex">
+                {
+                    'customer.measuringPoints_#index#.utilityCompanyMeter': "${measuringPoint.utilityCompanyMeter}",
+                    'customer.measuringPoints_#index#.name': "${measuringPoint.name}"
+                }
+</g:each>
+            ]
+        });
+    });
+    </script>
+</head>
+<body>
+    <div>
+        <g:t
+
+        <script>
+            a({
+                <g:t/>
+            });
+        </script>
+    </div>
+
+    <grid:widget class="block white" id="component_form">
+        <div style="margin-left:50px; width:780px">
+            <br/>
+            <h2>Customer Registration</h2>
+            <br/>
+            Please fill in your company details and administrator credentials.
+            <br/>
+            <br/>
+            %{--TODO: Maybe we can format it somehow without action name?--}%
+            <g:render template="requiredInfo"
+                  model="[ customer: customer, user: user, pricingAreas: pricingAreas, action: 'saveRegistration' ]" />
+        <h3>
+            <g:checkBox name="danish_only"
+                        onchange="\$('#danish_section').toggle(\$('#danish_only').is(':checked'));"
+                checked="${danish_only}"
+            />
+            <label for="danish_only" style="display: inline;"><g:message code="registration.danish.title"/></label>
+        </h3>
+        <div class="details" id="danish_section" style="display: ${danish_only ? 'inherit' : 'none' };">
+            <label for="utilityCompanyName"><g:message code="registration.danish.utility.company"/>:</label>
+            <g:textField name="utilityCompanyName" value="${customer.utilityCompanyName}"
+                class="${hasErrors(customer: user, field: 'utilityCompanyName', 'errors')}"/>
+            <br/>
+            <h4><g:message code="registration.danish.utility.meters"/></h4>
+            <div id="measuringPointsForm">
+              <!-- Form template-->
+              <div id="measuringPointsForm_template">
+                <label for="customer.measuringPoints_#index#.utilityCompanyMeter">
+                    <g:message code="registration.danish.utility.meter.number"/>:
+                    <span id="measuringPointsForm_label"></span>
+                </label>
+                    <g:textField name="customer.measuringPoints_#index#.utilityCompanyMeter"
+                    />
+                <label for="customer.measuringPoints_#index#.name">
+                    <g:message code="registration.danish.utility.meter.placement"/>:
+                </label>
+                <g:textField name="customer.measuringPoints_#index#.name" />
+                <a id="measuringPointsForm_remove_current">
+                  <img class="delete" src="${createLinkTo(dir: 'images/skin', file: 'database_delete.png')}" width="16" height="16" border="0" alt="remove">
+                </a>
+              </div>
+              <!-- /Form template-->
+              <!-- No forms template -->
+              <div id="measuringPointsForm_noforms_template">No points</div>
+              <!-- /No forms template-->
+              <!-- prefilled form-->
+              <g:set var="measuringPoints" value="${customer.locations*.measuringPoints.flatten()}"/>
+              <g:hiddenField name="measuringPointCount" value="${measuringPoints.size()}"/>
+              <g:each in="${measuringPoints}" var="measuringPoint" status="pointIndex">
+                    <label for="customer.measuringPoints[${pointIndex}].utilityCompanyMeter">
+                        <g:message code="registration.danish.utility.meter.number"/>:
+                    </label>
+                    <g:textField name="customer.measuringPoints[${pointIndex}].utilityCompanyMeter"
+                        value="${measuringPoint.utilityCompanyMeter}"
+                        class="${hasErrors(bean: measuringPoint, field: 'utilityCompanyMeter', 'errors')}"/>
+                    <label for="customer.measuringPoints[${pointIndex}].name">
+                        <g:message code="registration.danish.utility.meter.placement"/>:
+                    </label>
+                    <g:textField name="customer.measuringPoints[${pointIndex}].name"
+                        value="${measuringPoint.name}"
+                        class="${hasErrors(bean: measuringPoint, field: 'name', 'errors')}"/>
+              </g:each>
+              <!-- Controls -->
+              <div id="measuringPointsForm_controls">
+                <div id="measuringPointsForm_add"><a><span>Add point</span></a></div>
+                <div id="measuringPointsForm_remove_last"><a><span>Remove</span></a></div>
+                <div id="measuringPointsForm_remove_all"><a><span>Remove all</span></a></div>
+                <div id="measuringPointsForm_add_n">
+                  <input id="measuringPointsForm_add_n_input" type="text" size="4" />
+                  <div id="measuringPointsForm_add_n_button"><a><span>Add</span></a></div></div>
+              </div>
+              <!-- /Controls -->
+            </div>
+        </div>
+        </div>
+    </grid:widget>
+</body>
+</html>
+-----
+<%--
+  All Rights Reserved
+--%>
+<%@ page contentType="text/html;charset=UTF-8" %>
+<html>
+<head>
+  <title>New customer registration</title>
+  <meta name="layout" content="simple"/>
+  <content tag="tabName">Setup</content>
+  <style type="text/css">
+  .details label {
+      width: 120px;
+      display: inline-block !important
+  }
+
+  .details input, .details select {
+      width: 200px;
+      display: inline-block !important
+  }
+  </style>
+  <grid:includejs src="jquery.combobox/ui.core.js"/>
+  <grid:includejs src="jquery.combobox/ui.combobox.js"/>
+  <link href="${createLinkTo(dir: 'js/jquery.combobox', file: 'ui.combobox.css')}" type="text/css" rel="stylesheet"/>
+  <grid:includejs src="gridmanager/weekdaySet.js"/>
+  <grid:includejs src="jquery.sheepit/jquery.sheepItPlugin-1.0.0.js"/>
+
+  <g:set var="measuringPoints" value="${customer.locations*.measuringPoints.flatten()}"/>
+  <label for="customer.measuringPoints[${pointIndex}].utilityCompanyMeter">
+    <g:message code="registration.danish.utility.meter.number"/>:
+  </label>
+  <g:textField name="customer.measuringPoints[${pointIndex}].utilityCompanyMeter"
+               value="${measuringPoint.utilityCompanyMeter}"
+
+  <script type="text/javascript">
+      $(document).ready(function () {
+          var measuringPointsForm = $('#measuringPointsForm').sheepIt({
+              separator: '',
+              allowRemoveLast: true,
+              allowRemoveCurrent: true,
+              allowRemoveAll: true,
+              allowAdd: true,
+              allowAddN: false,
+              maxFormsCount: 0,
+              minFormsCount: 0,
+              iniFormsCount: 1,
+              data: [
+                  <g:each in="${measuringPoints}" var="measuringPoint" status="pointIndex">
+                  {
+                      'customer.measuringPoints_#index#.utilityCompanyMeter': "${measuringPoint.utilityCompanyMeter}",
+                      'customer.measuringPoints_#index#.name': "${measuringPoint.name}"
+                  }
+                  </g:each>
+              ]
+          });
+      });
+  </script>
+</head>
+
+<body>
+<div>
+  <g:t
+
+  <script>
+      a({
+          <g:t/>
+      });
+  </script>
+</div>
+
+<grid:widget class="block white" id="component_form">
+  <div style="margin-left:50px; width:780px">
+    <br/>
+
+    <h2>Customer Registration</h2>
+    <br/>
+    Please fill in your company details and administrator credentials.
+    <br/>
+    <br/>
+    %{--TODO: Maybe we can format it somehow without action name?--}%
+    <g:render template="requiredInfo"
+              model="[customer: customer, user: user, pricingAreas: pricingAreas, action: 'saveRegistration']"/>
+    <h3>
+      <g:checkBox name="danish_only"
+                  onchange="\$('#danish_section').toggle(\$('#danish_only').is(':checked'));"
+                  checked="${danish_only}"/>
+      <label for="danish_only" style="display: inline;"><g:message code="registration.danish.title"/></label>
+    </h3>
+
+    <div class="details" id="danish_section" style="display: ${danish_only ? 'inherit' : 'none'};">
+      <label for="utilityCompanyName"><g:message code="registration.danish.utility.company"/>:</label>
+      <g:textField name="utilityCompanyName" value="${customer.utilityCompanyName}"
+                   class="${hasErrors(customer: user, field: 'utilityCompanyName', 'errors')}"/>
+      <br/>
+      <h4><g:message code="registration.danish.utility.meters"/></h4>
+
+      <div id="measuringPointsForm">
+        <!-- Form template-->
+        <div id="measuringPointsForm_template">
+          <label for="customer.measuringPoints_#index#.utilityCompanyMeter">
+            <g:message code="registration.danish.utility.meter.number"/>:
+            <span id="measuringPointsForm_label"></span>
+          </label>
+          <g:textField name="customer.measuringPoints_#index#.utilityCompanyMeter"/>
+          <label for="customer.measuringPoints_#index#.name">
+            <g:message code="registration.danish.utility.meter.placement"/>:
+          </label>
+          <g:textField name="customer.measuringPoints_#index#.name"/>
+          <a id="measuringPointsForm_remove_current">
+            <img class="delete" src="${createLinkTo(dir: 'images/skin', file: 'database_delete.png')}" width="16" height="16" border="0" alt="remove">
+          </a>
+        </div>
+        <!-- /Form template-->
+        <!-- No forms template -->
+        <div id="measuringPointsForm_noforms_template">No points</div>
+      <!-- /No forms template-->
+      <!-- prefilled form-->
+        <g:set var="measuringPoints" value="${customer.locations*.measuringPoints.flatten()}"/>
+        <g:hiddenField name="measuringPointCount" value="${measuringPoints.size()}"/>
+        <g:each in="${measuringPoints}" var="measuringPoint" status="pointIndex">
+          <label for="customer.measuringPoints[${pointIndex}].utilityCompanyMeter">
+            <g:message code="registration.danish.utility.meter.number"/>:
+          </label>
+          <g:textField name="customer.measuringPoints[${pointIndex}].utilityCompanyMeter"
+                       value="${measuringPoint.utilityCompanyMeter}"
+                       class="${hasErrors(bean: measuringPoint, field: 'utilityCompanyMeter', 'errors')}"/>
+          <label for="customer.measuringPoints[${pointIndex}].name">
+            <g:message code="registration.danish.utility.meter.placement"/>:
+          </label>
+          <g:textField name="customer.measuringPoints[${pointIndex}].name"
+                       value="${measuringPoint.name}"
+                       class="${hasErrors(bean: measuringPoint, field: 'name', 'errors')}"/>
+        </g:each>
+      <!-- Controls -->
+        <div id="measuringPointsForm_controls">
+          <div id="measuringPointsForm_add"><a><span>Add point</span></a></div>
+
+          <div id="measuringPointsForm_remove_last"><a><span>Remove</span></a></div>
+
+          <div id="measuringPointsForm_remove_all"><a><span>Remove all</span></a></div>
+
+          <div id="measuringPointsForm_add_n">
+            <input id="measuringPointsForm_add_n_input" type="text" size="4"/>
+
+            <div id="measuringPointsForm_add_n_button"><a><span>Add</span></a></div></div>
+        </div>
+        <!-- /Controls -->
+      </div>
+    </div>
+  </div>
+</grid:widget>
+</body>
+</html>

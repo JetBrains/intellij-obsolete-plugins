@@ -1,0 +1,28 @@
+%{def href = "<a href="}%
+<%=href %>  "http://www.google.com"/>Google link</a>
+-----
+GspGroovyDummyHolder
+  GspClass
+    GspRunMethod
+      GspRunBlock
+        PsiElement(GSCRIPT_BEGIN)('%{')
+        Variable definitions
+          Modifiers
+            PsiElement(def)('def')
+          PsiWhiteSpace(' ')
+          Variable
+            PsiElement(identifier)('href')
+            PsiWhiteSpace(' ')
+            PsiElement(=)('=')
+            PsiWhiteSpace(' ')
+            Literal
+              PsiElement(double quoted string)('"<a href="')
+        PsiElement(GSCRIPT_END)('}%')
+        Outer: GSP TEMPLATE STATEMENTS('\n')
+        PsiElement(JEXPR_BEGIN)('<%=')
+        Groovy Expression Injection
+          Reference expression
+            PsiElement(identifier)('href')
+          PsiWhiteSpace(' ')
+        PsiElement(JEXPR_END)('%>')
+        Outer: GSP TEMPLATE STATEMENTS('  "http://www.google.com"/>Google link</a>')

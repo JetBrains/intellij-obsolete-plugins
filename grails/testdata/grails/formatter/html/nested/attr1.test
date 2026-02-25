@@ -1,0 +1,13 @@
+<html>
+             <g:form>
+             <div class="buttons">
+             </g:form>
+             </div>
+</html>
+-----
+<html>
+<g:form>
+  <div class="buttons">
+</g:form>
+</div>
+</html>

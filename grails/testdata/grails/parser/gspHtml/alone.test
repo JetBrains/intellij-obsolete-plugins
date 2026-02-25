@@ -1,0 +1,33 @@
+<html>
+<%
+while (   true  )   { %>
+some_text
+<%
+ foo()
+}
+%>
+</html>
+-----
+GspHtmlFileImpl
+  PsiElement(HTML_DOCUMENT)
+    PsiElement(XML_PROLOG)
+      <empty list>
+    HtmlTag:html
+      XmlToken:XML_START_TAG_START('<')
+      XmlToken:XML_NAME('html')
+      XmlToken:XML_TAG_END('>')
+      XmlText
+        PsiWhiteSpace('\n')
+        Outer: GSP FRAGMENT('<%')
+        Outer: GSP FRAGMENT('\nwhile (   true  )   { ')
+        Outer: GSP FRAGMENT('%>')
+        PsiWhiteSpace('\n')
+        XmlToken:XML_DATA_CHARACTERS('some_text')
+        PsiWhiteSpace('\n')
+        Outer: GSP FRAGMENT('<%')
+        Outer: GSP FRAGMENT('\n foo()\n}\n')
+        Outer: GSP FRAGMENT('%>')
+        PsiWhiteSpace('\n')
+      XmlToken:XML_END_TAG_START('</')
+      XmlToken:XML_NAME('html')
+      XmlToken:XML_TAG_END('>')

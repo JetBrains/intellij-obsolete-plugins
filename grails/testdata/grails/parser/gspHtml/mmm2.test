@@ -1,0 +1,169 @@
+<!-<td>->
+<!-<form>->
+<!-<div>->
+<!-<input type="text" name="filename" style="width: 250px;"/>->
+<!-<div class="button">->
+  <input/>->
+<!-</div>->
+  <span>*** wenn nicht vergeben, dann wird der urpruengliche Dateiname genommen.</span>->
+<!-</div>->
+<!-</form>->
+<!-</td>->
+<!-</tr>->
+-----
+GspHtmlFileImpl
+  PsiElement(HTML_DOCUMENT)
+    PsiElement(XML_PROLOG)
+      <empty list>
+    XmlToken:XML_DATA_CHARACTERS('<!-')
+    HtmlTag:td
+      XmlToken:XML_START_TAG_START('<')
+      XmlToken:XML_NAME('td')
+      XmlToken:XML_TAG_END('>')
+      XmlText
+        XmlToken:XML_DATA_CHARACTERS('->')
+        PsiWhiteSpace('\n')
+        XmlToken:XML_DATA_CHARACTERS('<!-')
+      HtmlTag:form
+        XmlToken:XML_START_TAG_START('<')
+        XmlToken:XML_NAME('form')
+        XmlToken:XML_TAG_END('>')
+        XmlText
+          XmlToken:XML_DATA_CHARACTERS('->')
+          PsiWhiteSpace('\n')
+          XmlToken:XML_DATA_CHARACTERS('<!-')
+        HtmlTag:div
+          XmlToken:XML_START_TAG_START('<')
+          XmlToken:XML_NAME('div')
+          XmlToken:XML_TAG_END('>')
+          XmlText
+            XmlToken:XML_DATA_CHARACTERS('->')
+            PsiWhiteSpace('\n')
+            XmlToken:XML_DATA_CHARACTERS('<!-')
+          HtmlTag:input
+            XmlToken:XML_START_TAG_START('<')
+            XmlToken:XML_NAME('input')
+            PsiWhiteSpace(' ')
+            PsiElement(XML_ATTRIBUTE)
+              XmlToken:XML_NAME('type')
+              XmlToken:XML_EQ('=')
+              PsiElement(XML_ATTRIBUTE_VALUE)
+                XmlToken:XML_ATTRIBUTE_VALUE_START_DELIMITER('"')
+                XmlToken:XML_ATTRIBUTE_VALUE_TOKEN('text')
+                XmlToken:XML_ATTRIBUTE_VALUE_END_DELIMITER('"')
+            PsiWhiteSpace(' ')
+            PsiElement(XML_ATTRIBUTE)
+              XmlToken:XML_NAME('name')
+              XmlToken:XML_EQ('=')
+              PsiElement(XML_ATTRIBUTE_VALUE)
+                XmlToken:XML_ATTRIBUTE_VALUE_START_DELIMITER('"')
+                XmlToken:XML_ATTRIBUTE_VALUE_TOKEN('filename')
+                XmlToken:XML_ATTRIBUTE_VALUE_END_DELIMITER('"')
+            PsiWhiteSpace(' ')
+            PsiElement(XML_ATTRIBUTE)
+              XmlToken:XML_NAME('style')
+              XmlToken:XML_EQ('=')
+              PsiElement(XML_ATTRIBUTE_VALUE)
+                XmlToken:XML_ATTRIBUTE_VALUE_START_DELIMITER('"')
+                PsiElement(CSS_DECLARATION_BLOCK)
+                  PsiElement(CSS_DECLARATION)
+                    PsiElement(CSS_IDENT)('width')
+                    PsiElement(CSS_COLON)(':')
+                    PsiWhiteSpace(' ')
+                    PsiElement(CSS_TERM_LIST)
+                      PsiElement(CSS_TERM)
+                        PsiElement(CSS_NUMBER_TERM)
+                          PsiElement(CSS_NUMBER)('250')
+                          PsiElement(CSS_IDENT)('px')
+                  PsiElement(CSS_SEMICOLON)(';')
+                XmlToken:XML_ATTRIBUTE_VALUE_END_DELIMITER('"')
+            XmlToken:XML_EMPTY_ELEMENT_END('/>')
+          XmlText
+            XmlToken:XML_DATA_CHARACTERS('->')
+            PsiWhiteSpace('\n')
+            XmlToken:XML_DATA_CHARACTERS('<!-')
+          HtmlTag:div
+            XmlToken:XML_START_TAG_START('<')
+            XmlToken:XML_NAME('div')
+            PsiWhiteSpace(' ')
+            PsiElement(XML_ATTRIBUTE)
+              XmlToken:XML_NAME('class')
+              XmlToken:XML_EQ('=')
+              PsiElement(XML_ATTRIBUTE_VALUE)
+                XmlToken:XML_ATTRIBUTE_VALUE_START_DELIMITER('"')
+                XmlToken:XML_ATTRIBUTE_VALUE_TOKEN('button')
+                XmlToken:XML_ATTRIBUTE_VALUE_END_DELIMITER('"')
+            XmlToken:XML_TAG_END('>')
+            XmlText
+              XmlToken:XML_DATA_CHARACTERS('->')
+              PsiWhiteSpace('\n  ')
+            HtmlTag:input
+              XmlToken:XML_START_TAG_START('<')
+              XmlToken:XML_NAME('input')
+              XmlToken:XML_EMPTY_ELEMENT_END('/>')
+            XmlText
+              XmlToken:XML_DATA_CHARACTERS('->')
+              PsiWhiteSpace('\n')
+              XmlToken:XML_DATA_CHARACTERS('<!-')
+            XmlToken:XML_END_TAG_START('</')
+            XmlToken:XML_NAME('div')
+            XmlToken:XML_TAG_END('>')
+          XmlText
+            XmlToken:XML_DATA_CHARACTERS('->')
+            PsiWhiteSpace('\n  ')
+          HtmlTag:span
+            XmlToken:XML_START_TAG_START('<')
+            XmlToken:XML_NAME('span')
+            XmlToken:XML_TAG_END('>')
+            XmlText
+              XmlToken:XML_DATA_CHARACTERS('***')
+              PsiWhiteSpace(' ')
+              XmlToken:XML_DATA_CHARACTERS('wenn')
+              PsiWhiteSpace(' ')
+              XmlToken:XML_DATA_CHARACTERS('nicht')
+              PsiWhiteSpace(' ')
+              XmlToken:XML_DATA_CHARACTERS('vergeben,')
+              PsiWhiteSpace(' ')
+              XmlToken:XML_DATA_CHARACTERS('dann')
+              PsiWhiteSpace(' ')
+              XmlToken:XML_DATA_CHARACTERS('wird')
+              PsiWhiteSpace(' ')
+              XmlToken:XML_DATA_CHARACTERS('der')
+              PsiWhiteSpace(' ')
+              XmlToken:XML_DATA_CHARACTERS('urpruengliche')
+              PsiWhiteSpace(' ')
+              XmlToken:XML_DATA_CHARACTERS('Dateiname')
+              PsiWhiteSpace(' ')
+              XmlToken:XML_DATA_CHARACTERS('genommen.')
+            XmlToken:XML_END_TAG_START('</')
+            XmlToken:XML_NAME('span')
+            XmlToken:XML_TAG_END('>')
+          XmlText
+            XmlToken:XML_DATA_CHARACTERS('->')
+            PsiWhiteSpace('\n')
+            XmlToken:XML_DATA_CHARACTERS('<!-')
+          XmlToken:XML_END_TAG_START('</')
+          XmlToken:XML_NAME('div')
+          XmlToken:XML_TAG_END('>')
+        XmlText
+          XmlToken:XML_DATA_CHARACTERS('->')
+          PsiWhiteSpace('\n')
+          XmlToken:XML_DATA_CHARACTERS('<!-')
+        XmlToken:XML_END_TAG_START('</')
+        XmlToken:XML_NAME('form')
+        XmlToken:XML_TAG_END('>')
+      XmlText
+        XmlToken:XML_DATA_CHARACTERS('->')
+        PsiWhiteSpace('\n')
+        XmlToken:XML_DATA_CHARACTERS('<!-')
+      XmlToken:XML_END_TAG_START('</')
+      XmlToken:XML_NAME('td')
+      XmlToken:XML_TAG_END('>')
+    XmlToken:XML_DATA_CHARACTERS('->')
+    PsiWhiteSpace('\n')
+    XmlToken:XML_DATA_CHARACTERS('<!-')
+    PsiErrorElement:Closing tag matches nothing
+      XmlToken:XML_END_TAG_START('</')
+      XmlToken:XML_NAME('tr')
+      XmlToken:XML_TAG_END('>')
+    XmlToken:XML_DATA_CHARACTERS('->')

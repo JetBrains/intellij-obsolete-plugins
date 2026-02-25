@@ -1,0 +1,41 @@
+<p>
+<g:while test="${i>0}">
+<%
+  println "Preved!\n"
+  i--
+%>
+</g:while>
+</p>
+-----
+GspGroovyDummyHolder
+  GspClass
+    GspRunMethod
+      GspRunBlock
+        Outer: GSP TEMPLATE STATEMENTS('<p>\n<g:while test="')
+        PsiElement(GEXPR_BEGIN)('${')
+        Groovy Expression Injection
+          Relational expression
+            Reference expression
+              PsiElement(identifier)('i')
+            PsiElement(>)('>')
+            Literal
+              PsiElement(Integer)('0')
+        PsiElement(GEXPR_END)('}')
+        Outer: GSP TEMPLATE STATEMENTS('">\n')
+        PsiElement(JSCRIPT_BEGIN)('<%')
+        PsiElement(new line)('\n  ')
+        Call expression
+          Reference expression
+            PsiElement(identifier)('println')
+          PsiWhiteSpace(' ')
+          Command arguments
+            Literal
+              PsiElement(double quoted string)('"Preved!\n"')
+        PsiElement(new line)('\n  ')
+        Unary expression
+          Reference expression
+            PsiElement(identifier)('i')
+          PsiElement(--)('--')
+        PsiElement(new line)('\n')
+        PsiElement(JSCRIPT_END)('%>')
+        Outer: GSP TEMPLATE STATEMENTS('\n</g:while>\n</p>')

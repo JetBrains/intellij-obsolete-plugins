@@ -1,0 +1,7 @@
+<g:for iter="3">
+abc
+</g:for>
+-----
+<g:for iter="3">
+  abc
+</g:for>

@@ -1,0 +1,13 @@
+<g:a>
+    <g:b>
+          <form>
+        </form>
+    </g:b>
+</g:a>
+-----
+<g:a>
+  <g:b>
+    <form>
+    </form>
+  </g:b>
+</g:a>

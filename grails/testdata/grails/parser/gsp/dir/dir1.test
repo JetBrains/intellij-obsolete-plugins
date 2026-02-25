@@ -1,0 +1,27 @@
+<abc>
+<%@ import file = "a.b.c" %>
+</abc>
+-----
+Groovy Server Pages file
+  PsiElement(XML_DOCUMENT)
+    PsiElement(XML_PROLOG)
+      <empty list>
+    Gsp root tag
+      Outer: GSP TEMPLATE STATEMENTS('<abc>\n')
+      GSP directive
+        PsiElement(JDIRECT_BEGIN)('<%@')
+        PsiWhiteSpace(' ')
+        XmlToken:XML_NAME('import')
+        PsiWhiteSpace(' ')
+        GSP_DIRECTIVE_ATTRIBUTE
+          XmlToken:XML_NAME('file')
+          PsiWhiteSpace(' ')
+          XmlToken:XML_EQ('=')
+          PsiWhiteSpace(' ')
+          GSP directive attribute value
+            XmlToken:XML_ATTRIBUTE_VALUE_START_DELIMITER('"')
+            XmlToken:XML_ATTRIBUTE_VALUE_TOKEN('a.b.c')
+            XmlToken:XML_ATTRIBUTE_VALUE_END_DELIMITER('"')
+        PsiWhiteSpace(' ')
+        PsiElement(JDIRECT_END)('%>')
+      Outer: GSP TEMPLATE STATEMENTS('\n</abc>')

@@ -1,0 +1,27 @@
+<td><g:if><img></g:if> asdas  </td>
+-----
+GspHtmlFileImpl
+  PsiElement(HTML_DOCUMENT)
+    PsiElement(XML_PROLOG)
+      <empty list>
+    HtmlTag:td
+      XmlToken:XML_START_TAG_START('<')
+      XmlToken:XML_NAME('td')
+      XmlToken:XML_TAG_END('>')
+      Outer: GSP FRAGMENT('<')
+      Outer: GSP FRAGMENT('g:if')
+      Outer: GSP FRAGMENT('>')
+      HtmlTag:img
+        XmlToken:XML_START_TAG_START('<')
+        XmlToken:XML_NAME('img')
+        XmlToken:XML_TAG_END('>')
+      XmlText
+        Outer: GSP FRAGMENT('</')
+        Outer: GSP FRAGMENT('g:if')
+        Outer: GSP FRAGMENT('>')
+        PsiWhiteSpace(' ')
+        XmlToken:XML_DATA_CHARACTERS('asdas')
+        PsiWhiteSpace('  ')
+      XmlToken:XML_END_TAG_START('</')
+      XmlToken:XML_NAME('td')
+      XmlToken:XML_TAG_END('>')

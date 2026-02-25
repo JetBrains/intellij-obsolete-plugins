@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component name="LanguageInjectionConfiguration">
+  <injection language="HQL" injector-id="groovy">
+    <display-name>Grails HQL injection</display-name>
+    <place><![CDATA[groovyElement().methodCallParameter(0, grLightMethod("Gorm:DomainDescriptor:DynamicMethod").withName(string().oneOf("find", "findAll", "executeQuery", "executeUpdate")))]]></place>
+  </injection>
+</component>

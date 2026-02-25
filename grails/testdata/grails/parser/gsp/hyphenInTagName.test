@@ -1,0 +1,64 @@
+<%@ page contentType="text/html;charset=UTF-8" %>
+<content tag="content">
+
+  <fb:js-string var="dialogText">
+    <g:form action="addProfile">
+    </g:form>
+  </fb:js-string>
+
+</content>
+-----
+Groovy Server Pages file
+  PsiElement(XML_DOCUMENT)
+    PsiElement(XML_PROLOG)
+      <empty list>
+    Gsp root tag
+      GSP directive
+        PsiElement(JDIRECT_BEGIN)('<%@')
+        PsiWhiteSpace(' ')
+        XmlToken:XML_NAME('page')
+        PsiWhiteSpace(' ')
+        GSP_DIRECTIVE_ATTRIBUTE
+          XmlToken:XML_NAME('contentType')
+          XmlToken:XML_EQ('=')
+          GSP directive attribute value
+            XmlToken:XML_ATTRIBUTE_VALUE_START_DELIMITER('"')
+            XmlToken:XML_ATTRIBUTE_VALUE_TOKEN('text/html;charset=UTF-8')
+            XmlToken:XML_ATTRIBUTE_VALUE_END_DELIMITER('"')
+        PsiWhiteSpace(' ')
+        PsiElement(JDIRECT_END)('%>')
+      Outer: GSP TEMPLATE STATEMENTS('\n<content tag="content">\n\n  ')
+      Grails tag
+        XmlToken:XML_START_TAG_START('<')
+        XmlToken:XML_TAG_NAME('fb:js-string')
+        PsiWhiteSpace(' ')
+        GSP attribute
+          XmlToken:XML_NAME('var')
+          XmlToken:XML_EQ('=')
+          PsiElement(GSP_ATTRIBUTE_VALUE)
+            XmlToken:XML_ATTRIBUTE_VALUE_START_DELIMITER('"')
+            XmlToken:XML_ATTRIBUTE_VALUE_TOKEN('dialogText')
+            XmlToken:XML_ATTRIBUTE_VALUE_END_DELIMITER('"')
+        XmlToken:XML_TAG_END('>')
+        Outer: GSP TEMPLATE STATEMENTS('\n    ')
+        Grails tag
+          XmlToken:XML_START_TAG_START('<')
+          XmlToken:XML_TAG_NAME('g:form')
+          PsiWhiteSpace(' ')
+          GSP attribute
+            XmlToken:XML_NAME('action')
+            XmlToken:XML_EQ('=')
+            PsiElement(GSP_ATTRIBUTE_VALUE)
+              XmlToken:XML_ATTRIBUTE_VALUE_START_DELIMITER('"')
+              XmlToken:XML_ATTRIBUTE_VALUE_TOKEN('addProfile')
+              XmlToken:XML_ATTRIBUTE_VALUE_END_DELIMITER('"')
+          XmlToken:XML_TAG_END('>')
+          Outer: GSP TEMPLATE STATEMENTS('\n    ')
+          XmlToken:XML_END_TAG_START('</')
+          XmlToken:XML_TAG_NAME('g:form')
+          XmlToken:XML_TAG_END('>')
+        Outer: GSP TEMPLATE STATEMENTS('\n  ')
+        XmlToken:XML_END_TAG_START('</')
+        XmlToken:XML_TAG_NAME('fb:js-string')
+        XmlToken:XML_TAG_END('>')
+      Outer: GSP TEMPLATE STATEMENTS('\n\n</content>')

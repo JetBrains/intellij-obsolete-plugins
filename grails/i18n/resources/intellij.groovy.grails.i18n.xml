@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!-- Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.-->
+<idea-plugin>
+
+  <resource-bundle>messages.GrailsBundle</resource-bundle>
+
+  <dependencies>
+    <plugin id="com.intellij.java-i18n"/>
+  </dependencies>
+
+  <extensions defaultExtensionNs="com.intellij.java-i18n">
+    <i18nizeHandlerProvider implementation="com.intellij.groovy.grails.i18n.GrailsI18nizeProvider"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <psi.referenceContributor language="GSP" implementation="com.intellij.groovy.grails.i18n.GrailsI18nReferenceContributor"/>
+
+    <localInspection language="Groovy" enabledByDefault="true" level="ERROR"
+                     groupBundle="messages.GrailsBundle" groupPathKey="inspections.groupPath" groupKey="inspections.groupName"
+                     bundle="messages.GrailsBundle" key="inspection.invalid.i.18.n.property.display.name"
+                     shortName="InvalidI18nProperty" implementationClass="com.intellij.groovy.grails.i18n.GrailsI18nInspection"/>
+
+    <intentionAction>
+      <className>com.intellij.groovy.grails.i18n.GspI18nIntention</className>
+      <categoryKey>library.name</categoryKey>
+    </intentionAction>
+
+  </extensions>
+
+</idea-plugin>

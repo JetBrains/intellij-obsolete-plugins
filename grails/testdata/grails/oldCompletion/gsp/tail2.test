@@ -1,0 +1,8 @@
+<html>
+  <g:actionSubmit>
+    <g:textField>
+    </g:t<caret>>
+  </g:actionSubmit>
+<html/>
+-----
+textField

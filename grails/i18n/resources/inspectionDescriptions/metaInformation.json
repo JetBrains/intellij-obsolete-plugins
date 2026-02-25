@@ -1,0 +1,8 @@
+{
+  "inspections": [
+    {
+      "id": "InvalidI18nProperty",
+      "codeQualityCategory": "Sanity"
+    }
+  ]
+}

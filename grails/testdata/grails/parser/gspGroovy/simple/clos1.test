@@ -1,0 +1,39 @@
+<abc>
+<% use (MyCategory) {%>
+do ${it} now!
+<%}%>
+</abc>
+-----
+GspGroovyDummyHolder
+  GspClass
+    GspRunMethod
+      GspRunBlock
+        Outer: GSP TEMPLATE STATEMENTS('<abc>\n')
+        PsiElement(JSCRIPT_BEGIN)('<%')
+        PsiWhiteSpace(' ')
+        Method call
+          Reference expression
+            PsiElement(identifier)('use')
+          PsiWhiteSpace(' ')
+          Arguments
+            PsiElement(()('(')
+            Reference expression
+              PsiElement(identifier)('MyCategory')
+            PsiElement())(')')
+          PsiWhiteSpace(' ')
+          Closable block
+            PsiElement({)('{')
+            Parameter list
+              <empty list>
+            PsiElement(JSCRIPT_END)('%>')
+            Outer: GSP TEMPLATE STATEMENTS('\ndo ')
+            PsiElement(GEXPR_BEGIN)('${')
+            Groovy Expression Injection
+              Reference expression
+                PsiElement(identifier)('it')
+            PsiElement(GEXPR_END)('}')
+            Outer: GSP TEMPLATE STATEMENTS(' now!\n')
+            PsiElement(JSCRIPT_BEGIN)('<%')
+            PsiElement(})('}')
+        PsiElement(JSCRIPT_END)('%>')
+        Outer: GSP TEMPLATE STATEMENTS('\n</abc>')

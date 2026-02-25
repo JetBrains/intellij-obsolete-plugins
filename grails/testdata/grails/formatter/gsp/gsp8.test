@@ -1,0 +1,9 @@
+<html>
+<body>
+<g:if a= >
+aaa
+-----
+<html>
+<body>
+<g:if a=>
+  aaa

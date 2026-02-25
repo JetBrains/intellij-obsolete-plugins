@@ -1,0 +1,19 @@
+<html>
+    <g:a>
+        <a>
+        </a>
+    </g:a>
+    <g:b>
+    </g:b>
+    some_text
+</html>
+-----
+<html>
+<g:a>
+  <a>
+  </a>
+</g:a>
+<g:b>
+</g:b>
+some_text
+</html>

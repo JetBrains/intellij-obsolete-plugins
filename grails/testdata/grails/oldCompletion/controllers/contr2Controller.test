@@ -1,0 +1,9 @@
+class MyController {
+  def foo = {
+
+  }
+}
+re<caret>
+-----
+record
+return

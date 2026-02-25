@@ -1,0 +1,15 @@
+<%
+    def foo =    5
+def boo = {
+       double a, double b ->
+           return a +    b
+  }
+    %>
+-----
+<%
+  def foo = 5
+  def boo = {
+    double a, double b ->
+      return a + b
+  }
+%>
