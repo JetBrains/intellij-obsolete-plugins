@@ -1,6 +1,4 @@
 // Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
-import org.gradle.internal.classpath.Instrumented.systemProperty
-import org.gradle.internal.impldep.org.eclipse.jgit.diff.DiffDriver
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 
 plugins {
@@ -37,13 +35,7 @@ dependencies {
     bundledPlugin("com.intellij.microservices.jvm")
 
     testBundledPlugin("com.intellij.java-i18n")
-    testBundledModule("intellij.javaee.platform")
-    testBundledModule("intellij.javaee.platform.impl")
-    testBundledModule("intellij.javaee.web")
-    testBundledModule("intellij.javaee.ejb")
-    testBundledModule("intellij.javaee.application")
-    testBundledModule("intellij.javaee.app.servers")
-    testBundledModule("intellij.javaee.platform")
+    testBundledPlugin("com.intellij.javaee")
 
     testFramework(TestFrameworkType.Plugin.Java)
     testFramework(TestFrameworkType.Platform)
@@ -51,16 +43,16 @@ dependencies {
   testImplementation("junit:junit:4.13.2")
 }
 
-DiffDriver.java.sourceSets["main"].java {
+java.sourceSets["main"].java {
   srcDir("src")
   srcDir("gen")
 }
 
-DiffDriver.java.sourceSets["main"].resources {
+java.sourceSets["main"].resources {
   srcDir("resources")
 }
 
-DiffDriver.java.sourceSets["test"].java {
+java.sourceSets["test"].java {
   srcDir("test")
 }
 
