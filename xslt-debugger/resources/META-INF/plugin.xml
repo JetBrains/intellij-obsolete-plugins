@@ -1,0 +1,28 @@
+<!-- Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.-->
+<idea-plugin>
+  <name>XSLT Debugger</name>
+  <id>XSLT-Debugger</id>
+  <category>HTML and XML</category>
+
+  <description><![CDATA[
+    Allows interactive debugging of XSLT stylesheets.
+  ]]></description>
+
+  <vendor>JetBrains</vendor>
+
+  <dependencies>
+    <plugin id="XPathView"/>
+  </dependencies>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <xdebugger.breakpointType implementation="org.intellij.plugins.xsltDebugger.XsltBreakpointType"/>
+
+    <programRunner implementation="org.intellij.plugins.xsltDebugger.XsltDebuggerRunner"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="XPathView">
+    <xsltRunnerExtension implementation="org.intellij.plugins.xsltDebugger.XsltDebuggerExtension"/>
+  </extensions>
+
+  <resource-bundle>messages.XsltDebuggerBundle</resource-bundle>
+</idea-plugin>

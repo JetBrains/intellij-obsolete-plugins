@@ -1,0 +1,97 @@
+// Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+
+package org.intellij.plugins.xsltDebugger.rt.engine;
+
+import java.io.Serializable;
+import java.util.List;
+
+public interface OutputEventQueue {
+  int START_DOCUMENT = 0;
+  int END_DOCUMENT = 99;
+  int START_ELEMENT = 1;
+  int END_ELEMENT = 2;
+  int ATTRIBUTE = 3;
+  int CHARACTERS = 4;
+  int COMMENT = 5;
+  int PI = 6;
+
+  int TRACE_POINT = 20;
+
+  void setEnabled(boolean b);
+
+  List<NodeEvent> getEvents();
+
+  final class NodeEvent implements Serializable {
+    public static final class QName implements Serializable {
+      public String myPrefix;
+      public String myLocalName;
+      public String myURI;
+
+      public QName(String prefix, String localName, String URI) {
+        myPrefix = prefix;
+        myLocalName = localName;
+        myURI = URI;
+      }
+
+      public QName(String qName, String uri) {
+        myURI = uri;
+        final String[] parts = qName.split(":");
+        if (parts.length == 2) {
+          myPrefix = parts[0];
+          myLocalName = parts[1];
+        } else {
+          myPrefix = null;
+          myLocalName = parts[0];
+        }
+      }
+
+      public QName(String name) {
+        myLocalName = name;
+        myPrefix = null;
+        myURI = null;
+      }
+
+      public String getQName() {
+        return myPrefix != null && !myPrefix.isEmpty() ? myPrefix + ":" + myLocalName : myLocalName;
+      }
+    }
+
+    private final int myType;
+
+    public String myValue;
+    public QName myQName;
+    public String myURI;
+    private int myLineNumber;
+
+    public NodeEvent(int type, QName qName, String value) {
+      myType = type;
+      myQName = qName;
+      myValue = value;
+    }
+
+    public int getType() {
+      return myType;
+    }
+
+    public QName getQName() {
+      return myQName;
+    }
+
+    public String getValue() {
+      return myValue;
+    }
+
+    public void setLocation(String uri, int lineNumber) {
+      myURI = uri;
+      myLineNumber = lineNumber;
+    }
+
+    public int getLineNumber() {
+      return myLineNumber;
+    }
+
+    public String getURI() {
+      return myURI;
+    }
+  }
+}

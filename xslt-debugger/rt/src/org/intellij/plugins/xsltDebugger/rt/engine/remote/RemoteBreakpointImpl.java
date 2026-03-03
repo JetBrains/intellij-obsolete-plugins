@@ -1,0 +1,91 @@
+// Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+
+package org.intellij.plugins.xsltDebugger.rt.engine.remote;
+
+import org.intellij.plugins.xsltDebugger.rt.engine.Breakpoint;
+
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.List;
+
+final class RemoteBreakpointImpl extends UnicastRemoteObject implements RemoteBreakpoint {
+  private final Breakpoint myBreakpoint;
+
+  private RemoteBreakpointImpl(Breakpoint breakpoint) throws RemoteException {
+    assert breakpoint != null;
+    myBreakpoint = breakpoint;
+  }
+
+  @Override
+  public String getUri() throws RemoteException {
+    return myBreakpoint.getUri();
+  }
+
+  @Override
+  public int getLine() throws RemoteException {
+    return myBreakpoint.getLine();
+  }
+
+  @Override
+  public boolean isEnabled() throws RemoteException {
+    return myBreakpoint.isEnabled();
+  }
+
+  @Override
+  public String getCondition() {
+    return myBreakpoint.getCondition();
+  }
+
+  @Override
+  public String getLogMessage() {
+    return myBreakpoint.getLogMessage();
+  }
+
+  @Override
+  public void setCondition(String expr) {
+    myBreakpoint.setCondition(expr);
+  }
+
+  @Override
+  public void setEnabled(boolean enabled) {
+    myBreakpoint.setEnabled(enabled);
+  }
+
+  @Override
+  public void setLogMessage(String expr) {
+    myBreakpoint.setLogMessage(expr);
+  }
+
+  @Override
+  public String getTraceMessage() throws RemoteException {
+    return myBreakpoint.getTraceMessage();
+  }
+
+  @Override
+  public void setTraceMessage(String expr) throws RemoteException {
+    myBreakpoint.setTraceMessage(expr);
+  }
+
+  @Override
+  public boolean isSuspend() {
+    return myBreakpoint.isSuspend();
+  }
+
+  @Override
+  public void setSuspend(boolean suspend) {
+    myBreakpoint.setSuspend(suspend);
+  }
+
+  public static List<RemoteBreakpoint> convert(List<? extends Breakpoint> list) throws RemoteException {
+    final ArrayList<RemoteBreakpoint> breakpoints = new ArrayList<>(list.size());
+    for (Breakpoint breakpoint : list) {
+      breakpoints.add(create(breakpoint));
+    }
+    return breakpoints;
+  }
+
+  public static RemoteBreakpointImpl create(Breakpoint breakpoint) throws RemoteException {
+    return breakpoint != null ? new RemoteBreakpointImpl(breakpoint) : null;
+  }
+}
