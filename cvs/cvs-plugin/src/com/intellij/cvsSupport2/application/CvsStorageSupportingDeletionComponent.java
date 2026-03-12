@@ -43,7 +43,7 @@ public class CvsStorageSupportingDeletionComponent implements VirtualFileListene
 
   @NotNull
   public static CvsStorageSupportingDeletionComponent getInstance(@NotNull Project project) {
-    return ServiceManager.getService(project, CvsStorageSupportingDeletionComponent.class);
+    return project.getService(CvsStorageSupportingDeletionComponent.class);
   }
 
   public void activate() {
