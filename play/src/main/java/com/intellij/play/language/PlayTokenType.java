@@ -4,11 +4,11 @@
  */
 package com.intellij.play.language;
 
-import com.intellij.lang.pratt.PrattTokenType;
+import com.intellij.psi.tree.IElementType;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
-public class PlayTokenType extends PrattTokenType {
+public class PlayTokenType extends IElementType {
 
   public PlayTokenType(@NotNull @NonNls final String debugName) {
     super(debugName, PlayLanguage.INSTANCE);
