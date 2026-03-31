@@ -50,7 +50,7 @@ intellijPlatform {
       sinceBuild = "261"
     }
 
-    changeNotes = ""
+    changeNotes = "Build for 2026.1 IntelliJ IDEA"
   }
 }
 
