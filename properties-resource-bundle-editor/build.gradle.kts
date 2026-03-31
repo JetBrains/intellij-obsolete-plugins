@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "com.intellij.properties.bundle.editor"
-version = "253.0.0"
+version = "261.0.0"
 
 repositories {
   mavenCentral()
@@ -19,7 +19,7 @@ repositories {
 
 dependencies {
   intellijPlatform {
-    intellijIdea("2025.3.1")
+    intellijIdea("2026.1.0")
     bundledPlugin("com.intellij.properties")
 
     testFramework(TestFrameworkType.Platform)
@@ -47,7 +47,7 @@ java.sourceSets["test"].java {
 intellijPlatform {
   pluginConfiguration {
     ideaVersion {
-      sinceBuild = "253"
+      sinceBuild = "261"
     }
 
     changeNotes = ""
