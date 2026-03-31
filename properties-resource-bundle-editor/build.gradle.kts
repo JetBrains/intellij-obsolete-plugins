@@ -19,7 +19,7 @@ repositories {
 
 dependencies {
   intellijPlatform {
-    intellijIdea("2026.1.0")
+    intellijIdea("2026.1")
     bundledPlugin("com.intellij.properties")
 
     testFramework(TestFrameworkType.Platform)
