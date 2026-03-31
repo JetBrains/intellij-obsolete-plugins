@@ -1,5 +1,5 @@
 # Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
-name: Build and Release Properties Resource Bundle Editor
+name: Build and Release Resource Bundle Editor
 
 on:
   workflow_dispatch:
@@ -32,6 +32,6 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: properties-resource-bundle-editor-v${{ steps.version.outputs.version }}
-          name: Properties Resource Bundle Editor v${{ steps.version.outputs.version }}
+          tag_name: resource-bundle-editor-v${{ steps.version.outputs.version }}
+          name: Resource Bundle Editor v${{ steps.version.outputs.version }}
           files: properties-resource-bundle-editor/build/distributions/*.zip
