@@ -34,12 +34,12 @@ public final class ResourceBundleEditorProvider implements FileEditorProvider, D
       return false;
     }
 
-    return ReadAction.compute(() -> {
+    return ReadAction.nonBlocking(() -> {
       if (project.isDisposed()) return Boolean.FALSE;
       final PsiFile psiFile = PsiManager.getInstance(project).findFile(file);
       PropertiesFile propertiesFile = PropertiesImplUtil.getPropertiesFile(psiFile);
       return propertiesFile != null &&  propertiesFile.getResourceBundle().getPropertiesFiles().size() > 1;
-    });
+    }).executeSynchronously();
   }
 
   @Override
