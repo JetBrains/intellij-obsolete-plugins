@@ -1,45 +1,38 @@
+import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+
 plugins {
     id("java")
-    id("org.jetbrains.intellij") version "1.15.0"
+    id("org.jetbrains.intellij.platform") version "2.5.0"
 }
-
-group = "com.intellij"
-version = "2023.2.1"
 
 repositories {
     mavenCentral()
+    intellijPlatform {
+        defaultRepositories()
+    }
 }
 
-intellij {
-    version.set("2023.2.1")
-    type.set("IU") // Target IDE Platform
-
-    plugins.set(listOf("org.intellij.groovy", "com.intellij.persistence"))
+dependencies {
+    intellijPlatform {
+        intellijIdeaUltimate("2024.3.5")
+        bundledPlugins(providers.gradleProperty("platformBundledPlugins").map { it.split(',') })
+        testFramework(TestFrameworkType.Plugin.Java)
+    }
+    testImplementation("junit:junit:4.13.2")
 }
 
 java.sourceSets["main"].java {
     srcDir("src/main/gen")
 }
 
-tasks {
-    // Set the JVM compatibility versions
-    withType<JavaCompile> {
-        sourceCompatibility = "17"
-        targetCompatibility = "17"
-    }
-
-    patchPluginXml {
-        sinceBuild.set("232")
-        untilBuild.set("241.*")
-    }
-
-    signPlugin {
-        certificateChain.set(System.getenv("CERTIFICATE_CHAIN"))
-        privateKey.set(System.getenv("PRIVATE_KEY"))
-        password.set(System.getenv("PRIVATE_KEY_PASSWORD"))
-    }
-
-    publishPlugin {
-        token.set(System.getenv("PUBLISH_TOKEN"))
+intellijPlatform {
+    pluginConfiguration {
+        id = "com.intellij.play"
+        name = "Play Framework"
+        version = "2024.3.5"
+        ideaVersion {
+            sinceBuild = "243"
+            untilBuild = "243.*"
+        }
     }
 }
