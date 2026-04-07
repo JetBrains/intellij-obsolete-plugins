@@ -21,9 +21,11 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.NlsActions;
 import com.intellij.openapi.vcs.actions.VcsContext;
 import com.intellij.openapi.vcs.ui.Refreshable;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
@@ -44,6 +46,13 @@ public abstract class AbstractAction extends AnAction implements DumbAware {
     super(name, null, icon);
     myStartLvcsAction = startLvcsAction;
   }
+
+  public AbstractAction(boolean myStartLvcsAction, @Nullable @NlsActions.ActionText String text, @Nullable @NlsActions.ActionDescription String description, @Nullable Icon icon) {
+    super(text, description, icon);
+    this.myStartLvcsAction = myStartLvcsAction;
+  }
+
+
 
   public AbstractAction setAutoSave(final boolean autoSave) {
     myAutoSave = autoSave;
