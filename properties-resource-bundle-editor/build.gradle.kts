@@ -50,7 +50,7 @@ intellijPlatform {
       sinceBuild = "261"
     }
 
-    changeNotes = "Build for 2026.1 IntelliJ IDEA"
+    changeNotes = "Build for 2026.1 IntelliJ IDEA with translate button"
   }
 }
 

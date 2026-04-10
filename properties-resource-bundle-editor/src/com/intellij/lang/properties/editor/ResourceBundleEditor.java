@@ -1,4 +1,5 @@
 // Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+// Forked and maintained by davdes15
 package com.intellij.lang.properties.editor;
 
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter;
@@ -59,6 +60,7 @@ import com.intellij.util.containers.Stack;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import com.intellij.util.ui.tree.TreeUtil;
+import org.codehaus.jettison.json.JSONArray;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -74,6 +76,13 @@ import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -504,7 +513,7 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
       final Document document = editor.getDocument();
       CommandProcessor.getInstance().executeCommand(null, () -> ApplicationManager.getApplication().runWriteAction(() -> {
         if (!checkIsUnderUndoRedoAction || !undoManager.isActive() || !undoManager.isUndoOrRedoInProgress()) {
-          updateDocumentFromPropertyValue(getPropertyEditorValue(property), document);
+            updateDocumentFromPropertyValue(getPropertyEditorValue(property), document);
         }
       }), "", this);
       JPanel titledPanel = myTitledPanels.get(propertiesFile.getVirtualFile());
@@ -805,6 +814,43 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
         group.add(CustomActionsSchema.getInstance().getCorrectedAction(IdeActions.GROUP_CUT_COPY_PASTE));
         group.add(CustomActionsSchema.getInstance().getCorrectedAction(IdeActions.ACTION_EDIT_SOURCE));
         group.addSeparator();
+        group.add(new AnAction("Translate value") {
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
+                final String valueToTranslate = editor.getDocument().getText();
+                final String currentSelectedProperty = getSelectedPropertyName();
+                Locale originalLocale =
+                    myResourceBundle.getPropertiesFiles().stream().filter(p->p.getName().equals(getSelectedPropertiesFile().getName())).findFirst().map(PropertiesFile::getLocale).orElse(Locale.US);
+                if(originalLocale.getLanguage().isEmpty()) {
+                    originalLocale = Locale.US;
+                }
+                final Locale sourceLocale = originalLocale;
+                if(currentSelectedProperty == null) {
+                    return;
+                }
+                ApplicationManager.getApplication().runWriteAction(() -> WriteCommandAction.runWriteCommandAction(myProject, ResourceBundleEditorBundle.message("action.PropagateValue.text"), null, () -> {
+                    try {
+                        final PropertiesFile[] propertiesFiles = myResourceBundle.getPropertiesFiles().stream().filter(f -> {
+                            final IProperty property = f.findPropertyByKey(currentSelectedProperty);
+                            return property == null || !valueToTranslate.equals(property.getValue());
+                        }).toArray(PropertiesFile[]::new);
+                        final PsiFile[] filesToPrepare = Arrays.stream(propertiesFiles).map(PropertiesFile::getContainingFile).toArray(PsiFile[]::new);
+                        if (FileModificationService.getInstance().preparePsiElementsForWrite(filesToPrepare)) {
+                            for (PropertiesFile file : propertiesFiles) {
+                                Locale fileLocale = file.getLocale();
+                                // translate text
+                                String translated = translateText(sourceLocale, fileLocale,  valueToTranslate);
+                                myPropertiesInsertDeleteManager.insertOrUpdateTranslation(currentSelectedProperty, translated, file);
+                            }
+                            recreateEditorsPanel();
+                        }
+                    }
+                    catch (final IncorrectOperationException e1) {
+                        LOG.error(e1);
+                    }
+                }));
+            }
+        });
         group.add(new AnAction(ResourceBundleEditorBundle.messagePointer("action.PropagateValue.text")) {
           @Override
           public void actionPerformed(@NotNull AnActionEvent e) {
@@ -882,5 +928,50 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
     public boolean getScrollableTracksViewportHeight() {
       return false;
     }
+  }
+
+  private String translateText(Locale origin, Locale destination, String toTranslate) {
+      if (toTranslate == null || toTranslate.trim().isEmpty()) {
+          return toTranslate;  // No translation needed for empty text
+      }
+
+      String sl = origin.getLanguage();  // Source language code, e.g., "en"
+      String tl = destination.getLanguage();  // Target language code, e.g., "es"
+      String encodedText = URLEncoder.encode(toTranslate, StandardCharsets.UTF_8);
+
+      String urlString = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=" + sl + "&tl=" + tl + "&dt=t&q=" + encodedText;
+
+      try {
+          URL url = new URL(urlString);
+          HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+          connection.setRequestMethod("GET");
+          connection.setConnectTimeout(5000);  // 5 seconds timeout
+          connection.setReadTimeout(5000);
+
+          int responseCode = connection.getResponseCode();
+          if (responseCode == HttpURLConnection.HTTP_OK) {
+              BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
+              StringBuilder response = new StringBuilder();
+              String line;
+              while ((line = reader.readLine()) != null) {
+                  response.append(line);
+              }
+              reader.close();
+
+              // Parse JSON response (assuming org.json is available)
+              JSONArray jsonArray = new JSONArray(response.toString());
+              if (jsonArray.length() > 0 && jsonArray.getJSONArray(0).length() > 0) {
+                  JSONArray translationArray = jsonArray.getJSONArray(0).getJSONArray(0);
+                  return translationArray.getString(0);  // Extract translated text
+              }
+          } else {
+              // Log error or handle failure
+              LOG.warn("Translation request failed with response code: " + responseCode);
+          }
+      } catch (Exception e) {
+          LOG.error("Error during translation request", e);
+      }
+
+      return toTranslate;
   }
 }

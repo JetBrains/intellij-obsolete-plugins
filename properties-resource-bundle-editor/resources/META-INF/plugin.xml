@@ -1,13 +1,16 @@
 <!-- Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.-->
+<!-- Forked and maintained by davdes15 -->
 <idea-plugin>
-  <id>com.intellij.properties.bundle.editor</id>
-  <name>Resource Bundle Editor</name>
+  <id>com.davdes15.properties.bundle.editor</id>
+  <name>Resource Bundle Editor with Auto Translate</name>
   <category>Languages</category>
   <depends>com.intellij.modules.xml</depends>
   <description>
-    Provides dedicated editor for .properties bundles.
+    Provides dedicated editor for .properties bundles with an auto translate button.
+    Source code: https://github.com/davdes15/intellij-obsolete-plugins-rbe-translator
   </description>
-  <vendor>JetBrains</vendor>
+  <vendor>davdes15</vendor>
+  <url>https://github.com/davdes15/intellij-obsolete-plugins-rbe-translator</url>
 
   <depends>com.intellij.properties</depends>
   <extensions defaultExtensionNs="com.intellij">
