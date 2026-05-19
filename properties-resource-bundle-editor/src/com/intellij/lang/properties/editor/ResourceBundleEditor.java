@@ -21,6 +21,8 @@ import com.intellij.lang.properties.xml.XmlPropertiesFile;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.WriteAction;
+import com.intellij.openapi.application.WriteIntentReadAction;
+
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.command.impl.UndoManagerImpl;
@@ -51,6 +53,7 @@ import com.intellij.psi.*;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.ui.*;
 import com.intellij.ui.components.JBScrollPane;
+import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.util.Alarm;
 import com.intellij.util.IncorrectOperationException;
 import com.intellij.util.containers.ContainerUtil;
@@ -103,6 +106,7 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
   private volatile boolean    myDisposed;
   private final ResourceBundleEditorFileListener myVfsListener;
   private Editor              mySelectedEditor;
+  private String              myFocusedPropertyName;
   private String              myPropertyToSelectWhenVisible;
   private final ResourceBundleEditorHighlighter myHighlighter;
 
@@ -155,12 +159,14 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
       }
 
       private void writePreviouslySelectedPropertyValue(TreeSelectionEvent e) {
-        if (selectedProperty != null && e.getOldLeadSelectionPath() != null) {
-          for (Map.Entry<VirtualFile, EditorEx> entry : myEditors.entrySet()) {
-            if (entry.getValue() == mySelectedEditor) {
-              writeEditorPropertyValue(selectedProperty.getName(), mySelectedEditor, entry.getKey());
-              break;
+        if (selectedProperty == null || e.getOldLeadSelectionPath() == null || mySelectedEditor == null) return;
+        for (Map.Entry<VirtualFile, EditorEx> entry : myEditors.entrySet()) {
+          if (entry.getValue() == mySelectedEditor) {
+            String oldPropertyName = selectedProperty.getName();
+            if (oldPropertyName != null) {
+              writeEditorPropertyValue(oldPropertyName, mySelectedEditor, entry.getKey());
             }
+            break;
           }
         }
       }
@@ -232,6 +238,11 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
       return;
     }
 
+    // Switching away from this editor — persist any pending edits before losing context.
+    if (oldEditor == this) {
+      saveCurrentlyFocusedEditor();
+    }
+
     // We want to sync selected property key on selection change.
     if (newEditor == this) {
       if (oldEditor instanceof TextEditor te) {
@@ -245,6 +256,17 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
     }
     else if (newEditor instanceof TextEditor te) {
       setPropertiesFileSelectionFromStructureView(te.getEditor());
+    }
+  }
+
+  private void saveCurrentlyFocusedEditor() {
+    if (mySelectedEditor == null || myFocusedPropertyName == null) return;
+    for (Map.Entry<VirtualFile, EditorEx> entry : myEditors.entrySet()) {
+      if (entry.getValue() == mySelectedEditor) {
+        writeEditorPropertyValue(myFocusedPropertyName, mySelectedEditor, entry.getKey());
+        myVfsListener.flush();
+        return;
+      }
     }
   }
 
@@ -350,28 +372,41 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
     }
   }
 
-  private void writeEditorPropertyValue(final @Nullable String propertyName,
+  private void writeEditorPropertyValue(final @NotNull String propertyName,
                                         final @NotNull Editor editor,
                                         final @NotNull VirtualFile file) {
     final String currentValue = editor.getDocument().getText();
-    final String currentSelectedProperty = propertyName ==  null ? getSelectedPropertyName() : propertyName;
-    if (currentSelectedProperty == null) {
-      return;
-    }
     if (!FileModificationService.getInstance().prepareVirtualFilesForWrite(myProject, Collections.singleton(file))) {
       return;
     }
     WriteAction.run(() -> WriteCommandAction.runWriteCommandAction(myProject, ResourceBundleEditorBundle.message(
       "resource.bundle.update.property.value"), null, () -> {
       PropertiesFile propertiesFile = PropertiesImplUtil.getPropertiesFile(file, myProject);
-      if (propertiesFile != null) {
-        if (currentValue.isEmpty() &&
-            ResourceBundleEditorKeepEmptyValueToggleAction.keepEmptyProperties() &&
-            !file.equals(myResourceBundle.getDefaultPropertiesFile().getVirtualFile())) {
-          myPropertiesInsertDeleteManager.deletePropertyIfExist(currentSelectedProperty, propertiesFile);
-        } else {
-          myPropertiesInsertDeleteManager.insertOrUpdateTranslation(currentSelectedProperty, currentValue, propertiesFile);
+      if (propertiesFile == null) return;
+
+      // Look up the property without the stub index (see findPropertyInFileWithoutIndex).
+      // For the dominant case — updating an existing property's value — we can mutate the
+      // PSI directly and avoid the platform manager's findPropertyByKey call entirely.
+      final IProperty existing = findPropertyInFileWithoutIndex(propertiesFile, propertyName);
+
+      boolean shouldDelete = currentValue.isEmpty() &&
+                             ResourceBundleEditorKeepEmptyValueToggleAction.keepEmptyProperties() &&
+                             !file.equals(myResourceBundle.getDefaultPropertiesFile().getVirtualFile());
+
+      if (shouldDelete) {
+        if (existing != null) {
+          // Defer to the manager so its key-ordering state stays consistent across files.
+          myPropertiesInsertDeleteManager.deletePropertyIfExist(propertyName, propertiesFile);
         }
+      } else if (existing != null) {
+        if (!Objects.equals(existing.getValue(), currentValue)) {
+          existing.setValue(currentValue);
+          CodeStyleManager.getInstance(myProject).reformat(existing.getPsiElement());
+        }
+      } else {
+        // Property doesn't exist in this locale yet — let the manager pick the insertion
+        // position (it handles alpha-sorted and ordered modes).
+        myPropertiesInsertDeleteManager.insertOrUpdateTranslation(propertyName, currentValue, propertiesFile);
       }
     }));
   }
@@ -431,15 +466,13 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
         @Override
         public void focusGained(final @NotNull Editor editor) {
           mySelectedEditor = editor;
+          myFocusedPropertyName = getSelectedPropertyName();
         }
 
-        @Override
-        public void focusLost(final @NotNull Editor editor) {
-          if (!editor.isViewer() && propertiesFile.getContainingFile().isValid()) {
-            writeEditorPropertyValue(null, editor, propertiesFile.getVirtualFile());
-            myVfsListener.flush();
-          }
-        }
+        // Intentionally no focusLost handler: writing inside focusLost was racing with the
+        // tree selection update and could leave the right-hand editors out of sync.
+        // Saves happen on tree selection change (writePreviouslySelectedPropertyValue),
+        // when switching file editors (onSelectionChanged), and on dispose.
       });
       gc.gridx = 0;
       gc.gridy = y++;
@@ -492,25 +525,82 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
   }
 
   void updateEditorsFromProperties(final boolean checkIsUnderUndoRedoAction) {
-    String propertyName = getSelectedPropertyName();
-    ((CardLayout)myValuesPanel.getLayout()).show(myValuesPanel, propertyName == null ? NO_PROPERTY_SELECTED : VALUES);
-    if (propertyName == null) return;
+    // Phase 1 (snapshot): gather the values to display on the EDT under WriteIntentReadAction.
+    // snapshotEditorsState() must run on the EDT because it reads JTree selection state,
+    // and it touches PSI which requires read access — WriteIntentReadAction covers both.
+    final EditorsSnapshot snapshot = WriteIntentReadAction.compute(this::snapshotEditorsState);
 
+    ((CardLayout)myValuesPanel.getLayout()).show(myValuesPanel, snapshot.propertyName == null ? NO_PROPERTY_SELECTED : VALUES);
+    if (snapshot.propertyName == null) return;
+
+    // Phase 2 (write): apply the snapshot to each editor's document.
     final UndoManagerImpl undoManager = (UndoManagerImpl)UndoManager.getInstance(myProject);
-    for (final PropertiesFile propertiesFile : myResourceBundle.getPropertiesFiles()) {
-      final EditorEx editor = myEditors.get(propertiesFile.getVirtualFile());
+    for (final EditorValueSnapshot entry : snapshot.perFile) {
+      final EditorEx editor = myEditors.get(entry.file);
       if (editor == null) continue;
-      final IProperty property = propertiesFile.findPropertyByKey(propertyName);
       final Document document = editor.getDocument();
-      CommandProcessor.getInstance().executeCommand(null, () -> ApplicationManager.getApplication().runWriteAction(() -> {
+      CommandProcessor.getInstance().executeCommand(null, () -> WriteAction.run(() -> {
         if (!checkIsUnderUndoRedoAction || !undoManager.isActive() || !undoManager.isUndoOrRedoInProgress()) {
-          updateDocumentFromPropertyValue(getPropertyEditorValue(property), document);
+          updateDocumentFromPropertyValue(entry.value, document);
         }
       }), "", this);
-      JPanel titledPanel = myTitledPanels.get(propertiesFile.getVirtualFile());
-      ((TitledBorder)titledPanel.getBorder()).setTitleColor(property == null ? JBColor.RED : UIUtil.getLabelTextForeground());
+      JPanel titledPanel = myTitledPanels.get(entry.file);
+      ((TitledBorder)titledPanel.getBorder()).setTitleColor(entry.exists ? UIUtil.getLabelTextForeground() : JBColor.RED);
       titledPanel.repaint();
     }
+  }
+
+  private @NotNull EditorsSnapshot snapshotEditorsState() {
+    String propertyName = getSelectedPropertyName();
+    if (propertyName == null) return new EditorsSnapshot(null, Collections.emptyList());
+    List<EditorValueSnapshot> perFile = new ArrayList<>();
+    for (PropertiesFile propertiesFile : myResourceBundle.getPropertiesFiles()) {
+      VirtualFile vf = propertiesFile.getVirtualFile();
+      if (!myEditors.containsKey(vf)) continue;
+      IProperty property = findPropertyInFileWithoutIndex(propertiesFile, propertyName);
+      perFile.add(new EditorValueSnapshot(vf, getPropertyEditorValue(property), property != null));
+    }
+    return new EditorsSnapshot(propertyName, perFile);
+  }
+
+  private static final class EditorsSnapshot {
+    final @Nullable String propertyName;
+    final @NotNull List<EditorValueSnapshot> perFile;
+
+    EditorsSnapshot(@Nullable String propertyName, @NotNull List<EditorValueSnapshot> perFile) {
+      this.propertyName = propertyName;
+      this.perFile = perFile;
+    }
+  }
+
+  private static final class EditorValueSnapshot {
+    final @NotNull VirtualFile file;
+    final @NotNull String value;
+    final boolean exists;
+
+    EditorValueSnapshot(@NotNull VirtualFile file, @NotNull String value, boolean exists) {
+      this.file = file;
+      this.value = value;
+      this.exists = exists;
+    }
+  }
+
+  /**
+   * Lookup a property by key without routing through the stub index.
+   * <p>
+   * {@link PropertiesFile#findPropertyByKey(String)} delegates to the stub index for files
+   * in project content, and {@link com.intellij.util.indexing.FileBasedIndex#ensureUpToDate}
+   * is flagged as a slow operation on the EDT in 2026.1+. We only ever look up keys within
+   * a single bundle file here, so iterating that file's properties directly is both legal
+   * on the EDT and at least as fast as the index for the typical bundle size.
+   */
+  private static @Nullable IProperty findPropertyInFileWithoutIndex(@NotNull PropertiesFile file, @NotNull String key) {
+    for (IProperty property : file.getProperties()) {
+      if (key.equals(property.getUnescapedKey())) {
+        return property;
+      }
+    }
+    return null;
   }
 
   private @NotNull ResourceBundleEditorFileListener installPropertiesChangeListeners() {
@@ -724,10 +814,10 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
 
   @Override
   public void dispose() {
-    if (mySelectedEditor != null) {
+    if (mySelectedEditor != null && myFocusedPropertyName != null) {
       for (final Map.Entry<VirtualFile, EditorEx> entry : myEditors.entrySet()) {
         if (mySelectedEditor.equals(entry.getValue())) {
-          writeEditorPropertyValue(null, mySelectedEditor, entry.getKey());
+          writeEditorPropertyValue(myFocusedPropertyName, mySelectedEditor, entry.getKey());
         }
       }
     }
