@@ -3,11 +3,14 @@ package com.intellij.lang.properties;
 
 import com.intellij.lang.properties.editor.ResourceBundlePropertiesUpdateManager;
 import com.intellij.lang.properties.psi.PropertiesFile;
-import com.intellij.openapi.application.PluginPathManager;
 import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
 import com.intellij.psi.PsiFile;
 import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 import org.jetbrains.annotations.NotNull;
+
+import java.nio.file.Path;
 
 /**
  * @author Dmitry Batkovich
@@ -16,7 +19,13 @@ public class ResourceBundleEditorInsertManagerTest extends BasePlatformTestCase 
   @NotNull
   @Override
   protected String getTestDataPath() {
-    return "testData/insertManager/";
+    return FileUtil.toSystemIndependentName(Path.of("testData/insertManager").toAbsolutePath().toString());
+  }
+
+  @Override
+  protected void setUp() throws Exception {
+    super.setUp();
+    VfsRootAccess.allowRootAccess(getTestRootDisposable(), getTestDataPath());
   }
 
   public void testIsAlphaSorted() {
