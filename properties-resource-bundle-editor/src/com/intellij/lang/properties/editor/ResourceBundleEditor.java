@@ -3,6 +3,7 @@ package com.intellij.lang.properties.editor;
 
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter;
 import com.intellij.codeInsight.FileModificationService;
+import com.intellij.codeInspection.incomplete.IncompletePropertyUtil;
 import com.intellij.ide.FileSelectInContext;
 import com.intellij.ide.SelectInContext;
 import com.intellij.ide.structureView.newStructureView.StructureViewComponent;
@@ -14,7 +15,7 @@ import com.intellij.lang.properties.IProperty;
 import com.intellij.lang.properties.PropertiesImplUtil;
 import com.intellij.lang.properties.PropertiesUtil;
 import com.intellij.lang.properties.ResourceBundle;
-import com.intellij.lang.properties.editor.inspections.incomplete.IncompletePropertyInspection;
+import com.intellij.lang.properties.codeInspection.IncompletePropertyInspection;
 import com.intellij.lang.properties.psi.PropertiesFile;
 import com.intellij.lang.properties.psi.PropertiesResourceBundleUtil;
 import com.intellij.lang.properties.xml.XmlPropertiesFile;
@@ -720,11 +721,11 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
     final int idx = keysOrder.indexOf(currentKey);
     LOG.assertTrue(idx != -1);
     final IncompletePropertyInspection incompletePropertyInspection =
-      IncompletePropertyInspection.getInstance(myResourceBundle.getDefaultPropertiesFile().getContainingFile());
+      IncompletePropertyUtil.getInspection(myResourceBundle.getDefaultPropertiesFile().getContainingFile());
     for (int i = 1; i < keysOrder.size(); i++) {
       int trimmedIndex = (i + idx) % keysOrder.size();
       final String key = keysOrder.get(trimmedIndex);
-      if (!incompletePropertyInspection.isPropertyComplete(key, myResourceBundle)) {
+      if (!IncompletePropertyUtil.isPropertyComplete(incompletePropertyInspection, key, myResourceBundle)) {
         selectProperty(key);
         return;
       }

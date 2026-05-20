@@ -4,11 +4,11 @@ import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 plugins {
   id("java")
   id("org.jetbrains.kotlin.jvm") version "2.3.0"
-  id("org.jetbrains.intellij.platform") version "2.13.1"
+  id("org.jetbrains.intellij.platform") version "2.16.0"
 }
 
 group = "com.intellij.properties.bundle.editor"
-version = "261.0.1"
+version = "262.0.0"
 
 repositories {
   mavenCentral()
@@ -19,7 +19,9 @@ repositories {
 
 dependencies {
   intellijPlatform {
-    intellijIdea("2026.1")
+    intellijIdeaUltimate("262-EAP-SNAPSHOT") {
+      useInstaller = false
+    }
     bundledPlugin("com.intellij.properties")
 
     testFramework(TestFrameworkType.Platform)
@@ -29,7 +31,7 @@ dependencies {
 }
 
 kotlin {
-  jvmToolchain(21)
+  jvmToolchain(25)
 }
 
 java.sourceSets["main"].java {
@@ -47,17 +49,17 @@ java.sourceSets["test"].java {
 intellijPlatform {
   pluginConfiguration {
     ideaVersion {
-      sinceBuild = "261"
+      sinceBuild = "262"
     }
 
-    changeNotes = "Build for 2026.1 IntelliJ IDEA"
+    changeNotes = "Build for 2026.2 IntelliJ IDEA"
   }
 }
 
 tasks {
   // Set the JVM compatibility versions
   withType<JavaCompile> {
-    sourceCompatibility = "21"
-    targetCompatibility = "21"
+    sourceCompatibility = "25"
+    targetCompatibility = "25"
   }
 }
