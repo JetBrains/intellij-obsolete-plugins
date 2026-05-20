@@ -1,8 +1,0 @@
-{
-  "inspections": [
-    {
-      "id": "IncompleteProperty",
-      "codeQualityCategory": "Reliability"
-    }
-  ]
-}

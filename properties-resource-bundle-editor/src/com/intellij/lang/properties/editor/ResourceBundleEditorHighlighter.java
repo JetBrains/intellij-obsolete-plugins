@@ -9,16 +9,17 @@ import com.intellij.codeInsight.daemon.impl.SeverityRegistrar;
 import com.intellij.codeInspection.InspectionProfile;
 import com.intellij.codeInspection.InspectionProfileEntry;
 import com.intellij.codeInspection.ProblemDescriptorUtil;
+import com.intellij.codeInspection.incomplete.IncompletePropertyUtil;
 import com.intellij.codeInspection.unused.UnusedPropertyUtil;
 import com.intellij.ide.structureView.StructureViewModel;
 import com.intellij.ide.util.treeView.smartTree.TreeElement;
 import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.lang.properties.IProperty;
 import com.intellij.lang.properties.ResourceBundle;
+import com.intellij.lang.properties.codeInspection.IncompletePropertyInspection;
 import com.intellij.lang.properties.codeInspection.unused.UnusedPropertyInspection;
 import com.intellij.lang.properties.editor.inspections.InspectedPropertyProblems;
 import com.intellij.lang.properties.editor.inspections.ResourceBundleEditorProblemDescriptor;
-import com.intellij.lang.properties.editor.inspections.incomplete.IncompletePropertyInspection;
 import com.intellij.lang.properties.psi.PropertiesFile;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
@@ -71,7 +72,7 @@ public class ResourceBundleEditorHighlighter implements BackgroundEditorHighligh
         InspectionProfileEntry unwrappedTool = profileToUse.getUnwrappedTool(IncompletePropertyInspection.TOOL_KEY, containingFile);
         assert unwrappedTool != null;
         visitors.add(new InspectionVisitorWrapper(
-          ((IncompletePropertyInspection)unwrappedTool).buildPropertyGroupVisitor(rb),
+          IncompletePropertyUtil.buildPropertyGroupVisitor(rb, (IncompletePropertyInspection)unwrappedTool),
           profileToUse.getErrorLevel(incompleteKey, containingFile).getSeverity(),
           incompleteKey));
       }

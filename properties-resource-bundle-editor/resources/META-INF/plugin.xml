@@ -14,15 +14,7 @@
 
     <renameHandler implementation="com.intellij.lang.properties.refactoring.rename.ResourceBundleFromEditorRenameHandler"/>
 
-    <localInspection language="Properties" shortName="IncompleteProperty" unfair="true" bundle="messages.ResourceBundleEditorBundle"
-                     key="incomplete.property.inspection.display.name" groupKey="properties.files.inspection.group.display.name"
-                     enabledByDefault="true" level="ERROR"
-                     implementationClass="com.intellij.lang.properties.editor.inspections.incomplete.IncompletePropertyInspection"/>
-
     <fileEditorProvider id="ResourceBundle" implementation="com.intellij.lang.properties.editor.ResourceBundleEditorProvider"/>
-
-    <gotoRelatedProvider implementation="com.intellij.lang.properties.editor.GotoResourceBundleLocalizationsProvider"/>
-    <gotoRelatedProvider implementation="com.intellij.lang.properties.editor.GotoPropertyDeclarationsProvider"/>
 
     <refactoring.copyHandler implementation="com.intellij.lang.properties.editor.PropertiesCopyHandlerEx" order="before properties"/>
   </extensions>
