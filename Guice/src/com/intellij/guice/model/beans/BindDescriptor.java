@@ -3,19 +3,20 @@ package com.intellij.guice.model.beans;
 
 import com.intellij.guice.utils.GuiceUtils;
 import com.intellij.openapi.util.NullableLazyValue;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiMethodCallExpression;
+import com.intellij.psi.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.uast.UCallExpression;
 
 import java.util.Objects;
 
 public abstract class BindDescriptor {
-   private final PsiMethodCallExpression myCallExpression;
+   private final SmartPsiElementPointer<PsiElement> myCallExpressionPointer;
    private final NullableLazyValue<PsiClass> myBoundClass = new NullableLazyValue<>() {
      @Override
      protected @Nullable PsiClass compute() {
-       return GuiceUtils.findImplementedClassForBinding(getBindExpression());
+       final UCallExpression uCall = GuiceUtils.getCallExpression(getBindExpression());
+       return uCall != null ? GuiceUtils.findImplementedClassForBinding(uCall) : null;
      }
    };
 
@@ -26,9 +27,8 @@ public abstract class BindDescriptor {
     }
   };
 
-  public BindDescriptor(@NotNull PsiMethodCallExpression callExpression) {
-    myCallExpression = callExpression;
-
+  public BindDescriptor(@NotNull PsiElement callExpression) {
+    myCallExpressionPointer = SmartPointerManager.createPointer(callExpression);
   }
 
   public @Nullable PsiClass getBoundClass() {
@@ -41,19 +41,29 @@ public abstract class BindDescriptor {
 
   public abstract @Nullable PsiClass calculateBindingClass();
 
-  public @NotNull PsiMethodCallExpression getBindExpression() {
-    return myCallExpression;
+  public boolean matchesType(@NotNull PsiType type) {
+    if (type instanceof PsiClassType) {
+      return GuiceUtils.areClassesEquivalent(getBoundClass(), ((PsiClassType)type).resolve());
+    }
+    return false;
+  }
+
+  /**
+   * Returns the bind call expression, or {@code null} if the element has been deleted.
+   */
+  public @Nullable PsiElement getBindExpression() {
+    return myCallExpressionPointer.getElement();
   }
 
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (!(o instanceof BindDescriptor that)) return false;
-    return Objects.equals(myCallExpression, that.myCallExpression);
+    return Objects.equals(myCallExpressionPointer, that.myCallExpressionPointer);
   }
 
   @Override
   public int hashCode() {
-    return myCallExpression.hashCode();
+    return myCallExpressionPointer.hashCode();
   }
 }

@@ -66,7 +66,9 @@ public final class RedundantToBindingInspection extends BaseInspection {
         return;
       }
       if (AnnotationUtil.isAnnotated(boundClass, GuiceAnnotations.IMPLEMENTED_BY, CHECK_HIERARCHY)) {
-        final PsiAnnotation implementedByAnnotation = boundClass.getModifierList().findAnnotation(GuiceAnnotations.IMPLEMENTED_BY);
+        PsiModifierList modifierList = boundClass.getModifierList();
+        if (modifierList == null) return;
+        final PsiAnnotation implementedByAnnotation = modifierList.findAnnotation(GuiceAnnotations.IMPLEMENTED_BY);
         if (implementedByAnnotation == null) return;
         final PsiElement defaultValue = AnnotationUtils.findDefaultValue(implementedByAnnotation);
         if (defaultValue == null) {

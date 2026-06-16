@@ -40,7 +40,7 @@ public final class PointlessBindingInspection extends BaseInspection {
 
     @Override
     public @NotNull String getFamilyName() {
-      return "";
+      return GuiceBundle.message("delete.binding");
     }
 
     @Override

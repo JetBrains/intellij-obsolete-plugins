@@ -23,7 +23,7 @@ class DeleteBindingFix implements LocalQuickFix{
 
     @Override
     public @NotNull String getFamilyName(){
-        return "";
+        return GuiceBundle.message("delete.binding");
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.intellij.guice.inspections;
 
 import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.guice.GuiceBundle;
+import com.intellij.guice.constants.GuiceAnnotations;
 import com.intellij.psi.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -49,6 +50,6 @@ public final class MultipleBindingAnnotationsInspection extends BaseInspection {
     if (!(element instanceof PsiClass annotationClass)) {
       return false;
     }
-    return AnnotationUtil.isAnnotated(annotationClass, "com.google.inject.BindingAnnotation", CHECK_HIERARCHY);
+    return AnnotationUtil.isAnnotated(annotationClass, GuiceAnnotations.BINDING_ANNOTATIONS, CHECK_HIERARCHY);
   }
 }

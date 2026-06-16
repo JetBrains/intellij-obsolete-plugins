@@ -15,7 +15,7 @@ import static com.intellij.codeInsight.AnnotationUtil.CHECK_HIERARCHY;
 
 public final class BindingAnnotationWithoutInjectInspection extends BaseInspection {
   private static final Collection<String> INJECT_OR_PROVIDES =
-    List.of(GuiceAnnotations.INJECT, GuiceAnnotations.JAVAX_INJECT, GuiceAnnotations.JAKARTA_INJECT, GuiceAnnotations.PROVIDES);
+    List.of(GuiceAnnotations.INJECT, GuiceAnnotations.JAVAX_INJECT, GuiceAnnotations.JAKARTA_INJECT, GuiceAnnotations.THROWING_INJECT, GuiceAnnotations.PROVIDES, GuiceAnnotations.CHECKED_PROVIDES);
 
   @Override
   protected @NotNull String buildErrorString(Object... infos) {
@@ -72,6 +72,6 @@ public final class BindingAnnotationWithoutInjectInspection extends BaseInspecti
     if (!(element instanceof PsiClass annotationClass)) {
       return false;
     }
-    return AnnotationUtil.isAnnotated(annotationClass, GuiceAnnotations.BINDING_ANNOTATION, CHECK_HIERARCHY);
+    return AnnotationUtil.isAnnotated(annotationClass, GuiceAnnotations.BINDING_ANNOTATIONS, CHECK_HIERARCHY);
   }
 }

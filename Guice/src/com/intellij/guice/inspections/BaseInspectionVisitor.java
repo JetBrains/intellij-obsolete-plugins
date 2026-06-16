@@ -1,23 +1,17 @@
 // Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package com.intellij.guice.inspections;
 
-import com.intellij.codeInspection.InspectionManager;
 import com.intellij.codeInspection.LocalQuickFix;
-import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-
 public abstract class BaseInspectionVisitor extends JavaElementVisitor{
 
     private BaseInspection inspection = null;
     private boolean onTheFly = false;
-    private final List<ProblemDescriptor> errors = null;
     private ProblemsHolder holder = null;
-    private InspectionManager inspectionManager;
 
     public void setInspection(BaseInspection inspection){
         this.inspection = inspection;
@@ -119,12 +113,5 @@ public abstract class BaseInspectionVisitor extends JavaElementVisitor{
 
     public void setProblemsHolder(ProblemsHolder holder){
         this.holder = holder;
-    }
-
-    public void initialize(){
-    }
-
-    public void setInspectionManager(InspectionManager inspectionManager){
-        this.inspectionManager = inspectionManager;
     }
 }

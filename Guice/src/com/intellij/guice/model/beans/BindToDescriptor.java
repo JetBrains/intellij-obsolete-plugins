@@ -2,19 +2,23 @@
 package com.intellij.guice.model.beans;
 
 import com.intellij.guice.model.GuiceInjectionUtil;
+import com.intellij.guice.utils.GuiceUtils;
 import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiMethodCallExpression;
+import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.uast.UCallExpression;
+import org.jetbrains.uast.UastContextKt;
 
 public class BindToDescriptor extends BindDescriptor {
 
-  public BindToDescriptor(@NotNull PsiMethodCallExpression callExpression) {
+  public BindToDescriptor(@NotNull PsiElement callExpression) {
     super(callExpression);
   }
 
   @Override
   public @Nullable PsiClass calculateBindingClass() {
-    return GuiceInjectionUtil.getCallExpressionType(getBindExpression(), "to");
+    final UCallExpression uCall = GuiceUtils.getCallExpression(getBindExpression());
+    return uCall != null ? GuiceInjectionUtil.getCallExpressionType(uCall, "to") : null;
   }
 }

@@ -53,7 +53,7 @@ public final class UninstantiableBindingInspection extends BaseInspection {
         return;
       }
       final PsiClass containingClass = method.getContainingClass();
-      if (!"com.google.inject.binder.LinkedBindingBuilder".equals(containingClass.getQualifiedName())) {
+      if (containingClass == null || !"com.google.inject.binder.LinkedBindingBuilder".equals(containingClass.getQualifiedName())) {
         return;
       }
       PsiClass moduleClass = PsiTreeUtil.getParentOfType(expression, PsiClass.class);
