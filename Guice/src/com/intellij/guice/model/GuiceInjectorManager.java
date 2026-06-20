@@ -5,17 +5,7 @@ import com.intellij.codeInsight.MetaAnnotationUtil;
 import com.intellij.guice.constants.GuiceAnnotations;
 import com.intellij.guice.constants.GuiceClasses;
 import com.intellij.guice.model.beans.BindDescriptor;
-import com.intellij.guice.model.beans.BindToConstructorDescriptor;
-import com.intellij.guice.model.beans.BindToDescriptor;
-import com.intellij.guice.model.beans.AssistedFactoryBindDescriptor;
-import com.intellij.guice.model.beans.BindToInstanceDescriptor;
-import com.intellij.guice.model.beans.BindToProviderDescriptor;
-import com.intellij.guice.model.beans.MapMultibindDescriptor;
-import com.intellij.guice.model.beans.MultimapBindDescriptor;
-import com.intellij.guice.model.beans.OptionalBindDescriptor;
-import com.intellij.guice.model.beans.SetMultibindDescriptor;
-import com.intellij.guice.model.beans.UntargetedBindDescriptor;
-import com.intellij.guice.utils.GuiceUtils;
+import com.intellij.guice.model.extensions.GuiceBindingContributor;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.Project;
@@ -23,13 +13,11 @@ import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassOwner;
-import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifierList;
 import com.intellij.psi.PsiModifierListOwner;
-import com.intellij.psi.PsiType;
 import com.intellij.psi.impl.compiled.ClsFileImpl;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.LocalSearchScope;
@@ -45,7 +33,6 @@ import java.util.Set;
 import org.jetbrains.uast.UCallExpression;
 import org.jetbrains.uast.UClass;
 import org.jetbrains.uast.UElement;
-import org.jetbrains.uast.UExpression;
 import org.jetbrains.uast.UField;
 import org.jetbrains.uast.UastContextKt;
 import org.jetbrains.uast.visitor.AbstractUastVisitor;
@@ -53,7 +40,6 @@ import com.intellij.psi.search.searches.ClassInheritorsSearch;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
 import com.intellij.psi.util.PsiModificationTracker;
-import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -76,29 +62,43 @@ public final class GuiceInjectorManager {
     }
   }
 
-  private static final Set<String> ALL_BINDING_WORDS = ContainerUtil.newHashSet(
-    "to", "toInstance", "toProvider", "toConstructor", "bind",
-    "newOptionalBinder", "optionalBinder",
-    "newSetBinder", "setBinder",
-    "newMapBinder", "mapBinder",
-    "newSetMultimapBinder", "multimapBinder",
-    "build"
-  );
+  /**
+   * Immutable snapshot of registered contributors and their merged binding words.
+   *
+   * <p>Computed once per indexing pass and threaded through all file-processing
+   * calls to avoid re-querying the extension point for every file.  For a 10K+ file
+   * initial build this eliminates thousands of redundant EP lookups and
+   * {@code HashSet} allocations.
+   */
+  record ContributorSnapshot(@NotNull Set<String> bindingWords,
+                              @NotNull List<GuiceBindingContributor> contributors) {
+    static @NotNull ContributorSnapshot create() {
+      List<GuiceBindingContributor> contributors = GuiceBindingContributor.EP_NAME.getExtensionList();
+      Set<String> words = new HashSet<>();
+      for (GuiceBindingContributor c : contributors) {
+        words.addAll(c.getBindingWords());
+      }
+      return new ContributorSnapshot(Set.copyOf(words), contributors);
+    }
+  }
 
   public static @NotNull Set<BindDescriptor> getBindingDescriptors(@NotNull Project project, @NotNull SearchScope scope) {
+    ContributorSnapshot snapshot = ContributorSnapshot.create();
     Set<BindDescriptor> descriptors = new HashSet<>();
-    final Set<PsiFile> files = getFilesToProcess(project, scope);
+    final Set<PsiFile> files = getFilesToProcess(project, scope, snapshot);
     for (PsiFile file : files) {
-      descriptors.addAll(getBindingsInFile(file));
+      descriptors.addAll(getBindingsInFile(file, snapshot));
     }
     return descriptors;
   }
 
-  private static @NotNull Set<PsiFile> getFilesToProcess(@NotNull Project project, @NotNull SearchScope scope) {
+  private static @NotNull Set<PsiFile> getFilesToProcess(@NotNull Project project,
+                                                         @NotNull SearchScope scope,
+                                                         @NotNull ContributorSnapshot snapshot) {
     final Set<PsiFile> files = new HashSet<>();
     if (scope instanceof GlobalSearchScope) {
       final PsiSearchHelper helper = PsiSearchHelper.getInstance(project);
-      for (String word : ALL_BINDING_WORDS) {
+      for (String word : snapshot.bindingWords()) {
         helper.processAllFilesWithWord(word, (GlobalSearchScope)scope, file -> {
           files.add(file);
           return true;
@@ -115,7 +115,30 @@ public final class GuiceInjectorManager {
     return files;
   }
 
+  /**
+   * Extracts binding descriptors from a single file.
+   *
+   * <p>This overload creates a fresh {@link ContributorSnapshot} on demand.
+   * For batch processing, prefer {@link #getBindingsInFile(PsiFile, ContributorSnapshot)}
+   * to share a single snapshot across all files.
+   */
   public static @NotNull Set<BindDescriptor> getBindingsInFile(@NotNull PsiFile file) {
+    return getBindingsInFile(file, ContributorSnapshot.create());
+  }
+
+  /**
+   * Extracts binding descriptors from a single file using a pre-computed
+   * {@link ContributorSnapshot}.
+   *
+   * <p>The result is cached per-file via {@link CachedValuesManager} and invalidated
+   * when the file's PSI tree changes.  The snapshot is only consulted on cache miss.
+   *
+   * @param file     the file to extract bindings from
+   * @param snapshot the pre-computed contributor state (binding words + contributor list)
+   * @return the set of binding descriptors found in the file
+   */
+  static @NotNull Set<BindDescriptor> getBindingsInFile(@NotNull PsiFile file,
+                                                         @NotNull ContributorSnapshot snapshot) {
     // Compiled class files (e.g., from hjars) cannot be walked with PsiRecursiveElementWalkingVisitor
     // (getNextSibling() is too slow) and don't contain method bodies.
     // However, if the library has attached sources (source jars), we can use the source file instead.
@@ -153,14 +176,14 @@ public final class GuiceInjectorManager {
           @Override
           public boolean visitCallExpression(@NotNull UCallExpression call) {
             final String callName = call.getMethodName();
-            if (ALL_BINDING_WORDS.contains(callName)) {
+            if (callName != null && snapshot.bindingWords().contains(callName)) {
               final PsiMethod resolved = call.resolve();
               if (resolved != null) {
                 final PsiClass containingClass = resolved.getContainingClass();
                 if (containingClass != null) {
                   final String qName = containingClass.getQualifiedName();
                   if (qName != null) {
-                    createDescriptorIfMatches(call, callName, qName, containingClass, descriptors);
+                    dispatchToContributors(snapshot.contributors(), call, callName, qName, containingClass, descriptors);
                   }
                 }
               } else {
@@ -168,8 +191,7 @@ public final class GuiceInjectorManager {
                 // references a non-existent class (e.g., bind(X.class).to(DoNotExist.class)),
                 // call.resolve() returns null.  Since we are already inside a verified Guice
                 // module class, we can safely create a descriptor based on the method name.
-                // The BindToDescriptor/etc. gracefully handle null binding classes.
-                createDescriptorForUnresolvedCall(call, callName, descriptors);
+                dispatchUnresolvedToContributors(snapshot.contributors(), call, callName, descriptors);
               }
             }
             return false; // continue into children for chained calls
@@ -221,202 +243,39 @@ public final class GuiceInjectorManager {
   }
 
   /**
-   * Checks whether a fully qualified class name belongs to a Guice package.
-   * Used as a relaxed fallback when exact class matching doesn't cover all
-   * Guice internal builder classes.
+   * Dispatches a resolved call expression to registered contributors.
+   * Stops at the first contributor that claims to handle the call.
    */
-  private static boolean isGuicePackage(@NotNull String qName) {
-    return qName.startsWith("com.google.inject") || qName.startsWith("com.google.common.inject");
-  }
-
-  /**
-   * Tries to create a binding-builder "tail" descriptor ({@code .to()}, {@code .toInstance()},
-   * {@code .toProvider()}, {@code .toConstructor()}) from the given method name.
-   *
-   * @return {@code true} if a descriptor was created, {@code false} otherwise
-   */
-  private static boolean createBindingTailDescriptor(@NotNull String methodName,
-                                                     @NotNull PsiElement outermostSource,
-                                                     @NotNull Set<BindDescriptor> descriptors) {
-    switch (methodName) {
-      case "to" -> descriptors.add(new BindToDescriptor(outermostSource));
-      case "toInstance" -> descriptors.add(new BindToInstanceDescriptor(outermostSource));
-      case "toProvider" -> descriptors.add(new BindToProviderDescriptor(outermostSource));
-      case "toConstructor" -> descriptors.add(new BindToConstructorDescriptor(outermostSource));
-      default -> { return false; }
-    }
-    return true;
-  }
-
-  /**
-   * Extracts a single type argument from a factory/binder call expression.
-   * Tries explicit type arguments first, then falls back to the second value argument
-   * (the first is typically the binder/module reference).
-   *
-   * @return the resolved {@link PsiClass}, or {@code null} if unavailable
-   */
-  private static @Nullable PsiClass extractSingleTypeArg(@NotNull UCallExpression call) {
-    PsiType type = null;
-    List<PsiType> typeArgs = call.getTypeArguments();
-    if (!typeArgs.isEmpty()) {
-      type = typeArgs.getFirst();
-    } else {
-      List<UExpression> args = call.getValueArguments();
-      if (args.size() > 1) {
-        type = GuiceUtils.getBindingTypeFromExpression(args.get(1));
-      }
-    }
-    return type instanceof PsiClassType ct ? ct.resolve() : null;
-  }
-
-  /**
-   * Extracts a key–value type argument pair from a MapBinder/MultimapBinder call expression.
-   * Tries explicit type arguments first, then falls back to value arguments at indices 1 and 2.
-   *
-   * @return a two-element array {@code [keyClass, valClass]}; either element may be {@code null}
-   */
-  private static PsiClass @NotNull [] extractDualTypeArgs(@NotNull UCallExpression call) {
-    PsiType keyType = null;
-    PsiType valType = null;
-    List<PsiType> typeArgs = call.getTypeArguments();
-    if (typeArgs.size() > 1) {
-      keyType = typeArgs.get(0);
-      valType = typeArgs.get(1);
-    } else {
-      List<UExpression> args = call.getValueArguments();
-      if (args.size() > 2) {
-        keyType = GuiceUtils.getBindingTypeFromExpression(args.get(1));
-        valType = GuiceUtils.getBindingTypeFromExpression(args.get(2));
-      }
-    }
-    PsiClass keyClass = keyType instanceof PsiClassType kct ? kct.resolve() : null;
-    PsiClass valClass = valType instanceof PsiClassType vct ? vct.resolve() : null;
-    return new PsiClass[]{keyClass, valClass};
-  }
-
-  /**
-   * Fallback descriptor creation for calls that cannot be resolved (the code is incomplete
-   * or references a non-existent class).  Since we are already inside a verified Guice
-   * module class, we can match on the method name text alone.
-   *
-   * <p>Only handles the binding-builder "tail" methods ({@code to}, {@code toInstance},
-   * {@code toProvider}, {@code toConstructor}).  The root {@code bind()} call itself
-   * typically resolves even when the argument class doesn't exist (because
-   * {@code Binder.bind(Class)} is on the classpath), so it's handled by the normal path.
-   *
-   * @param call        the unresolved UAST call expression
-   * @param methodName  the method name (already checked to be in {@link #ALL_BINDING_WORDS})
-   * @param descriptors the output set to add descriptors to
-   */
-  private static void createDescriptorForUnresolvedCall(@NotNull UCallExpression call,
-                                                         @NotNull String methodName,
-                                                         @NotNull Set<BindDescriptor> descriptors) {
-    PsiElement outermostSource = getOutermostSource(call);
-    if (outermostSource != null) {
-      createBindingTailDescriptor(methodName, outermostSource, descriptors);
-    }
-  }
-
-  private static void createDescriptorIfMatches(@NotNull UCallExpression call,
-                                                @NotNull String methodName,
-                                                @NotNull String qName,
-                                                @NotNull PsiClass containingClass,
-                                                @NotNull Set<BindDescriptor> descriptors) {
-    final PsiElement sourcePsi = call.getSourcePsi();
-    if (sourcePsi == null) return;
-
-    // Binding-builder tail methods: .to(), .toInstance(), .toProvider(), .toConstructor()
-    if (GuiceClasses.LINKED_BINDING_BUILDER.equals(qName) ||
-        InheritanceUtil.isInheritor(containingClass, GuiceClasses.LINKED_BINDING_BUILDER) ||
-        isGuicePackage(qName)) {
-
-      PsiElement outermostSource = getOutermostSource(call);
-      if (outermostSource != null) {
-        createBindingTailDescriptor(methodName, outermostSource, descriptors);
-      }
-    }
-
-    // Untargeted bind()
-    if ("bind".equals(methodName) &&
-        ("com.google.inject.Binder".equals(qName) ||
-         "com.google.inject.AbstractModule".equals(qName) ||
-         "com.google.inject.PrivateModule".equals(qName) ||
-         InheritanceUtil.isInheritor(containingClass, "com.google.inject.Binder") ||
-         InheritanceUtil.isInheritor(containingClass, "com.google.inject.AbstractModule") ||
-         isGuicePackage(qName))) {
-
-      UCallExpression outermostCall = getOutermostCall(call);
-      if (GuiceUtils.isUntargetedBinding(outermostCall)) {
-        PsiElement outermostSource = getOutermostSource(call);
-        if (outermostSource != null) {
-          descriptors.add(new UntargetedBindDescriptor(outermostSource));
+  private static void dispatchToContributors(@NotNull List<GuiceBindingContributor> contributors,
+                                             @NotNull UCallExpression call,
+                                             @NotNull String callName,
+                                             @NotNull String qName,
+                                             @NotNull PsiClass containingClass,
+                                             @NotNull Set<BindDescriptor> descriptors) {
+    for (GuiceBindingContributor contributor : contributors) {
+      if (contributor.getBindingWords().contains(callName)) {
+        if (contributor.processCall(call, callName, qName, containingClass, descriptors)) {
+          return;
         }
       }
     }
-
-    // OptionalBinder
-    if (("newOptionalBinder".equals(methodName) || "optionalBinder".equals(methodName)) &&
-        ("com.google.inject.multibindings.OptionalBinder".equals(qName) || isGuicePackage(qName))) {
-
-      PsiElement outermostSource = getOutermostSource(call);
-      if (outermostSource != null) {
-        descriptors.add(new OptionalBindDescriptor(outermostSource, extractSingleTypeArg(call)));
-      }
-    }
-
-    // SetBinder (Multibinder)
-    if (("newSetBinder".equals(methodName) || "setBinder".equals(methodName)) &&
-        ("com.google.inject.multibindings.Multibinder".equals(qName) || isGuicePackage(qName))) {
-
-      PsiElement outermostSource = getOutermostSource(call);
-      if (outermostSource != null) {
-        descriptors.add(new SetMultibindDescriptor(outermostSource, extractSingleTypeArg(call)));
-      }
-    }
-
-    // MapBinder
-    if (("newMapBinder".equals(methodName) || "mapBinder".equals(methodName)) &&
-        ("com.google.inject.multibindings.MapBinder".equals(qName) || isGuicePackage(qName))) {
-
-      PsiElement outermostSource = getOutermostSource(call);
-      if (outermostSource != null) {
-        PsiClass[] kv = extractDualTypeArgs(call);
-        descriptors.add(new MapMultibindDescriptor(outermostSource, kv[0], kv[1]));
-      }
-    }
-
-    // MultimapBinder
-    if (("newSetMultimapBinder".equals(methodName) || "multimapBinder".equals(methodName)) &&
-        ("com.google.common.inject.MultimapBinder".equals(qName) || isGuicePackage(qName))) {
-
-      PsiElement outermostSource = getOutermostSource(call);
-      if (outermostSource != null) {
-        PsiClass[] kv = extractDualTypeArgs(call);
-        descriptors.add(new MultimapBindDescriptor(outermostSource, kv[0], kv[1]));
-      }
-    }
-
-    // AssistedInject FactoryModuleBuilder.build()
-    if ("build".equals(methodName) &&
-        ("com.google.inject.assistedinject.FactoryModuleBuilder".equals(qName) || isGuicePackage(qName))) {
-
-      List<UExpression> args = call.getValueArguments();
-      if (!args.isEmpty()) {
-        PsiType factoryType = GuiceUtils.getBindingTypeFromExpression(args.getFirst());
-        PsiClass factoryClass = factoryType instanceof PsiClassType ct ? ct.resolve() : null;
-        descriptors.add(new AssistedFactoryBindDescriptor(sourcePsi, factoryClass));
-      }
-    }
   }
 
-  private static UCallExpression getOutermostCall(UCallExpression bindCall) {
-    UElement outermost = GuiceUtils.getOutermostQualifiedParent(bindCall);
-    UExpression selector = GuiceUtils.getSelectorIfQualified(outermost);
-    return selector instanceof UCallExpression ? (UCallExpression)selector : bindCall;
-  }
-
-  private static @Nullable PsiElement getOutermostSource(UCallExpression call) {
-    return GuiceUtils.getOutermostQualifiedParent(call).getSourcePsi();
+  /**
+   * Dispatches an unresolved call expression to registered contributors.
+   * Stops at the first contributor that claims to handle the call.
+   */
+  private static void dispatchUnresolvedToContributors(@NotNull List<GuiceBindingContributor> contributors,
+                                                       @NotNull UCallExpression call,
+                                                       @NotNull String callName,
+                                                       @NotNull Set<BindDescriptor> descriptors) {
+    for (GuiceBindingContributor contributor : contributors) {
+      if (contributor.getBindingWords().contains(callName)) {
+        if (contributor.processUnresolvedCall(call, callName, descriptors)) {
+          return;
+        }
+      }
+    }
   }
 
 

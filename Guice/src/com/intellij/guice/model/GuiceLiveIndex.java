@@ -1,9 +1,8 @@
 // Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package com.intellij.guice.model;
 
-import com.intellij.codeInsight.AnnotationUtil;
-import com.intellij.guice.constants.GuiceAnnotations;
 import com.intellij.guice.model.beans.*;
+import com.intellij.guice.model.extensions.GuiceBindingMatchStrategy;
 import com.intellij.guice.model.jam.GuiceProvides;
 import com.intellij.guice.utils.GuiceUtils;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -95,11 +94,11 @@ public final class GuiceLiveIndex {
   /** Key: qualified name of the <em>binding</em> (implementation) class ({@code descriptor.getBindingClass().getQualifiedName()}). */
   private final Map<String, Set<BindDescriptor>> bindingsByBindingTypeFqn = new HashMap<>();
 
-  // Special-case bindings — typically very few, scanned linearly.
-  private final List<OptionalBindDescriptor> optionalBindings = new ArrayList<>();
-  private final List<SetMultibindDescriptor> setMultibindings = new ArrayList<>();
-  private final List<MapMultibindDescriptor> mapMultibindings = new ArrayList<>();
-  private final List<MultimapBindDescriptor> multimapBindings = new ArrayList<>();
+  /**
+   * Special-case bindings indexed by descriptor class — typically very few, scanned linearly.
+   * Populated and queried via {@link GuiceBindingMatchStrategy} extension point.
+   */
+  private final Map<Class<? extends BindDescriptor>, List<BindDescriptor>> specialBindings = new HashMap<>();
 
   /** Key: qualified name of the injection-point type (or unwrapped Provider type). */
   private final Map<String, Set<InjectionPointDescriptor>> injectionPointsByTypeFqn = new HashMap<>();
@@ -136,14 +135,17 @@ public final class GuiceLiveIndex {
                          @NotNull List<GuiceProvides> provides) {
     lock.writeLock().lock();
     try {
+      // Resolve strategies once for both remove + add.
+      List<GuiceBindingMatchStrategy> strategies = GuiceBindingMatchStrategy.EP_NAME.getExtensionList();
+
       // 1. Remove old contributions for this file (if any).
       FileContributions old = perFileData.remove(file);
       if (old != null) {
-        removeContributions(old);
+        removeContributions(old, strategies);
       }
 
       // 2. Add new contributions and record keys.
-      FileContributions newContribs = addAndTrack(bindings, ips, provides);
+      FileContributions newContribs = addAndTrack(bindings, ips, provides, strategies);
 
       // 3. Store for later removal.
       perFileData.put(file, newContribs);
@@ -163,7 +165,7 @@ public final class GuiceLiveIndex {
     try {
       FileContributions old = perFileData.remove(file);
       if (old != null) {
-        removeContributions(old);
+        removeContributions(old, GuiceBindingMatchStrategy.EP_NAME.getExtensionList());
       }
     }
     finally {
@@ -180,10 +182,7 @@ public final class GuiceLiveIndex {
       perFileData.clear();
       bindingsByBoundTypeFqn.clear();
       bindingsByBindingTypeFqn.clear();
-      optionalBindings.clear();
-      setMultibindings.clear();
-      mapMultibindings.clear();
-      multimapBindings.clear();
+      specialBindings.clear();
       injectionPointsByTypeFqn.clear();
       providesByReturnTypeFqn.clear();
       allBindings.clear();
@@ -206,25 +205,24 @@ public final class GuiceLiveIndex {
    * keys stored in {@link FileContributions}.  This is crucial because old PSI elements
    * become invalid after a file edit.</p>
    *
-   * @param old the contributions to remove
+   * @param old        the contributions to remove
+   * @param strategies pre-resolved match strategies (avoids per-call EP lookup)
    */
-  private void removeContributions(@NotNull FileContributions old) {
+  private void removeContributions(@NotNull FileContributions old,
+                                   @NotNull List<GuiceBindingMatchStrategy> strategies) {
     // Remove from allBindings.
     allBindings.removeAll(old.bindings());
 
-    // Remove from special-case lists.
+    // Remove from special-case lists via match strategies.
     for (BindDescriptor bd : old.bindings()) {
-      if (bd instanceof OptionalBindDescriptor opt) {
-        optionalBindings.remove(opt);
-      }
-      else if (bd instanceof SetMultibindDescriptor smb) {
-        setMultibindings.remove(smb);
-      }
-      else if (bd instanceof MapMultibindDescriptor mmb) {
-        mapMultibindings.remove(mmb);
-      }
-      else if (bd instanceof MultimapBindDescriptor mmp) {
-        multimapBindings.remove(mmp);
+      for (GuiceBindingMatchStrategy strategy : strategies) {
+        if (strategy.getDescriptorClass().isInstance(bd)) {
+          List<BindDescriptor> list = specialBindings.get(strategy.getDescriptorClass());
+          if (list != null) {
+            list.remove(bd);
+          }
+          break;
+        }
       }
     }
 
@@ -280,14 +278,16 @@ public final class GuiceLiveIndex {
    * Adds entries to all maps AND records which keys were used, returning a
    * {@link FileContributions} for later surgical removal.
    *
-   * @param bindings the bind descriptors to add
-   * @param ips      the injection-point descriptors to add
-   * @param provides the provides descriptors to add
+   * @param bindings   the bind descriptors to add
+   * @param ips        the injection-point descriptors to add
+   * @param provides   the provides descriptors to add
+   * @param strategies pre-resolved match strategies (avoids per-call EP lookup)
    * @return a new {@link FileContributions} recording what was added and under which keys
    */
   private @NotNull FileContributions addAndTrack(@NotNull Set<BindDescriptor> bindings,
                                                  @NotNull Set<InjectionPointDescriptor> ips,
-                                                 @NotNull List<GuiceProvides> provides) {
+                                                 @NotNull List<GuiceProvides> provides,
+                                                 @NotNull List<GuiceBindingMatchStrategy> strategies) {
     // ---- Track keys for bindings ----
     Map<String, Set<BindDescriptor>> boundKeys = new HashMap<>();
     Map<String, Set<BindDescriptor>> implKeys = new HashMap<>();
@@ -295,18 +295,12 @@ public final class GuiceLiveIndex {
     for (BindDescriptor bd : bindings) {
       allBindings.add(bd);
 
-      // Separate multibinder subtypes into dedicated lists.
-      if (bd instanceof OptionalBindDescriptor opt) {
-        optionalBindings.add(opt);
-      }
-      else if (bd instanceof SetMultibindDescriptor smb) {
-        setMultibindings.add(smb);
-      }
-      else if (bd instanceof MapMultibindDescriptor mmb) {
-        mapMultibindings.add(mmb);
-      }
-      else if (bd instanceof MultimapBindDescriptor mmp) {
-        multimapBindings.add(mmp);
+      // Sort into special-case lists via match strategies.
+      for (GuiceBindingMatchStrategy strategy : strategies) {
+        if (strategy.getDescriptorClass().isInstance(bd)) {
+          specialBindings.computeIfAbsent(strategy.getDescriptorClass(), k -> new ArrayList<>()).add(bd);
+          break;
+        }
       }
 
       // Index by bound class FQN.
@@ -428,14 +422,13 @@ public final class GuiceLiveIndex {
       // exact target — Provider unwrapping would be incorrect.
       PsiType providerType = ip.isBindingCall() ? null : GuiceUtils.getProviderType(ipType);
       PsiType targetType = providerType != null ? providerType : ipType;
-      PsiType optionalType = GuiceUtils.getOptionalType(targetType);
-      PsiType setType = GuiceUtils.getMultibinderElementType(targetType);
-      PsiType mapType = GuiceUtils.getMultibinderValueType(targetType);
-      PsiType multimapType = GuiceUtils.getMultimapValueType(targetType);
 
       // Resolve the target type to a FQN for index lookup.
       String fqn = getTypeFqn(targetType);
       if (fqn == null) return result;
+
+      // Cache strategies for this query pass.
+      List<GuiceBindingMatchStrategy> strategies = GuiceBindingMatchStrategy.EP_NAME.getExtensionList();
 
       // 1. Direct lookup by bound-type FQN.
       {
@@ -443,11 +436,7 @@ public final class GuiceLiveIndex {
         if (candidates != null) {
           for (BindDescriptor descriptor : candidates) {
             try {
-              if (descriptor.matchesType(targetType) ||
-                  (optionalType != null && !(descriptor instanceof OptionalBindDescriptor) && descriptor.matchesType(optionalType)) ||
-                  (setType != null && !(descriptor instanceof SetMultibindDescriptor) && descriptor.matchesType(setType)) ||
-                  (mapType != null && !(descriptor instanceof MapMultibindDescriptor) && descriptor.matchesType(mapType)) ||
-                  (multimapType != null && !(descriptor instanceof MultimapBindDescriptor) && descriptor.matchesType(multimapType))) {
+              if (descriptor.matchesType(targetType)) {
                 if (GuiceInjectionUtil.checkBindingAnnotations(ip, descriptor)) {
                   result.add(descriptor);
                 }
@@ -460,58 +449,12 @@ public final class GuiceLiveIndex {
         }
       }
 
-      // 2. Check OptionalBind descriptors (small list, linear scan).
-      if (optionalType != null) {
-        for (OptionalBindDescriptor opt : optionalBindings) {
-          try {
-            if (opt.matchesType(targetType) && GuiceInjectionUtil.checkBindingAnnotations(ip, opt)) {
-              result.add(opt);
-            }
-          }
-          catch (com.intellij.psi.PsiInvalidElementAccessException e) {
-            // Stale PSI — skip.
-          }
-        }
-      }
-
-      // 3. Check SetMultibind descriptors.
-      if (setType != null) {
-        for (SetMultibindDescriptor smb : setMultibindings) {
-          try {
-            if (smb.matchesType(targetType) && GuiceInjectionUtil.checkBindingAnnotations(ip, smb)) {
-              result.add(smb);
-            }
-          }
-          catch (com.intellij.psi.PsiInvalidElementAccessException e) {
-            // Stale PSI — skip.
-          }
-        }
-      }
-
-      // 4. Check MapMultibind descriptors.
-      if (mapType != null) {
-        for (MapMultibindDescriptor mmb : mapMultibindings) {
-          try {
-            if (mmb.matchesType(targetType) && GuiceInjectionUtil.checkBindingAnnotations(ip, mmb)) {
-              result.add(mmb);
-            }
-          }
-          catch (com.intellij.psi.PsiInvalidElementAccessException e) {
-            // Stale PSI — skip.
-          }
-        }
-      }
-
-      // 5. Check MultimapBind descriptors.
-      if (multimapType != null) {
-        for (MultimapBindDescriptor mmb : multimapBindings) {
-          try {
-            if (mmb.matchesType(targetType) && GuiceInjectionUtil.checkBindingAnnotations(ip, mmb)) {
-              result.add(mmb);
-            }
-          }
-          catch (com.intellij.psi.PsiInvalidElementAccessException e) {
-            // Stale PSI — skip.
+      // 2. Check special bindings via match strategies (small lists, linear scan).
+      for (GuiceBindingMatchStrategy strategy : strategies) {
+        if (strategy.isRelevantType(targetType)) {
+          List<BindDescriptor> tracked = specialBindings.get(strategy.getDescriptorClass());
+          if (tracked != null && !tracked.isEmpty()) {
+            strategy.findMatchingBindings(tracked, targetType, ip, result);
           }
         }
       }
@@ -566,8 +509,6 @@ public final class GuiceLiveIndex {
       if (optionalType != null) {
         targetType = optionalType;
       }
-      PsiType setType = GuiceUtils.getMultibinderElementType(targetType);
-      PsiType mapType = GuiceUtils.getMultibinderValueType(targetType);
 
       Set<PsiAnnotation> ipAnnotations = ip.getBindingAnnotations();
 
@@ -591,49 +532,17 @@ public final class GuiceLiveIndex {
         }
       }
 
-      // 2. For Set<T> injections: find @ProvidesIntoSet methods whose return type matches the element type.
-      if (setType != null) {
-        String setFqn = getTypeFqn(setType);
-        if (setFqn != null) {
-          Set<GuiceProvides> candidates = providesByReturnTypeFqn.get(setFqn);
-          if (candidates != null) {
-            for (GuiceProvides provides : candidates) {
-              try {
-                PsiType productType = provides.getProductType();
-                if (productType != null && TypeConversionUtil.isAssignable(setType, productType) &&
-                    (AnnotationUtil.isAnnotated(provides.getPsiElement(), GuiceAnnotations.PROVIDES_INTO_SET, 0) ||
-                     AnnotationUtil.isAnnotated(provides.getPsiElement(), GuiceAnnotations.CHECKED_PROVIDES_INTO_SET, 0)) &&
-                    GuiceInjectionUtil.checkBindingAnnotations(ipAnnotations, provides.getBindingAnnotations())) {
-                  result.add(provides);
-                }
-              }
-              catch (com.intellij.psi.PsiInvalidElementAccessException e) {
-                // Stale PSI — skip.
-              }
-            }
-          }
-        }
-      }
-
-      // 3. For Map<K,V> injections: find @ProvidesIntoMap methods whose return type matches the value type.
-      if (mapType != null) {
-        String mapFqn = getTypeFqn(mapType);
-        if (mapFqn != null) {
-          Set<GuiceProvides> candidates = providesByReturnTypeFqn.get(mapFqn);
-          if (candidates != null) {
-            for (GuiceProvides provides : candidates) {
-              try {
-                PsiType productType = provides.getProductType();
-                if (productType != null && TypeConversionUtil.isAssignable(mapType, productType) &&
-                    (AnnotationUtil.isAnnotated(provides.getPsiElement(), GuiceAnnotations.PROVIDES_INTO_MAP, 0) ||
-                     AnnotationUtil.isAnnotated(provides.getPsiElement(), GuiceAnnotations.CHECKED_PROVIDES_INTO_MAP, 0)) &&
-                    GuiceInjectionUtil.checkBindingAnnotations(ipAnnotations, provides.getBindingAnnotations())) {
-                  result.add(provides);
-                }
-              }
-              catch (com.intellij.psi.PsiInvalidElementAccessException e) {
-                // Stale PSI — skip.
-              }
+      // 2. Check @ProvidesInto* methods via match strategies
+      //    (e.g., @ProvidesIntoSet for Set<T>, @ProvidesIntoMap for Map<K,V>).
+      List<GuiceBindingMatchStrategy> strategies = GuiceBindingMatchStrategy.EP_NAME.getExtensionList();
+      for (GuiceBindingMatchStrategy strategy : strategies) {
+        PsiType unwrapped = strategy.unwrapType(targetType);
+        if (unwrapped != null) {
+          String unwrappedFqn = getTypeFqn(unwrapped);
+          if (unwrappedFqn != null) {
+            Set<GuiceProvides> candidates = providesByReturnTypeFqn.get(unwrappedFqn);
+            if (candidates != null && !candidates.isEmpty()) {
+              strategy.findMatchingProvides(candidates, unwrapped, ipAnnotations, result);
             }
           }
         }
@@ -678,6 +587,9 @@ public final class GuiceLiveIndex {
         candidates.addAll(directCandidates);
       }
 
+      // Cache strategies for this query.
+      List<GuiceBindingMatchStrategy> strategies = GuiceBindingMatchStrategy.EP_NAME.getExtensionList();
+
       // Verify each candidate against the descriptor.
       // Guard against stale PSI: the live index may hold descriptors whose underlying
       // PsiElements have been invalidated by a concurrent reparse.  The isValid() guards
@@ -690,18 +602,26 @@ public final class GuiceLiveIndex {
 
           PsiType provType = GuiceUtils.getProviderType(ipType);
           PsiType effectiveType = provType != null ? provType : ipType;
-          PsiType optType = GuiceUtils.getOptionalType(effectiveType);
-          PsiType sType = GuiceUtils.getMultibinderElementType(effectiveType);
-          PsiType mType = GuiceUtils.getMultibinderValueType(effectiveType);
-          PsiType mmType = GuiceUtils.getMultimapValueType(effectiveType);
 
           if (effectiveType instanceof PsiClassType || effectiveType instanceof PsiPrimitiveType) {
-            if ((descriptor.matchesType(effectiveType) ||
-                 (optType != null && !(descriptor instanceof OptionalBindDescriptor) && descriptor.matchesType(optType)) ||
-                 (sType != null && !(descriptor instanceof SetMultibindDescriptor) && descriptor.matchesType(sType)) ||
-                 (mType != null && !(descriptor instanceof MapMultibindDescriptor) && descriptor.matchesType(mType)) ||
-                 (mmType != null && !(descriptor instanceof MultimapBindDescriptor) && descriptor.matchesType(mmType))) &&
-                GuiceInjectionUtil.checkBindingAnnotations(ip, descriptor)) {
+            boolean matches = descriptor.matchesType(effectiveType);
+
+            // Check unwrapped types via match strategies (e.g., Optional<T> → T, Set<T> → T).
+            // Each strategy unwraps the effective type and checks if the descriptor matches
+            // the inner type, but only if the descriptor is NOT itself the special type
+            // (e.g., OptionalBindDescriptor should not match via Optional<T> unwrapping).
+            if (!matches) {
+              for (GuiceBindingMatchStrategy strategy : strategies) {
+                PsiType unwrapped = strategy.unwrapType(effectiveType);
+                if (unwrapped != null && !strategy.shouldExcludeStandardBinding(descriptor) &&
+                    descriptor.matchesType(unwrapped)) {
+                  matches = true;
+                  break;
+                }
+              }
+            }
+
+            if (matches && GuiceInjectionUtil.checkBindingAnnotations(ip, descriptor)) {
               result.add(ip);
             }
           }
@@ -839,40 +759,11 @@ public final class GuiceLiveIndex {
       PsiClass returnClass = returnClassType.resolve();
       if (returnClass == null) return targets;
 
-      for (OptionalBindDescriptor opt : optionalBindings) {
-        if (GuiceUtils.areClassesEquivalent(opt.getOptionalBoundClass(), returnClass)) {
-          PsiElement bindExpr = opt.getBindExpression();
-          if (bindExpr != null) targets.add(bindExpr);
-        }
-      }
-
-      boolean isProvidesIntoSet =
-          AnnotationUtil.isAnnotated(providesMethod, GuiceAnnotations.PROVIDES_INTO_SET, 0) ||
-          AnnotationUtil.isAnnotated(providesMethod, GuiceAnnotations.CHECKED_PROVIDES_INTO_SET, 0);
-      if (isProvidesIntoSet) {
-        for (SetMultibindDescriptor smb : setMultibindings) {
-          if (GuiceUtils.areClassesEquivalent(smb.getElementType(), returnClass)) {
-            PsiElement bindExpr = smb.getBindExpression();
-            if (bindExpr != null) targets.add(bindExpr);
-          }
-        }
-      }
-
-      boolean isProvidesIntoMap =
-          AnnotationUtil.isAnnotated(providesMethod, GuiceAnnotations.PROVIDES_INTO_MAP, 0) ||
-          AnnotationUtil.isAnnotated(providesMethod, GuiceAnnotations.CHECKED_PROVIDES_INTO_MAP, 0);
-      if (isProvidesIntoMap) {
-        for (MapMultibindDescriptor mmb : mapMultibindings) {
-          if (GuiceUtils.areClassesEquivalent(mmb.getValueType(), returnClass)) {
-            PsiElement bindExpr = mmb.getBindExpression();
-            if (bindExpr != null) targets.add(bindExpr);
-          }
-        }
-        for (MultimapBindDescriptor mmb : multimapBindings) {
-          if (GuiceUtils.areClassesEquivalent(mmb.getValueType(), returnClass)) {
-            PsiElement bindExpr = mmb.getBindExpression();
-            if (bindExpr != null) targets.add(bindExpr);
-          }
+      // Dispatch to match strategies for multibinder target finding.
+      for (GuiceBindingMatchStrategy strategy : GuiceBindingMatchStrategy.EP_NAME.getExtensionList()) {
+        List<BindDescriptor> tracked = specialBindings.get(strategy.getDescriptorClass());
+        if (tracked != null && !tracked.isEmpty()) {
+          targets.addAll(strategy.findMultibinderTargets(providesMethod, tracked));
         }
       }
 

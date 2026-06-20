@@ -23,6 +23,15 @@
 
   <resource-bundle>messages.GuiceBundle</resource-bundle>
 
+  <extensionPoints>
+    <extensionPoint name="bindingContributor"
+                    interface="com.intellij.guice.model.extensions.GuiceBindingContributor"
+                    dynamic="true"/>
+    <extensionPoint name="bindingMatchStrategy"
+                    interface="com.intellij.guice.model.extensions.GuiceBindingMatchStrategy"
+                    dynamic="true"/>
+  </extensionPoints>
+
   <actions>
     <group id="GuiceActionGroup" class="com.intellij.guice.actions.GuiceActionGroup" popup="true"
            icon="com.intellij.guice.GuiceIcons.GoogleSmall">
@@ -38,7 +47,24 @@
   <extensions defaultExtensionNs="com.intellij">
     <fileTemplateGroup implementation="com.intellij.guice.actions.GuiceTemplatesFactory"/>
     <codeInsight.implicitSubclassProvider implementation="com.intellij.guice.inspections.GuiceImplicitSubclassProvider"/>
+  </extensions>
 
+  <!-- Built-in binding contributors and match strategies -->
+  <extensions defaultExtensionNs="com.intellij.guice">
+    <bindingContributor implementation="com.intellij.guice.model.extensions.StandardBindingContributor"/>
+    <bindingContributor implementation="com.intellij.guice.model.extensions.OptionalBinderContributor"/>
+    <bindingContributor implementation="com.intellij.guice.model.extensions.SetMultibinderContributor"/>
+    <bindingContributor implementation="com.intellij.guice.model.extensions.MapBinderContributor"/>
+    <bindingContributor implementation="com.intellij.guice.model.extensions.MultimapBinderContributor"/>
+    <bindingContributor implementation="com.intellij.guice.model.extensions.AssistedInjectContributor"/>
+
+    <bindingMatchStrategy implementation="com.intellij.guice.model.extensions.OptionalBindMatchStrategy"/>
+    <bindingMatchStrategy implementation="com.intellij.guice.model.extensions.SetMultibindMatchStrategy"/>
+    <bindingMatchStrategy implementation="com.intellij.guice.model.extensions.MapMultibindMatchStrategy"/>
+    <bindingMatchStrategy implementation="com.intellij.guice.model.extensions.MultimapBindMatchStrategy"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="com.intellij">
     <codeInsight.lineMarkerProvider language="JAVA" order="last" implementationClass="com.intellij.guice.model.GuiceBindingClassAnnotator"/>
     <codeInsight.lineMarkerProvider language="JAVA" order="last"
                                     implementationClass="com.intellij.guice.model.GuiceInjectionsClassAnnotator"/>

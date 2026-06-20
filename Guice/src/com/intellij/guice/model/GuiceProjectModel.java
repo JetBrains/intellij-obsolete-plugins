@@ -358,8 +358,10 @@ public final class GuiceProjectModel implements Disposable {
    * </ul>
    *
    * @param vf the virtual file to process
+   * @param snapshot pre-computed contributor state, shared across the batch
    */
-  private void processFile(@NotNull VirtualFile vf) {
+  private void processFile(@NotNull VirtualFile vf,
+                           @NotNull GuiceInjectorManager.ContributorSnapshot snapshot) {
     PsiFile psiFile = PsiManager.getInstance(myProject).findFile(vf);
     if (psiFile == null) {
       myLiveIndex.removeFile(vf);
@@ -378,12 +380,10 @@ public final class GuiceProjectModel implements Disposable {
       }
     }
 
-    // Extract bindings (only from source files that contain Guice module classes).
+    // Extract bindings (only from source files).
     // Compiled files without source cannot provide method bodies for binding extraction.
-    Set<BindDescriptor> bindings = Set.of();
-    if (!isCompiled && !GuiceInjectorManager.collectGuiceModuleClasses(fileForExtraction).isEmpty()) {
-      bindings = GuiceInjectorManager.getBindingsInFile(fileForExtraction);
-    }
+    // getBindingsInFile() internally checks for Guice module classes, so no pre-check needed.
+    Set<BindDescriptor> bindings = isCompiled ? Set.of() : GuiceInjectorManager.getBindingsInFile(fileForExtraction, snapshot);
 
     // Extract injection points and @Provides.
     // For compiled files without source, AnnotationUtil.isAnnotated() still works
@@ -442,15 +442,17 @@ public final class GuiceProjectModel implements Disposable {
   }
   /**
    * Processes a set of files with a background progress indicator.
-   * Delegates to the coroutine-based progress API via
-   * {@link GuiceProgressUtilKt#processFilesWithProgressBlocking}.
+   *
+   * <p>Creates a single {@link GuiceInjectorManager.ContributorSnapshot} before
+   * iterating, so all files in the batch share the same EP state.
    *
    * @param title the progress bar title (e.g., "Building Guice model…")
    * @param files the files to process
    */
   private void processFilesWithProgress(@NotNull String title, @NotNull Set<VirtualFile> files) {
+    GuiceInjectorManager.ContributorSnapshot snapshot = GuiceInjectorManager.ContributorSnapshot.create();
     GuiceProgressUtilKt.processFilesWithProgressBlocking(
-        myProject, title, files, this::processFile
+        myProject, title, files, vf -> processFile(vf, snapshot)
     );
   }
 
