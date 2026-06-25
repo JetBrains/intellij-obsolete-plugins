@@ -1,35 +1,34 @@
 // Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package com.intellij.guice.model.beans;
 
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiClassType;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiType;
+import com.intellij.psi.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.uast.UCallExpression;
 import com.intellij.guice.utils.GuiceUtils;
 
-import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiModifier;
 import org.jetbrains.uast.UExpression;
 
 public class AssistedFactoryBindDescriptor extends BindDescriptor {
-  private final @Nullable PsiClass myFactoryClass;
+  private final @Nullable SmartPsiElementPointer<PsiClass> myFactoryClass;
 
   public AssistedFactoryBindDescriptor(@NotNull PsiElement callExpression, @Nullable PsiClass factoryClass) {
     super(callExpression);
-    myFactoryClass = factoryClass;
+    myFactoryClass = factoryClass != null ? SmartPointerManager.createPointer(factoryClass) : null;
+  }
+
+  public @Nullable PsiClass getFactoryClass() {
+    return myFactoryClass != null ? myFactoryClass.getElement() : null;
   }
 
   @Override
   public @Nullable PsiClass getBoundClass() {
-    return myFactoryClass;
+    return getFactoryClass();
   }
 
   @Override
   public @Nullable PsiClass calculateBindingClass() {
-    final UCallExpression uCall = GuiceUtils.getCallExpression(getBindExpression());
+    final UCallExpression uCall = getOutermostCall();
     if (uCall != null) {
       UCallExpression current = uCall;
       while (current != null) {
@@ -46,7 +45,8 @@ public class AssistedFactoryBindDescriptor extends BindDescriptor {
         current = GuiceUtils.getReceiverCall(current);
       }
     }
-    return myFactoryClass != null ? findFactoryProductType(myFactoryClass) : null;
+    PsiClass factory = getFactoryClass();
+    return factory != null ? findFactoryProductType(factory) : null;
   }
 
   private static @Nullable PsiClass findFactoryProductType(@NotNull PsiClass factoryClass) {

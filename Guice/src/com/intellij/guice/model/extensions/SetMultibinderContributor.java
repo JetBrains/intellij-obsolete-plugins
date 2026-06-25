@@ -29,8 +29,7 @@ public final class SetMultibinderContributor implements GuiceBindingContributor 
                              @NotNull String resolvedQName,
                              @NotNull PsiClass containingClass,
                              @NotNull Set<BindDescriptor> descriptors) {
-    if (!"com.google.inject.multibindings.Multibinder".equals(resolvedQName) &&
-        !ContributorUtil.isGuicePackage(resolvedQName)) {
+    if (!ContributorUtil.isBinderMethod(resolvedQName, call, "com.google.inject.multibindings.Multibinder")) {
       return false;
     }
 

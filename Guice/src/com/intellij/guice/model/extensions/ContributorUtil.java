@@ -11,6 +11,7 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiType;
+import com.intellij.psi.util.InheritanceUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.uast.UCallExpression;
@@ -39,6 +40,82 @@ final class ContributorUtil {
    */
   static boolean isGuicePackage(@NotNull String qName) {
     return qName.startsWith("com.google.inject") || qName.startsWith("com.google.common.inject");
+  }
+
+  /**
+   * Checks whether the resolved method belongs to or returns the given binder class,
+   * using UAST for language-agnostic type resolution.
+   *
+   * <p>This handles two cases:
+   * <ol>
+   *   <li><b>Java / direct call</b>: {@code MapBinder.newMapBinder(...)} — the method's
+   *       containing class is the binder itself.</li>
+   *   <li><b>Kotlin extension / wrapper</b>: {@code mapBinder<K, V>()} — the containing
+   *       class is unrelated, but the call's return type is the binder class.</li>
+   * </ol>
+   *
+   * @param resolvedQName  the FQN of the method's containing class
+   * @param call           the UAST call expression
+   * @param binderFqn      the expected binder FQN (e.g., {@code "com.google.inject.multibindings.MapBinder"})
+   */
+  static boolean isBinderMethod(@NotNull String resolvedQName,
+                                @NotNull UCallExpression call,
+                                @NotNull String binderFqn) {
+    // Direct match: method is declared on the binder class itself.
+    if (binderFqn.equals(resolvedQName) || isGuicePackage(resolvedQName)) {
+      return true;
+    }
+
+    // UAST return type: covers Kotlin extensions, wrapper functions, etc.
+    PsiType returnType = call.getReturnType();
+    if (returnType instanceof PsiClassType ct) {
+      PsiClass returnClass = ct.resolve();
+      if (returnClass != null) {
+        String returnFqn = returnClass.getQualifiedName();
+        if (binderFqn.equals(returnFqn) || (returnFqn != null && isGuicePackage(returnFqn))) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Checks whether the resolved method belongs to a binding builder class hierarchy,
+   * handling Kotlin extension functions via UAST.
+   *
+   * <p>For Kotlin extensions like {@code LinkedBindingBuilder<T>.to()}, the containing
+   * class is the file-level class.  We detect these by checking the call's UAST
+   * receiver type, which resolves correctly for both Java qualified calls and Kotlin
+   * extension calls.
+   *
+   * @param resolvedQName  the FQN of the method's containing class
+   * @param call           the UAST call expression
+   * @param containingClass the resolved method's containing class
+   * @param builderFqn     the expected builder FQN (e.g., {@code "com.google.inject.binder.LinkedBindingBuilder"})
+   */
+  static boolean isBindingBuilderMethod(@NotNull String resolvedQName,
+                                        @NotNull UCallExpression call,
+                                        @NotNull PsiClass containingClass,
+                                        @NotNull String builderFqn) {
+    // Direct match: method is declared on the builder class or its subtype.
+    if (builderFqn.equals(resolvedQName) ||
+        InheritanceUtil.isInheritor(containingClass, builderFqn) ||
+        isGuicePackage(resolvedQName)) {
+      return true;
+    }
+
+    // UAST receiver type: covers both Java qualified calls and Kotlin extension calls.
+    PsiType receiverType = call.getReceiverType();
+    if (receiverType instanceof PsiClassType ct) {
+      PsiClass receiverClass = ct.resolve();
+      if (receiverClass != null &&
+          (builderFqn.equals(receiverClass.getQualifiedName()) ||
+           InheritanceUtil.isInheritor(receiverClass, builderFqn))) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

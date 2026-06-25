@@ -2,40 +2,70 @@
 package com.intellij.guice.inspections;
 
 import com.intellij.codeInsight.AnnotationUtil;
+import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.guice.GuiceBundle;
 import com.intellij.guice.constants.GuiceAnnotations;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiMethod;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.uast.UMethod;
+import org.jetbrains.uast.visitor.AbstractUastNonRecursiveVisitor;
 
-public final class MultipleInjectedConstructorsForClassInspection extends BaseInspection {
+/**
+ * Reports classes that have more than one constructor annotated with {@code @Inject}.
+ * Guice requires at most one {@code @Inject} constructor per class.
+ *
+ * <p>Example:
+ * <pre>
+ * // Flagged: two @Inject constructors
+ * class Foo {
+ *     {@literal @}Inject Foo(Bar bar) {}
+ *     {@literal @}Inject Foo(Bar bar, Baz baz) {}
+ * }
+ *
+ * // OK: single @Inject constructor
+ * class Foo {
+ *     {@literal @}Inject Foo(Bar bar) {}
+ *     Foo(Bar bar, Baz baz) {}  // no @Inject
+ * }
+ * </pre>
+ */
+public final class MultipleInjectedConstructorsForClassInspection extends BaseUastInspection {
+  public MultipleInjectedConstructorsForClassInspection() {
+    super(UMethod.class);
+  }
+
   @Override
   protected @NotNull String buildErrorString(Object... infos) {
     return GuiceBundle.message("multiple.injected.constructors.for.class.problem.descriptor");
   }
 
   @Override
-  public BaseInspectionVisitor buildVisitor() {
-    return new Visitor();
+  public @NotNull AbstractUastNonRecursiveVisitor buildUastVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
+    return new Visitor(this, holder, isOnTheFly);
   }
 
-  private static class Visitor extends BaseInspectionVisitor {
+  private static class Visitor extends BaseUastInspectionVisitor {
+    Visitor(@NotNull BaseUastInspection inspection, @NotNull ProblemsHolder holder, boolean onTheFly) {
+      super(inspection, holder, onTheFly);
+    }
+
     @Override
-    public void visitMethod(@NotNull PsiMethod method) {
-      super.visitMethod(method);
+    public boolean visitMethod(@NotNull UMethod uMethod) {
+      final PsiMethod method = uMethod.getJavaPsi();
       if (!method.isConstructor()) {
-        return;
+        return true;
       }
       final PsiClass containingClass = method.getContainingClass();
       if (containingClass == null) {
-        return;
+        return true;
       }
       final PsiMethod[] constructors = containingClass.getConstructors();
       if (constructors.length <= 1) {
-        return;
+        return true;
       }
       if (!AnnotationUtil.isAnnotated(method, GuiceAnnotations.INJECTS, AnnotationUtil.CHECK_HIERARCHY)) {
-        return;
+        return true;
       }
 
       int annotatedConstructorCount = 0;
@@ -45,8 +75,9 @@ public final class MultipleInjectedConstructorsForClassInspection extends BaseIn
         }
       }
       if (annotatedConstructorCount > 1) {
-        registerMethodError(method);
+        registerMethodError(uMethod);
       }
+      return true;
     }
   }
 }

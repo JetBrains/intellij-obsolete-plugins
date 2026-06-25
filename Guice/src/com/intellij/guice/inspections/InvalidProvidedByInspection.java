@@ -12,6 +12,22 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.uast.UAnnotation;
 import org.jetbrains.uast.visitor.AbstractUastNonRecursiveVisitor;
 
+/**
+ * Reports {@code @ProvidedBy} annotations where the referenced class does not actually
+ * provide the annotated type (i.e., does not implement {@code Provider<AnnotatedType>}).
+ *
+ * <p>Example:
+ * <pre>
+ * // Flagged: WrongProvider does not implement Provider&lt;Foo&gt;
+ * {@literal @}ProvidedBy(WrongProvider.class)
+ * class Foo {}
+ *
+ * // OK: FooProvider implements Provider&lt;Foo&gt;
+ * {@literal @}ProvidedBy(FooProvider.class)
+ * class Foo {}
+ * class FooProvider implements Provider&lt;Foo&gt; { ... }
+ * </pre>
+ */
 public final class InvalidProvidedByInspection extends BaseUastInspection {
   public InvalidProvidedByInspection() {
     super(UAnnotation.class);

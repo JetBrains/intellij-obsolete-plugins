@@ -6,6 +6,7 @@ import com.intellij.guice.constants.GuiceAnnotations;
 import com.intellij.guice.constants.GuiceClasses;
 import com.intellij.guice.model.beans.BindDescriptor;
 import com.intellij.guice.model.extensions.GuiceBindingContributor;
+import com.intellij.guice.model.extensions.GuiceBindingMatchStrategy;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.Project;
@@ -71,14 +72,16 @@ public final class GuiceInjectorManager {
    * {@code HashSet} allocations.
    */
   record ContributorSnapshot(@NotNull Set<String> bindingWords,
-                              @NotNull List<GuiceBindingContributor> contributors) {
+                              @NotNull List<GuiceBindingContributor> contributors,
+                              @NotNull Set<String> providesAnnotations) {
     static @NotNull ContributorSnapshot create() {
       List<GuiceBindingContributor> contributors = GuiceBindingContributor.EP_NAME.getExtensionList();
       Set<String> words = new HashSet<>();
       for (GuiceBindingContributor c : contributors) {
         words.addAll(c.getBindingWords());
       }
-      return new ContributorSnapshot(Set.copyOf(words), contributors);
+      return new ContributorSnapshot(Set.copyOf(words), contributors,
+                                     GuiceBindingMatchStrategy.getAllProvidesAnnotations());
     }
   }
 
@@ -224,21 +227,27 @@ public final class GuiceInjectorManager {
   static @NotNull List<PsiClass> collectGuiceModuleClasses(@NotNull PsiFile file) {
     if (!(file instanceof PsiClassOwner classOwner)) return List.of();
 
+    final PsiClass moduleClass =
+        JavaPsiFacade.getInstance(file.getProject()).findClass("com.google.inject.Module", file.getResolveScope());
+    if (moduleClass == null) {
+      return List.of();
+    }
     List<PsiClass> result = new ArrayList<>();
     for (PsiClass aClass : classOwner.getClasses()) {
-      collectAllGuiceModules(aClass, result);
+      collectAllGuiceModules(aClass, moduleClass, result);
     }
     return result;
   }
 
   private static void collectAllGuiceModules(@NotNull PsiClass aClass,
+      @NotNull PsiClass moduleClass,
                                              @NotNull List<PsiClass> result) {
-    if (InheritanceUtil.isInheritor(aClass, "com.google.inject.Module")) {
+    if (aClass.isInheritor(moduleClass, true)) {
       result.add(aClass);
     }
     // Always recurse into inner classes — each module is visited independently.
     for (PsiClass inner : aClass.getInnerClasses()) {
-      collectAllGuiceModules(inner, result);
+      collectAllGuiceModules(inner, moduleClass, result);
     }
   }
 

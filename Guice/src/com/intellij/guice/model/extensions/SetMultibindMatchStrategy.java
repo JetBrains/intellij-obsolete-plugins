@@ -1,20 +1,16 @@
 // Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package com.intellij.guice.model.extensions;
 
-import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.guice.constants.GuiceAnnotations;
-import com.intellij.guice.model.GuiceInjectionUtil;
-import com.intellij.guice.model.jam.GuiceProvides;
-import com.intellij.guice.model.InjectionPointDescriptor;
 import com.intellij.guice.model.beans.BindDescriptor;
 import com.intellij.guice.model.beans.SetMultibindDescriptor;
 import com.intellij.guice.utils.GuiceUtils;
 import com.intellij.psi.*;
-import com.intellij.psi.util.TypeConversionUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -30,67 +26,67 @@ public final class SetMultibindMatchStrategy implements GuiceBindingMatchStrateg
   }
 
   @Override
-  public boolean isRelevantType(@NotNull PsiType targetType) {
-    return GuiceUtils.getMultibinderElementType(targetType) != null;
+  public @NotNull Collection<String> getProvidesAnnotations() {
+    return List.of(GuiceAnnotations.PROVIDES_INTO_SET, GuiceAnnotations.CHECKED_PROVIDES_INTO_SET);
   }
 
+  /**
+   * Extracts the element type {@code T} from Guice's Set multibinder injection point types:
+   * <ul>
+   *   <li>{@code Set<T>} / {@code Set<? extends T>} (Kotlin variance)</li>
+   *   <li>{@code Collection<Provider<T>>} (all Provider variants: Guice, javax, jakarta)</li>
+   * </ul>
+   */
   @Override
   public @Nullable PsiType unwrapType(@NotNull PsiType type) {
-    return GuiceUtils.getMultibinderElementType(type);
+    // Set<T> or Set<? extends T> (wildcard stripped by getTypeParameter).
+    PsiType element = GuiceUtils.getMultibinderElementType(type);
+    if (element != null) return element;
+
+    // Collection<Provider<T>> — Guice also binds this for Multibinder<T>.
+    PsiType collectionParam = GuiceUtils.getTypeParameter(type, "java.util.Collection", 0);
+    if (collectionParam != null) {
+      PsiType provided = GuiceUtils.getProviderType(collectionParam);
+      if (provided != null) return provided;
+    }
+
+    return null;
   }
 
   @Override
-  public void findMatchingBindings(@NotNull List<? extends BindDescriptor> descriptors,
-                                   @NotNull PsiType targetType,
-                                   @NotNull InjectionPointDescriptor ip,
-                                   @NotNull Set<BindDescriptor> result) {
-    for (BindDescriptor descriptor : descriptors) {
-      if (!(descriptor instanceof SetMultibindDescriptor smb)) continue;
-      try {
-        if (smb.matchesType(targetType) && GuiceInjectionUtil.checkBindingAnnotations(ip, smb)) {
-          result.add(smb);
-        }
-      }
-      catch (PsiInvalidElementAccessException e) {
-        // Stale PSI — skip.
-      }
-    }
+  public @Nullable PsiType wrapType(@NotNull BindDescriptor descriptor) {
+    if (!(descriptor instanceof SetMultibindDescriptor smb)) return null;
+    PsiElement bindExpr = descriptor.getBindExpression();
+    if (bindExpr == null) return null;
+    PsiClass elementClass = smb.getElementType();
+    return createSetType(bindExpr, elementClass);
   }
 
   @Override
-  public void findMatchingProvides(@NotNull Set<GuiceProvides> candidates,
-                                   @NotNull PsiType unwrappedType,
-                                   @NotNull Set<PsiAnnotation> ipAnnotations,
-                                   @NotNull Set<GuiceProvides> result) {
-    for (GuiceProvides provides : candidates) {
-      try {
-        PsiType productType = provides.getProductType();
-        if (productType != null &&
-            TypeConversionUtil.isAssignable(unwrappedType, productType) &&
-            (AnnotationUtil.isAnnotated(provides.getPsiElement(),
-                GuiceAnnotations.PROVIDES_INTO_SET, 0) ||
-             AnnotationUtil.isAnnotated(provides.getPsiElement(),
-                GuiceAnnotations.CHECKED_PROVIDES_INTO_SET, 0)) &&
-            GuiceInjectionUtil.checkBindingAnnotations(
-                ipAnnotations, provides.getBindingAnnotations())) {
-          result.add(provides);
-        }
-      }
-      catch (PsiInvalidElementAccessException e) {
-        // Stale PSI — skip.
-      }
-    }
+  public @Nullable PsiType wrapProvidesType(@NotNull PsiMethod providesMethod) {
+    if (!isProvidesIntoMethod(providesMethod)) return null;
+    PsiType returnType = providesMethod.getReturnType();
+    if (!(returnType instanceof PsiClassType ct)) return null;
+    return createSetType(providesMethod, ct.resolve());
   }
+
+  private static @Nullable PsiType createSetType(@NotNull PsiElement context,
+                                                 @Nullable PsiClass elementClass) {
+    if (elementClass == null) return null;
+    PsiClass setClass = JavaPsiFacade.getInstance(context.getProject())
+        .findClass("java.util.Set", context.getResolveScope());
+    if (setClass == null) return null;
+    PsiElementFactory factory = JavaPsiFacade.getElementFactory(context.getProject());
+    return factory.createType(setClass, factory.createType(elementClass));
+  }
+
 
   @Override
   public @NotNull List<PsiElement> findMultibinderTargets(@NotNull PsiMethod providesMethod,
                                                           @NotNull List<? extends BindDescriptor> descriptors) {
     List<PsiElement> targets = new ArrayList<>();
 
-    boolean isProvidesIntoSet =
-        AnnotationUtil.isAnnotated(providesMethod, GuiceAnnotations.PROVIDES_INTO_SET, 0) ||
-        AnnotationUtil.isAnnotated(providesMethod, GuiceAnnotations.CHECKED_PROVIDES_INTO_SET, 0);
-    if (!isProvidesIntoSet) return targets;
+    if (!isProvidesIntoMethod(providesMethod)) return targets;
 
     PsiType returnType = providesMethod.getReturnType();
     if (!(returnType instanceof PsiClassType returnClassType)) return targets;

@@ -3,6 +3,7 @@ package com.intellij.guice.inspections;
 
 import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.codeInspection.LocalQuickFix;
+import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.guice.GuiceBundle;
 import com.intellij.guice.constants.GuiceAnnotations;
 import com.intellij.guice.utils.AnnotationUtils;
@@ -10,18 +11,39 @@ import com.intellij.guice.utils.GuiceUtils;
 import com.intellij.psi.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.uast.UCallExpression;
+import org.jetbrains.uast.visitor.AbstractUastNonRecursiveVisitor;
 
 import static com.intellij.codeInsight.AnnotationUtil.CHECK_HIERARCHY;
 
-public final class RedundantToProviderBindingInspection extends BaseInspection {
+/**
+ * Reports redundant {@code .toProvider()} bindings where the provider class is the same as
+ * the one already declared via {@code @ProvidedBy} on the bound type.
+ *
+ * <p>Example:
+ * <pre>
+ * // Flagged: @ProvidedBy already specifies FooProvider
+ * {@literal @}ProvidedBy(FooProvider.class)
+ * class Foo {}
+ * bind(Foo.class).toProvider(FooProvider.class);  // redundant
+ *
+ * // OK: different provider
+ * bind(Foo.class).toProvider(SpecialFooProvider.class);
+ * </pre>
+ */
+public final class RedundantToProviderBindingInspection extends BaseUastInspection {
+  public RedundantToProviderBindingInspection() {
+    super(UCallExpression.class);
+  }
+
   @Override
   protected @NotNull String buildErrorString(Object... infos) {
     return GuiceBundle.message("redundant.to.provider.binding.problem.descriptor");
   }
 
   @Override
-  public BaseInspectionVisitor buildVisitor() {
-    return new Visitor();
+  public @NotNull AbstractUastNonRecursiveVisitor buildUastVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
+    return new Visitor(this, holder, isOnTheFly);
   }
 
   @Override
@@ -29,58 +51,47 @@ public final class RedundantToProviderBindingInspection extends BaseInspection {
     return new DeleteBindingFix();
   }
 
-  private static class Visitor extends BaseInspectionVisitor {
+  private static class Visitor extends BaseUastInspectionVisitor {
+    Visitor(@NotNull BaseUastInspection inspection, @NotNull ProblemsHolder holder, boolean onTheFly) {
+      super(inspection, holder, onTheFly);
+    }
+
     @Override
-    public void visitMethodCallExpression(@NotNull PsiMethodCallExpression expression) {
-      super.visitMethodCallExpression(expression);
-      final PsiReferenceExpression methodExpression = expression.getMethodExpression();
-      final String methodName = methodExpression.getReferenceName();
-      if (!"toProvider".equals(methodName)) {
-        return;
+    public boolean visitCallExpression(@NotNull UCallExpression expression) {
+      if (!"toProvider".equals(expression.getMethodName())) {
+        return true;
       }
-      final PsiExpression[] args = expression.getArgumentList().getExpressions();
-      if (args.length != 1) {
-        return;
-      }
-      final PsiExpression arg = args[0];
-      if (!(arg instanceof PsiClassObjectAccessExpression)) {
-        return;
-      }
-      final PsiTypeElement classTypeElement = ((PsiClassObjectAccessExpression)arg).getOperand();
-      final PsiType classType = classTypeElement.getType();
-      if (!(classType instanceof PsiClassType)) {
-        return;
-      }
-      final PsiClass referentClass = ((PsiClassType)classType).resolve();
+      PsiClass referentClass = GuiceUtils.resolveClassArgument(expression);
       if (referentClass == null) {
-        return;
+        return true;
       }
       final PsiClass boundClass = GuiceUtils.findImplementedClassForBinding(expression);
       if (boundClass == null) {
-        return;
+        return true;
       }
       if (!AnnotationUtil.isAnnotated(boundClass, GuiceAnnotations.PROVIDED_BY, CHECK_HIERARCHY)) {
-        return;
+        return true;
       }
       final PsiAnnotation providedByAnnotation = boundClass.getModifierList().findAnnotation(GuiceAnnotations.PROVIDED_BY);
       if (providedByAnnotation != null) {
         final PsiElement defaultValue = AnnotationUtils.findDefaultValue(providedByAnnotation);
         if (defaultValue == null) {
-          return;
+          return true;
         }
         if (!(defaultValue instanceof PsiClassObjectAccessExpression)) {
-          return;
+          return true;
         }
         final PsiTypeElement providedByClassElement = ((PsiClassObjectAccessExpression)defaultValue).getOperand();
         final PsiType providedByClassType = providedByClassElement.getType();
         if (!(providedByClassType instanceof PsiClassType)) {
-          return;
+          return true;
         }
         final PsiClass providedByClass = ((PsiClassType)providedByClassType).resolve();
         if (referentClass.equals(providedByClass)) {
-          registerError(classTypeElement);
+          registerError(expression);
         }
       }
+      return true;
     }
   }
 }

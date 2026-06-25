@@ -13,21 +13,21 @@ import org.jetbrains.annotations.Nullable;
  * (i.e. {@code com.google.common.collect.Multimap}).
  */
 public class MultimapBindDescriptor extends BindDescriptor {
-  private final @Nullable PsiClass myKeyType;
-  private final @Nullable PsiClass myValueType;
+  private final @Nullable SmartPsiElementPointer<PsiClass> myKeyType;
+  private final @Nullable SmartPsiElementPointer<PsiClass> myValueType;
 
   public MultimapBindDescriptor(@NotNull PsiElement callExpression, @Nullable PsiClass keyType, @Nullable PsiClass valueType) {
     super(callExpression);
-    myKeyType = keyType;
-    myValueType = valueType;
+    myKeyType = keyType != null ? SmartPointerManager.createPointer(keyType) : null;
+    myValueType = valueType != null ? SmartPointerManager.createPointer(valueType) : null;
   }
 
   public @Nullable PsiClass getKeyType() {
-    return myKeyType;
+    return myKeyType != null ? myKeyType.getElement() : null;
   }
 
   public @Nullable PsiClass getValueType() {
-    return myValueType;
+    return myValueType != null ? myValueType.getElement() : null;
   }
 
   @Override
@@ -41,7 +41,7 @@ public class MultimapBindDescriptor extends BindDescriptor {
     final PsiType valParam = GuiceUtils.getTypeParameter(type, "com.google.common.collect.Multimap", 1);
     final PsiClass keyClass = GuiceUtils.resolveClass(keyParam);
     final PsiClass valClass = GuiceUtils.resolveClass(valParam);
-    return GuiceUtils.areClassesEquivalent(keyClass, myKeyType) &&
-           GuiceUtils.areClassesEquivalent(valClass, myValueType);
+    return GuiceUtils.areClassesEquivalent(keyClass, getKeyType()) &&
+           GuiceUtils.areClassesEquivalent(valClass, getValueType());
   }
 }

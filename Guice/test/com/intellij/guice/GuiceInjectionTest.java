@@ -2,13 +2,10 @@ package com.intellij.guice;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.intellij.guice.model.GuiceLiveIndex;
-import com.intellij.guice.model.InjectionPointDescriptor;
-import com.intellij.guice.model.beans.BindDescriptor;
-import com.intellij.guice.model.beans.BindToDescriptor;
-import com.intellij.guice.model.beans.BindToProviderDescriptor;
-import com.intellij.guice.model.beans.MapMultibindDescriptor;
-import com.intellij.guice.model.beans.OptionalBindDescriptor;
+import com.intellij.guice.model.EntryRole;
+import com.intellij.guice.model.GuiceEntry;
+import com.intellij.guice.model.GuiceEntryProducer;
+import com.intellij.guice.model.GuiceNavigationIndex;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiField;
@@ -38,16 +35,20 @@ public class GuiceInjectionTest extends GuiceTestBase {
 
     PsiField field = clientClass.findFieldByName("service", false);
     assertNotNull(field);
-    InjectionPointDescriptor ip = new InjectionPointDescriptor(field);
 
-    GuiceLiveIndex liveIndex = getIndex();
+    GuiceNavigationIndex index = getNavigationIndex();
+    Set<GuiceEntry> clientEntries = GuiceEntryProducer.extractFromClass(clientClass);
+    GuiceEntry fieldEntry = clientEntries.stream()
+        .filter(e -> e.getRole() == EntryRole.INJECTION_POINT && e.getNavigationTarget() == field)
+        .findFirst()
+        .orElse(null);
+    assertNotNull(fieldEntry);
 
-    Set<BindDescriptor> bindings = liveIndex.findMatchingBindings(ip);
-    assertEquals(1, bindings.size());
-    BindDescriptor binding = bindings.iterator().next();
-    assertThat(binding).isInstanceOf(BindToDescriptor.class);
-    assertEquals("MyService", binding.getBoundClass().getQualifiedName());
-    assertEquals("MyServiceImpl", binding.getBindingClass().getQualifiedName());
+    Set<GuiceEntry> counterparts = index.findCounterparts(fieldEntry);
+    assertEquals(1, counterparts.size());
+    GuiceEntry counterpart = counterparts.iterator().next();
+    assertEquals(EntryRole.BINDING_SITE, counterpart.getRole());
+    assertEquals("bind(MyService.class).to(MyServiceImpl.class)", counterpart.getPresentableText());
   }
 
   public void testJavaInjectFieldToProviderBinding() {
@@ -68,18 +69,22 @@ public class GuiceInjectionTest extends GuiceTestBase {
       }
       """);
 
-    GuiceLiveIndex liveIndex = getIndex();
-
     PsiField field = clientClass.findFieldByName("service", false);
     assertNotNull(field);
-    InjectionPointDescriptor ip = new InjectionPointDescriptor(field);
 
-    Set<BindDescriptor> bindings = liveIndex.findMatchingBindings(ip);
-    assertEquals(1, bindings.size());
-    BindDescriptor binding = bindings.iterator().next();
-    assertThat(binding).isInstanceOf(BindToProviderDescriptor.class);
-    assertEquals("MyService", binding.getBoundClass().getQualifiedName());
-    assertEquals("MyServiceProvider", ((BindToProviderDescriptor) binding).getProviderClass().getQualifiedName());
+    GuiceNavigationIndex index = getNavigationIndex();
+    Set<GuiceEntry> clientEntries = GuiceEntryProducer.extractFromClass(clientClass);
+    GuiceEntry fieldEntry = clientEntries.stream()
+        .filter(e -> e.getRole() == EntryRole.INJECTION_POINT && e.getNavigationTarget() == field)
+        .findFirst()
+        .orElse(null);
+    assertNotNull(fieldEntry);
+
+    Set<GuiceEntry> counterparts = index.findCounterparts(fieldEntry);
+    assertEquals(1, counterparts.size());
+    GuiceEntry counterpart = counterparts.iterator().next();
+    assertEquals(EntryRole.BINDING_SITE, counterpart.getRole());
+    assertEquals("bind(MyService.class).toProvider(MyServiceProvider.class)", counterpart.getPresentableText());
   }
 
   public void testJavaInjectConstructorParameter() {
@@ -104,21 +109,25 @@ public class GuiceInjectionTest extends GuiceTestBase {
       }
       """);
 
-    GuiceLiveIndex liveIndex = getIndex();
-
     var constructors = clientClass.getConstructors();
     assertEquals(1, constructors.length);
     var parameters = constructors[0].getParameterList().getParameters();
     assertEquals(1, parameters.length);
     PsiParameter parameter = parameters[0];
 
-    InjectionPointDescriptor ip = new InjectionPointDescriptor(parameter);
+    GuiceNavigationIndex index = getNavigationIndex();
+    Set<GuiceEntry> clientEntries = GuiceEntryProducer.extractFromClass(clientClass);
+    GuiceEntry paramEntry = clientEntries.stream()
+        .filter(e -> e.getRole() == EntryRole.INJECTION_POINT && e.getNavigationTarget() == parameter)
+        .findFirst()
+        .orElse(null);
+    assertNotNull(paramEntry);
 
-    Set<BindDescriptor> bindings = liveIndex.findMatchingBindings(ip);
-    assertEquals(1, bindings.size());
-    BindDescriptor binding = bindings.iterator().next();
-    assertThat(binding).isInstanceOf(BindToDescriptor.class);
-    assertEquals("MyService", binding.getBoundClass().getQualifiedName());
+    Set<GuiceEntry> counterparts = index.findCounterparts(paramEntry);
+    assertEquals(1, counterparts.size());
+    GuiceEntry counterpart = counterparts.iterator().next();
+    assertEquals(EntryRole.BINDING_SITE, counterpart.getRole());
+    assertEquals("bind(MyService.class).to(MyServiceImpl.class)", counterpart.getPresentableText());
   }
 
   public void testJavaInjectFieldToOptionalBinder() {
@@ -148,17 +157,22 @@ public class GuiceInjectionTest extends GuiceTestBase {
       }
       """);
 
-    GuiceLiveIndex liveIndex = getIndex();
-
     PsiField field = clientClass.findFieldByName("service", false);
     assertNotNull(field);
-    InjectionPointDescriptor ip = new InjectionPointDescriptor(field);
 
-    Set<BindDescriptor> bindings = liveIndex.findMatchingBindings(ip);
-    assertEquals(1, bindings.size());
-    BindDescriptor binding = bindings.iterator().next();
-    assertThat(binding).isInstanceOf(OptionalBindDescriptor.class);
-    assertEquals("MyService", binding.getBoundClass().getQualifiedName());
+    GuiceNavigationIndex index = getNavigationIndex();
+    Set<GuiceEntry> clientEntries = GuiceEntryProducer.extractFromClass(clientClass);
+    GuiceEntry fieldEntry = clientEntries.stream()
+        .filter(e -> e.getRole() == EntryRole.INJECTION_POINT && e.getNavigationTarget() == field)
+        .findFirst()
+        .orElse(null);
+    assertNotNull(fieldEntry);
+
+    Set<GuiceEntry> counterparts = index.findCounterparts(fieldEntry);
+    assertEquals(1, counterparts.size());
+    GuiceEntry counterpart = counterparts.iterator().next();
+    assertEquals(EntryRole.BINDING_SITE, counterpart.getRole());
+    assertEquals("Optional<MyService>", counterpart.getPresentableText());
   }
 
   public void testJavaInjectFieldToMapBinder() {
@@ -186,18 +200,22 @@ public class GuiceInjectionTest extends GuiceTestBase {
       }
       """);
 
-    GuiceLiveIndex liveIndex = getIndex();
-
     PsiField field = clientClass.findFieldByName("serviceMap", false);
     assertNotNull(field);
-    InjectionPointDescriptor ip = new InjectionPointDescriptor(field);
 
-    Set<BindDescriptor> bindings = liveIndex.findMatchingBindings(ip);
-    assertEquals(1, bindings.size());
-    BindDescriptor binding = bindings.iterator().next();
-    assertThat(binding).isInstanceOf(MapMultibindDescriptor.class);
-    assertEquals("MyKey", ((MapMultibindDescriptor) binding).getKeyType().getQualifiedName());
-    assertEquals("MyService", ((MapMultibindDescriptor) binding).getValueType().getQualifiedName());
+    GuiceNavigationIndex index = getNavigationIndex();
+    Set<GuiceEntry> clientEntries = GuiceEntryProducer.extractFromClass(clientClass);
+    GuiceEntry fieldEntry = clientEntries.stream()
+        .filter(e -> e.getRole() == EntryRole.INJECTION_POINT && e.getNavigationTarget() == field)
+        .findFirst()
+        .orElse(null);
+    assertNotNull(fieldEntry);
+
+    Set<GuiceEntry> counterparts = index.findCounterparts(fieldEntry);
+    assertEquals(1, counterparts.size());
+    GuiceEntry counterpart = counterparts.iterator().next();
+    assertEquals(EntryRole.BINDING_SITE, counterpart.getRole());
+    assertEquals("Map<MyKey, MyService>", counterpart.getPresentableText());
   }
 
   public void testKotlinInjectFieldToSimpleBinding() {
@@ -223,17 +241,24 @@ public class GuiceInjectionTest extends GuiceTestBase {
         .findClass("Client", GlobalSearchScope.projectScope(getProject()));
     assertNotNull(clientClass);
 
-    GuiceLiveIndex liveIndex = getIndex();
-
     PsiField field = clientClass.findFieldByName("service", false);
     assertNotNull(field);
-    InjectionPointDescriptor ip = new InjectionPointDescriptor(field);
 
-    Set<BindDescriptor> bindings = liveIndex.findMatchingBindings(ip);
-    assertEquals(1, bindings.size());
-    BindDescriptor binding = bindings.iterator().next();
-    assertThat(binding).isInstanceOf(BindToDescriptor.class);
-    assertEquals("MyService", binding.getBoundClass().getQualifiedName());
+    GuiceNavigationIndex index = getNavigationIndex();
+    Set<GuiceEntry> clientEntries = GuiceEntryProducer.extractFromClass(clientClass);
+
+
+    GuiceEntry fieldEntry = clientEntries.stream()
+        .filter(e -> e.getRole() == EntryRole.INJECTION_POINT && e.getNavigationTarget().equals(field))
+        .findFirst()
+        .orElse(null);
+    assertNotNull(fieldEntry);
+
+    Set<GuiceEntry> counterparts = index.findCounterparts(fieldEntry);
+    assertEquals(1, counterparts.size());
+    GuiceEntry counterpart = counterparts.iterator().next();
+    assertEquals(EntryRole.BINDING_SITE, counterpart.getRole());
+    assertEquals("bind(MyService.class).to(MyServiceImpl.class)", counterpart.getPresentableText());
   }
 
   public void testJavaInjectFieldToUnresolvedAnnotationBinding() {
@@ -254,14 +279,18 @@ public class GuiceInjectionTest extends GuiceTestBase {
       }
       """);
 
-    GuiceLiveIndex liveIndex = getIndex();
-
     PsiField field = clientClass.findFieldByName("service", false);
     assertNotNull(field);
-    InjectionPointDescriptor ip = new InjectionPointDescriptor(field);
 
-    Set<BindDescriptor> bindings = liveIndex.findMatchingBindings(ip);
-    // Should NOT match because the binding explicitly has a qualifier (even though it's unresolvable)
-    assertEmpty(bindings);
+    GuiceNavigationIndex index = getNavigationIndex();
+    Set<GuiceEntry> clientEntries = GuiceEntryProducer.extractFromClass(clientClass);
+    GuiceEntry fieldEntry = clientEntries.stream()
+        .filter(e -> e.getRole() == EntryRole.INJECTION_POINT && e.getNavigationTarget() == field)
+        .findFirst()
+        .orElse(null);
+    assertNotNull(fieldEntry);
+
+    Set<GuiceEntry> counterparts = index.findCounterparts(fieldEntry);
+    assertEmpty(counterparts);
   }
 }

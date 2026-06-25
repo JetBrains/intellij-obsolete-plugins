@@ -11,6 +11,24 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.uast.UAnnotation;
 import org.jetbrains.uast.visitor.AbstractUastNonRecursiveVisitor;
 
+/**
+ * Reports {@code @ProvidedBy} annotations where the referenced provider class cannot
+ * be instantiated by Guice (e.g., it is abstract, an interface, or has no suitable
+ * constructor).
+ *
+ * <p>Example:
+ * <pre>
+ * // Flagged: AbstractProvider cannot be instantiated
+ * {@literal @}ProvidedBy(AbstractProvider.class)
+ * class Foo {}
+ * abstract class AbstractProvider implements Provider&lt;Foo&gt; {}
+ *
+ * // OK: ConcreteProvider can be instantiated
+ * {@literal @}ProvidedBy(ConcreteProvider.class)
+ * class Foo {}
+ * class ConcreteProvider implements Provider&lt;Foo&gt; { ... }
+ * </pre>
+ */
 public final class UninstantiableProvidedByClassInspection extends BaseUastInspection {
   public UninstantiableProvidedByClassInspection() {
     super(UAnnotation.class);

@@ -11,6 +11,24 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.uast.UAnnotation;
 import org.jetbrains.uast.visitor.AbstractUastNonRecursiveVisitor;
 
+/**
+ * Reports {@code @ImplementedBy} annotations where the referenced implementation class
+ * cannot be instantiated by Guice (e.g., it is abstract, an interface, or has no
+ * suitable constructor).
+ *
+ * <p>Example:
+ * <pre>
+ * // Flagged: AbstractFoo cannot be instantiated
+ * {@literal @}ImplementedBy(AbstractFoo.class)
+ * interface Foo {}
+ * abstract class AbstractFoo implements Foo {}
+ *
+ * // OK: ConcreteFoo can be instantiated
+ * {@literal @}ImplementedBy(ConcreteFoo.class)
+ * interface Foo {}
+ * class ConcreteFoo implements Foo {}
+ * </pre>
+ */
 public final class UninstantiableImplementedByClassInspection extends BaseUastInspection {
   public UninstantiableImplementedByClassInspection() {
     super(UAnnotation.class);

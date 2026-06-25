@@ -5,6 +5,7 @@ import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.codeInspection.dataFlow.StringExpressionHelper;
 import com.intellij.guice.constants.GuiceAnnotations;
 import com.intellij.guice.model.beans.BindDescriptor;
+import com.intellij.guice.model.extensions.GuiceBindingMatchStrategy;
 import com.intellij.guice.utils.GuiceUtils;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.JavaRecursiveElementVisitor;
@@ -62,7 +63,7 @@ public final class GuiceInjectionUtil {
     }
     for (PsiMethod method : psiClass.getMethods()) {
       if (AnnotationUtil.isAnnotated(method, GuiceAnnotations.INJECTS, 0) ||
-          AnnotationUtil.isAnnotated(method, GuiceAnnotations.PROVIDES_ANNOTATIONS, 0)) {
+          AnnotationUtil.isAnnotated(method, GuiceBindingMatchStrategy.getAllProvidesAnnotations(), 0)) {
         for (PsiParameter parameter : method.getParameterList().getParameters()) {
           ips.add(new InjectionPointDescriptor(parameter));
         }
@@ -263,9 +264,12 @@ public final class GuiceInjectionUtil {
           }
         }
       }
-      final PsiExpression named = GuiceUtils.getArgumentOfCallInChain(expression, "named");
-      if (named != null) {
-        return named;
+      final UCallExpression uCall = GuiceUtils.getCallExpression(expression);
+      if (uCall != null) {
+        final UExpression namedArg = GuiceUtils.getArgumentOfCallInChain(uCall, "named");
+        if (namedArg != null && namedArg.getSourcePsi() instanceof PsiExpression named) {
+          return named;
+        }
       }
     }
     if (annotatedWithExpression instanceof PsiReferenceExpression) {

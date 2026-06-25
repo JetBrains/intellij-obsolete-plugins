@@ -2,28 +2,26 @@
 package com.intellij.guice.model.beans;
 
 import com.intellij.guice.utils.GuiceUtils;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiType;
+import com.intellij.psi.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class MapMultibindDescriptor extends BindDescriptor {
-  private final @Nullable PsiClass myKeyType;
-  private final @Nullable PsiClass myValueType;
+  private final @Nullable SmartPsiElementPointer<PsiClass> myKeyType;
+  private final @Nullable SmartPsiElementPointer<PsiClass> myValueType;
 
   public MapMultibindDescriptor(@NotNull PsiElement callExpression, @Nullable PsiClass keyType, @Nullable PsiClass valueType) {
     super(callExpression);
-    myKeyType = keyType;
-    myValueType = valueType;
+    myKeyType = keyType != null ? SmartPointerManager.createPointer(keyType) : null;
+    myValueType = valueType != null ? SmartPointerManager.createPointer(valueType) : null;
   }
 
   public @Nullable PsiClass getKeyType() {
-    return myKeyType;
+    return myKeyType != null ? myKeyType.getElement() : null;
   }
 
   public @Nullable PsiClass getValueType() {
-    return myValueType;
+    return myValueType != null ? myValueType.getElement() : null;
   }
 
   @Override
@@ -37,7 +35,7 @@ public class MapMultibindDescriptor extends BindDescriptor {
     final PsiType valParam = GuiceUtils.getTypeParameter(type, "java.util.Map", 1);
     final PsiClass keyClass = GuiceUtils.resolveClass(keyParam);
     final PsiClass valClass = GuiceUtils.resolveClass(valParam);
-    return GuiceUtils.areClassesEquivalent(keyClass, myKeyType) &&
-           GuiceUtils.areClassesEquivalent(valClass, myValueType);
+    return GuiceUtils.areClassesEquivalent(keyClass, getKeyType()) &&
+           GuiceUtils.areClassesEquivalent(valClass, getValueType());
   }
 }

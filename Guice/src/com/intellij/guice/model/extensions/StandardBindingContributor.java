@@ -40,9 +40,8 @@ public final class StandardBindingContributor implements GuiceBindingContributor
     boolean handled = false;
 
     // Binding-builder tail methods: .to(), .toInstance(), .toProvider(), .toConstructor()
-    if (GuiceClasses.LINKED_BINDING_BUILDER.equals(resolvedQName) ||
-        InheritanceUtil.isInheritor(containingClass, GuiceClasses.LINKED_BINDING_BUILDER) ||
-        ContributorUtil.isGuicePackage(resolvedQName)) {
+    if (ContributorUtil.isBindingBuilderMethod(resolvedQName, call, containingClass,
+                                                GuiceClasses.LINKED_BINDING_BUILDER)) {
 
       PsiElement outermostSource = ContributorUtil.getOutermostSource(call);
       if (outermostSource != null) {

@@ -4,6 +4,17 @@ import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 
 public abstract class GuiceTestBase extends LightJavaCodeInsightFixtureTestCase {
   @Override
+  protected com.intellij.testFramework.LightProjectDescriptor getProjectDescriptor() {
+    return new com.intellij.testFramework.fixtures.DefaultLightProjectDescriptor() {
+      @Override
+      public com.intellij.openapi.projectRoots.Sdk getSdk() {
+        String javaHome = System.getProperty("java.home");
+        return com.intellij.openapi.projectRoots.JavaSdk.getInstance().createJdk("Current JDK", javaHome, false);
+      }
+    };
+  }
+
+  @Override
   protected void setUp() throws Exception {
     super.setUp();
     getProject().getMessageBus().connect(getTestRootDisposable()).subscribe(
@@ -59,6 +70,10 @@ public abstract class GuiceTestBase extends LightJavaCodeInsightFixtureTestCase 
       """);
     myFixture.addClass("""
       package com.google.inject;
+      public interface Scope {}
+      """);
+    myFixture.addClass("""
+      package com.google.inject;
       public interface Binder {
         <T> com.google.inject.binder.LinkedBindingBuilder<T> bind(Class<T> clazz);
       }
@@ -70,6 +85,8 @@ public abstract class GuiceTestBase extends LightJavaCodeInsightFixtureTestCase 
         void toInstance(T instance);
         void toProvider(Class<? extends javax.inject.Provider<? extends T>> provider);
         void toConstructor(java.lang.reflect.Constructor<? extends T> constructor);
+        void in(com.google.inject.Scope scope);
+        void in(Class<? extends java.lang.annotation.Annotation> scopeAnnotation);
       }
       """);
     myFixture.addClass("""
@@ -125,14 +142,14 @@ public abstract class GuiceTestBase extends LightJavaCodeInsightFixtureTestCase 
       """);
   }
 
-  protected com.intellij.guice.model.GuiceLiveIndex getIndex() {
+  protected com.intellij.guice.model.GuiceNavigationIndex getNavigationIndex() {
     com.intellij.testFramework.PlatformTestUtil.dispatchAllEventsInIdeEventQueue();
-    final com.intellij.guice.model.GuiceLiveIndex[] liveIndexHolder = new com.intellij.guice.model.GuiceLiveIndex[1];
+    final com.intellij.guice.model.GuiceNavigationIndex[] indexHolder = new com.intellij.guice.model.GuiceNavigationIndex[1];
     com.intellij.openapi.progress.ProgressManager.getInstance().runProcess(() -> {
       com.intellij.openapi.application.ApplicationManager.getApplication().runReadAction(() -> {
-        liveIndexHolder[0] = com.intellij.guice.model.GuiceProjectModel.getInstance(getProject()).getIndex(myFixture.getModule());
+        indexHolder[0] = com.intellij.guice.model.GuiceProjectModel.getInstance(getProject()).getNavigationIndex(myFixture.getModule());
       });
     }, new com.intellij.openapi.progress.EmptyProgressIndicator());
-    return liveIndexHolder[0];
+    return indexHolder[0];
   }
 }

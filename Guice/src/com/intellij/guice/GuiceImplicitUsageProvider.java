@@ -4,6 +4,7 @@ package com.intellij.guice;
 import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.codeInsight.daemon.ImplicitUsageProvider;
 import com.intellij.guice.constants.GuiceAnnotations;
+import com.intellij.guice.model.extensions.GuiceBindingMatchStrategy;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiModifierListOwner;
 import org.jetbrains.annotations.NotNull;
@@ -18,7 +19,7 @@ public final class GuiceImplicitUsageProvider implements ImplicitUsageProvider {
   @Override
   public boolean isImplicitRead(@NotNull PsiElement element) {
     return (element instanceof PsiModifierListOwner && AnnotationUtil.isAnnotated((PsiModifierListOwner)element, GuiceAnnotations.INJECTS, 0)) ||
-           (element instanceof PsiModifierListOwner && AnnotationUtil.isAnnotated((PsiModifierListOwner)element, GuiceAnnotations.PROVIDES_ANNOTATIONS, 0));
+           (element instanceof PsiModifierListOwner && AnnotationUtil.isAnnotated((PsiModifierListOwner)element, GuiceBindingMatchStrategy.getAllProvidesAnnotations(), 0));
   }
 
   @Override

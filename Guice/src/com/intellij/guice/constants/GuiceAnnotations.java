@@ -21,15 +21,8 @@ public final class GuiceAnnotations {
   public static final String PROVIDES_INTO_MAP = "com.google.inject.multibindings.ProvidesIntoMap";
   public static final String CHECKED_PROVIDES_INTO_MAP = "com.google.inject.multibindings.CheckedProvidesIntoMap";
 
-  /** {@code @Provides} and {@code @CheckedProvides} only (used for IP parameter extraction). */
-  public static final Collection<String> PROVIDES_ANNOTATIONS = List.of(PROVIDES, CHECKED_PROVIDES);
-
-  /** All provides-style annotations including multibinder variants (used for method discovery). */
-  public static final Collection<String> ALL_PROVIDES_ANNOTATIONS = List.of(
-      PROVIDES, CHECKED_PROVIDES,
-      PROVIDES_INTO_SET, CHECKED_PROVIDES_INTO_SET,
-      PROVIDES_INTO_MAP, CHECKED_PROVIDES_INTO_MAP
-  );
+  /** Base {@code @Provides} annotation (strategy EPs contribute additional variants). */
+  public static final Collection<String> PROVIDES_ANNOTATIONS = List.of(PROVIDES);
 
   public static final String BINDING_ANNOTATION = "com.google.inject.BindingAnnotation";
   public static final String JAVAX_QUALIFIER = "javax.inject.Qualifier";
@@ -47,6 +40,22 @@ public final class GuiceAnnotations {
 
   public static final String ASSISTED = "com.google.inject.assistedinject.Assisted";
   public static final String ASSISTED_INJECT = "com.google.inject.assistedinject.AssistedInject";
+
+  // Scope annotations
+  public static final String GUICE_SINGLETON = "com.google.inject.Singleton";
+  public static final String JAVAX_SINGLETON = "javax.inject.Singleton";
+  public static final String JAKARTA_SINGLETON = "jakarta.inject.Singleton";
+  public static final Collection<String> SINGLETONS = List.of(GUICE_SINGLETON, JAVAX_SINGLETON, JAKARTA_SINGLETON);
+
+  public static final String REQUEST_SCOPED = "com.google.inject.servlet.RequestScoped";
+  public static final String SESSION_SCOPED = "com.google.inject.servlet.SessionScoped";
+
+  /** All known scope annotations, grouped by equivalence. */
+  public static final List<Collection<String>> SCOPE_GROUPS = List.of(
+      SINGLETONS,
+      List.of(REQUEST_SCOPED),
+      List.of(SESSION_SCOPED)
+  );
 
   public static final Collection<String> INJECTS = List.of(INJECT, JAVAX_INJECT, JAKARTA_INJECT, THROWING_INJECT);
 }

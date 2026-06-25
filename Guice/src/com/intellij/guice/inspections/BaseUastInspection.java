@@ -7,8 +7,8 @@ import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.codeInspection.util.InspectionMessage;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
+import com.intellij.uast.UastHintedVisitorAdapter;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.uast.UElement;
 import org.jetbrains.uast.visitor.AbstractUastNonRecursiveVisitor;
 
@@ -30,7 +30,7 @@ public abstract class BaseUastInspection extends LocalInspectionTool {
 
   @Override
   public @NotNull PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, final boolean isOnTheFly) {
-    return com.intellij.uast.UastHintedVisitorAdapter.create(
+    return UastHintedVisitorAdapter.create(
       holder.getFile().getLanguage(),
       buildUastVisitor(holder, isOnTheFly),
       myUElementsTypesHint

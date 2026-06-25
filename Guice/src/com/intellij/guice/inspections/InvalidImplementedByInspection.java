@@ -12,6 +12,23 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.uast.UAnnotation;
 import org.jetbrains.uast.visitor.AbstractUastNonRecursiveVisitor;
 
+/**
+ * Reports {@code @ImplementedBy} annotations where the referenced class does not actually
+ * extend or implement the annotated type. Guice requires the implementation class to be
+ * assignable to the annotated interface or superclass.
+ *
+ * <p>Example:
+ * <pre>
+ * // Flagged: Unrelated does not implement Foo
+ * {@literal @}ImplementedBy(Unrelated.class)
+ * interface Foo {}
+ *
+ * // OK: FooImpl implements Foo
+ * {@literal @}ImplementedBy(FooImpl.class)
+ * interface Foo {}
+ * class FooImpl implements Foo {}
+ * </pre>
+ */
 public final class InvalidImplementedByInspection extends BaseUastInspection {
   public InvalidImplementedByInspection() {
     super(UAnnotation.class);

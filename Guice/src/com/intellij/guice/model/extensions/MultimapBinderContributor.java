@@ -29,8 +29,7 @@ public final class MultimapBinderContributor implements GuiceBindingContributor 
                              @NotNull String resolvedQName,
                              @NotNull PsiClass containingClass,
                              @NotNull Set<BindDescriptor> descriptors) {
-    if (!"com.google.common.inject.MultimapBinder".equals(resolvedQName) &&
-        !ContributorUtil.isGuicePackage(resolvedQName)) {
+    if (!ContributorUtil.isBinderMethod(resolvedQName, call, "com.google.common.inject.MultimapBinder")) {
       return false;
     }
 

@@ -7,15 +7,15 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class SetMultibindDescriptor extends BindDescriptor {
-  private final @Nullable PsiClass myElementType;
+  private final @Nullable SmartPsiElementPointer<PsiClass> myElementType;
 
   public SetMultibindDescriptor(@NotNull PsiElement callExpression, @Nullable PsiClass elementType) {
     super(callExpression);
-    myElementType = elementType;
+    myElementType = elementType != null ? SmartPointerManager.createPointer(elementType) : null;
   }
 
   public @Nullable PsiClass getElementType() {
-    return myElementType;
+    return myElementType != null ? myElementType.getElement() : null;
   }
 
   @Override
@@ -27,6 +27,6 @@ public class SetMultibindDescriptor extends BindDescriptor {
   public boolean matchesType(@NotNull PsiType type) {
     final PsiType paramType = GuiceUtils.getTypeParameter(type, "java.util.Set", 0);
     final PsiClass paramClass = GuiceUtils.resolveClass(paramType);
-    return GuiceUtils.areClassesEquivalent(paramClass, myElementType);
+    return GuiceUtils.areClassesEquivalent(paramClass, getElementType());
   }
 }

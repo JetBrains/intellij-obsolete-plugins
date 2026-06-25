@@ -29,8 +29,7 @@ public final class OptionalBinderContributor implements GuiceBindingContributor 
                              @NotNull String resolvedQName,
                              @NotNull PsiClass containingClass,
                              @NotNull Set<BindDescriptor> descriptors) {
-    if (!"com.google.inject.multibindings.OptionalBinder".equals(resolvedQName) &&
-        !ContributorUtil.isGuicePackage(resolvedQName)) {
+    if (!ContributorUtil.isBinderMethod(resolvedQName, call, "com.google.inject.multibindings.OptionalBinder")) {
       return false;
     }
 

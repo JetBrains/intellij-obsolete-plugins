@@ -10,6 +10,20 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.uast.UAnnotation;
 import org.jetbrains.uast.visitor.AbstractUastNonRecursiveVisitor;
 
+/**
+ * Reports {@code @RequestParameters} annotations applied to variables whose type is not
+ * {@code Map<String, String[]>}. Guice Servlet requires this exact type for injecting
+ * HTTP request parameters.
+ *
+ * <p>Example:
+ * <pre>
+ * // Flagged: wrong type
+ * {@literal @}Inject {@literal @}RequestParameters Map&lt;String, String&gt; params;
+ *
+ * // OK: correct type
+ * {@literal @}Inject {@literal @}RequestParameters Map&lt;String, String[]&gt; params;
+ * </pre>
+ */
 public final class InvalidRequestParametersInspection extends BaseUastInspection {
   public InvalidRequestParametersInspection() {
     super(UAnnotation.class);
