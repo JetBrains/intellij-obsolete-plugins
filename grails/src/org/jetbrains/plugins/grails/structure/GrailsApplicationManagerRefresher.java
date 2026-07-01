@@ -3,18 +3,22 @@
 package org.jetbrains.plugins.grails.structure;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootEvent;
 import com.intellij.openapi.roots.ModuleRootListener;
 import com.intellij.openapi.roots.ProjectFileIndex;
-import com.intellij.openapi.startup.StartupActivity;
+import com.intellij.openapi.startup.ProjectActivity;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileEvent;
 import com.intellij.openapi.vfs.VirtualFileListener;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.impl.BulkVirtualFileListenerAdapter;
 import com.intellij.util.messages.MessageBusConnection;
+import kotlin.Unit;
+import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.gradle.settings.GradleProjectSettings;
 import org.jetbrains.plugins.gradle.settings.GradleSettingsListener;
 import org.jetbrains.plugins.grails.config.GrailsConstants;
@@ -26,10 +30,11 @@ import java.util.Set;
 /**
  * Registers listeners to queue the recalculation of Grails applications in {@link GrailsApplicationManager}.
  */
-final class GrailsApplicationManagerRefresher implements StartupActivity.DumbAware {
+final class GrailsApplicationManagerRefresher implements ProjectActivity, DumbAware {
+
   @Override
-  public void runActivity(@NotNull Project project) {
-    if (ApplicationManager.getApplication().isUnitTestMode()) return;
+  public @Nullable Object execute(@NotNull Project project, @NotNull Continuation<? super Unit> continuation) {
+    if (ApplicationManager.getApplication().isUnitTestMode()) return null;
 
     final GrailsApplicationManager manager = GrailsApplicationManager.getInstance(project);
     final MessageBusConnection connection = project.getMessageBus().connect(manager);
@@ -53,7 +58,7 @@ final class GrailsApplicationManagerRefresher implements StartupActivity.DumbAwa
 
         final String fileName = event.getFileName();
         return file.isDirectory() && fileName.equals(GrailsConstants.APP_DIRECTORY) ||
-               !file.isDirectory() && fileName.equals(GrailsConstants.APPLICATION_PROPERTIES);
+                !file.isDirectory() && fileName.equals(GrailsConstants.APPLICATION_PROPERTIES);
       }
 
       @Override
@@ -78,5 +83,7 @@ final class GrailsApplicationManagerRefresher implements StartupActivity.DumbAwa
         manager.queueUpdate();
       }
     });
+
+    return null;
   }
 }

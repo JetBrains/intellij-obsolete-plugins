@@ -21,6 +21,7 @@ dependencies {
         intellijIdea(properties("platformVersion"))
         bundledPlugin("com.intellij.copyright")
         bundledPlugin("com.intellij.jsp")
+        bundledModule("intellij.javaee.jsp.copyright")
     }
 
     compileOnly(project(":"))

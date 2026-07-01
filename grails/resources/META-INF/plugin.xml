@@ -1,5 +1,5 @@
 <!-- Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.-->
-<idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude" package="org.jetbrains.plugins.grails">
+<idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude">
   <id>org.intellij.grails</id>
   <name>Grails</name>
   <category>JVM Frameworks</category>
@@ -36,19 +36,9 @@
     <module name="intellij.properties.backend"/>
     <module name="intellij.properties.backend.psi"/>
     <module name="intellij.regexp"/>
+    <plugin id="JavaScript"/>
+    <plugin id="com.intellij.css"/>
   </dependencies>
-
-  <content namespace="jetbrains">
-    <module name="intellij.groovy.grails.copyright"/>
-    <module name="intellij.groovy.grails.i18n"/>
-    <module name="intellij.groovy.grails.maven"/>
-    <module name="intellij.groovy.grails.hibernate"/>
-    <module name="intellij.groovy.grails.langInjection"/>
-    <module name="intellij.groovy.grails.coverage"/>
-  </content>
-
-  <depends optional="true" config-file="grails-js-integration.xml">JavaScript</depends>
-  <depends optional="true" config-file="grails-css-integration.xml">com.intellij.css</depends>
 
   <resource-bundle>messages.GrailsBundle</resource-bundle>
 
@@ -160,7 +150,8 @@
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
-    <registryKey key="grails.advanced.mode" defaultValue="false"/>
+    <registryKey key="grails.advanced.mode" defaultValue="false"
+                 description="Use to enable advance mode for domain classes relations editor."/>
     <registryKey key="grails.simple.debug" defaultValue="false"
                  description="Use simple debug strategy: pass --debug-jvm and then poll 5005. This switch works only for Grails &gt;= 3.1.5."/>
     <registryKey key="grails.add.plain.output" defaultValue="true"
@@ -298,7 +289,10 @@
     <compileServer.plugin classpath="Grails.jps-plugin.jar;Grails.grails-compiler-patch.jar"/>
 
     <multiHostInjector implementation="org.jetbrains.plugins.grails.lang.gsp.GspCssInjector"/>
+    <multiHostInjector implementation="org.jetbrains.plugins.grails.addins.js.GrailsJavaScriptInjector"/>
     <multiHostInjector implementation="org.jetbrains.plugins.grails.references.constraints.GormRegexInjector"/>
+    <psi.referenceContributor language="GSP"
+                              implementation="org.jetbrains.plugins.grails.lang.gsp.psi.gsp.impl.gtag.reference.contributor.GspCssClassReferenceContributor"/>
 
     <gotoRelatedProvider implementation="org.jetbrains.plugins.grails.actions.GrailsGotoRelatedProvider"/>
 

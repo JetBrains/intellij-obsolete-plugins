@@ -7,7 +7,7 @@ fun properties(key: String) = project.findProperty(key).toString()
 plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "2.3.0"
-    id("org.jetbrains.intellij.platform") version "2.11.0"
+    id("org.jetbrains.intellij.platform") version "2.14.0"
 }
 
 group = "org.intellij.grails"
@@ -32,6 +32,7 @@ dependencies {
         bundledPlugin("org.intellij.groovy")
         bundledPlugin("com.intellij.database")
         bundledPlugin("com.intellij.spring")
+        bundledPlugin("com.intellij.gradle")
         bundledPlugin("org.jetbrains.plugins.gradle")
         bundledPlugin("com.intellij.modules.ultimate")
         bundledPlugin("com.intellij.microservices.jvm")
@@ -47,6 +48,11 @@ dependencies {
         pluginModule(project(":langInjection"))
         pluginModule(project(":maven"))
 
+        // gradle-tooling classes must be visible to the main plugin classloader because
+        // GrailsProjectResolverExtension references GrailsModule directly. Merging the
+        // module into the main plugin jar via pluginComposedModule keeps it on the
+        // main classloader instead of routing it through lib/modules/ (separate CL).
+        pluginComposedModule(project(":gradle-tooling"))
 
         // additional plugins required for testing
         testBundledPlugin("com.intellij.hibernate")
@@ -64,7 +70,11 @@ dependencies {
     testImplementation(project(":testFramework"))
     testCompileOnly(project(":i18n"))
 
-    implementation(project(":gradle-tooling"))
+    // compileOnly — implementation would auto-promote a pure-module project into
+    // INTELLIJ_PLATFORM_PLUGIN_MODULE (lib/modules/). compileOnly is not scanned
+    // for auto-promotion, so the merge via pluginComposedModule(...) above is what
+    // ships gradle-tooling into the runtime distribution.
+    compileOnly(project(":gradle-tooling"))
     implementation(project(":grails-rt"))
 
     // JPS/build

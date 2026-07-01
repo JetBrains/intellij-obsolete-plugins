@@ -2,6 +2,7 @@
 
 package org.jetbrains.plugins.groovy.mvc.plugins;
 
+import com.intellij.credentialStore.Credentials;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.plugins.PluginManagerMain;
 import com.intellij.ide.ui.search.SearchUtil;
@@ -11,7 +12,6 @@ import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.options.ShowSettingsUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogBuilder;
 import com.intellij.openapi.ui.Messages;
@@ -28,8 +28,10 @@ import com.intellij.ui.PopupHandler;
 import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.SpeedSearchBase;
 import com.intellij.ui.TableUtil;
-import com.intellij.util.net.HttpConfigurable;
-import com.intellij.util.net.HttpProxyConfigurable;
+import com.intellij.util.net.ProxyConfiguration;
+import com.intellij.util.net.ProxyCredentialStore;
+import com.intellij.util.net.ProxySettings;
+import com.intellij.util.net.ProxyUtils;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NonNls;
@@ -40,7 +42,6 @@ import org.jetbrains.plugins.grails.runner.GrailsConsole;
 import org.jetbrains.plugins.grails.structure.OldGrailsApplication;
 import org.jetbrains.plugins.groovy.mvc.plugins.actions.AddCustomPluginAction;
 import org.jetbrains.plugins.groovy.mvc.plugins.actions.ReloadMvcPluginListAction;
-import org.jdom.Element;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -70,6 +71,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@SuppressWarnings("removal")
 public class MvcPluginsMain {
   private JPanel main;
   private JLabel myAuthorEmailLabel;
@@ -122,24 +124,22 @@ public class MvcPluginsMain {
     final ActionGroup actionGroup = getActionGroup();
     installTableActions(myAvailablePluginsTable, actionGroup);
 
-    myHttpProxySettingsButton.addActionListener(new ActionListener() {
-      @SuppressWarnings("deprecation")
-      @Override
-      public void actionPerformed(@NotNull ActionEvent e) {
-        HttpConfigurable cfg;
+    myHttpProxySettingsButton.addActionListener(e -> {
+      ProxyConfiguration initialCfg = ProxySettings.getInstance().getProxyConfiguration();
+      ProxySettings localSettings = new ProxySettings() {
+        private ProxyConfiguration config = initialCfg;
 
-        Element serializedCfg = new Element("root");
-        try {
-          HttpConfigurable.getInstance().writeExternal(serializedCfg);
-          cfg = new HttpConfigurable();
-          cfg.readExternal(serializedCfg);
-        }
-        catch (Exception e1) {
-          throw new RuntimeException(e1);
+        @Override
+        public @NotNull ProxyConfiguration getProxyConfiguration() {
+          return config;
         }
 
-        doEditProxySettings(cfg);
-      }
+        @Override
+        public void setProxyConfiguration(@NotNull ProxyConfiguration newConfig) {
+          this.config = newConfig;
+        }
+      };
+      doEditProxySettings(localSettings);
     });
 
     myTablePanel.setMinimumSize(new Dimension(350, -1));
@@ -169,8 +169,8 @@ public class MvcPluginsMain {
     tableSelectionChanged(pluginTable);
   }
 
-  private void doEditProxySettings(final HttpConfigurable cfg) {
-    if (!ShowSettingsUtil.getInstance().editConfigurable(main, new HttpProxyConfigurable(cfg))) {
+  private void doEditProxySettings(final ProxySettings localSettings) {
+    if (!ProxyUtils.editConfigurable(localSettings, main)) {
       return;
     }
 
@@ -184,14 +184,19 @@ public class MvcPluginsMain {
       // Return to editing proxy setting. We have to use invokeLater to releasing EDT, it's needing for releasing MvcConsole when process will done.
       ApplicationManager.getApplication().invokeLater(() -> {
         if (myDialogBuilder.getWindow().isShowing()) {
-          doEditProxySettings(cfg);
+          doEditProxySettings(localSettings);
         }
       });
 
       return;
     }
 
-    MvcPluginUtil.setFrameworkProxy(cfg, myApplication);
+    ProxyConfiguration cfg = localSettings.getProxyConfiguration();
+    Credentials credentials = null;
+    if (cfg instanceof ProxyConfiguration.StaticProxyConfiguration sc) {
+      credentials = ProxyCredentialStore.getInstance().getCredentials(sc.getHost(), sc.getPort());
+    }
+    MvcPluginUtil.setFrameworkProxy(cfg, credentials, myApplication);
   }
 
   public void addCustomPlugin(MvcPluginDescriptor plugin, String path) {

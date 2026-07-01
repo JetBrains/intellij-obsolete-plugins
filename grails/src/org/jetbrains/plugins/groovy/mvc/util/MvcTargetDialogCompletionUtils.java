@@ -6,12 +6,10 @@ import com.intellij.codeInsight.lookup.EqTailType;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.codeInsight.lookup.TailTypeDecorator;
-import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiPackage;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.CachedValueProvider;
@@ -23,12 +21,7 @@ import org.jetbrains.plugins.grails.config.GrailsFramework;
 import org.jetbrains.plugins.groovy.lang.psi.impl.GroovyNamesUtil;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public final class MvcTargetDialogCompletionUtils {
 
@@ -135,11 +128,6 @@ public final class MvcTargetDialogCompletionUtils {
 
   public static class MyTailTypeEQ extends EqTailType {
     public static final MyTailTypeEQ INSTANCE = new MyTailTypeEQ();
-
-    @Override
-    protected boolean isSpaceAroundAssignmentOperators(Editor editor, int tailOffset) {
-      return false;
-    }
 
     @Override
     public String toString() {

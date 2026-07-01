@@ -3,13 +3,17 @@
 package org.jetbrains.plugins.grails.structure.sync;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootEvent;
 import com.intellij.openapi.roots.ModuleRootListener;
-import com.intellij.openapi.startup.StartupActivity;
+import com.intellij.openapi.startup.ProjectActivity;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.util.messages.MessageBusConnection;
+import kotlin.Unit;
+import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.grails.projectView.ShowHideKt;
 import org.jetbrains.plugins.grails.references.TraitInjectorService;
 import org.jetbrains.plugins.grails.runner.GrailsCommandExecutor;
@@ -28,14 +32,14 @@ import org.jetbrains.plugins.grails.structure.GrailsApplicationManager;
  *
  * @see GrailsApplicationListener
  */
-public final class GrailsStartupActivity implements StartupActivity.DumbAware {
+public final class GrailsStartupActivity implements ProjectActivity, DumbAware {
 
   @Override
-  public void runActivity(@NotNull Project project) {
-    if (ApplicationManager.getApplication().isUnitTestMode()) return;
+  public @Nullable Object execute(@NotNull Project project, @NotNull Continuation<? super Unit> continuation) {
+    if (ApplicationManager.getApplication().isUnitTestMode()) return null;
 
     final MessageBusConnection connection = project.getMessageBus().connect();
-    connection.subscribe(GrailsApplicationListener.TOPIC, () -> {
+    connection.subscribe(GrailsApplicationListener.TOPIC, (GrailsApplicationListener) () -> {
       final GrailsBackgroundService backgroundService = GrailsBackgroundService.getInstance(project);
       if (Registry.is("grails.create.run.configurations")) {
         backgroundService.run(new GrailsRunConfigurationTask(project));
@@ -53,5 +57,7 @@ public final class GrailsStartupActivity implements StartupActivity.DumbAware {
 
     GrailsApplicationManager.getInstance(project).queueUpdate();
     TraitInjectorService.queueUpdate(project);
+
+    return null;
   }
 }

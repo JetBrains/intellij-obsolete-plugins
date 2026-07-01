@@ -2,7 +2,6 @@
 
 package com.intellij.groovy.grails.copyright;
 
-import com.intellij.jsp.copyright.UpdateJspFileCopyright;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
