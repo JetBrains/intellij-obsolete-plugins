@@ -1,0 +1,12 @@
+{
+  "inspections": [
+    {
+      "id": "FoodcriticInspection",
+      "codeQualityCategory": "Sanity"
+    },
+    {
+      "id": "CookbookSourceRoot",
+      "codeQualityCategory": "Sanity"
+    }
+  ]
+}

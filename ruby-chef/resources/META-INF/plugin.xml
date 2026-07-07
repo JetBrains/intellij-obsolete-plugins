@@ -1,0 +1,54 @@
+<idea-plugin>
+  <name>Chef</name>
+  <id>org.jetbrains.plugins.ruby-chef</id>
+  <description><![CDATA[
+  Supports <a href="https://www.chef.io/">Chef</a> cookbooks and recipes. Code completion of resources, recipes and cookbooks references.
+  ]]></description>
+  <vendor>JetBrains</vendor>
+  <category>Deployment</category>
+
+  <dependencies>
+    <module name="intellij.ruby.backend"/>
+    <plugin id="com.intellij.modules.ruby"/>
+    <plugin id="com.intellij.modules.ultimate"/>
+  </dependencies>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <liveTemplateContext contextId="CHEF" implementation="org.jetbrains.plugins.ruby.chef.templates.ChefLiveTemplateContextType"/>
+    <iconProvider order="first" implementation="org.jetbrains.plugins.ruby.chef.sourceRoot.ui.CookbooksIconProvider"/>
+    <projectStructure.sourceRootEditHandler implementation="org.jetbrains.plugins.ruby.chef.sourceRoot.ui.ChefModuleSourceRootEditProvider"/>
+    <ruby.projectStructure.sourceRootEditHandler implementation="org.jetbrains.plugins.ruby.chef.sourceRoot.ui.ChefModuleSourceRootEditProvider"/>
+    <localInspection language="ruby" shortName="CookbookSourceRoot"
+                     bundle="messages.ChefBundle" key="cookbooks.source.root.inspection.display.name"
+                     groupKey="cookbooks.source.root.inspection.group.name" enabledByDefault="true" level="INFO"
+                     implementationClass="org.jetbrains.plugins.ruby.chef.sourceRoot.intention.CookbookSourceRootInspection"/>
+    <localInspection language="ruby" shortName="FoodcriticInspection"
+                     bundle="messages.ChefBundle" key="chef.foodcritic.inspection.display.name"
+                     groupKey="cookbooks.source.root.inspection.group.name" enabledByDefault="true"
+                     level="WEAK WARNING" implementationClass="org.jetbrains.plugins.ruby.chef.lint.foodcritic.FoodcriticInspection"/>
+    <psi.referenceContributor language="ruby" implementation="org.jetbrains.plugins.ruby.chef.codeInsight.completion.ChefResourceReferenceContributor"/>
+    <externalAnnotator language="ruby" implementationClass="org.jetbrains.plugins.ruby.chef.lint.foodcritic.FoodcriticAnnotator"/>
+    <codeInspection.InspectionExtension implementation="org.jetbrains.plugins.ruby.chef.lint.foodcritic.FoodcriticInspectionExtensionsFactory"/>
+    <projectService serviceImplementation="org.jetbrains.plugins.ruby.chef.lint.foodcritic.FoodcriticCache"/>
+    <jps.plugin />
+    <notificationGroup id="Chef DK" displayType="BALLOON" bundle="messages.ChefBundle" key="action.chefdk.switch.title"/>
+
+    <registryKey key="ruby.chef.foodcritic.timeout"
+                 defaultValue="150"
+                 description="Timeout for Foodcritic analysis in seconds"/>
+  </extensions>
+
+  <actions>
+    <action id="MarkResourceRoot" class="org.jetbrains.plugins.ruby.chef.sourceRoot.MarkCookbooksRootAction">
+      <add-to-group group-id="MarkRootGroup"/>
+    </action>
+  </actions>
+
+  <extensions defaultExtensionNs="org.jetbrains.plugins.ruby">
+    <symbolProvider implementation="org.jetbrains.plugins.ruby.chef.symbols.ResourceSymbolProvider"/>
+    <implicitGemProvider implementation="org.jetbrains.plugins.ruby.chef.codeInsight.resolve.ChefImplicitRequireGemProvider"/>
+    <completionProvider implementation="org.jetbrains.plugins.ruby.chef.codeInsight.completion.ChefCompletionProvider" order="before base"/>
+    <paramDefProvider implementation="org.jetbrains.plugins.ruby.chef.codeInsight.completion.paramdefs.ChefResourceAttributesParamDefProvider"/>
+    <rubySdkRefresher implementation="org.jetbrains.plugins.ruby.chef.sdk.ChefSdkRefresher"/>
+  </extensions>
+</idea-plugin>
