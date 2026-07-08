@@ -1,0 +1,11 @@
+class holder {
+  define resource {
+
+  }
+
+  define anotherresource {
+
+  }
+}
+
+holder::<caret>

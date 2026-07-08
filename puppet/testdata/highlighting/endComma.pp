@@ -1,0 +1,1 @@
+svn_repo { 'other_repo':  path => '/var/svn_other' }

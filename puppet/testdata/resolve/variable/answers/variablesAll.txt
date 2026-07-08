@@ -1,0 +1,83 @@
+'salkdasd' at (60,68) => 1 results:
+	Puppet: VAR_WRAPPER at 0 in variablesAll.pp
+
+'sdlkjflksdjfksjdf' at (94,111) => 1 results:
+	Puppet: VAR_WRAPPER at 38 in variablesAll.pp
+
+'sdlkjflksdjfksjdf' at (162,179) => 1 results:
+	Puppet: VAR_WRAPPER at 113 in variablesAll.pp
+
+'asdklajsd' at (189,198) => 0 results:
+
+'asd' at (213,216) => 1 results:
+	Puppet: VAR_WRAPPER at 181 in variablesAll.pp
+
+'port' at (244,248) => 0 results:
+
+'ensure' at (377,383) => 1 results:
+	Puppet: VAR_WRAPPER at 266 in variablesAll.pp
+
+'autoupgrade' at (493,504) => 1 results:
+	Puppet: VAR_WRAPPER at 283 in variablesAll.pp
+
+'ensure' at (654,660) => 1 results:
+	Puppet: VAR_WRAPPER at 266 in variablesAll.pp
+
+'autoupgrade' at (741,752) => 1 results:
+	Puppet: VAR_WRAPPER at 283 in variablesAll.pp
+
+'package_ensure' at (1070,1084) => 1 results:
+	Puppet: VAR_WRAPPER at 918 in variablesAll.pp
+
+'service_enable' at (1132,1146) => 1 results:
+	Puppet: VAR_WRAPPER at 860 in variablesAll.pp
+
+'service_ensure' at (1171,1185) => 1 results:
+	Puppet: VAR_WRAPPER at 888 in variablesAll.pp
+
+'ensure' at (1377,1383) => 1 results:
+	Puppet: VAR_WRAPPER at 266 in variablesAll.pp
+
+'ensure' at (1707,1713) => 1 results:
+	Puppet: VAR_WRAPPER at 1679 in variablesAll.pp
+
+'ensure' at (1758,1764) => 1 results:
+	Puppet: VAR_WRAPPER at 1679 in variablesAll.pp
+
+'operatingsystem' at (1847,1862) => 1 results:
+	Puppet: VAR_WRAPPER at 69126 in builtin.pp
+
+'module_name' at (2026,2037) => 1 results:
+	Puppet: VAR_WRAPPER at 9141 in builtin_variables.pp
+
+'operatingsystem' at (2060,2075) => 1 results:
+	Puppet: VAR_WRAPPER at 69126 in builtin.pp
+
+'package_list' at (2219,2231) => 1 results:
+	Puppet: VAR_WRAPPER at 1945 in variablesAll.pp
+
+'variable' at (2255,2263) => 0 results:
+
+'_ensure' at (2337,2344) => 1 results:
+	Puppet: VAR_WRAPPER at 1746 in variablesAll.pp
+
+'server' at (2424,2430) => 0 results:
+
+'myvar' at (2503,2508) => 1 results:
+	Puppet: VAR_WRAPPER at 2401 in variablesAll.pp
+
+'myvar' at (2580,2585) => 1 results:
+	Puppet: VAR_WRAPPER at 2401 in variablesAll.pp
+
+'myvar' at (2605,2610) => 1 results:
+	Puppet: VAR_WRAPPER at 2401 in variablesAll.pp
+
+'myvar' at (2615,2620) => 1 results:
+	Puppet: VAR_WRAPPER at 2401 in variablesAll.pp
+
+'myvar' at (2621,2626) => 1 results:
+	Puppet: VAR_WRAPPER at 2401 in variablesAll.pp
+
+'myvar' at (2628,2633) => 1 results:
+	Puppet: VAR_WRAPPER at 2401 in variablesAll.pp
+

@@ -1,0 +1,15 @@
+{
+  "name": "test-module",
+  "version": "1.8.1",
+  "author": "hurricup",
+  "summary": "test module for project structure",
+  "license": "Apache-2.0",
+  "dependencies": [
+  ],
+  "data_provider": null,
+  "operatingsystem_support": [
+  ],
+  "requirements": [
+  ]
+  missing
+  brace

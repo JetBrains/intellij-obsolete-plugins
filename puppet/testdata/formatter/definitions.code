@@ -1,0 +1,21 @@
+define myType{
+file { '/etc/lol': }
+notice "type"
+}
+
+node /www\d+/{
+include cl
+include cl1
+}
+
+class myClass{
+include cl1
+include cl
+class inner{
+include aaa
+}
+define papa{
+notice "!"
+}
+include inner
+}

@@ -1,0 +1,10 @@
+$var = 'test'
+$var = 'test\''
+$var = 'test\f'
+$var = 'test
+multi'
+$var = 'test\\blah'
+$windir = '\\'
+$var = 'test\\'
+$var = 'test\\\\'
+$var = 'test

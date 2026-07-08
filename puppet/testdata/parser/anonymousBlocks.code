@@ -1,0 +1,22 @@
+each($a) |$i| { notice $a, $i }
+
+each($a) |$i, $j| { notice $i, $j }
+
+each ($a) | $i | { notice $i }
+
+each ($a) |$i| {
+  notice $i
+}
+
+each ($a) { notice "This is restricted: must have pipes!" }
+
+each ($a) || { "No parameters are like this" }
+
+each $a |$i| { notice "This is restricted: calls must have parentheses" }
+
+each ($a) |$i| {
+  class myClass {
+    notice "This is restricted since only statements are allowed inside"
+  }
+  include myClass
+}

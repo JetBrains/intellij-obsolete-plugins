@@ -1,0 +1,2 @@
+include myclass
+fail($myclass::my_deep_v<caret>ar)

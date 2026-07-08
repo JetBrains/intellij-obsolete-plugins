@@ -1,0 +1,10 @@
+PUPPET_FILE
+  PsiPuppetExpressionAssignmentImpl(EXPRESSION_ASSIGNMENT)
+    Puppet: VAR_WRAPPER
+      PsiElement($)('$')
+      PsiElement(VARIABLE_NAME)('a')
+    PsiWhiteSpace(' ')
+    PsiElement(=)('=')
+    PsiWhiteSpace(' ')
+    PsiPuppetRegexpImpl(REGEXP)
+      PsiElement(REGEX)('/abc/')

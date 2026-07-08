@@ -1,0 +1,215 @@
+'notice' at (60,66) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'Super' at (158,163) => 4 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 97 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 185 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 275 in capitalizedNames.pp
+
+'Testclass' at (165,174) => 1 results:
+	Puppet: CLASS_DEFINITION at 0 in capitalizedNames.pp
+
+'notice' at (238,244) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'Super' at (329,334) => 4 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 97 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 185 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 275 in capitalizedNames.pp
+
+'Testtype' at (336,344) => 1 results:
+	Puppet: TYPE_DEFINITION at 178 in capitalizedNames.pp
+
+'param1' at (369,375) => 1 results:
+	Puppet: VAR_WRAPPER at 204 in capitalizedNames.pp
+
+'param2' at (386,392) => 1 results:
+	Puppet: VAR_WRAPPER at 220 in capitalizedNames.pp
+
+'include' at (401,408) => 1 results:
+	PuppetLazyProxyLightElement: include at 43062 in stub_functions.rb
+
+'Super' at (409,414) => 4 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 97 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 185 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 275 in capitalizedNames.pp
+
+'Testclass' at (416,425) => 0 results:
+
+'require' at (426,433) => 1 results:
+	PuppetLazyProxyLightElement: require at 71610 in stub_functions.rb
+
+'Super' at (434,439) => 4 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 97 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 185 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 275 in capitalizedNames.pp
+
+'Testclass' at (441,450) => 0 results:
+
+'contain' at (451,458) => 1 results:
+	PuppetLazyProxyLightElement: contain at 4500 in stub_functions.rb
+
+'Super' at (459,464) => 4 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 97 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 185 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 275 in capitalizedNames.pp
+
+'Testclass' at (466,475) => 0 results:
+
+'hiera_include' at (476,489) => 1 results:
+	PuppetLazyProxyLightElement: hiera_include at 38493 in stub_functions.rb
+
+'Super' at (490,495) => 4 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 97 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 185 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 275 in capitalizedNames.pp
+
+'Testclass' at (497,506) => 0 results:
+
+'Super' at (517,522) => 4 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 97 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 185 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 275 in capitalizedNames.pp
+
+'Testclass' at (524,533) => 0 results:
+
+'param1' at (539,545) => 0 results:
+
+'param2' at (558,564) => 0 results:
+
+'Super' at (578,583) => 4 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 97 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 185 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 275 in capitalizedNames.pp
+
+'Childclass' at (585,595) => 0 results:
+
+'param1' at (601,607) => 0 results:
+
+'param2' at (620,626) => 0 results:
+
+'Super' at (640,645) => 4 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 97 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 185 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 275 in capitalizedNames.pp
+
+'Testtype' at (647,655) => 1 results:
+	Puppet: TYPE_DEFINITION at 178 in capitalizedNames.pp
+
+'Super' at (665,670) => 4 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 97 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 185 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 275 in capitalizedNames.pp
+
+'Othertype' at (672,681) => 1 results:
+	Puppet: TYPE_DEFINITION at 268 in capitalizedNames.pp
+
+'Super' at (682,687) => 4 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 97 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 185 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 275 in capitalizedNames.pp
+
+'Othertype' at (689,698) => 1 results:
+	Puppet: TYPE_DEFINITION at 268 in capitalizedNames.pp
+
+'Super' at (708,713) => 4 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 97 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 185 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 275 in capitalizedNames.pp
+
+'Testtype' at (715,723) => 1 results:
+	Puppet: TYPE_DEFINITION at 178 in capitalizedNames.pp
+
+'Super' at (725,730) => 4 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 97 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 185 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 275 in capitalizedNames.pp
+
+'Testtype' at (732,740) => 1 results:
+	Puppet: TYPE_DEFINITION at 178 in capitalizedNames.pp
+
+'notice' at (769,775) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'Type' at (776,780) => 1 results:
+	PuppetDataTypeLightElement: Type
+
+'Super' at (781,786) => 4 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 97 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 185 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 275 in capitalizedNames.pp
+
+'Testtype' at (788,796) => 1 results:
+	Puppet: TYPE_DEFINITION at 178 in capitalizedNames.pp
+
+'notice' at (798,804) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'Type' at (805,809) => 1 results:
+	PuppetDataTypeLightElement: Type
+
+'Boolean' at (810,817) => 1 results:
+	PuppetDataTypeLightElement: Boolean
+
+'notice' at (819,825) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'Type' at (826,830) => 1 results:
+	PuppetDataTypeLightElement: Type
+
+'Boolean' at (831,838) => 1 results:
+	PuppetDataTypeLightElement: Boolean
+
+'Super' at (841,846) => 4 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 97 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 185 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 275 in capitalizedNames.pp
+
+'Testtype' at (848,856) => 1 results:
+	Puppet: TYPE_DEFINITION at 178 in capitalizedNames.pp
+
+'some_instance' at (857,870) => 1 results:
+	Puppet: RESOURCE_INSTANCE_DECLARATION at 348 in capitalizedNames.pp
+
+'Resource' at (872,880) => 1 results:
+	PuppetDataTypeLightElement: Resource
+
+'Super' at (881,886) => 4 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 97 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 185 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 275 in capitalizedNames.pp
+
+'Testtype' at (888,896) => 1 results:
+	Puppet: TYPE_DEFINITION at 178 in capitalizedNames.pp
+
+'some_instance' at (898,911) => 1 results:
+	Puppet: RESOURCE_INSTANCE_DECLARATION at 348 in capitalizedNames.pp
+
+'Class' at (913,918) => 1 results:
+	PuppetDataTypeLightElement: Class
+
+'Super' at (919,924) => 4 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 97 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 185 in capitalizedNames.pp
+	Puppet: NAMESPACE_DEFINITION at 275 in capitalizedNames.pp
+
+'Testclass' at (926,935) => 1 results:
+	Puppet: CLASS_DEFINITION at 0 in capitalizedNames.pp
+

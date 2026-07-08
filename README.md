@@ -42,3 +42,4 @@ This repository includes the following plugins:
   * [Grails](https://plugins.jetbrains.com/plugin/18504-grails)
   * [XSLT Debugger](https://plugins.jetbrains.com/plugin/1818-xslt-debugger)
   * [Chef](https://plugins.jetbrains.com/plugin/7548-chef)
+  * [Puppet](https://plugins.jetbrains.com/plugin/7180-puppet)

@@ -1,0 +1,6 @@
+class mySuperClass {
+
+}
+
+class { 'mySuperCla<caret>ss':
+}

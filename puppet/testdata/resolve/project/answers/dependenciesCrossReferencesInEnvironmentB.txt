@@ -1,0 +1,9 @@
+'include' at (0,7) => 1 results:
+	PuppetLazyProxyLightElement: include at 43062 in stub_functions.rb
+
+'moduleA' at (8,15) => 1 results:
+	Puppet: NAMESPACE_DEFINITION at 34 in initA.pp
+
+'someclass' at (17,26) => 1 results:
+	Puppet: CLASS_DEFINITION at 28 in initA.pp
+

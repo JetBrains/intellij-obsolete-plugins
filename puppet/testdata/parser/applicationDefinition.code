@@ -1,0 +1,14 @@
+application testapp($var)
+{
+  notice gotcha
+}
+
+Testapp{
+  'myapp':
+    var => 'hi there'
+}
+
+application otherapp($var)
+{
+  notice gotcha
+}

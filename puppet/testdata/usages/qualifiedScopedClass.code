@@ -1,0 +1,9 @@
+class a {
+  class b {
+  }
+
+  include b
+}
+
+include a::b<caret>
+

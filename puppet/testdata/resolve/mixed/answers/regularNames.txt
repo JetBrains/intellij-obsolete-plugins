@@ -1,0 +1,202 @@
+'super' at (126,131) => 5 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 65 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 212 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 274 in regularNames.pp
+
+'testclass' at (133,142) => 1 results:
+	Puppet: CLASS_DEFINITION at 0 in regularNames.pp
+
+'super' at (325,330) => 5 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 65 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 212 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 274 in regularNames.pp
+
+'testtype' at (332,340) => 1 results:
+	Puppet: TYPE_DEFINITION at 146 in regularNames.pp
+
+'param1' at (365,371) => 1 results:
+	Puppet: VAR_WRAPPER at 172 in regularNames.pp
+
+'param2' at (382,388) => 1 results:
+	Puppet: VAR_WRAPPER at 188 in regularNames.pp
+
+'include' at (397,404) => 1 results:
+	PuppetLazyProxyLightElement: include at 43062 in stub_functions.rb
+
+'super' at (405,410) => 5 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 65 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 212 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 274 in regularNames.pp
+
+'testclass' at (412,421) => 1 results:
+	Puppet: CLASS_DEFINITION at 0 in regularNames.pp
+
+'require' at (422,429) => 1 results:
+	PuppetLazyProxyLightElement: require at 71610 in stub_functions.rb
+
+'super' at (430,435) => 5 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 65 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 212 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 274 in regularNames.pp
+
+'testclass' at (437,446) => 1 results:
+	Puppet: CLASS_DEFINITION at 0 in regularNames.pp
+
+'contain' at (447,454) => 1 results:
+	PuppetLazyProxyLightElement: contain at 4500 in stub_functions.rb
+
+'super' at (455,460) => 5 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 65 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 212 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 274 in regularNames.pp
+
+'testclass' at (462,471) => 1 results:
+	Puppet: CLASS_DEFINITION at 0 in regularNames.pp
+
+'hiera_include' at (472,485) => 1 results:
+	PuppetLazyProxyLightElement: hiera_include at 38493 in stub_functions.rb
+
+'super' at (486,491) => 5 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 65 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 212 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 274 in regularNames.pp
+
+'testclass' at (493,502) => 1 results:
+	Puppet: CLASS_DEFINITION at 0 in regularNames.pp
+
+'super' at (504,509) => 5 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 65 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 212 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 274 in regularNames.pp
+
+'myfunc' at (511,517) => 1 results:
+	Puppet: FUNCTION_DEFINITION at 265 in regularNames.pp
+
+'super' at (530,535) => 5 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 65 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 212 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 274 in regularNames.pp
+
+'testclass' at (537,546) => 1 results:
+	Puppet: CLASS_DEFINITION at 0 in regularNames.pp
+
+'param1' at (552,558) => 1 results:
+	Puppet: VAR_WRAPPER at 26 in regularNames.pp
+
+'param2' at (571,577) => 1 results:
+	Puppet: VAR_WRAPPER at 42 in regularNames.pp
+
+'super' at (591,596) => 5 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 65 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 212 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 274 in regularNames.pp
+
+'childclass' at (598,608) => 1 results:
+	Puppet: CLASS_DEFINITION at 59 in regularNames.pp
+
+'param1' at (614,620) => 1 results:
+	Puppet: VAR_WRAPPER at 86 in regularNames.pp
+
+'param2' at (633,639) => 1 results:
+	Puppet: VAR_WRAPPER at 102 in regularNames.pp
+
+'super' at (653,658) => 5 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 65 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 212 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 274 in regularNames.pp
+
+'testtype' at (660,668) => 1 results:
+	Puppet: TYPE_DEFINITION at 146 in regularNames.pp
+
+'super' at (678,683) => 5 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 65 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 212 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 274 in regularNames.pp
+
+'othertype' at (685,694) => 1 results:
+	Puppet: TYPE_DEFINITION at 205 in regularNames.pp
+
+'super' at (695,700) => 5 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 65 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 212 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 274 in regularNames.pp
+
+'othertype' at (702,711) => 1 results:
+	Puppet: TYPE_DEFINITION at 205 in regularNames.pp
+
+'super' at (721,726) => 5 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 65 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 212 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 274 in regularNames.pp
+
+'testtype' at (728,736) => 1 results:
+	Puppet: TYPE_DEFINITION at 146 in regularNames.pp
+
+'Super' at (738,743) => 5 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 65 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 212 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 274 in regularNames.pp
+
+'Testtype' at (745,753) => 1 results:
+	Puppet: TYPE_DEFINITION at 146 in regularNames.pp
+
+'some_instance' at (754,767) => 1 results:
+	Puppet: RESOURCE_INSTANCE_DECLARATION at 344 in regularNames.pp
+
+'Resource' at (769,777) => 1 results:
+	PuppetDataTypeLightElement: Resource
+
+'super' at (778,783) => 5 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 65 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 212 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 274 in regularNames.pp
+
+'testtype' at (785,793) => 1 results:
+	Puppet: TYPE_DEFINITION at 146 in regularNames.pp
+
+'some_instance' at (795,808) => 1 results:
+	Puppet: RESOURCE_INSTANCE_DECLARATION at 344 in regularNames.pp
+
+'Class' at (810,815) => 1 results:
+	PuppetDataTypeLightElement: Class
+
+'super' at (816,821) => 5 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 65 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 212 in regularNames.pp
+	Puppet: NAMESPACE_DEFINITION at 274 in regularNames.pp
+
+'testclass' at (823,832) => 1 results:
+	Puppet: CLASS_DEFINITION at 0 in regularNames.pp
+

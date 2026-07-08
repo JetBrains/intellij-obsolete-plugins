@@ -1,0 +1,144 @@
+'mysuper' at (200,207) => 3 results:
+	Puppet: NAMESPACE_DEFINITION at 126 in producesAndConsumes.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in producesAndConsumes.pp
+	Puppet: NAMESPACE_DEFINITION at 180 in producesAndConsumes.pp
+
+'producer' at (209,217) => 1 results:
+	Puppet: TYPE_DEFINITION at 119 in producesAndConsumes.pp
+
+'mysuper' at (227,234) => 3 results:
+	Puppet: NAMESPACE_DEFINITION at 126 in producesAndConsumes.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in producesAndConsumes.pp
+	Puppet: NAMESPACE_DEFINITION at 180 in producesAndConsumes.pp
+
+'service' at (236,243) => 1 results:
+	Puppet: TYPE_DEFINITION at 173 in producesAndConsumes.pp
+
+'mysuper' at (245,252) => 3 results:
+	Puppet: NAMESPACE_DEFINITION at 126 in producesAndConsumes.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in producesAndConsumes.pp
+	Puppet: NAMESPACE_DEFINITION at 180 in producesAndConsumes.pp
+
+'consumer' at (254,262) => 1 results:
+	Puppet: TYPE_DEFINITION at 146 in producesAndConsumes.pp
+
+'mysuper' at (272,279) => 3 results:
+	Puppet: NAMESPACE_DEFINITION at 126 in producesAndConsumes.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in producesAndConsumes.pp
+	Puppet: NAMESPACE_DEFINITION at 180 in producesAndConsumes.pp
+
+'service' at (281,288) => 1 results:
+	Puppet: TYPE_DEFINITION at 173 in producesAndConsumes.pp
+
+'Mysuper' at (290,297) => 3 results:
+	Puppet: NAMESPACE_DEFINITION at 126 in producesAndConsumes.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in producesAndConsumes.pp
+	Puppet: NAMESPACE_DEFINITION at 180 in producesAndConsumes.pp
+
+'Producer' at (299,307) => 1 results:
+	Puppet: TYPE_DEFINITION at 119 in producesAndConsumes.pp
+
+'Mysuper' at (317,324) => 3 results:
+	Puppet: NAMESPACE_DEFINITION at 126 in producesAndConsumes.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in producesAndConsumes.pp
+	Puppet: NAMESPACE_DEFINITION at 180 in producesAndConsumes.pp
+
+'Service' at (326,333) => 1 results:
+	Puppet: TYPE_DEFINITION at 173 in producesAndConsumes.pp
+
+'Mysuper' at (335,342) => 3 results:
+	Puppet: NAMESPACE_DEFINITION at 126 in producesAndConsumes.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in producesAndConsumes.pp
+	Puppet: NAMESPACE_DEFINITION at 180 in producesAndConsumes.pp
+
+'Consumer' at (344,352) => 1 results:
+	Puppet: TYPE_DEFINITION at 146 in producesAndConsumes.pp
+
+'Mysuper' at (362,369) => 3 results:
+	Puppet: NAMESPACE_DEFINITION at 126 in producesAndConsumes.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in producesAndConsumes.pp
+	Puppet: NAMESPACE_DEFINITION at 180 in producesAndConsumes.pp
+
+'Service' at (371,378) => 1 results:
+	Puppet: TYPE_DEFINITION at 173 in producesAndConsumes.pp
+
+'mysuper' at (380,387) => 3 results:
+	Puppet: NAMESPACE_DEFINITION at 126 in producesAndConsumes.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in producesAndConsumes.pp
+	Puppet: NAMESPACE_DEFINITION at 180 in producesAndConsumes.pp
+
+'producer' at (389,397) => 1 results:
+	Puppet: TYPE_DEFINITION at 119 in producesAndConsumes.pp
+
+'mysuper' at (407,414) => 3 results:
+	Puppet: NAMESPACE_DEFINITION at 126 in producesAndConsumes.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in producesAndConsumes.pp
+	Puppet: NAMESPACE_DEFINITION at 180 in producesAndConsumes.pp
+
+'service' at (416,423) => 1 results:
+	Puppet: TYPE_DEFINITION at 173 in producesAndConsumes.pp
+
+'var' at (435,438) => 0 results:
+
+'othervar' at (455,463) => 0 results:
+
+'mysuper' at (467,474) => 3 results:
+	Puppet: NAMESPACE_DEFINITION at 126 in producesAndConsumes.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in producesAndConsumes.pp
+	Puppet: NAMESPACE_DEFINITION at 180 in producesAndConsumes.pp
+
+'consumer' at (476,484) => 1 results:
+	Puppet: TYPE_DEFINITION at 146 in producesAndConsumes.pp
+
+'mysuper' at (494,501) => 3 results:
+	Puppet: NAMESPACE_DEFINITION at 126 in producesAndConsumes.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in producesAndConsumes.pp
+	Puppet: NAMESPACE_DEFINITION at 180 in producesAndConsumes.pp
+
+'service' at (503,510) => 1 results:
+	Puppet: TYPE_DEFINITION at 173 in producesAndConsumes.pp
+
+'var' at (522,525) => 0 results:
+
+'othervar' at (542,550) => 0 results:
+
+'Mysuper' at (554,561) => 3 results:
+	Puppet: NAMESPACE_DEFINITION at 126 in producesAndConsumes.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in producesAndConsumes.pp
+	Puppet: NAMESPACE_DEFINITION at 180 in producesAndConsumes.pp
+
+'Producer' at (563,571) => 1 results:
+	Puppet: TYPE_DEFINITION at 119 in producesAndConsumes.pp
+
+'Mysuper' at (581,588) => 3 results:
+	Puppet: NAMESPACE_DEFINITION at 126 in producesAndConsumes.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in producesAndConsumes.pp
+	Puppet: NAMESPACE_DEFINITION at 180 in producesAndConsumes.pp
+
+'Service' at (590,597) => 1 results:
+	Puppet: TYPE_DEFINITION at 173 in producesAndConsumes.pp
+
+'var' at (609,612) => 0 results:
+
+'othervar' at (629,637) => 0 results:
+
+'Mysuper' at (641,648) => 3 results:
+	Puppet: NAMESPACE_DEFINITION at 126 in producesAndConsumes.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in producesAndConsumes.pp
+	Puppet: NAMESPACE_DEFINITION at 180 in producesAndConsumes.pp
+
+'Consumer' at (650,658) => 1 results:
+	Puppet: TYPE_DEFINITION at 146 in producesAndConsumes.pp
+
+'Mysuper' at (668,675) => 3 results:
+	Puppet: NAMESPACE_DEFINITION at 126 in producesAndConsumes.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in producesAndConsumes.pp
+	Puppet: NAMESPACE_DEFINITION at 180 in producesAndConsumes.pp
+
+'Service' at (677,684) => 1 results:
+	Puppet: TYPE_DEFINITION at 173 in producesAndConsumes.pp
+
+'var' at (696,699) => 0 results:
+
+'othervar' at (716,724) => 0 results:
+

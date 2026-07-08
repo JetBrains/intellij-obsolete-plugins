@@ -1,0 +1,50 @@
+PUPPET_FILE
+  PsiPuppetFunctionCallExpressionImpl(FUNCTION_CALL_EXPRESSION)
+    PsiPuppetRegularNameWrapperImpl(REGULAR_NAME_WRAPPER)
+      PsiElement(NAME)('foo')
+    PsiPuppetParenthesizedExpressionsListBlockImpl(PARENTHESIZED_EXPRESSIONS_LIST_BLOCK)
+      PsiElement(()('(')
+      PsiErrorElement:'*' unexpected
+        PsiElement(*)('*')
+      PsiElement($)('$')
+      PsiElement(VARIABLE_NAME)('args')
+      PsiElement())(')')
+  PsiWhiteSpace('\n')
+  PsiPuppetFunctionCallExpressionImpl(FUNCTION_CALL_EXPRESSION)
+    PsiPuppetRegularNameWrapperImpl(REGULAR_NAME_WRAPPER)
+      PsiElement(NAME)('foo')
+    PsiPuppetParenthesizedExpressionsListBlockImpl(PARENTHESIZED_EXPRESSIONS_LIST_BLOCK)
+      PsiElement(()('(')
+      PsiErrorElement:'*' unexpected
+        PsiElement(*)('*')
+      PsiElement([)('[')
+      PsiElement(INTEGER_LITERAL_WITHOUTQ)('1')
+      PsiElement(,)(',')
+      PsiElement(INTEGER_LITERAL_WITHOUTQ)('2')
+      PsiElement(,)(',')
+      PsiElement(INTEGER_LITERAL_WITHOUTQ)('3')
+      PsiElement(])(']')
+      PsiElement())(')')
+  PsiWhiteSpace('\n')
+  Puppet: VAR_WRAPPER
+    PsiElement($)('$')
+    PsiElement(VARIABLE_NAME)('a')
+  PsiWhiteSpace(' ')
+  PsiErrorElement:'=' unexpected
+    PsiElement(=)('=')
+  PsiWhiteSpace(' ')
+  PsiElement(*)('*')
+  PsiPuppetExpressionMultiplicativeImpl(EXPRESSION_MULTIPLICATIVE)
+    PsiPuppetExpressionAdditiveImpl(EXPRESSION_ADDITIVE)
+      Puppet: VAR_WRAPPER
+        PsiElement($)('$')
+        PsiElement(VARIABLE_NAME)('b')
+      PsiWhiteSpace(' ')
+      PsiElement(+)('+')
+      PsiErrorElement:<expression> expected, got '*'
+        <empty list>
+    PsiWhiteSpace(' ')
+    PsiElement(*)('*')
+    Puppet: VAR_WRAPPER
+      PsiElement($)('$')
+      PsiElement(VARIABLE_NAME)('c')

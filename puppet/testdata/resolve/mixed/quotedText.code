@@ -1,0 +1,40 @@
+class super::testclass(
+  $param1 = 42,
+  $param2 = 69
+){}
+class super::childclass(
+  $param1 = 42,
+  $param2 = 69
+) inherits super::testclass {}
+define super::testtype(
+  $param1 = 42,
+  $param2 = 69
+){}
+define super::othertype(
+  $param1 = 42,
+  $param2 = 69
+){}
+function super::myfunc(
+  $param1 = 42,
+  $param2 = 69
+){}
+
+super::testtype{
+  'some/ins::tance':
+}
+
+include 'super::testclass'
+require 'super::testclass'
+contain 'super::testclass'
+hiera_include 'super::testclass'
+
+class{
+  'super::testclass':
+  ;
+  'super::childclass':
+  ;
+}
+
+Super::Testtype['some/ins::tance']
+Resource['super::testtype', 'some/ins::tance']
+Class['super::testclass']

@@ -1,0 +1,1 @@
+Yumrepo <| |> -> Package <| provider == yum |>

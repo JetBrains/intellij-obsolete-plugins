@@ -1,0 +1,24 @@
+class profile::test (
+  String[1] $foo = '/etc/foo',
+  Integer $bar = 12, # chosen by random dice roll
+  Optional[
+    Struct[{
+      a => Hash[String, /\d+\.\d+\.\d+/],
+      b => String[1]
+    }]
+  ] $baz = undef,
+) {
+  file { $foo:
+    ensure  => present,
+    content => "${bar}",
+  }
+
+  if $baz {
+    $baz['a'].each |$key, $value| {
+      package { $key:
+        ensure   => $value,
+        provider => $baz['b'],
+      }
+    }
+  }
+}

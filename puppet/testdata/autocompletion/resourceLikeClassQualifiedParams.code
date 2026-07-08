@@ -1,0 +1,9 @@
+class mySuperClass($myParam1, $myParam2) {
+  class inner($innerParam1, $innerParam2) {
+
+  }
+}
+
+class {'mySuperClass::inner':
+  <caret>
+}

@@ -1,0 +1,1 @@
+$var = 'test\<error descr="In Puppet v3, there’s no way to end a single-quoted string with a backslash, you’ll have to use a double-quote string instead.">\</error>'

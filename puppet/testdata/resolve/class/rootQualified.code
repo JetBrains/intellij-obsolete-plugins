@@ -1,0 +1,5 @@
+class myClass {
+
+}
+
+include ::my<caret>Class

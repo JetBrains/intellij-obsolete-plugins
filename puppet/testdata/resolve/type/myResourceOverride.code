@@ -1,0 +1,7 @@
+define myRes {
+
+}
+
+My<caret>Res["someResourceName"] {
+
+}

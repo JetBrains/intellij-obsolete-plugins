@@ -1,0 +1,7 @@
+class myClass {
+  class internal {
+
+  }
+}
+
+include inter<caret>nal

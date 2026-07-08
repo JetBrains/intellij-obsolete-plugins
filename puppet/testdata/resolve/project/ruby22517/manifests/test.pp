@@ -1,0 +1,4 @@
+
+$somevar
+$othervar = 1
+

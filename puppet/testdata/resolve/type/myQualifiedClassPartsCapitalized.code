@@ -1,0 +1,13 @@
+class holder {
+  define myRes {
+
+  }
+}
+
+define myRes {
+
+}
+
+Hol<caret>der::MyRes {
+
+}

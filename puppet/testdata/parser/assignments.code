@@ -1,0 +1,8 @@
+$v1 = fun1
+$v2 = fun2
+
+$v3 = $v4 = "Chained assignment is allowed in future parser"
+
+$also += $append += "can be chained"
+
+$also -= $append -= "can be chained"

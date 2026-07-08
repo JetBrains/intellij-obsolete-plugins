@@ -1,0 +1,9 @@
+bla::some::test::mine::supermine{
+  'something1':
+    var => 'testpathother.txt'
+}
+
+Bla::Some::Test::Mine::Supermine{
+  'somethingelse':
+    var => 'mypath.txt'
+}

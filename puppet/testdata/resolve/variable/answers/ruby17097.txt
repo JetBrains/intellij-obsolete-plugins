@@ -1,0 +1,9 @@
+'module_name' at (28,39) => 1 results:
+	Puppet: VAR_WRAPPER at 9141 in builtin_variables.pp
+
+'facts' at (53,58) => 1 results:
+	Puppet: VAR_WRAPPER at 3875 in builtin_variables.pp
+
+'facts' at (76,81) => 1 results:
+	Puppet: VAR_WRAPPER at 3875 in builtin_variables.pp
+

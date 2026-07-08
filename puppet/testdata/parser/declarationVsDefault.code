@@ -1,0 +1,23 @@
+File {
+  '/some/file':
+    exists => true
+}
+
+File {
+  exists => true
+}
+
+file { $facts['os']['family'] ? {
+  'Solaris'          => 'wheel',
+  /(Darwin|FreeBSD)/ => 'wheel',
+  default            => 'root',
+}:
+  param => val
+}
+File { $facts['os']['family'] ? {
+  'Solaris'          => 'wheel',
+  /(Darwin|FreeBSD)/ => 'wheel',
+  default            => 'root',
+}:
+  param => val
+}

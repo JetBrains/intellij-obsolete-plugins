@@ -1,0 +1,9 @@
+
+        class{
+        'simplename':
+        param => 123;
+        $varname:
+        param => 123;
+        ['simplename', $varname]:
+        param => 123;
+        }

@@ -1,0 +1,3 @@
+class class_name::role::role_name inherits ::role::java {
+  include ::common::system_classification
+}

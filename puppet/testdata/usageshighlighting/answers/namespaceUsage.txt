@@ -1,0 +1,6 @@
+(18,28) - 'namespace1': write usage
+(78,88) - 'namespace1': write usage
+(140,150) - 'namespace1': write usage
+(190,200) - 'namespace1': write usage
+(226,236) - 'namespace1': read usage
+(226,236) - 'namespace1': read usage

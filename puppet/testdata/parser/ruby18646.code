@@ -1,0 +1,7 @@
+if $match_request_method =~ String {
+  validate_re($match_request_method, '^(put|post|get|head|delete)$')
+} elsif $match_request_method =~ Array {
+  $match_request_method.each |$method| {
+    validate_re($method, '^(put|post|get|head|delete)$')
+  }
+}

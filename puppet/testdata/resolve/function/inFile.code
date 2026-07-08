@@ -1,0 +1,6 @@
+function bla::func(){
+
+}
+
+
+::bla::f<caret>unc()

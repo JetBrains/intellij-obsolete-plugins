@@ -1,0 +1,12 @@
+{
+  "name": "test-writtenlib",
+  "version": "1.8.1",
+  "author": "hurricup",
+  "summary": "ex-test writtenlibrary",
+  "license": "Apache-2.0",
+  "data_provider": null,
+  "operatingsystem_support": [
+  ],
+  "dependencies": [
+  ]
+}

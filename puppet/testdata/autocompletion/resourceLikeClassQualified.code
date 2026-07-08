@@ -1,0 +1,5 @@
+class mySuperClass {
+
+}
+
+class {'testlib::resource::<caret>': }

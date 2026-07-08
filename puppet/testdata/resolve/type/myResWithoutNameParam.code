@@ -1,0 +1,8 @@
+define myRes($myParam1 = undef, $myParam2 = 666,) {
+  $internalVar = 566
+}
+
+MyRes {
+  myParam1 => "value",
+  myPar<caret>am2 => 239,
+}

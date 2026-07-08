@@ -1,0 +1,20 @@
+{
+  "inspections": [
+    {
+      "id": "PuppetMultipleHashSetParamsPerResourceInstance",
+      "codeQualityCategory": "Performance"
+    },
+    {
+      "id": "Puppet4Deprecations",
+      "codeQualityCategory": "Code Style"
+    },
+    {
+      "id": "Puppet3Deprecations",
+      "codeQualityCategory": "Code Style"
+    },
+    {
+      "id": "PuppetUnresolved",
+      "codeQualityCategory": "Sanity"
+    }
+  ]
+}

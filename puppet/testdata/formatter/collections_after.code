@@ -1,0 +1,16 @@
+File <| tag == 'base::linux' |> {
+  owner => 'root',
+  group +> 'root',
+  mode  => 0640,
+}
+
+User <| |> { owner => 'me' }
+
+User <| title
+==
+'luke' |>
+User <|
+  groups == 'admin'
+    and
+    groups != 'admin'
+|>

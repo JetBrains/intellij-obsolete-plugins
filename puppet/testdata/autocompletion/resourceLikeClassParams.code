@@ -1,0 +1,7 @@
+class mySuperClass($myParam1, $myParam2) {
+
+}
+
+class {'mySuperClass':
+  <caret>
+}

@@ -1,0 +1,6 @@
+'file' at (0,4) => 1 results:
+	Puppet: TYPE_DEFINITION at 137948 in builtin.pp
+
+'path' at (25,29) => 1 results:
+	Puppet: VAR_WRAPPER at 138332 in builtin.pp
+

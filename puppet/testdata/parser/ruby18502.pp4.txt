@@ -1,0 +1,23 @@
+PUPPET_FILE
+  PsiPuppetExpressionAssignmentImpl(EXPRESSION_ASSIGNMENT)
+    Puppet: VAR_WRAPPER
+      PsiElement($)('$')
+      PsiElement(VARIABLE_NAME)('var')
+    PsiWhiteSpace(' ')
+    PsiElement(=)('=')
+    PsiWhiteSpace(' ')
+    PsiPuppetExpressionParenImpl(EXPRESSION_PAREN)
+      PsiElement(()('(')
+      PsiWhiteSpace(' ')
+      PsiPuppetResourceDeclarationImpl(RESOURCE_DECLARATION)
+        PsiPuppetRegularNameWrapperImpl(REGULAR_NAME_WRAPPER)
+          PsiElement(NAME)('file')
+        PsiPuppetBracedResourceByClassnameContentsBlockImpl(BRACED_RESOURCE_BY_CLASSNAME_CONTENTS_BLOCK)
+          PsiElement({)('{')
+          PsiWhiteSpace(' ')
+          Puppet: RESOURCE_INSTANCE_DECLARATION
+            PsiPuppetQuotedTextImpl(QUOTED_TEXT)
+              PsiElement(SINGLE_QUOTED_STRING)(''/some/file'')
+            PsiElement(:)(':')
+          PsiElement(})('}')
+      PsiElement())(')')

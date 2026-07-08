@@ -1,0 +1,29 @@
+$myvar = 0
+
+class ntp(
+  $myvar = $ntp::params::server
+) inherits ntp::params {
+
+  notify { 'ntp':
+    message   => "server=[${myvar}]",
+    test      => "${1+1 == 2}",
+    more_test => "sdflkjs${
+      $myvar == "sdf${
+        $myvar + "$myvar$my<caret>var${myvar}"
+      }sdf"
+    }"
+  }
+
+}
+
+$testvar = 0
+
+class ntp_child inherits ntp {
+
+  $myvar = 4
+  class sybclass {
+    $testvar=3
+
+  }
+  $testvar = 1
+}

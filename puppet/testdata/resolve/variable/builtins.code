@@ -1,0 +1,13 @@
+notice $facts
+notice $trusted
+notice $server_facts
+notice $clientcert
+notice $clientversion
+notice $clientnoop
+notice $agent_specified_environment
+notice $environment
+notice $servername
+notice $serverip
+notice $serverversion
+notice $module_name
+notice $caller_module_name

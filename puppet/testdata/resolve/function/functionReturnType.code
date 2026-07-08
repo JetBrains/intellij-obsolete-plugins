@@ -1,0 +1,5 @@
+define customtype { }
+
+function firstfunc () >> String { }
+
+function secondfunc () >> Customtype { }

@@ -1,0 +1,8 @@
+$myVariable = something
+$myAnotherVariable = anotherSomething
+
+class decoy {
+  $myamama = 0
+  $::my<caret>
+  $parapa = $myNotDefinedVar
+}

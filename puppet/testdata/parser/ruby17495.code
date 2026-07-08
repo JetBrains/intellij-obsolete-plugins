@@ -1,0 +1,7 @@
+class profile::test {
+  $var = 'hello world'
+  $var2 = split($var, ' ')[0] # example 1
+  notice(split($var, ' ')[0]) # example 2
+  notice(split($var, ' ')[0], split($var, ' ')[0]) # example 3
+}
+

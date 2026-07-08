@@ -1,0 +1,8 @@
+PUPPET_FILE
+  PsiPuppetResourceDeclarationImpl(RESOURCE_DECLARATION)
+    PsiPuppetRegularNameWrapperImpl(REGULAR_NAME_WRAPPER)
+      PsiElement(NAME)('file')
+    PsiWhiteSpace(' ')
+    PsiPuppetBracedResourceByClassnameContentsBlockImpl(BRACED_RESOURCE_BY_CLASSNAME_CONTENTS_BLOCK)
+      PsiElement({)('{')
+      PsiElement(})('}')

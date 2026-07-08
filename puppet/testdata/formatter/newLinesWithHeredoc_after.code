@@ -1,0 +1,16 @@
+class myclass (
+  $param1 = @(EOM), $param2 = 1 )
+  some text
+    EOM
+  {
+
+  }
+
+class myclass (
+  $param1 = 1,
+  $param2 = @(EOM) )
+  some text
+    EOM
+  {
+
+  }

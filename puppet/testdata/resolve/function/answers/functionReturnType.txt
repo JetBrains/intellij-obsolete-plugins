@@ -1,0 +1,6 @@
+'String' at (48,54) => 1 results:
+	PuppetDataTypeLightElement: String
+
+'Customtype' at (86,96) => 1 results:
+	Puppet: TYPE_DEFINITION at 0 in functionReturnType.pp
+

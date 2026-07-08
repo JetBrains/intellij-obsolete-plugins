@@ -1,0 +1,39 @@
+# A class with parameters
+class apache (String $version = 'latest') {
+}
+
+class apache (String[1] $version = 'latest') {
+}
+
+class apache (String[1, String] $version = 'latest') {
+}
+
+# Space is not allowed
+class apache (String [1] $version = 'latest') {
+}
+
+# defined types
+
+define apache::vhost (Integer $port, String $docroot, String $servername, String $vhost_name) {
+  require apache
+}
+
+define apache::vhost (Integer $port, String[1] $docroot, String[1] $servername = $title, String $vhost_name = '*') {
+  include apache # contains Package['httpd'] and Service['httpd']
+  include apache::params # contains common config settings
+  $vhost_dir = $apache::params::vhost_dir
+  file { "${vhost_dir}/${servername}.conf":
+    content => template('apache/vhost-default.conf.erb'),
+    # This template can access all of the parameters and variables from above.
+    owner   => 'www',
+    group   => 'www',
+    mode    => '644',
+    require => Package['httpd'],
+    notify  => Service['httpd'],
+  }
+}
+
+# lambdas
+each($a) |Integer $i| { notice $a, $i }
+
+each($a) |Integer $i, String[1] $j| { notice $a, $i, $j }

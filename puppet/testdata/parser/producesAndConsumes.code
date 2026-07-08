@@ -1,0 +1,27 @@
+file produces file
+
+file consumes File
+
+File produces File
+
+File consumes File
+
+file produces file{
+  key => $var,
+  otherkey => $othervar
+}
+
+file consumes file{
+  key => $var,
+  otherkey => $othervar
+}
+
+File produces File{
+  key => $var,
+  otherkey => $othervar
+}
+
+File consumes File{
+  key => $var,
+  otherkey => $othervar
+}

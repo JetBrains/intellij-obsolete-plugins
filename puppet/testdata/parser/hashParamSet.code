@@ -1,0 +1,20 @@
+file { '/etc/ololo':
+  ensure => present,
+}
+
+file { '/etc/ololo':
+  ensure => present,
+  * => { 'mode' => 755, 'owner' => 'ol' },
+  group => 'grgr'
+}
+
+file { '/etc/ololo':
+  * => { 'mode' => 755, 'owner' => 'ol' },
+  ensure => present,
+  group => 'grgr'
+}
+
+# This should be a syntax error since redefinitions with hash setting is not allowed
+File['/etc/ololo'] {
+  * => { 'mode' => 755, 'owner' => 'ol' },
+}

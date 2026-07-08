@@ -1,0 +1,2 @@
+'myvar' at (221,226) => 1 results:
+	Puppet: VAR_WRAPPER at 16 in variableInheritanceWithFqn.pp

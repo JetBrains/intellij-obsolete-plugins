@@ -1,0 +1,3 @@
+$superlongname = 123
+
+notice $superlongname

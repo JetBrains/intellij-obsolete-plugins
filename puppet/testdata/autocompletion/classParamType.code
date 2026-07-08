@@ -1,0 +1,6 @@
+class myclass(
+  File $filevar,
+  <caret>
+){
+
+}

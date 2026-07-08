@@ -1,0 +1,13 @@
+class holder {
+  define myRes {
+
+  }
+}
+
+define myRes {
+
+}
+
+holder::my<caret>Res { 'tratata':
+
+}

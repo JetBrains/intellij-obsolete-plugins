@@ -1,0 +1,7 @@
+$enable_real = $enable ? {
+  Boolean => $enable,
+  String  => str2bool($enable),
+  Numeric => num2bool($enable),
+  <caret>
+  default => fail('Illegal value for $enable parameter'),
+}

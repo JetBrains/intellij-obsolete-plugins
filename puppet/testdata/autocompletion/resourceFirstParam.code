@@ -1,0 +1,5 @@
+file{
+  '/mytestfile':
+}
+
+notice Resource[<caret>, '/mytestfile']

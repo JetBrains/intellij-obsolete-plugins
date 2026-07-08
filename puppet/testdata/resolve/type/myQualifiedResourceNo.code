@@ -1,0 +1,9 @@
+class holder {
+  define myRes {
+
+  }
+}
+
+my<caret>Res { 'tratata':
+
+}

@@ -1,0 +1,54 @@
+
+define myclass(<fold text='arguments' expand='true'>
+  $var1,
+  $var2
+</fold>){<fold text='code' expand='true'>
+  notice 'some'
+</fold>}
+
+function myfunction(<fold text='arguments' expand='true'>
+  $var1,
+  $var2
+</fold>){<fold text='code' expand='true'>
+  notice 'some'
+
+</fold>}
+
+define mytype(<fold text='arguments' expand='true'>
+  $var1,
+  $var2
+</fold>){<fold text='code' expand='true'>
+  notice 'some'
+
+</fold>}
+
+node 'mynode' {<fold text='code' expand='true'>
+
+</fold>}
+
+$a = @(END)
+<fold text='heredoc' expand='true'>  This is indented 2 spaces in the source, but produces
+  a result flush left with the initial 'T'
+    This line is thus indented 2 spaces.</fold>
+  | END
+
+
+$a = @("Verse 8 of The Raven")
+<fold text='heredoc' expand='true'>  Then this ebony bird beguiling my sad fancy into smiling,
+  By the grave and stern decorum of the countenance it wore,
+  `Though thy crest $somevar be shorn and shaven, thou,' I said, `art sure no craven.
+  Ghastly grim and ancient raven wandering from the nightly shore -
+  Tell me what thy lordly name is on the Night's Plutonian shore!'
+  Quoth the raven, `Nevermore.'</fold>
+  | Verse 8 of The Raven
+
+
+file{
+  'firstfile'<fold text=': attributes' expand='true'>:
+    path => 'path',
+    before => 'some'</fold>;
+  'otherfile'<fold text=': attributes' expand='true'>:
+    path => 'path',
+    before => 'asdfadsf',
+    path => path</fold>
+}

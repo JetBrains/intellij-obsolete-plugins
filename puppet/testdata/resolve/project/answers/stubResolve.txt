@@ -1,0 +1,27 @@
+'notice' at (0,6) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'kernel' at (8,14) => 1 results:
+	Puppet: VAR_WRAPPER at 13493 in builtin.pp
+
+'notice' at (15,21) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'kernel' at (25,31) => 1 results:
+	Puppet: VAR_WRAPPER at 13493 in builtin.pp
+
+'notice' at (32,38) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'clientversion' at (40,53) => 1 results:
+	Puppet: VAR_WRAPPER at 921 in builtin.pp
+
+'notice' at (54,60) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'clientversion' at (64,77) => 1 results:
+	Puppet: VAR_WRAPPER at 921 in builtin.pp
+
+'contain' at (78,85) => 1 results:
+	PuppetLazyProxyLightElement: contain at 4500 in stub_functions.rb
+

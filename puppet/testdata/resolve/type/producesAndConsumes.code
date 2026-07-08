@@ -1,0 +1,33 @@
+# this is a formal solution. Actually service types should be flagged in source, but currently we are not handling it
+
+define mysuper::producer{}
+define mysuper::consumer{}
+define mysuper::service{}
+
+mysuper::producer produces mysuper::service
+
+mysuper::consumer consumes mysuper::service
+
+Mysuper::Producer produces Mysuper::Service
+
+Mysuper::Consumer consumes Mysuper::Service
+
+mysuper::producer produces mysuper::service{
+  key => $var,
+  otherkey => $othervar
+}
+
+mysuper::consumer consumes mysuper::service{
+  key => $var,
+  otherkey => $othervar
+}
+
+Mysuper::Producer produces Mysuper::Service{
+  key => $var,
+  otherkey => $othervar
+}
+
+Mysuper::Consumer consumes Mysuper::Service{
+  key => $var,
+  otherkey => $othervar
+}

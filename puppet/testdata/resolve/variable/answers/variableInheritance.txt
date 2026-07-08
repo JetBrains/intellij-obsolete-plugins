@@ -1,0 +1,2 @@
+'myvar' at (343,348) => 1 results:
+	Puppet: VAR_WRAPPER at 25 in variableInheritance.pp

@@ -1,0 +1,5 @@
+define mynamespace::file {
+  ::fi<caret>le {
+    'supername':
+  }
+}

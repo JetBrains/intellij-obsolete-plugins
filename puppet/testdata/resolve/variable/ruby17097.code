@@ -1,0 +1,6 @@
+$path = "puppet:///mdules/${module_name}/test.txt"
+
+$facts['fact_name']
+
+$::facts['fact_name']
+

@@ -1,0 +1,14 @@
+class someclass {
+  notice "Someclass: Node var: $node_var"
+}
+
+class otherclass {
+  notice "Someclass: Node var: $node_var"
+}
+
+node default {
+  $node_var = 'AVAILABLE'
+  include someclass
+  include otherclass
+  notice "Node var: $node_var"
+}

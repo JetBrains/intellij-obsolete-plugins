@@ -1,0 +1,7 @@
+class myClass {
+
+}
+
+class myOtherClass inherits my<caret>Class {
+
+}

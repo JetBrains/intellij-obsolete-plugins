@@ -1,0 +1,10 @@
+[1, 2, 3].notice
+
+1.notice()
+
+$array.filter |$x| {$x =~ /^0-9+$/}.map |$x| { $x * 2 }
+
+$array.func(1, 2)
+
+
+

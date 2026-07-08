@@ -1,0 +1,13 @@
+class mySuperClass {
+
+}
+
+class mySecondClass {
+
+}
+
+class {
+  mySuperClass:
+;
+  mySecondCla<caret>ss:
+}

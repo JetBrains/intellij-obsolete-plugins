@@ -1,0 +1,28 @@
+PUPPET_FILE
+  Puppet: FUNCTION_DEFINITION
+    PsiElement(FUNCTION)('function')
+    PsiWhiteSpace('\n')
+    PsiPuppetFqnContainerImpl(FQN_CONTAINER)
+      PsiElement(NAME)('type')
+    PsiWhiteSpace('\n')
+    PsiErrorElement:'(', '::' or '>>' expected, got 'attr'
+      PsiElement(ATTR)('attr')
+    PsiWhiteSpace('\n')
+    PsiElement(PRIVATE)('private')
+  PsiWhiteSpace('\n')
+  PsiPuppetFunctionCallStatementImpl(FUNCTION_CALL_STATEMENT)
+    PsiPuppetRegularNameWrapperImpl(REGULAR_NAME_WRAPPER)
+      PsiElement(NAME)('import')
+    PsiWhiteSpace('\n')
+    PsiPuppetExpressionRelationImpl(EXPRESSION_RELATION)
+      Puppet: TYPE_DEFINITION
+        PsiElement(APPLICATION)('application')
+        PsiErrorElement:<fqn container> expected, got 'consumes'
+          <empty list>
+      PsiWhiteSpace('\n')
+      PsiElement(CONSUMES)('consumes')
+      PsiWhiteSpace('\n')
+      PsiElement(PRODUCES)('produces')
+  PsiWhiteSpace('\n')
+  PsiErrorElement:Unknown tokens
+    PsiElement(SITE)('site')

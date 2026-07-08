@@ -1,0 +1,18 @@
+define myns::sometype{
+
+}
+
+myns::sometype{
+  'resource"name':
+}
+
+Myns::Sometype['resource"name']
+Myns::Sometype['resource"name']
+Myns::Sometype["resource\"name"]
+
+Resource[Myns::Sometype, 'resource"name', "resource\"name"]
+
+Resource[Myns::Sometype, 'resource"name']{
+  name => 42
+}
+

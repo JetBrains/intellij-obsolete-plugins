@@ -1,0 +1,7 @@
+class myClass($param1 = 1) {
+  $param2 = 666
+
+  fail($myClass::par<caret>am2)
+}
+
+$param2 = -1

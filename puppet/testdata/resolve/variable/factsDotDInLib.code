@@ -1,0 +1,6 @@
+notice($myfact1)
+notice($myfact2)
+notice($myfact3)
+notice($myfact4)
+notice($myfact5)
+notice($myfact6)

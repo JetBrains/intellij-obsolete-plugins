@@ -1,0 +1,3 @@
+testlib::reso<caret>urce { 'myName':
+  param1 => 1
+}

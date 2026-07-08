@@ -1,0 +1,31 @@
+define myns::newname{
+
+}
+
+myns::newname{
+  'instance':
+}
+
+Myns::Newname[instance]
+
+Resource[Myns::Newname, instance]
+
+Type[Myns::Newname]
+
+Myns::Newname{
+  name => 'test'
+}
+
+class myns::someclass{
+  $somevar = 1
+}
+
+class myns::otherclass inherits Myns::Someclass{
+
+}
+
+function myns::somefunc{
+
+}
+
+notice $myns::someclass::somevar

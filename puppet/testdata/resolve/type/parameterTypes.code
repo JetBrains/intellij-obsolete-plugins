@@ -1,0 +1,10 @@
+
+class someclass(
+  Boolean $var1,
+  Boolean $var2,
+  Integer $var3,
+  Integer $var4,
+  Variant[Boolean, Integer] $var5,
+){
+  notice $var
+}

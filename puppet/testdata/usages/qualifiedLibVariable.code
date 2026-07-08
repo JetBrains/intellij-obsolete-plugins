@@ -1,0 +1,7 @@
+include testlib::resource::subClass
+
+notice $testlib::resource::subClass::intVar1
+
+notify { $testlib::resource::subClass::intVar<caret>1:
+
+}

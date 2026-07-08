@@ -1,0 +1,42 @@
+exec{'hambone' :
+path=>'/usr/bin',
+cwd=>'/tmp'   , ; 'otherthing': key => 123
+}
+exec{'test' :
+subscribe=>File['/etc/test'] ,
+refreshonly=>true,    ;
+}
+Exec{'test' :
+subscribe=>File['/etc/test'] ,
+refreshonly+>true,
+}
+Exec{some=>1,key=>  34  ,}
+Exec{}
+class{myclass:key=>1,otherkey=>42}
+class ourclass($somevar=1,$othervarlonger=42,$thirdvarverylong=69){}
+define ourtype($somevar=1,$othervar=42,$thirdvar=69   ,){}
+function ourfunction($somevar=1,$othervar=42,$thirdvar=69){}
+$somevar=1
+$othervar+=$somevar
+$othervar-=$somevar
+$othervar==$somevar
+$othervar!=$somevar
+$othervar>$somevar
+$othervar<$somevar
+$othervar>=$somevar
+$othervar<=$somevar
+$othervar>>$somevar
+$othervar<<$somevar
+$othervar=~$somevar
+$othervar!~$somevar
+$othervar+$somevar
+$othervar-$somevar
+$othervar--$somevar
+$othervar*$somevar
+$othervar**$somevar
+$othervar/$somevar
+$othervar+!$somevar
+$othervar%$somevar
+file{somefile:}->file{somefile:}<-file{somefile:}~>file{somefile:}<~file{somefile:}
+$file_mode=$::operatingsystem?{'debian'=>'0007'  ,'redhatwithlongname'      =>'0776'   ,default=>'0700'  }
+notice case $x{$a:{'an array with both vim and emacs'}*$a:{'vim or emacs'}default:{'no match'}}

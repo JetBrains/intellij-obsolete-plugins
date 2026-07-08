@@ -1,0 +1,30 @@
+class super::newname(
+  $param1 = 42,
+  $param2 = 69
+){}
+class super::childclass(
+  $param1 = 42,
+  $param2 = 69
+) inherits super::newname {}
+class super::childclass::other(
+  $param1 = 42,
+  $param2 = 69
+) inherits Super::Newname {}
+
+include super::newname, Class[super::newname], 'super::newname'
+require super::newname, Class[super::newname], 'super::newname'
+contain super::newname, Class[super::newname], 'super::newname'
+hiera_include super::newname, Class[super::newname], 'super::newname'
+
+class{
+  super::newname:
+    param1 => 123,
+    param2 => 123
+  ;
+  'super::newname':
+    param1 => 123,
+    param2 => 123
+  ;
+}
+
+notice $super::newname::param2

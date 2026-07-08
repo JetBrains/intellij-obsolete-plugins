@@ -1,0 +1,138 @@
+'notice' at (23,29) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'name' at (31,35) => 1 results:
+	Puppet: VAR_WRAPPER at 87899 in builtin.pp
+
+'notice' at (38,44) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'title' at (46,51) => 1 results:
+	Puppet: VAR_WRAPPER at 88398 in builtin.pp
+
+'notice' at (55,61) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'alias' at (63,68) => 1 results:
+	Puppet: VAR_WRAPPER at 89758 in builtin.pp
+
+'notice' at (71,77) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'audit' at (79,84) => 1 results:
+	Puppet: VAR_WRAPPER at 91054 in builtin.pp
+
+'notice' at (87,93) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'before' at (95,101) => 1 results:
+	Puppet: VAR_WRAPPER at 91894 in builtin.pp
+
+'notice' at (104,110) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'consume' at (112,119) => 1 results:
+	Puppet: VAR_WRAPPER at 92754 in builtin.pp
+
+'notice' at (122,128) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'export' at (130,136) => 1 results:
+	Puppet: VAR_WRAPPER at 93667 in builtin.pp
+
+'notice' at (139,145) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'loglevel' at (147,155) => 1 results:
+	Puppet: VAR_WRAPPER at 94461 in builtin.pp
+
+'notice' at (158,164) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'noop' at (166,170) => 1 results:
+	Puppet: VAR_WRAPPER at 95797 in builtin.pp
+
+'notice' at (173,179) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'notify' at (181,187) => 1 results:
+	Puppet: VAR_WRAPPER at 96902 in builtin.pp
+
+'notice' at (190,196) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'require' at (198,205) => 1 results:
+	Puppet: VAR_WRAPPER at 97751 in builtin.pp
+
+'notice' at (208,214) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'schedule' at (216,224) => 1 results:
+	Puppet: VAR_WRAPPER at 98542 in builtin.pp
+
+'notice' at (227,233) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'stage' at (235,240) => 1 results:
+	Puppet: VAR_WRAPPER at 99595 in builtin.pp
+
+'notice' at (243,249) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'subscribe' at (251,260) => 1 results:
+	Puppet: VAR_WRAPPER at 100706 in builtin.pp
+
+'notice' at (263,269) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'tag' at (271,274) => 1 results:
+	Puppet: VAR_WRAPPER at 101543 in builtin.pp
+
+'Mycustomtype' at (278,290) => 1 results:
+	Puppet: TYPE_DEFINITION at 0 in ruby18637.pp
+
+'name' at (310,314) => 1 results:
+	Puppet: VAR_WRAPPER at 87899 in builtin.pp
+
+'title' at (326,331) => 1 results:
+	Puppet: VAR_WRAPPER at 88398 in builtin.pp
+
+'alias' at (344,349) => 1 results:
+	Puppet: VAR_WRAPPER at 89758 in builtin.pp
+
+'audit' at (361,366) => 1 results:
+	Puppet: VAR_WRAPPER at 91054 in builtin.pp
+
+'before' at (378,384) => 1 results:
+	Puppet: VAR_WRAPPER at 91894 in builtin.pp
+
+'consume' at (396,403) => 1 results:
+	Puppet: VAR_WRAPPER at 92754 in builtin.pp
+
+'export' at (415,421) => 1 results:
+	Puppet: VAR_WRAPPER at 93667 in builtin.pp
+
+'loglevel' at (433,441) => 1 results:
+	Puppet: VAR_WRAPPER at 94461 in builtin.pp
+
+'noop' at (453,457) => 1 results:
+	Puppet: VAR_WRAPPER at 95797 in builtin.pp
+
+'notify' at (469,475) => 1 results:
+	Puppet: VAR_WRAPPER at 96902 in builtin.pp
+
+'require' at (487,494) => 1 results:
+	Puppet: VAR_WRAPPER at 97751 in builtin.pp
+
+'schedule' at (506,514) => 1 results:
+	Puppet: VAR_WRAPPER at 98542 in builtin.pp
+
+'stage' at (526,531) => 1 results:
+	Puppet: VAR_WRAPPER at 99595 in builtin.pp
+
+'subscribe' at (543,552) => 1 results:
+	Puppet: VAR_WRAPPER at 100706 in builtin.pp
+
+'tag' at (564,567) => 1 results:
+	Puppet: VAR_WRAPPER at 101543 in builtin.pp
+

@@ -1,0 +1,6 @@
+$var = 1
+
+node 'localhost' {
+  $var = 2
+  fail($v<caret>ar)
+}

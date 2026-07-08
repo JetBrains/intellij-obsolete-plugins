@@ -1,0 +1,75 @@
+'notice' at (17,23) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'include' at (70,77) => 1 results:
+	PuppetLazyProxyLightElement: include at 43062 in stub_functions.rb
+
+'Class' at (78,83) => 1 results:
+	PuppetDataTypeLightElement: Class
+
+'myclass' at (84,91) => 1 results:
+	Puppet: CLASS_DEFINITION at 0 in classTypeParameter.pp
+
+'notice' at (94,100) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'Class' at (101,106) => 1 results:
+	PuppetDataTypeLightElement: Class
+
+'myclass' at (107,114) => 1 results:
+	Puppet: CLASS_DEFINITION at 0 in classTypeParameter.pp
+
+'notice' at (116,122) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'Class' at (123,128) => 1 results:
+	PuppetDataTypeLightElement: Class
+
+'Myclass' at (129,136) => 1 results:
+	Puppet: CLASS_DEFINITION at 0 in classTypeParameter.pp
+
+'notice' at (138,144) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'Class' at (145,150) => 1 results:
+	PuppetDataTypeLightElement: Class
+
+'myclass' at (152,159) => 1 results:
+	Puppet: CLASS_DEFINITION at 0 in classTypeParameter.pp
+
+'notice' at (163,169) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'Class' at (170,175) => 1 results:
+	PuppetDataTypeLightElement: Class
+
+'somenamespace' at (176,189) => 1 results:
+	Puppet: NAMESPACE_DEFINITION at 42 in classTypeParameter.pp
+
+'myclass' at (191,198) => 1 results:
+	Puppet: CLASS_DEFINITION at 36 in classTypeParameter.pp
+
+'notice' at (200,206) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'Class' at (207,212) => 1 results:
+	PuppetDataTypeLightElement: Class
+
+'Somenamespace' at (213,226) => 1 results:
+	Puppet: NAMESPACE_DEFINITION at 42 in classTypeParameter.pp
+
+'Myclass' at (228,235) => 1 results:
+	Puppet: CLASS_DEFINITION at 36 in classTypeParameter.pp
+
+'notice' at (237,243) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'Class' at (244,249) => 1 results:
+	PuppetDataTypeLightElement: Class
+
+'somenamespace' at (251,264) => 1 results:
+	Puppet: NAMESPACE_DEFINITION at 42 in classTypeParameter.pp
+
+'myclass' at (266,273) => 1 results:
+	Puppet: CLASS_DEFINITION at 36 in classTypeParameter.pp
+

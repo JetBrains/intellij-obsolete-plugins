@@ -1,0 +1,180 @@
+<idea-plugin package="com.intellij.lang.puppet">
+  <id>com.intellij.lang.puppet</id>
+  <name>Puppet</name>
+
+  <content>
+    <module name="intellij.puppet/yaml"/>
+  </content>
+  <dependencies>
+    <plugin id="com.intellij.modules.lang"/>
+    <module name="intellij.regexp"/>
+    <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+    <module name="intellij.json.backend"/>
+    <module name="intellij.yaml"/>
+    <!-- endregion -->
+  </dependencies>
+
+  <description><![CDATA[
+        Provides <a href="https://puppet.com/">Puppet</a> language support. Current features include:
+        <ul>
+          <li>Puppet 3.x, Puppet 4+ and EPP language syntax</li>
+          <li>Syntax highlighting and formatting</li>
+          <li>Code assistance (completion, navigation, refactoring, etc.) for
+            variables, classes, resources, types, facts and functions</li>
+          <li>Code inspections</li>
+          <li>Dependencies installation</li>
+          <li>Quick documentation</li>
+          <li>Structure view</li>
+        </ul>
+      ]]>
+  </description>
+  <vendor>JetBrains</vendor>
+  <category>Deployment</category>
+
+  <extensionPoints>
+    <extensionPoint qualifiedName="com.intellij.puppet.factIndexer"
+                    interface="com.intellij.lang.puppet.ide.navigation.plugins.facts.PuppetFactDataIndexer" dynamic="true"/>
+    <extensionPoint qualifiedName="com.intellij.puppet.dependencyManagerAdapter"
+                    interface="com.intellij.lang.puppet.adapters.PuppetDependencyManagerAdapter" dynamic="true"/>
+  </extensionPoints>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <annotator language="Puppet"
+               implementationClass="com.intellij.lang.puppet.ide.annotation.PuppetAnnotator"/>
+    <lang.parserDefinition language="Puppet" implementationClass="com.intellij.lang.puppet.psi.PuppetParserDefinition"/>
+    <lang.syntaxHighlighterFactory language="Puppet" implementationClass="com.intellij.lang.puppet.highlighter.PuppetSyntaxHighlighterFactory"/>
+    <lang.formatter language="Puppet" implementationClass="com.intellij.lang.puppet.formatter.PuppetFormattingModelBuilder"/>
+    <!--<treeStructureProvider implementation="TODO"/>-->
+    <completion.contributor language="Puppet"
+                            implementationClass="com.intellij.lang.puppet.ide.completion.PuppetCompletionContributor"/>
+
+    <lang.documentationProvider language="Puppet" implementationClass="com.intellij.lang.puppet.ide.PuppetDocumentationProvider"/>
+    <fileType language="Puppet" extensions="pp" fieldName="INSTANCE" name="Puppet" implementationClass="com.intellij.lang.puppet.PuppetFileType"/>
+    <lang.commenter language="Puppet" implementationClass="com.intellij.lang.puppet.ide.PuppetCommenter"/>
+    <lang.braceMatcher language="Puppet" implementationClass="com.intellij.lang.puppet.ide.PuppetBraceMatcher"/>
+    <codeStyleSettingsProvider implementation="com.intellij.lang.puppet.formatter.PuppetCodeStyleSettingsProvider"/>
+    <langCodeStyleSettingsProvider implementation="com.intellij.lang.puppet.settings.PuppetLanguageCodeStyleSettingsProvider"/>
+    <quoteHandler fileType="Puppet" className="com.intellij.lang.puppet.editing.PuppetQuoteHandler"/>
+    <enterHandlerDelegate implementation="com.intellij.lang.puppet.editing.PuppetResourceEnterHandler"/>
+    <!--<configurationType implementation="com.intellij.lang.puppet.run.PuppetRunConfigurationType"/>-->
+    <colorSettingsPage implementation="com.intellij.lang.puppet.highlighter.PuppetColorSettingsPage"/>
+    <lang.foldingBuilder language="Puppet" implementationClass="com.intellij.lang.puppet.ide.folding.PuppetFoldingBuilder"/>
+
+    <additionalTextAttributes scheme="Default" file="colorSchemes/PuppetDefault.xml"/>
+    <additionalTextAttributes scheme="Darcula" file="colorSchemes/PuppetDarcula.xml"/>
+
+    <projectService serviceImplementation="com.intellij.lang.puppet.settings.PuppetProjectConfiguration"/>
+    <projectConfigurable id="Settings.Puppet"
+                         groupId="language"
+                         instance="com.intellij.lang.puppet.settings.configurable.PuppetConfigurable"
+                         key="settings.puppet.configurable.display.name"
+                         nonDefaultProject="true"
+                         bundle="messages.PuppetBundle">
+    </projectConfigurable>
+
+    <treeStructureProvider implementation="com.intellij.lang.puppet.project.structure.PuppetTreeStructureProvider"/>
+
+    <!--<applicationConfigurable instance="com.intellij.lang.puppet.settings.PuppetModuleSetConfigurable"/>-->
+    <!--<projectConfigurable provider="com.intellij.lang.puppet.settings.PuppetConfigurableProvider" nonDefaultProject="true"/>-->
+
+    <languageInjector implementation="com.intellij.lang.puppet.psi.regexp.PuppetRegexpLanguageInjector"/>
+
+    <lang.elementManipulator forClass="com.intellij.lang.puppet.psi.mixins.PuppetRegexpElementMixin"
+                             implementationClass="com.intellij.lang.puppet.psi.manipulators.PuppetRegexpManipulator"/>
+    <lang.elementManipulator forClass="com.intellij.lang.puppet.psi.PuppetVariable"
+                             implementationClass="com.intellij.lang.puppet.psi.manipulators.PuppetVariableManipulator"/>
+    <lang.elementManipulator forClass="com.intellij.lang.puppet.psi.PuppetNameWrapper"
+                             implementationClass="com.intellij.lang.puppet.psi.manipulators.PuppetLeafOwnerManipulator"/>
+    <lang.elementManipulator forClass="com.intellij.lang.puppet.psi.PuppetQuotedString"
+                             implementationClass="com.intellij.lang.puppet.psi.manipulators.PuppetQuotedTextManipulator"/>
+
+    <liveTemplateContext contextId="PUPPET_FILE" implementation="com.intellij.lang.puppet.ide.liveTemplates.PuppetLiveTemplateContextType"/>
+
+    <renameHandler implementation="com.intellij.lang.puppet.ide.refactoring.PuppetMemberInplaceRenameHandler"/>
+
+    <psi.referenceContributor language="Puppet" implementation="com.intellij.lang.puppet.psi.references.PuppetReferenceContributor"/>
+    <targetElementEvaluator language="Puppet" implementationClass="com.intellij.lang.puppet.psi.references.PuppetTargetElementEvaluator"/>
+    <resolveScopeProvider implementation="com.intellij.lang.puppet.psi.references.PuppetResolveScopeProvider"/>
+    <indexedRootsProvider implementation="com.intellij.lang.puppet.psi.resolve.PuppetIndexableSetContributor"/>
+    <lang.findUsagesProvider language="Puppet" implementationClass="com.intellij.lang.puppet.ide.usages.PuppetFindUsagesProvider"/>
+    <renamePsiElementProcessor implementation="com.intellij.lang.puppet.ide.refactoring.PuppetRenameProcessor"/>
+    <renameInputValidator implementation="com.intellij.lang.puppet.ide.refactoring.PuppetRenameInputValidator"/>
+    <lang.namesValidator language="Puppet" implementationClass="com.intellij.lang.puppet.ide.refactoring.PuppetNamesValidator"/>
+    <lang.psiStructureViewFactory language="Puppet" implementationClass="com.intellij.lang.puppet.ide.structure.PuppetStructureViewFactory"/>
+
+    <referencesSearch implementation="com.intellij.lang.puppet.ide.usages.PuppetReferencesSearcher"/>
+    <findUsagesHandlerFactory implementation="com.intellij.lang.puppet.ide.usages.PuppetFindUsagesFactory" id="Puppet"
+                              order="last, before default"/>
+    <highlightUsagesHandlerFactory implementation="com.intellij.lang.puppet.ide.highlighting.PuppetHighlightUsagesHandlerFactory"/>
+    <elementDescriptionProvider implementation="com.intellij.lang.puppet.ide.usages.PuppetElementDescriptionProvider" />
+
+    <stubElementTypeHolder class="com.intellij.lang.puppet.psi.PuppetStubElementTypes" externalIdPrefix="puppet."/>
+    <stubIndex implementation="com.intellij.lang.puppet.psi.stubs.indices.PuppetVariableStubsIndex"/>
+    <stubIndex implementation="com.intellij.lang.puppet.psi.stubs.indices.PuppetTopLevelVariablesStubsIndex"/>
+    <stubIndex implementation="com.intellij.lang.puppet.psi.stubs.indices.PuppetNamespacesStubsIndex"/>
+    <stubIndex implementation="com.intellij.lang.puppet.psi.stubs.indices.PuppetClassStubsIndex"/>
+    <stubIndex implementation="com.intellij.lang.puppet.psi.stubs.indices.PuppetSubClassStubsIndex"/>
+    <stubIndex implementation="com.intellij.lang.puppet.psi.stubs.indices.PuppetIncludeClassStatementsStubsIndex"/>
+    <stubIndex implementation="com.intellij.lang.puppet.psi.stubs.indices.PuppetTypeStubIndex"/>
+    <stubIndex implementation="com.intellij.lang.puppet.psi.stubs.indices.PuppetResourceInstanceStubsIndex"/>
+    <stubIndex implementation="com.intellij.lang.puppet.psi.stubs.indices.PuppetResourceInstanceByTypeStubsIndex"/>
+    <stubIndex implementation="com.intellij.lang.puppet.psi.stubs.indices.PuppetFunctionsStubsIndex"/>
+    <stubIndex implementation="com.intellij.lang.puppet.psi.stubs.indices.PuppetNodeStubsIndex"/>
+    <fileBasedIndex implementation="com.intellij.lang.puppet.ide.navigation.plugins.facts.PuppetFactsIndex"/>
+    <fileBasedIndex implementation="com.intellij.lang.puppet.ide.navigation.plugins.ruby.PuppetRubyPluginsIndex"/>
+
+    <gotoClassContributor implementation="com.intellij.lang.puppet.ide.navigation.PuppetGotoClassContributor"/>
+
+    <gotoSymbolContributor implementation="com.intellij.lang.puppet.ide.navigation.PuppetGotoSymbolContributor"/>
+
+    <gotoDeclarationHandler implementation="com.intellij.lang.puppet.ide.navigation.PuppetGotoDeclarationHandler"/>
+
+    <searchEverywhereClassifier implementation="com.intellij.lang.puppet.ide.navigation.PuppetSearchEverywhereClassifier"/>
+
+    <localInspection language="Puppet" bundle="messages.PuppetBundle"
+                     key="inspections.unresolved.name"
+                     groupKey="inspections.group.name" enabledByDefault="true"
+                     implementationClass="com.intellij.lang.puppet.ide.inspections.PuppetUnresolvedInspection"/>
+    <localInspection
+        language="Puppet" bundle="messages.PuppetBundle"
+        key="inspections.multiple.hash.param.name"
+        groupKey="inspections.group.name" enabledByDefault="true" level="ERROR"
+        implementationClass="com.intellij.lang.puppet.ide.inspections.PuppetMultipleHashSetParamsPerResourceInstanceInspection"/>
+    <localInspection
+        language="Puppet" bundle="messages.PuppetBundle"
+        key="inspections.deprecated.in.puppet4.name"
+        groupKey="inspections.group.name" enabledByDefault="true" level="WARNING"
+        implementationClass="com.intellij.lang.puppet.ide.inspections.Puppet4DeprecationsInspection"/>
+    <localInspection
+        language="Puppet" bundle="messages.PuppetBundle"
+        key="inspections.deprecated.in.puppet3.name"
+        groupKey="inspections.group.name" enabledByDefault="true" level="WARNING"
+        implementationClass="com.intellij.lang.puppet.ide.inspections.Puppet3DeprecationsInspection"/>
+
+    <projectService serviceImplementation="com.intellij.lang.puppet.project.roots.PuppetDirectoryIndex"/>
+    <projectService serviceImplementation="com.intellij.lang.puppet.project.PuppetScopeManager"/>
+    <projectService serviceImplementation="com.intellij.lang.puppet.project.PuppetProjectManager"/>
+    <notificationGroup id="PUPPET_CONFIGURATION_ERROR" displayType="BALLOON" bundle="messages.PuppetBundle" key="configuration.error.notification.group"/>
+    <projectSettings service="com.intellij.lang.puppet.settings.PuppetProjectConfiguration"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="com.intellij.puppet">
+    <factIndexer implementation="com.intellij.lang.puppet.ide.navigation.plugins.facts.JsonFactIndexer"/>
+    <factIndexer implementation="com.intellij.lang.puppet.ide.navigation.plugins.facts.RubyFactIndexer"/>
+    <factIndexer implementation="com.intellij.lang.puppet.ide.navigation.plugins.facts.TxtFactIndexer"/>
+
+    <dependencyManagerAdapter id="default" implementation="com.intellij.lang.puppet.adapters.PuppetLibrarianAdapter" />
+  </extensions>
+
+  <projectListeners>
+    <listener class="com.intellij.lang.puppet.project.PuppetDumbModeListener" topic="com.intellij.openapi.project.DumbService$DumbModeListener"/>
+    <listener class="com.intellij.lang.puppet.project.PuppetProjectFilesListener" topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
+  </projectListeners>
+
+  <actions resource-bundle="messages.PuppetBundle">
+    <action class="com.intellij.lang.puppet.ide.actions.PuppetInstallDependenciesAction" id="puppet.install.dependencies"
+            icon="com.intellij.lang.puppet.PuppetIcons.PuppetLogo">
+      <add-to-group group-id="ProjectViewPopupMenu"/>
+    </action>
+  </actions>
+</idea-plugin>

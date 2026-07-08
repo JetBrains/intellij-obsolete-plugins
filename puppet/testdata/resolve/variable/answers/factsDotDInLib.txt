@@ -1,0 +1,18 @@
+'myfact1' at (8,15) => 1 results:
+	PuppetLazyProxyLightElement: myfact1 at 0 in facts.txt
+
+'myfact2' at (25,32) => 1 results:
+	PuppetLazyProxyLightElement: myfact2 at 15 in facts.txt
+
+'myfact3' at (42,49) => 1 results:
+	PuppetLazyProxyLightElement: myfact3 at 4 in facts.yaml
+
+'myfact4' at (59,66) => 1 results:
+	PuppetLazyProxyLightElement: myfact4 at 24 in facts.yaml
+
+'myfact5' at (76,83) => 1 results:
+	PuppetLazyProxyLightElement: myfact5 at 4 in facts.json
+
+'myfact6' at (93,100) => 1 results:
+	PuppetLazyProxyLightElement: myfact6 at 27 in facts.json
+

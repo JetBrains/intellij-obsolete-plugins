@@ -1,0 +1,26 @@
+'Boolean' at (20,27) => 1 results:
+	PuppetDataTypeLightElement: Boolean
+
+'Boolean' at (37,44) => 1 results:
+	PuppetDataTypeLightElement: Boolean
+
+'Integer' at (54,61) => 1 results:
+	PuppetDataTypeLightElement: Integer
+
+'Integer' at (71,78) => 1 results:
+	PuppetDataTypeLightElement: Integer
+
+'Variant' at (88,95) => 1 results:
+	PuppetDataTypeLightElement: Variant
+
+'Boolean' at (96,103) => 1 results:
+	PuppetDataTypeLightElement: Boolean
+
+'Integer' at (105,112) => 1 results:
+	PuppetDataTypeLightElement: Integer
+
+'notice' at (126,132) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'var' at (134,137) => 0 results:
+

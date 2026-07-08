@@ -1,0 +1,26 @@
+case $ensure {
+  'present' : {
+    archive { $destination :
+      ensure       => present,
+      source       => "${oracle_url}${release_major}-${release_minor}/${package_name}",
+      cleanup      => false,
+      extract_path => '/tmp',
+      cookie       => 'gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie',
+    }->
+      case $::kernel {
+        'Linux' : {
+          exec { "Install Oracle java_se ${java_se} ${version}" :
+            path    => '/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin',
+            command => $install_command,
+            creates => $creates_path,
+          }
+        }
+        default : {
+          fail ("unsupported platform ${::kernel}")
+        }
+      }
+  }
+  default : {
+    notice ("Action ${ensure} not supported.")
+  }
+}

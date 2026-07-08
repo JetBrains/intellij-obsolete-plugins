@@ -1,0 +1,21 @@
+file { 'abc':
+ensure => 'present'
+}->
+file { 'def':
+ensure => 'present'
+}->
+  file { 'ghi':
+  ensure => 'present'
+  }
+
+class someclass{
+file { 'abc':
+ensure => 'present'
+}->
+file { 'def':
+ensure => 'present'
+}->
+  file { 'ghi':
+  ensure => 'present'
+  }
+}

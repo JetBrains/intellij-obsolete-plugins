@@ -1,0 +1,134 @@
+'super' at (126,131) => 5 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 65 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 212 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 274 in quotedText.pp
+
+'testclass' at (133,142) => 1 results:
+	Puppet: CLASS_DEFINITION at 0 in quotedText.pp
+
+'super' at (325,330) => 5 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 65 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 212 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 274 in quotedText.pp
+
+'testtype' at (332,340) => 1 results:
+	Puppet: TYPE_DEFINITION at 146 in quotedText.pp
+
+'include' at (366,373) => 1 results:
+	PuppetLazyProxyLightElement: include at 43062 in stub_functions.rb
+
+'super' at (375,380) => 5 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 65 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 212 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 274 in quotedText.pp
+
+'testclass' at (382,391) => 1 results:
+	Puppet: CLASS_DEFINITION at 0 in quotedText.pp
+
+'require' at (393,400) => 1 results:
+	PuppetLazyProxyLightElement: require at 71610 in stub_functions.rb
+
+'super' at (402,407) => 5 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 65 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 212 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 274 in quotedText.pp
+
+'testclass' at (409,418) => 1 results:
+	Puppet: CLASS_DEFINITION at 0 in quotedText.pp
+
+'contain' at (420,427) => 1 results:
+	PuppetLazyProxyLightElement: contain at 4500 in stub_functions.rb
+
+'super' at (429,434) => 5 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 65 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 212 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 274 in quotedText.pp
+
+'testclass' at (436,445) => 1 results:
+	Puppet: CLASS_DEFINITION at 0 in quotedText.pp
+
+'hiera_include' at (447,460) => 1 results:
+	PuppetLazyProxyLightElement: hiera_include at 38493 in stub_functions.rb
+
+'super' at (462,467) => 5 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 65 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 212 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 274 in quotedText.pp
+
+'testclass' at (469,478) => 1 results:
+	Puppet: CLASS_DEFINITION at 0 in quotedText.pp
+
+'super' at (491,496) => 5 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 65 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 212 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 274 in quotedText.pp
+
+'testclass' at (498,507) => 1 results:
+	Puppet: CLASS_DEFINITION at 0 in quotedText.pp
+
+'super' at (517,522) => 5 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 65 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 212 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 274 in quotedText.pp
+
+'childclass' at (524,534) => 1 results:
+	Puppet: CLASS_DEFINITION at 59 in quotedText.pp
+
+'Super' at (544,549) => 5 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 65 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 212 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 274 in quotedText.pp
+
+'Testtype' at (551,559) => 1 results:
+	Puppet: TYPE_DEFINITION at 146 in quotedText.pp
+
+'some/ins::tance' at (561,576) => 1 results:
+	Puppet: RESOURCE_INSTANCE_DECLARATION at 344 in quotedText.pp
+
+'Resource' at (579,587) => 1 results:
+	PuppetDataTypeLightElement: Resource
+
+'super' at (589,594) => 5 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 65 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 212 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 274 in quotedText.pp
+
+'testtype' at (596,604) => 1 results:
+	Puppet: TYPE_DEFINITION at 146 in quotedText.pp
+
+'some/ins::tance' at (608,623) => 1 results:
+	Puppet: RESOURCE_INSTANCE_DECLARATION at 344 in quotedText.pp
+
+'Class' at (626,631) => 1 results:
+	PuppetDataTypeLightElement: Class
+
+'super' at (633,638) => 5 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 65 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 153 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 212 in quotedText.pp
+	Puppet: NAMESPACE_DEFINITION at 274 in quotedText.pp
+
+'testclass' at (640,649) => 1 results:
+	Puppet: CLASS_DEFINITION at 0 in quotedText.pp
+

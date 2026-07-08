@@ -1,0 +1,8 @@
+class mySuperClass {
+  class inner {
+
+  }
+}
+
+class { 'mySuperClass::inne<caret>r':
+}

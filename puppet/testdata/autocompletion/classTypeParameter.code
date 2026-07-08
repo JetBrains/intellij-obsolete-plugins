@@ -1,0 +1,5 @@
+class myclass{
+  notice 'gotcha'
+}
+
+include Class[<caret>]

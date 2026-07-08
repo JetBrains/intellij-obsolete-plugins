@@ -1,0 +1,2 @@
+node 'www.testing.com'{
+}

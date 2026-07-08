@@ -1,0 +1,17 @@
+'myRes' at (99,104) => 0 results:
+
+'myParam1' at (117,125) => 0 results:
+
+'myParam2' at (140,148) => 0 results:
+
+'fail' at (161,165) => 1 results:
+	PuppetLazyProxyLightElement: fail at 19086 in stub_functions.rb
+
+'holder' at (167,173) => 1 results:
+	Puppet: CLASS_DEFINITION at 0 in myQualifiedInternal.pp
+
+'myRes' at (175,180) => 1 results:
+	Puppet: TYPE_DEFINITION at 17 in myQualifiedInternal.pp
+
+'internalVar' at (182,193) => 0 results:
+

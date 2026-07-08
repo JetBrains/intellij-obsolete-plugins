@@ -1,0 +1,1 @@
+<warning descr="The import keyword is deprecated since 3.5 and removed in 4.0. Instead of importing, you should set your manifest setting to a directory of .pp files.">import 'some/file.pp'</warning>

@@ -1,0 +1,20 @@
+class modulename::newname::someclass{
+  $myvar1 = 123
+}
+
+class modulename::newname::someclass2{
+  $myvar1 = 123
+}
+
+
+class modulename::newname{
+  $myvar1 = 123
+}
+
+define modulename::newname{
+
+}
+
+notice $modulename::newname::myvar1
+
+

@@ -1,0 +1,11 @@
+class myClass {
+  class internal {
+
+  }
+}
+
+class internal {
+
+}
+
+include myClass::inter<caret>nal

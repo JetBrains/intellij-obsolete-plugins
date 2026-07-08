@@ -1,0 +1,17 @@
+File <| tag == 'base::linux' |> {
+  owner => 'root',
+  group +> 'root',
+  mode  => 0640,
+}
+
+User <| title == 'luke' |>
+User <| groups == 'admin' |>
+
+User <||>
+User <<||>>
+
+User <| title == 'luke' and groups != 'admin' |>
+User <| title == 'luke' or groups != 'admin' |>
+
+User <| title == 'luke' or ($groups != 'admin' and groups != 'wheel' + 1) |>
+User <<| title == 'luke' or ($groups != 'admin' and groups != 'wheel' + 2) |>>

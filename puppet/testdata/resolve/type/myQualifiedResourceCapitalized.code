@@ -1,0 +1,12 @@
+class holder {
+  define myRes {
+
+  }
+}
+
+define myRes {
+
+}
+
+Holder::My<caret>Res {   param => 42
+}

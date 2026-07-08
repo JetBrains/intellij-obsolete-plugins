@@ -1,0 +1,4 @@
+test template
+<% | Boolean $someflag123 =1, $otherflag, Enum[Boolean] $thirdone| %>
+
+some

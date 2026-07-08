@@ -1,0 +1,9 @@
+class mySuperClass($myParam = undef) {
+  class inner($innerParam = 123) {
+
+  }
+}
+
+class { 'mySuperClass::inner':
+  inner<caret>Param => value
+}

@@ -1,0 +1,56 @@
+class super::testclass(
+  $param1 = 42,
+  $param2 = 69
+){
+  notice 'Test class included'
+}
+class super::childclass(
+  $param1 = 42,
+  $param2 = 69
+) inherits Super::Testclass {}
+define super::testtype(
+  $param1 = 42,
+  $param2 = 69
+){
+  notice 'test type included'
+}
+define super::othertype(
+  $param1 = 42,
+  $param2 = 69
+){}
+
+Super::Testtype{
+  'some_instance':
+    param1 => 1,
+    param2 => 2
+}
+
+include Super::Testclass
+require Super::Testclass
+contain Super::Testclass
+hiera_include Super::Testclass
+
+class{
+  Super::Testclass:
+    param1 => 123,
+    param2 => 123
+  ;
+  Super::Childclass:
+    param1 => 123,
+    param2 => 123
+  ;
+}
+Super::Testtype produces Super::Othertype
+Super::Othertype consumes Super::Testtype
+
+Super::Testtype <| something == 42 |> {
+
+}
+
+notice Type[Super::Testtype]
+notice Type[Boolean]
+notice Type[Boolean]
+
+Super::Testtype[some_instance]
+Resource[Super::Testtype, some_instance]
+Class[Super::Testclass]

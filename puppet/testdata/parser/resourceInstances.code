@@ -1,0 +1,30 @@
+file { 'aaa': }
+
+file { 'aaa':
+  attrib => value,
+}
+
+file { 'aaa':
+  attrib => value;
+}
+
+file { 'aaa':
+  attrib => value,;
+}
+
+file {
+  'aaa':
+    attrib => value
+}
+
+file {
+  'aaa':
+    attrib => value;
+  'bbb':
+    attrib => value
+}
+
+File['aaa'] {
+    attrib => value,
+    attr2 +> value2
+}

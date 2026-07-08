@@ -1,0 +1,3 @@
+$osfamily =~ /[:\n\/]/
+$osfamily =~ /[:\n\\/]/
+$osfamily =~ /[:\n\/\\/\\\/]/

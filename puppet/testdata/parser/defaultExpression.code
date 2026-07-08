@@ -1,0 +1,43 @@
+# https://docs.puppet.com/puppet/latest/reference/lang_data_default.html
+
+if( $osfamily == default)
+{
+  notice $osfamily
+}
+else
+{
+  notice default
+}
+
+File{
+  name => default
+}
+
+case $osfamily{
+  'win', default :{
+    notice $osfamily
+  }
+}
+
+node default{
+
+}
+
+file{
+  default:
+    ensure => exists
+}
+
+$rootgroup = $facts['os']['family'] ? {
+  'Solaris'          => 'wheel',
+  /(Darwin|FreeBSD)/ => 'wheel',
+  default            => 'root',
+}
+
+notice String[default]
+
+class someclass(
+  Default $defavultvaluevar
+){
+
+}

@@ -1,0 +1,38 @@
+define mycustomtype{
+  notice $name
+  notice $title
+
+  notice $alias
+  notice $audit
+  notice $before
+  notice $consume
+  notice $export
+  notice $loglevel
+  notice $noop
+  notice $notify
+  notice $require
+  notice $schedule
+  notice $stage
+  notice $subscribe
+  notice $tag
+}
+
+Mycustomtype{
+  'testtype':
+    name => 42,
+    title => 42,
+
+    alias => 42,
+    audit => 42,
+    before => 42,
+    consume => 42,
+    export => 42,
+    loglevel => 42,
+    noop => 42,
+    notify => 42,
+    require => 42,
+    schedule => 42,
+    stage => 42,
+    subscribe => 42,
+    tag => 42,
+}

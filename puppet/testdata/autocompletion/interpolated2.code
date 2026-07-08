@@ -1,0 +1,4 @@
+$variable = 666
+$variaba = -1
+
+fail("${var<caret>iab}")

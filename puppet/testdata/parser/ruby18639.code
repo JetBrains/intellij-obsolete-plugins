@@ -1,0 +1,3 @@
+$unless        = "semana\"\\\"ge fcontext -l | grep -E \"^${pathname} = ${destination}$\"\\"
+$var = "\""
+$var = "\\"

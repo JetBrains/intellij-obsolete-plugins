@@ -1,0 +1,16 @@
+{
+  "name": "test-main-module",
+  "version": "1.8.1",
+  "author": "hurricup",
+  "summary": "main test module for project structure",
+  "license": "Apache-2.0",
+  "data_provider": null,
+  "operatingsystem_support": [
+  ],
+  "dependencies": [
+    {
+      "name": "test/module",
+      "version_requirement": ">= 3.2.0 < 5.0.0"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+class { 'apache'<fold text=': attributes' expand='true'>:
+  default_mods => true,
+  default_mods => true,
+  default_mods => true</fold>;
+  'apache'<fold text=': attributes' expand='true'>:
+    default_mods => true,
+    default_mods => true,
+    default_mods => true</fold>;
+
+}

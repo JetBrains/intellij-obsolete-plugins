@@ -1,0 +1,3 @@
+file { myfile: }
+
+File[$myf<caret>ile]

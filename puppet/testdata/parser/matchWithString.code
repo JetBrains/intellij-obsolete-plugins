@@ -1,0 +1,6 @@
+$str1 = "abacaba"
+$str2 = "aba"
+
+if ($str1 =~ "/$str2/") {
+  notice 'cool!'
+}

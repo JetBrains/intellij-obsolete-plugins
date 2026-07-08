@@ -1,0 +1,9 @@
+case $facts['os']['name'] {
+  Boolean: { $enable }
+  String : { str2bool($enable) }
+  String: { str($environment) }
+  Numeric: { num2bool($enable) }
+  <caret>
+  Numeric: { nnn }
+  default: { fail('Illegal value for $enable parameter') }
+}

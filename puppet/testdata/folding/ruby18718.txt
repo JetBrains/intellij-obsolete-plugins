@@ -1,0 +1,12 @@
+case $facts['os']['name'] {<fold text='case options' expand='true'>
+  'Solaris':           {<fold text='code' expand='true'> include role::solaris </fold>} # Apply the solaris class
+  'RedHat', 'CentOS':  {<fold text='code' expand='true'> include role::redhat  </fold>} # Apply the redhat class
+  /^(Debian|Ubuntu)$/: {<fold text='code' expand='true'> include role::debian  </fold>} # Apply the debian class
+  default:             {<fold text='code' expand='true'> include role::generic </fold>} # Apply the generic class
+</fold>}
+
+$rootgroup = $facts['os']['family'] ? {<fold text='selector options' expand='true'>
+  'Solaris'          => 'wheel',
+  /(Darwin|FreeBSD)/ => 'wheel',
+  default            => 'root',
+</fold>}

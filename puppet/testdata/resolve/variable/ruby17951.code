@@ -1,0 +1,3 @@
+define something () {
+  info($title)
+}

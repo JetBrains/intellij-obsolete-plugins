@@ -1,0 +1,2 @@
+'file' at (31,35) => 1 results:
+	Puppet: TYPE_DEFINITION at 137948 in builtin.pp

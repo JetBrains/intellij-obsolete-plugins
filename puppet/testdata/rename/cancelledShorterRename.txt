@@ -1,0 +1,3 @@
+$bom = 123
+
+notice $bom

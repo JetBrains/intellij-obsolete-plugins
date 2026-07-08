@@ -1,0 +1,11 @@
+somefunccall(
+  $long_param1 = '60', $long_param2 = '60', $long_param3 = '60', $long_param4 = '60', $long_param5 = '60', $long_param6
+    = '60', $long_param7 = '60', $long_param8 = '60', $long_param9 = '60', $long_param10 = '60',
+)
+
+otherfunccall(
+  $long_param1 = '60', $long_param2 =
+    @(BLAH), $long_param3 = '60', $long_param4 = '60', $long_param5 = '60', $long_param6 = '60', $long_param7 = '60', $long_param8 = '60', $long_param9 = '60', $long_param10 = '60',
+  some text
+  BLAH
+)

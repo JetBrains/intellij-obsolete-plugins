@@ -1,0 +1,4 @@
+file {'/etc/ololo':
+
+  <caret>
+}

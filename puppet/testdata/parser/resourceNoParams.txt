@@ -1,0 +1,14 @@
+PUPPET_FILE
+  PsiPuppetResourceDeclarationImpl(RESOURCE_DECLARATION)
+    PsiPuppetRegularNameWrapperImpl(REGULAR_NAME_WRAPPER)
+      PsiElement(NAME)('exec')
+    PsiWhiteSpace(' ')
+    PsiPuppetBracedResourceByClassnameContentsBlockImpl(BRACED_RESOURCE_BY_CLASSNAME_CONTENTS_BLOCK)
+      PsiElement({)('{')
+      PsiWhiteSpace(' ')
+      Puppet: RESOURCE_INSTANCE_DECLARATION
+        PsiPuppetQuotedTextImpl(QUOTED_TEXT)
+          PsiElement(SINGLE_QUOTED_STRING)(''echo this works'')
+        PsiElement(:)(':')
+      PsiWhiteSpace(' ')
+      PsiElement(})('}')

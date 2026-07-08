@@ -1,0 +1,7 @@
+class mybaseclass{
+  notice 'baseclass'
+}
+
+class mychildclass inherits <caret> {
+  notice 'child class'
+}

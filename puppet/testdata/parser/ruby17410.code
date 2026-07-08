@@ -1,0 +1,6 @@
+class profile::test {
+  $var = ['one', 'two']
+  notice(map($var) |$x| {
+    "value: ${x}"
+  })
+}

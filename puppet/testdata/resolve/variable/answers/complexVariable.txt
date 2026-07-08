@@ -1,0 +1,2 @@
+'myvar' at (245,250) => 1 results:
+	Puppet: VAR_WRAPPER at 25 in complexVariable.pp

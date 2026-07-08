@@ -1,0 +1,17 @@
+class myclass{
+  notice 'gotcha'
+}
+
+class somenamespace::myclass{
+
+}
+
+include Class[myclass]
+
+notice Class[myclass]
+notice Class[Myclass]
+notice Class['myclass']
+
+notice Class[somenamespace::myclass]
+notice Class[Somenamespace::Myclass]
+notice Class['somenamespace::myclass']

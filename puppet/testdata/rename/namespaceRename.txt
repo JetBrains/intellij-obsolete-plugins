@@ -1,0 +1,31 @@
+define newname::sometype{
+
+}
+
+newname::sometype{
+  'instance':
+}
+
+Newname::Sometype[instance]
+
+Resource[Newname::Sometype, instance]
+
+Type[Newname::Sometype]
+
+Newname::Sometype{
+  name => 'test'
+}
+
+class newname::someclass{
+  $somevar = 1
+}
+
+class newname::otherclass inherits Newname::Someclass{
+
+}
+
+function newname::somefunc{
+
+}
+
+notice $newname::someclass::somevar

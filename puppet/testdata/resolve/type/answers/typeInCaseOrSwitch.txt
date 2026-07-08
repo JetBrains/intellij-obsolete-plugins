@@ -1,0 +1,73 @@
+'enable' at (16,22) => 0 results:
+
+'Boolean' at (29,36) => 1 results:
+	PuppetDataTypeLightElement: Boolean
+
+'enable' at (41,47) => 0 results:
+
+'String' at (51,57) => 1 results:
+	PuppetDataTypeLightElement: String
+
+'str2bool' at (62,70) => 0 results:
+
+'enable' at (72,78) => 0 results:
+
+'String' at (83,89) => 1 results:
+	PuppetDataTypeLightElement: String
+
+'str' at (94,97) => 0 results:
+
+'environment' at (99,110) => 1 results:
+	Puppet: VAR_WRAPPER at 7002 in builtin_variables.pp
+
+'Numeric' at (115,122) => 1 results:
+	PuppetDataTypeLightElement: Numeric
+
+'num2bool' at (126,134) => 0 results:
+
+'enable' at (136,142) => 0 results:
+
+'Numeric' at (147,154) => 1 results:
+	PuppetDataTypeLightElement: Numeric
+
+'fail' at (176,180) => 1 results:
+	PuppetLazyProxyLightElement: fail at 19086 in stub_functions.rb
+
+'facts' at (230,235) => 1 results:
+	Puppet: VAR_WRAPPER at 3875 in builtin_variables.pp
+
+'Boolean' at (254,261) => 1 results:
+	PuppetDataTypeLightElement: Boolean
+
+'enable' at (266,272) => 0 results:
+
+'String' at (277,283) => 1 results:
+	PuppetDataTypeLightElement: String
+
+'str2bool' at (288,296) => 0 results:
+
+'enable' at (298,304) => 0 results:
+
+'String' at (310,316) => 1 results:
+	PuppetDataTypeLightElement: String
+
+'str' at (320,323) => 0 results:
+
+'environment' at (325,336) => 1 results:
+	Puppet: VAR_WRAPPER at 7002 in builtin_variables.pp
+
+'Numeric' at (342,349) => 1 results:
+	PuppetDataTypeLightElement: Numeric
+
+'num2bool' at (353,361) => 0 results:
+
+'enable' at (363,369) => 0 results:
+
+'Numeric' at (375,382) => 1 results:
+	PuppetDataTypeLightElement: Numeric
+
+'nnn' at (386,389) => 0 results:
+
+'fail' at (405,409) => 1 results:
+	PuppetLazyProxyLightElement: fail at 19086 in stub_functions.rb
+

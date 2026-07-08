@@ -1,0 +1,8 @@
+define myRes($myParam1 = undef, $myParam2 = 666,) {
+  $internalVar = 566
+}
+
+MyRes["superResourceName"] {
+  myPar<caret>am1 => "value",
+  myParam2 => 239,;
+}

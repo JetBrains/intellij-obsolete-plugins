@@ -1,0 +1,25 @@
+
+mytype { 'supertype': unless => 'test string'}
+mytype { 'supertype': unless +> 'test string'}
+
+mytype { 'supertype': unless=> 'test string'}
+mytype { 'supertype': unless+> 'test string'}
+
+mytype { 'supertype': unless
+  => 'test string'}
+mytype { 'supertype': unless
+  +> 'test string'}
+
+mytype { 'supertype': unless # with comment
+  => 'test string'}
+mytype { 'supertype': unless  # with comment
+  +> 'test string'}
+
+
+mytype { 'supertype': unless /* with block comment */
+  => 'test string'}
+mytype { 'supertype': unless /* with block comment */
+  +> 'test string'}
+
+
+

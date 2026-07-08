@@ -1,0 +1,6 @@
+
+postgresql::server::grant { 'biz select':
+  privilege => 'SELECT',
+  db => 'mydb',
+  role => 'biz',
+}

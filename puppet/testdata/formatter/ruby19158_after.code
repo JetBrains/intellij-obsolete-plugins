@@ -1,0 +1,6 @@
+foo(@(FIRST),
+  This is the text for the first heredoc
+    FIRST
+  @(SECOND))
+  This is the text for the second
+  SECOND

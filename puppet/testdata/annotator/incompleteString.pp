@@ -1,0 +1,1 @@
+$var = <error descr="Closing quote missing">'testf</error>

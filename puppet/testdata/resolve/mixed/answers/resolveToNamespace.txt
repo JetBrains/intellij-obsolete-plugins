@@ -1,0 +1,13 @@
+'notice' at (122,128) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'modulename' at (130,140) => 2 results:
+	Puppet: NAMESPACE_DEFINITION at 6 in resolveToNamespace.pp
+	Puppet: NAMESPACE_DEFINITION at 66 in resolveToNamespace.pp
+
+'namespace1' at (142,152) => 2 results:
+	Puppet: NAMESPACE_DEFINITION at 18 in resolveToNamespace.pp
+	Puppet: NAMESPACE_DEFINITION at 78 in resolveToNamespace.pp
+
+'myvar1' at (154,160) => 0 results:
+

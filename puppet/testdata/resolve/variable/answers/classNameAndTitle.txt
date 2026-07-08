@@ -1,0 +1,78 @@
+'notice' at (22,28) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'name' at (30,34) => 1 results:
+	PuppetVariableLightElement: mysuperclass::name
+
+'notice' at (37,43) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'title' at (45,50) => 1 results:
+	PuppetVariableLightElement: mysuperclass::title
+
+'include' at (54,61) => 1 results:
+	PuppetLazyProxyLightElement: include at 43062 in stub_functions.rb
+
+'mysuperclass' at (62,74) => 1 results:
+	Puppet: CLASS_DEFINITION at 0 in classNameAndTitle.pp
+
+'notice' at (75,81) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'mysuperclass' at (83,95) => 1 results:
+	Puppet: CLASS_DEFINITION at 0 in classNameAndTitle.pp
+
+'name' at (97,101) => 1 results:
+	PuppetVariableLightElement: mysuperclass::name
+
+'notice' at (102,108) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'mysuperclass' at (110,122) => 1 results:
+	Puppet: CLASS_DEFINITION at 0 in classNameAndTitle.pp
+
+'title' at (124,129) => 1 results:
+	PuppetVariableLightElement: mysuperclass::title
+
+'notice' at (160,166) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'name' at (168,172) => 1 results:
+	PuppetVariableLightElement: mysuperclass::some::name
+
+'notice' at (175,181) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'title' at (183,188) => 1 results:
+	PuppetVariableLightElement: mysuperclass::some::title
+
+'include' at (192,199) => 1 results:
+	PuppetLazyProxyLightElement: include at 43062 in stub_functions.rb
+
+'mysuperclass' at (200,212) => 1 results:
+	Puppet: CLASS_DEFINITION at 0 in classNameAndTitle.pp
+
+'notice' at (213,219) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'mysuperclass' at (221,233) => 1 results:
+	Puppet: CLASS_DEFINITION at 0 in classNameAndTitle.pp
+
+'some' at (235,239) => 1 results:
+	Puppet: CLASS_DEFINITION at 132 in classNameAndTitle.pp
+
+'name' at (241,245) => 1 results:
+	PuppetVariableLightElement: mysuperclass::some::name
+
+'notice' at (246,252) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'mysuperclass' at (254,266) => 1 results:
+	Puppet: CLASS_DEFINITION at 0 in classNameAndTitle.pp
+
+'some' at (268,272) => 1 results:
+	Puppet: CLASS_DEFINITION at 132 in classNameAndTitle.pp
+
+'title' at (274,279) => 1 results:
+	PuppetVariableLightElement: mysuperclass::some::title
+

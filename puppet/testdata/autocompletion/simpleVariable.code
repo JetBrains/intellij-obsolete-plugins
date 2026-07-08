@@ -1,0 +1,8 @@
+$myQVariable = something
+$myQAnotherVariable = anotherSomething
+
+class decoy {
+  $myQamama = 0
+}
+
+$myQ<caret>

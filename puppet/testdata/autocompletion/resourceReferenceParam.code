@@ -1,0 +1,11 @@
+define myRes($param1 = 1, $param2 = 2) {
+
+}
+
+myRes { 'nama':
+
+}
+
+MyRes[nama] {
+  <caret>
+}

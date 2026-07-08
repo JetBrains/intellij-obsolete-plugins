@@ -1,0 +1,64 @@
+# A resource declaration using a resource data type:
+File { "/etc/ntp.config":
+  mode  => "0644",
+}
+
+file {
+  "/etc/ntp2.conf":
+    mode  => "0644",
+}
+
+# Equivalent to the above:
+Resource["file"] { "/etc/ntpelse.conf":
+  mode  => "0644",
+}
+
+# Equivalent to the above:
+Resource[File] { "/etc/ntpelse2.conf":
+  mode  => "0644",
+}
+
+Type[File] { "/etc/ntpelsetype.conf":
+  mode  => "0644",
+}
+
+# A resource default:
+File {
+  mode  => "0644",
+}
+
+
+class someclass(
+  File['/etc/ntp.config'] $somevar,
+  File['/etc/ntp2.conf'] $somevar,
+  File['/etc/ntpelse.conf'] $somevar,
+  File['/etc/ntpelse2.conf'] $somevar,
+  File['/etc/ntpelsetype.conf'] $somevar,
+  Resource[File,'/etc/ntp.config'] $somevar,
+  Resource[File,'/etc/ntp2.conf'] $somevar,
+  Resource[File,'/etc/ntpelse.conf'] $somevar,
+  Resource[File,'/etc/ntpelse2.conf'] $somevar,
+  Resource[File,'/etc/ntpelsetype.conf'] $somevar,
+  Resource['file','/etc/ntp.config'] $somevar,
+  Resource['file','/etc/ntp2.conf'] $somevar,
+  Resource['file','/etc/ntpelse.conf'] $somevar,
+  Resource['file','/etc/ntpelse2.conf'] $somevar,
+  Resource['file','/etc/ntpelsetype.conf'] $somevar,
+  File["/etc/ntp.config"] $somevar,
+  File["/etc/ntp2.conf"] $somevar,
+  File["/etc/ntpelse.conf"] $somevar,
+  File["/etc/ntpelse2.conf"] $somevar,
+  File["/etc/ntpelsetype.conf"] $somevar,
+  Resource[File,"/etc/ntp.config"] $somevar,
+  Resource[File,"/etc/ntp2.conf"] $somevar,
+  Resource[File,"/etc/ntpelse.conf"] $somevar,
+  Resource[File,"/etc/ntpelse2.conf"] $somevar,
+  Resource[File,"/etc/ntpelsetype.conf"] $somevar,
+  Resource["file","/etc/ntp.config"] $somevar,
+  Resource["file","/etc/ntp2.conf"] $somevar,
+  Resource["file","/etc/ntpelse.conf"] $somevar,
+  Resource["file","/etc/ntpelse2.conf"] $somevar,
+  Resource["file","/etc/ntpelsetype.conf"] $somevar,
+){
+
+}

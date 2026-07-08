@@ -1,0 +1,17 @@
+class someclass($param1, $param2, $param3){}
+
+class{
+  '::someclass':
+    param1 => 1,
+    param2 => 2,
+    param3 => 3
+}
+
+define sometype($param1, $param2, $param3){}
+
+::sometype{
+  'instance':
+    param1 => 1,
+    param2 => 2,
+    param3 => 3
+}

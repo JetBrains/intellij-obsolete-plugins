@@ -1,0 +1,9 @@
+include testlib
+
+testlib::resource { 'instance1':
+ $param1 => "value1"
+}
+
+testlib::resou<caret>rce { 'instance2':
+  $param2 => "value2"
+}

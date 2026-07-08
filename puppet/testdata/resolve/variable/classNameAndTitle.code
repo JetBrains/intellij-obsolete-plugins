@@ -1,0 +1,19 @@
+class mysuperclass{
+  notice $name
+  notice $title
+}
+
+include mysuperclass
+notice $mysuperclass::name
+notice $mysuperclass::title
+
+
+class mysuperclass::some{
+  notice $name
+  notice $title
+}
+
+include mysuperclass
+notice $mysuperclass::some::name
+notice $mysuperclass::some::title
+

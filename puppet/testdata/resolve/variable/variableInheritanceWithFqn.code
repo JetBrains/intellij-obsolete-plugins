@@ -1,0 +1,14 @@
+class parent{
+  $myvar = 'parent'
+  notice "parent $myvar"
+#  $myvar = 'other'
+}
+
+class child inherits parent{
+  $myvar123 = 'child'
+  notice "child $myvar123"
+  notice "child $myvar"
+}
+
+include child
+notice "Top $child::my<caret>var"

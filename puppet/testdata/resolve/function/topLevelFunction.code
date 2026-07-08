@@ -1,0 +1,2 @@
+# for now we resolve anything by index
+someexternalfunc<caret>tion()

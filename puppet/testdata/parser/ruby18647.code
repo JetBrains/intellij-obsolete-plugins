@@ -1,0 +1,8 @@
+Service {
+  some:
+}
+
+Service {
+  something => 123,
+  otherthing => 123
+}

@@ -1,0 +1,7 @@
+define myRes {
+  $varvar = "superduper$string"
+}
+
+class clasZ {
+  fail($myRes::varv<caret>ar)
+}

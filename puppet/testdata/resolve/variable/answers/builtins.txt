@@ -1,0 +1,78 @@
+'notice' at (0,6) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'facts' at (8,13) => 1 results:
+	Puppet: VAR_WRAPPER at 3875 in builtin_variables.pp
+
+'notice' at (14,20) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'trusted' at (22,29) => 1 results:
+	Puppet: VAR_WRAPPER at 2845 in builtin_variables.pp
+
+'notice' at (30,36) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'server_facts' at (38,50) => 1 results:
+	Puppet: VAR_WRAPPER at 6306 in builtin_variables.pp
+
+'notice' at (51,57) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'clientcert' at (59,69) => 1 results:
+	Puppet: VAR_WRAPPER at 550 in builtin.pp
+
+'notice' at (70,76) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'clientversion' at (78,91) => 1 results:
+	Puppet: VAR_WRAPPER at 921 in builtin.pp
+
+'notice' at (92,98) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'clientnoop' at (100,110) => 1 results:
+	Puppet: VAR_WRAPPER at 1428 in builtin.pp
+
+'notice' at (111,117) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'agent_specified_environment' at (119,146) => 1 results:
+	Puppet: VAR_WRAPPER at 2402 in builtin.pp
+
+'notice' at (147,153) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'environment' at (155,166) => 1 results:
+	Puppet: VAR_WRAPPER at 7002 in builtin_variables.pp
+
+'notice' at (167,173) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'servername' at (175,185) => 1 results:
+	Puppet: VAR_WRAPPER at 7645 in builtin_variables.pp
+
+'notice' at (186,192) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'serverip' at (194,202) => 1 results:
+	Puppet: VAR_WRAPPER at 8005 in builtin_variables.pp
+
+'notice' at (203,209) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'serverversion' at (211,224) => 1 results:
+	Puppet: VAR_WRAPPER at 8394 in builtin_variables.pp
+
+'notice' at (225,231) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'module_name' at (233,244) => 1 results:
+	Puppet: VAR_WRAPPER at 9141 in builtin_variables.pp
+
+'notice' at (245,251) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'caller_module_name' at (253,271) => 1 results:
+	Puppet: VAR_WRAPPER at 10046 in builtin_variables.pp
+

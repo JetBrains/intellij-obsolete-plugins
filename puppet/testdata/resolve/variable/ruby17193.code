@@ -1,0 +1,12 @@
+# single file example, should work in different files too
+
+class foo {
+  $var = 'value'
+  notice("doing stuff with ${var}")
+}
+
+class bar {
+  include ::foo
+
+  notice("foo's \$var value: ${::foo::var}")
+}

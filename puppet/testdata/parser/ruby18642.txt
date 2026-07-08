@@ -1,0 +1,15 @@
+PUPPET_FILE
+  PsiPuppetFunctionCallStatementImpl(FUNCTION_CALL_STATEMENT)
+    PsiPuppetRegularNameWrapperImpl(REGULAR_NAME_WRAPPER)
+      PsiElement(NAME)('notice')
+    PsiWhiteSpace(' ')
+    PsiPuppetExpressionMultiplicativeImpl(EXPRESSION_MULTIPLICATIVE)
+      Puppet: VAR_WRAPPER
+        PsiElement($)('$')
+        PsiElement(VARIABLE_NAME)('var')
+      PsiWhiteSpace(' ')
+      PsiElement(%)('%')
+      PsiWhiteSpace(' ')
+      Puppet: VAR_WRAPPER
+        PsiElement($)('$')
+        PsiElement(VARIABLE_NAME)('othervar')

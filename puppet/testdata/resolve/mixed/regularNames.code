@@ -1,0 +1,50 @@
+class super::testclass(
+  $param1 = 42,
+  $param2 = 69
+){}
+class super::childclass(
+  $param1 = 42,
+  $param2 = 69
+) inherits super::testclass {}
+define super::testtype(
+  $param1 = 42,
+  $param2 = 69
+){}
+define super::othertype(
+  $param1 = 42,
+  $param2 = 69
+){}
+function super::myfunc(
+  $param1 = 42,
+  $param2 = 69
+){}
+
+super::testtype{
+  'some_instance':
+    param1 => 1,
+    param2 => 2
+}
+
+include super::testclass
+require super::testclass
+contain super::testclass
+hiera_include super::testclass
+
+super::myfunc()
+
+class{
+  super::testclass:
+    param1 => 123,
+    param2 => 123
+  ;
+  super::childclass:
+    param1 => 123,
+    param2 => 123
+  ;
+}
+super::testtype produces super::othertype
+super::othertype consumes super::testtype
+
+Super::Testtype[some_instance]
+Resource[super::testtype, some_instance]
+Class[super::testclass]

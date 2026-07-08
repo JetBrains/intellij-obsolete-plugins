@@ -1,0 +1,9 @@
+include testlib
+
+testlib::resource { 'instance1':
+ $param1 => "value1"
+}
+
+test<caret>lib::resource { 'instance2':
+  $param2 => "value2"
+}

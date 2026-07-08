@@ -1,0 +1,7 @@
+class mySuperClass($myParam = undef) {
+
+}
+
+class { 'mySuperClass':
+  my<caret>Param => value
+}

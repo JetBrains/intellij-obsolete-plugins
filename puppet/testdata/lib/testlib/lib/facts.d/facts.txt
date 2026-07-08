@@ -1,0 +1,2 @@
+myfact1=value1
+myfact2=value2

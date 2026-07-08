@@ -1,0 +1,18 @@
+function bla::func(){
+
+}
+
+function ::func(){
+
+}
+
+function func(){
+
+}
+
+function ::bla::func(){
+
+}
+
+
+<caret>

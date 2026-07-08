@@ -1,0 +1,24 @@
+# actual example from the https://youtrack.jetbrains.com/issue/RUBY-18036
+class profile::test (
+  Struct[{
+    mode                   => Enum[read, write, update],
+    path                   => Optional[String[1]],
+    Optional[owner]        => String[1]
+  }] $foo,
+) {
+}
+
+# examples from docs: https://docs.puppet.com/puppet/4.6/reference/lang_data_abstract.html#struct
+Struct[{ mode => Enum[read, write, update],
+  path        => String[1] }]
+
+Struct[{ mode => Enum[read, write, update],
+  path        => Optional[String[1]] }]
+
+Struct[{ mode            => Enum[read, write, update],
+  path                   => Optional[String[1]],
+  Optional[owner]        => String[1] }]
+
+Struct[{ mode            => Enum[read, write, update],
+  path                   => Optional[String[1]],
+  NotUndef[owner]        => Optional[String[1]] }]

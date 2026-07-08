@@ -1,0 +1,21 @@
+function someting{
+}
+
+function someting(){
+}
+
+function bla::mytest{
+}
+
+function bla::mytest(){
+}
+
+function ::mytest(){
+}
+
+function ::bla::mytest(){
+}
+
+function ::blablablba::bla::mytest(){
+}
+

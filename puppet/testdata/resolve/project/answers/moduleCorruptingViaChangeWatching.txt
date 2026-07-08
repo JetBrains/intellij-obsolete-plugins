@@ -1,0 +1,12 @@
+'testclass' at (8,17) => 1 results:
+	Puppet: CLASS_DEFINITION at 0 in testclass.pp
+
+'testtype' at (21,29) => 1 results:
+	PuppetLazyProxyLightElement: testtype at 22 in testtype.rb
+
+'testfunction' at (45,57) => 1 results:
+	PuppetLazyProxyLightElement: testfunction at 48 in testfunction.rb
+
+'testfact' at (59,67) => 1 results:
+	PuppetLazyProxyLightElement: testfact at 12 in testfact.rb
+

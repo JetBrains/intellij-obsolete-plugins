@@ -1,0 +1,5 @@
+notice($my_pe_version)
+notice($my_is_pe)
+notice($my_pe_major_version)
+notice($my_super_fact)
+notice($my_super_fact2)

@@ -1,0 +1,2 @@
+'var' at (48,51) => 1 results:
+	Puppet: VAR_WRAPPER at 31 in variableInNode.pp

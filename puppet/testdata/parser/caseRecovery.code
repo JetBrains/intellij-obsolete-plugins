@@ -1,0 +1,20 @@
+case $plugin {
+  true: {  }
+  "text": {  }
+  'text': {  }
+  Something: {  }
+  @(END): {}
+  This is the text that gets assigned to $a.
+  And this too.
+  END
+  /someregexp/: {  }
+  $osfamily: {  }
+  !$osfamily: {  }
+  ($osfamily): {  }
+  [$osfamily]: {  }
+  {$osfamily => 42}: {  }
+  -$osfamily: {  }
+  myfunc(): {  }
+  false: {  }
+  default: {    }
+}

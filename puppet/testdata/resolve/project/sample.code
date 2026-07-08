@@ -1,0 +1,7 @@
+class{
+ testclass:
+}
+testtype{
+  instance:
+}
+testfunction $testfact

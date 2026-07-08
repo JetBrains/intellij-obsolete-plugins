@@ -1,0 +1,4 @@
+notice $var[0] ? {
+  Type[<caret>] => 'yes',
+  default => $var[0]
+}

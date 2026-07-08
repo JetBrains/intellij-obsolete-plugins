@@ -1,0 +1,7 @@
+class myClass {
+  class internal {
+
+  }
+}
+
+include myCl<caret>ass::internal

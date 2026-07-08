@@ -1,0 +1,15 @@
+'my_pe_version' at (8,21) => 1 results:
+	PuppetLazyProxyLightElement: my_pe_version at 13 in pe_version.rb
+
+'my_is_pe' at (31,39) => 1 results:
+	PuppetLazyProxyLightElement: my_is_pe at 178 in pe_version.rb
+
+'my_pe_major_version' at (49,68) => 1 results:
+	PuppetLazyProxyLightElement: my_pe_major_version at 318 in pe_version.rb
+
+'my_super_fact' at (78,91) => 1 results:
+	PuppetLazyProxyLightElement: my_super_fact at 494 in pe_version.rb
+
+'my_super_fact2' at (101,115) => 1 results:
+	PuppetLazyProxyLightElement: my_super_fact2 at 529 in pe_version.rb
+

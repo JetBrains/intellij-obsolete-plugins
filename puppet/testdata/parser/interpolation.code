@@ -1,0 +1,20 @@
+
+notice 'Single quoted $var string'
+$var = 'test'
+notice "Double ${var} quoted $var string with ${hiera("http_port")} expression "
+notice @(SINGLE)
+  single ${var} quoted $var heredoc with ${hiera("http_port")} expression
+        SINGLE
+
+notice @("DOUBLE")
+  double ${var} quoted $var heredoc with ${hiera("http_port")} expression
+        DOUBLE
+
+
+notice @(SINGLE), @("DOUBLE")
+  Single ${var} quoted sequentional $var heredoc with ${hiera("http_port")} expression
+      | SINGLE
+  Double ${var} quoted sequentional $var heredoc with ${hiera("http_port")} expression
+    | -  DOUBLE
+
+

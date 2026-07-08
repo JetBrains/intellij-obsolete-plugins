@@ -1,0 +1,16 @@
+PUPPET_FILE
+  PsiPuppetResourceDeclarationImpl(RESOURCE_DECLARATION)
+    PsiPuppetRegularNameWrapperImpl(REGULAR_NAME_WRAPPER)
+      PsiElement(NAME)('site')
+    PsiPuppetBracedResourceByClassnameContentsBlockImpl(BRACED_RESOURCE_BY_CLASSNAME_CONTENTS_BLOCK)
+      PsiElement({)('{')
+      PsiWhiteSpace('\n  ')
+      Puppet: RESOURCE_INSTANCE_DECLARATION
+        PsiPuppetRegularNameWrapperImpl(REGULAR_NAME_WRAPPER)
+          PsiElement(NAME)('notice')
+        PsiErrorElement:'(', ':', '=>', CONSUMES, PRODUCES or '[' expected, got ''here we go''
+          <empty list>
+      PsiWhiteSpace(' ')
+      PsiElement(SINGLE_QUOTED_STRING)(''here we go'')
+      PsiWhiteSpace('\n')
+      PsiElement(})('}')

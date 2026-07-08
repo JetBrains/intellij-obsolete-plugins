@@ -1,0 +1,30 @@
+'notice' at (20,26) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'node_var' at (50,58) => 1 results:
+	Puppet: VAR_WRAPPER at 144 in ruby18464.pp
+
+'notice' at (84,90) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'node_var' at (114,122) => 1 results:
+	Puppet: VAR_WRAPPER at 144 in ruby18464.pp
+
+'include' at (170,177) => 1 results:
+	PuppetLazyProxyLightElement: include at 43062 in stub_functions.rb
+
+'someclass' at (178,187) => 1 results:
+	Puppet: CLASS_DEFINITION at 0 in ruby18464.pp
+
+'include' at (190,197) => 1 results:
+	PuppetLazyProxyLightElement: include at 43062 in stub_functions.rb
+
+'otherclass' at (198,208) => 1 results:
+	Puppet: CLASS_DEFINITION at 63 in ruby18464.pp
+
+'notice' at (211,217) => 1 results:
+	PuppetLazyProxyLightElement: notice at 64861 in stub_functions.rb
+
+'node_var' at (230,238) => 1 results:
+	Puppet: VAR_WRAPPER at 144 in ruby18464.pp
+

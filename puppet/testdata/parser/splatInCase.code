@@ -1,0 +1,1 @@
+notice case $x{ $a: { 'an array with both vim and emacs' }*$a: { 'vim or emacs' }default: { 'no match' } }

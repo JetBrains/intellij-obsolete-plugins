@@ -1,0 +1,88 @@
+PUPPET_FILE
+  PsiPuppetIfStatementImpl(IF_STATEMENT)
+    PsiElement(IF)('if')
+    PsiWhiteSpace(' ')
+    PsiPuppetConditionalBranchImpl(CONDITIONAL_BRANCH)
+      PsiPuppetExpressionRegexImpl(EXPRESSION_REGEX)
+        Puppet: VAR_WRAPPER
+          PsiElement($)('$')
+          PsiElement(VARIABLE_NAME)('match_request_method')
+        PsiWhiteSpace(' ')
+        PsiElement(=~)('=~')
+        PsiErrorElement:'String' unexpected
+          <empty list>
+  PsiWhiteSpace(' ')
+  PsiPuppetExpressionRelationImpl(EXPRESSION_RELATION)
+    PsiPuppetResourceDeclarationImpl(RESOURCE_DECLARATION)
+      PsiPuppetCapitalizedNameWrapperImpl(CAPITALIZED_NAME_WRAPPER)
+        PsiElement(CAPITALIZED_NAME)('String')
+      PsiWhiteSpace(' ')
+      PsiPuppetBracedResourceByClassnameContentsBlockImpl(BRACED_RESOURCE_BY_CLASSNAME_CONTENTS_BLOCK)
+        PsiElement({)('{')
+        PsiWhiteSpace('\n  ')
+        Puppet: RESOURCE_INSTANCE_DECLARATION
+          PsiPuppetRegularNameWrapperImpl(REGULAR_NAME_WRAPPER)
+            PsiElement(NAME)('validate_re')
+          PsiErrorElement:':' or '=>' expected, got '('
+            <empty list>
+          PsiElement(()('(')
+        PsiErrorElement:';' expected, got '$'
+          PsiElement($)('$')
+        PsiElement(VARIABLE_NAME)('match_request_method')
+        PsiElement(,)(',')
+        PsiWhiteSpace(' ')
+        PsiElement(SINGLE_QUOTED_STRING)(''^(put|post|get|head|delete)$'')
+        PsiElement())(')')
+        PsiWhiteSpace('\n')
+        PsiElement(})('}')
+    PsiWhiteSpace(' ')
+    PsiErrorElement:'elsif' unexpected
+      PsiElement(ELSIF)('elsif')
+  PsiWhiteSpace(' ')
+  PsiPuppetExpressionRegexImpl(EXPRESSION_REGEX)
+    Puppet: VAR_WRAPPER
+      PsiElement($)('$')
+      PsiElement(VARIABLE_NAME)('match_request_method')
+    PsiWhiteSpace(' ')
+    PsiElement(=~)('=~')
+    PsiErrorElement:'Array' unexpected
+      <empty list>
+  PsiWhiteSpace(' ')
+  PsiPuppetResourceDeclarationImpl(RESOURCE_DECLARATION)
+    PsiPuppetCapitalizedNameWrapperImpl(CAPITALIZED_NAME_WRAPPER)
+      PsiElement(CAPITALIZED_NAME)('Array')
+    PsiWhiteSpace(' ')
+    PsiPuppetBracedResourceByClassnameContentsBlockImpl(BRACED_RESOURCE_BY_CLASSNAME_CONTENTS_BLOCK)
+      PsiElement({)('{')
+      PsiWhiteSpace('\n  ')
+      Puppet: RESOURCE_INSTANCE_DECLARATION
+        Puppet: VAR_WRAPPER
+          PsiElement($)('$')
+          PsiElement(VARIABLE_NAME)('match_request_method')
+        PsiErrorElement:':' or '[' expected, got '.'
+          <empty list>
+        PsiElement(.)('.')
+      PsiErrorElement:';' expected, got 'each'
+        PsiElement(NAME)('each')
+      PsiElement(DUMMY_BLOCK)
+        PsiWhiteSpace(' ')
+        PsiElement(|)('|')
+        PsiElement($)('$')
+        PsiElement(VARIABLE_NAME)('method')
+        PsiElement(|)('|')
+        PsiWhiteSpace(' ')
+        PsiElement({)('{')
+        PsiWhiteSpace('\n    ')
+        PsiElement(NAME)('validate_re')
+        PsiElement(()('(')
+        PsiElement($)('$')
+        PsiElement(VARIABLE_NAME)('method')
+        PsiElement(,)(',')
+      PsiWhiteSpace(' ')
+      PsiElement(SINGLE_QUOTED_STRING)(''^(put|post|get|head|delete)$'')
+      PsiElement())(')')
+      PsiWhiteSpace('\n  ')
+      PsiElement(})('}')
+  PsiWhiteSpace('\n')
+  PsiErrorElement:Unknown tokens
+    PsiElement(})('}')

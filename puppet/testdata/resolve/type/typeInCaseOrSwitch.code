@@ -1,0 +1,17 @@
+$enable_real = $enable ? {
+  Boolean => $enable,
+  String  => str2bool($enable),
+  String  => str($environment),
+  Numeric => num2bool($enable),
+  Numeric => nnn,
+  default => fail('Illegal value for $enable parameter'),
+}
+
+case $facts['os']['name'] {
+  Boolean: { $enable }
+  String : { str2bool($enable) }
+  String: { str($environment) }
+  Numeric: { num2bool($enable) }
+  Numeric: { nnn }
+  default: { fail('Illegal value for $enable parameter') }
+}

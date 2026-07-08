@@ -1,0 +1,7 @@
+class myClass {
+  class internal {
+
+  }
+}
+
+include my<caret>Class::inter

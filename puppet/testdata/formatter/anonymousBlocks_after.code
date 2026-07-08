@@ -1,0 +1,9 @@
+each([1, 2, 3]) |$i, $j| { notice $i }
+
+each([1, 2, 3]) |
+  $i
+|
+{
+  notice $i
+  notice $i
+}

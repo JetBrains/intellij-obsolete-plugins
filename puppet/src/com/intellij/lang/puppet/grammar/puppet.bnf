@@ -1,0 +1,526 @@
+{
+  parserImports=[ "static com.intellij.lang.WhitespacesBinders.*" ]
+  parserClass="com.intellij.lang.puppet.PuppetParserGenerated"
+  parserUtilClass="com.intellij.lang.puppet.grammar.PuppetParserUtil"
+  implements="com.intellij.lang.puppet.psi.PuppetCompositePsiElement"
+  extends="com.intellij.lang.puppet.psi.impl.PuppetCompositePsiElementBase"
+  psiClassPrefix="PsiPuppet"
+  psiImplClassSuffix="Impl"
+  psiPackage="com.intellij.lang.puppet.psi"
+  psiImplPackage="com.intellij.lang.puppet.psi.impl"
+  elementTypeHolderClass="com.intellij.lang.puppet.PuppetTokenTypes"
+  elementTypePrefix=""
+  elementTypeClass="com.intellij.lang.puppet.psi.PuppetElementType"
+  tokenTypeClass="com.intellij.lang.puppet.psi.PuppetElementType"
+  tokenTypeClass="com.intellij.lang.puppet.PuppetTokenTypes"
+
+  pin(".*List(?:_\d.*)?")=1
+
+  extends(".+_block")=block
+
+  // fixme we should handle following shit with naming rules, but not now
+  extends("expression([0-9A-Z].*)?|include_class_expression|collection|any_name_wrapper|\
+  |case_expression|function_call_expression|resource_declaration|selectValue|\
+  |selector|quoted_text|heredocExpression|hashValue|selector|hashArrayAccesses|array|resourceReference|\
+  |data_type|expression_boolean|varWrapper|string_literal|regexp|site_compound|resource_default_statement|\
+  |import_statement|unless_statement|if_statement|append_statement|\
+  |assignment_statement|consumes_statement|produces_statement|type_definition|class_definition|function_definition|node_definition")=expression
+
+
+  // Stubs
+  elementTypeHolderClass("varWrapper|class_definition|node_definition|function_definition|namespace_definition|type_definition|resource_instance_declaration|include_class_statement|include_class_expression")="com.intellij.lang.puppet.PuppetStubElementTypes"
+  elementTypeClass("varWrapper")="com.intellij.lang.puppet.psi.stubs.elementTypes.PuppetVariableElementType"
+  elementTypeClass("namespace_definition")="com.intellij.lang.puppet.psi.stubs.elementTypes.PuppetNamespaceDefinitionElementType"
+  elementTypeClass("function_definition")="com.intellij.lang.puppet.psi.stubs.elementTypes.PuppetFunctionDefinitionElementType"
+  elementTypeClass("class_definition")="com.intellij.lang.puppet.psi.stubs.elementTypes.PuppetClassDefinitionElementType"
+  elementTypeClass("node_definition")="com.intellij.lang.puppet.psi.stubs.elementTypes.PuppetNodeDefinitionElementType"
+  elementTypeClass("type_definition")="com.intellij.lang.puppet.psi.stubs.elementTypes.PuppetTypeDefinitionElementType"
+  elementTypeClass("resource_instance_declaration")="com.intellij.lang.puppet.psi.stubs.elementTypes.PuppetResourceInstanceElementType"
+  elementTypeClass("include_class_statement")="com.intellij.lang.puppet.psi.stubs.elementTypes.PuppetIncludeClassStatementElementType"
+  elementTypeClass("include_class_expression")="com.intellij.lang.puppet.psi.stubs.elementTypes.PuppetIncludeClassExpressionElementType"
+
+  tokenTypeFactory="com.intellij.lang.puppet.psi.PuppetElementTypeFactory.getTokenType"
+  elementTypeFactory="com.intellij.lang.puppet.psi.PuppetElementTypeFactory.getElementType"
+
+  mixin("fqn_container")="com.intellij.lang.puppet.psi.mixins.PuppetFqnContainerMixin"
+  implements("fqn_container")="com.intellij.lang.puppet.psi.PuppetFqnContainer"
+
+  mixin("resource_instance_declaration")="com.intellij.lang.puppet.psi.mixins.PuppetResourceInstanceDeclarationMixin"
+  stubClass("resource_instance_declaration")="com.intellij.lang.puppet.psi.stubs.PuppetResourceInstanceDeclarationStub"
+  implements("resource_instance_declaration")="com.intellij.lang.puppet.psi.PuppetResourceInstanceDeclaration"
+
+  mixin("node_definition")="com.intellij.lang.puppet.psi.mixins.PuppetNodeDefinitionMixin"
+  implements("node_definition")="com.intellij.lang.puppet.psi.PuppetNodeDefinition"
+  stubClass("node_definition")="com.intellij.lang.puppet.psi.stubs.PuppetNodeDefinitionStub"
+
+  mixin("parameter")="com.intellij.lang.puppet.psi.mixins.PuppetParameterMixin"
+
+  mixin("anonymousBlock")="com.intellij.lang.puppet.psi.mixins.PuppetAnonymousBlockMixin"
+
+  mixin("class_definition")="com.intellij.lang.puppet.psi.mixins.PuppetClassDefinitionMixin"
+  stubClass("class_definition")="com.intellij.lang.puppet.psi.stubs.PuppetClassDefinitionStub"
+  implements("class_definition")="com.intellij.lang.puppet.psi.PuppetClassDefinition"
+
+  mixin("type_definition")="com.intellij.lang.puppet.psi.mixins.PuppetTypeDefinitionMixin"
+  stubClass("type_definition")="com.intellij.lang.puppet.psi.stubs.PuppetTypeDefinitionStub"
+  implements("type_definition")="com.intellij.lang.puppet.psi.PuppetTypeDefinition"
+
+  mixin("function_definition")="com.intellij.lang.puppet.psi.mixins.PuppetFunctionDefinitionMixin"
+  stubClass("function_definition")="com.intellij.lang.puppet.psi.stubs.PuppetFunctionDefinitionStub"
+  implements("function_definition")="com.intellij.lang.puppet.psi.PuppetFunctionDefinition"
+
+  mixin("namespace_definition")="com.intellij.lang.puppet.psi.mixins.PuppetNamespaceDefinitionMixin"
+  stubClass("namespace_definition")="com.intellij.lang.puppet.psi.stubs.PuppetNamespaceDefinitionStub"
+  implements("namespace_definition")="com.intellij.lang.puppet.psi.PuppetNamespaceDefinition"
+
+  mixin("resource_default_statement")="com.intellij.lang.puppet.psi.mixins.PuppetResourceDeclarationBaseMixin"
+  implements("resource_default_statement")="com.intellij.lang.puppet.psi.PuppetResourceDeclarationBase"
+
+  mixin("resource_declaration")="com.intellij.lang.puppet.psi.mixins.PuppetResourceDeclarationMixin"
+  implements("resource_declaration")="com.intellij.lang.puppet.psi.PuppetResourceDeclaration"
+
+  mixin("include_class_statement")="com.intellij.lang.puppet.psi.mixins.PuppetIncludeClassStatementMixin"
+  mixin("include_class_expression")="com.intellij.lang.puppet.psi.mixins.PuppetIncludeClassExpressionMixin"
+  stubClass("include_class_statement|include_class_expression")="com.intellij.lang.puppet.psi.stubs.impl.PuppetIncludeClassStatementStub"
+
+  mixin("varWrapper")="com.intellij.lang.puppet.psi.mixins.PuppetVariableMixin"
+  stubClass("varWrapper")="com.intellij.lang.puppet.psi.stubs.PuppetVariableStub"
+  implements("varWrapper")="com.intellij.lang.puppet.psi.PuppetVariable"
+
+  implements("data_type")="com.intellij.lang.puppet.psi.PuppetDataType"
+  mixin("data_type")="com.intellij.lang.puppet.psi.mixins.PuppetDataTypeMixin"
+
+  implements("default_wrapper")="com.intellij.lang.puppet.psi.PuppetDefaultWrapper"
+
+  extends("regular_name_wrapper|capitalized_name_wrapper|default_wrapper")=any_name_wrapper
+
+  mixin("any_name_wrapper")="com.intellij.lang.puppet.psi.mixins.PuppetAnyNameWrapperMixin"
+  implements("any_name_wrapper")="com.intellij.lang.puppet.psi.PuppetNameWrapper"
+
+  implements("regular_name_wrapper")="com.intellij.lang.puppet.psi.PuppetRegularNameWrapper"
+  implements("capitalized_name_wrapper")="com.intellij.lang.puppet.psi.PuppetCapitalizedNameWrapper"
+
+  mixin("regexp")="com.intellij.lang.puppet.psi.mixins.PuppetRegexpElementMixin"
+
+  mixin("quoted_text")="com.intellij.lang.puppet.psi.mixins.PuppetQuotedStringMixin"
+  implements("quoted_text")="com.intellij.lang.puppet.psi.PuppetQuotedString"
+
+  mixin("resource_like_class_description")="com.intellij.lang.puppet.psi.mixins.PuppetResourceLikeClassDescriptionMixin"
+  implements("resource_like_class_description")="com.intellij.lang.puppet.psi.PuppetResourceLikeClassDescription"
+
+
+  generateFirstCheck=2
+  tokens=[
+    LBRACK='['
+    LISTSTART='LIST_START['
+    RBRACK=']'
+    LBRACE='{'
+    RBRACE='}'
+    FARROW='=>'
+    PARROW='+>'
+    COMMA=','
+    EQUALS='='
+    APPENDS='+='
+    DELETES='-='
+    LESSEQUAL='=<'
+    NOTEQUAL='!='
+    DOT="."
+    COLON=':'
+    LLCOLLECT='<<|'
+    RRCOLLECT='|>>'
+    LCOLLECT = '<|'
+    RCOLLECT='|>'
+    QMARK='?'
+    LPAREN='('
+    RPAREN=')'
+    ISEQUAL='=='
+    GREATEREQUAL='>='
+    GREATERTHAN='>'
+    LESSTHAN='<'
+    LESSEQUAL='<='
+    AT='@'
+    HEREDOC_AT='HERDOC@'
+    ATAT='@@'
+    SEMIC=';'
+    LSHIFT='<<'
+    RSHIFT='>>'
+    MATCH='=~'
+    NOMATCH='!~'
+    OUT_EDGE='<-'
+    IN_EDGE='->'
+    IN_EDGE_SUB='~>'
+    OUT_EDGE_SUB='<~'
+    AND='and'
+    OR='or'
+    PLUS='+'
+    MINUS='-'
+    TIMES='*'
+    DIV='/'
+    MODULO='%'
+    NOT='!'
+    IN="in"
+    DOLLAR='$'
+    HASH='#'
+    UP='^'
+    PIPE='|'
+    QUOTE='"'
+    NAMESPACE_SEPARATOR='::'
+    HEREDOC_BODY="HEREDOC_BODY"
+    HEREDOC_BODY_QQ="HEREDOC_BODY_QQ"
+    HEREDOC_ENDING="HEREDOC_ENDING"
+
+    // following tokens added only to avoid highlighting in annotator, but use highlighter instead
+    VARIABLE_NAME="VARIABLE_NAME"
+    VARIABLE_LBRACE="VARIABLE{"
+    VARIABLE_RBRACE="VARIABLE}"
+
+    // new keywords
+    // v4 and future
+    FUNCTION='FUNCTION'
+    TYPE='TYPE'
+    ATTR='ATTR'
+    PRIVATE='PRIVATE'
+
+    // v4 and future reserved, but unused
+    APPLICATION='APPLICATION'
+    CONSUMES='CONSUMES'
+    PRODUCES='PRODUCES'
+
+    // v4 only reserved but unused
+    SITE='SITE'
+
+    // misc tokens
+    COMMENT='COMMENT'
+    ANY_CHAR='ANY_CHAR'
+    ESCAPE_SEQUENCE='ESCAPE_SEQUENCE'
+  ]
+}
+
+puppetFile ::= <<parseFileContents puppet_file_contents>>
+private puppet_file_contents ::= (statements | <<consumeOneToken>>)*
+
+private common_recovery_tokens ::=
+  CASE | CLASS | DEFAULT |FUNCTION | DEFINE | SITE | APPLICATION | IF | IMPORT | NODE | UNLESS | FALSE | TRUE | UNDEF
+  | DOLLAR
+  | '@' | HEREDOC_AT | '@@' | '}'
+  | CAPITALIZED_NAME | NAME
+  | DOUBLE_QUOTED_STRING | DOUBLE_QUOTED_STRING_START | SINGLE_QUOTED_STRING| FLOAT_LITERAL | INTEGER_LITERAL_WITHOUTQ
+
+private top_level_recovery_tokens ::= ';' | '(' | '-' | '{' | ')' | '[' | LISTSTART| NOT | REGEX | common_recovery_tokens
+
+private statements ::= statement (';'? statement)*
+private statement ::= statement_call  | expressionAssignment {recoverWhile=expression_assignment_recover_while}
+
+expressionAssignment ::= expressionRelation (('=' | '+=' | '-=' ) expressionRelation)*
+private expression_assignment_recovery_tokens ::= ',' | top_level_recovery_tokens
+private expression_assignment_recover_while ::= !(expression_assignment_recovery_tokens)
+
+expressionRelation ::= resource {('<-' | '->' | '<~' | '~>') resource} *  {recoverWhile=expression_relation_recover_while}
+private expression_relation_recovery_tokens ::= '=' | '+=' | '-=' | expression_assignment_recovery_tokens
+private expression_relation_recover_while ::= !(expression_relation_recovery_tokens)
+
+private resource ::= resource_default_statement |resource_declaration | include_class_expression |  expression {recoverWhile=resource_recover_while}
+private resource_recovery_tokens ::= '<-' | '->' | '<~' | '~>' | expression_relation_recovery_tokens
+private resource_recover_while ::= !(resource_recovery_tokens)
+
+private expressionAssignments ::= expressionAssignment (',' expressionAssignment)* ','?
+
+// can't use any_name wrapper because of grammar-kit bug?
+produces_statement ::= {regular_name_wrapper|capitalized_name_wrapper} PRODUCES any_name_wrapper braced_any_arguments_list_block ? {pin=2}
+consumes_statement ::= {regular_name_wrapper|capitalized_name_wrapper} CONSUMES any_name_wrapper braced_any_arguments_list_block ? {pin=2}
+
+private statement_call ::= include_class_statement | function_call_statement
+
+site_compound ::= SITE braced_statements_block
+
+function_definition ::= FUNCTION fqn_container parenthesized_parameters_list_block ? function_return_type ? braced_statements_block {pin=1}
+function_return_type ::= '>>' data_type {pin=1 recoverWhile=function_return_type_recover}
+private function_return_type_recover ::= !(common_recovery_tokens | '{')
+
+private keyword ::= <<isKeyword>>
+
+include_class_statement ::= <<isIncludeClassFunction>> regular_name_wrapper ('(' classNameList ')' | classNameList )
+
+function_call_expression ::= regular_name_wrapper parenthesized_expressions_list_block anonymousBlock?
+function_call_statement ::= regular_name_wrapper !('{'|FARROW|LPAREN|CONSUMES|PRODUCES) [<<checkHasSpaceBefore expressionAssignments>>]
+parenthesized_expressions_list_block ::= <<parenthesized_element expressionAssignments?>>
+
+anonymousBlock ::= <<isPuppet4>> piped_parameters_list_block braced_statements_block {pin=2}
+
+private classNameList ::= class_name_or_rvalue (',' class_name_or_rvalue)*
+private class_name_or_rvalue ::= regular_name_wrapper | terminal
+
+private expressions_list_with_tailing_comma ::= expression (',' (expression | &')' | &']'))*
+private expressions_list ::= expression (',' expression)*
+
+include_class_expression ::= resource_like_class_declaration_prefix resource_like_class_declaration_block {pin=1}
+private resource_like_class_declaration_prefix ::= CLASS &'{'
+resource_like_class_declaration_block ::= <<braced_element <<resource_like_declarations_list resource_like_class_description>>>>
+resource_like_class_description ::= !DEFAULT instance_like_declaration_body_with_fallback
+
+resource_declaration ::= ['@' | '@@'] resource_type braced_resource_by_classname_contents_block
+private resource_type ::= regular_name_wrapper | data_type
+braced_resource_by_classname_contents_block ::= <<braced_element <<resource_like_declarations_list resource_instance_declaration>>>>
+
+resource_default_statement ::= data_type &('{' NAME {'=>'|'+>'}) braced_any_arguments_list_block
+braced_any_arguments_list_block ::= <<braced_element resource_arguments_list?>>
+
+collection ::= capitalized_name_wrapper collectRHand braced_any_arguments_list_block?
+
+collectRHand ::= collectR1Hand | collectRRHand
+private collectRRHand ::= '<<|' collectionStatementsList '|>>' {pin=1}
+private collectR1Hand ::= '<|' collectionStatementsList '|>' {pin=1}
+
+// strange but copied from puppetlabs source
+private collectionStatementsList ::= collectionStatement? (collJoin collectionStatement)*
+
+collectionStatement ::= '(' collectionStatementsList ')' | collExpr
+
+private collJoin ::= AND | OR
+
+collExpr ::= collLVal ('==' | '!=') expression
+
+private collLVal ::= varWrapper | regular_name_wrapper
+
+resource_instance_declaration ::= instance_like_declaration_body_with_fallback {recoverWhile=resourceInstanceRecover}
+private instance_like_declaration_body_with_fallback ::= instance_like_declaration_body | instance_like_declaration_body_fallback
+private instance_like_declaration_body ::= resource_name ':' resource_arguments_list? {pin=2}
+private instance_like_declaration_body_fallback ::= instance_like_declaration_body_fallback_to_attribute | instance_like_declaration_body_fallback_to_name
+private instance_like_declaration_body_fallback_to_attribute ::= regular_name_wrapper (':'|'=>') {pin=1}
+private instance_like_declaration_body_fallback_to_name ::= resource_name ':' {pin=1}
+
+resource_arguments_list ::= arguments_list
+
+private resourceInstanceRecover ::= !(';' | DIV | common_recovery_tokens)
+
+private meta resource_like_declarations_list ::= [<<x1>> (';' (<<x1>>| &'}'))*]
+
+private resource_name ::= selector
+  | array
+  | hashArrayAccesses
+  | quoted_text
+  | varWrapper
+  | default_wrapper
+  | regular_name_wrapper
+
+private arguments_list ::= set_argument (',' <<passHeredocBodies>>? (set_argument | &'}' | &';'))* {recoverWhile=paramListRecover}
+
+private paramListRecover ::= !(';' | DIV | common_recovery_tokens)
+
+private argument_name ::=
+    regular_name_wrapper
+  | keyword
+  | BOOLEAN
+
+argument    ::= argument_name {'=>'|'+>'} expression {pin=1 recoverWhile=paramRecoverWhile}
+hash_argument ::= <<isPuppet4>> '*' '=>' expression {pin=2}
+
+private set_argument ::= argument | hash_argument {recoverWhile=paramRecoverWhile}
+private paramRecoverWhile ::= !(',' | '}' | ';' | <<isPuppet4>> '*' |  DIV  | common_recovery_tokens)
+
+private expression_boolean ::= expressionTrue | expressionFalse
+expressionTrue ::= TRUE
+expressionFalse ::= FALSE
+
+
+unless_statement ::= UNLESS conditional_branch [<<isPuppet4>> else_branch] {pin=1}
+if_statement ::= IF conditional_branch elsif_branch * else_branch ? {pin=1}
+conditional_branch ::= expression braced_statements_block  {pin=1}
+private elsif_branch ::= ELSIF conditional_branch {pin=1}
+private else_branch ::= ELSE braced_statements_block {pin=1}
+
+heredocExpression ::= HEREDOC_AT '(' HEREDOC_END_TAG HEREDOC_SYNTAX? HEREDOC_ESCAPES? ')'
+
+expression ::=
+  expressionComp
+  | expressionIn
+  | expressionAdditive
+  | expressionMultiplicative
+  | expressionBinary
+  | expressionRegex
+  | expressionUnary
+  | selector
+  | expressionCall
+  | hashValue
+  | expressionIndexed
+  | expressionParen
+  | terminal
+
+// these are expressions terminals
+private terminal ::=
+  collection
+  | hashArrayAccesses
+  | array
+  | produces_statement
+  | consumes_statement
+  | data_type
+  | expression_boolean
+  | varWrapper
+  | function_call_expression
+  | string_literal
+  | heredocExpression
+  | regexp
+  | expressionUndef
+  | default_wrapper
+  | case_expression
+  | if_statement
+  | unless_statement
+  | import_statement
+  | site_compound
+  | type_definition
+  | class_definition
+  | node_definition
+  | function_definition
+  | regular_name_wrapper
+
+expressionUndef ::= UNDEF
+
+private external meta myPin ::= myPinParse <<delegate>>
+
+expressionIndexed ::= expression <<isPuppet4>> expressionIndex+
+expressionIndex ::= <<bracketed_element expression>>
+
+expressionUnary ::= ('-' | '!' | <<isPuppet4>> '*') expression
+
+expressionParen ::=  <<parenthesized_element expressionAssignment>>
+
+expressionComp ::= expression binaryOp0 expression
+expressionIn ::= expression binaryOp1 expression
+expressionAdditive ::= expression binaryOp2 expression
+expressionMultiplicative ::= expression binaryOp3 expression
+expressionBinary ::= expression binaryOp4 expression
+expressionRegex ::= expression regexOp <<myPin (<<isPuppet4>> expression | regexp)>>
+expressionCall ::= expression <<isPuppet4>>  '.' <<myPin (regular_name_wrapper ['(' expressionAssignments? ')'] anonymousBlock?)>> {rightAssociative=true}
+
+// TODO WTF is MINUS expression =UMINUS?
+private binaryOp0 ::=  ('!=' | '==' | '>' | '<' | '>=' | '<=')
+private binaryOp1 ::=  'in'
+private binaryOp2 ::=  ('+' | '-')
+private binaryOp3 ::=  ('/' | '*' | '%')
+private binaryOp4 ::= ('<<' | '>>' | 'and' | 'or')
+private regexOp   ::=  ('=~' | '!~')
+
+case_expression ::= CASE expression  braced_case_opts_block {pin=1}
+braced_case_opts_block ::= <<braced_element case_options>>
+
+private case_options ::= case_option+
+case_option ::= caseValues ':' braced_statements_block {pin=1 recoverWhile=recover_case_option}
+private recover_case_option ::= !( '!' | '(' | '-' | '[' | '*' | LISTSTART | '{' | CAPITALIZED_NAME | CASE | DEFAULT | DOLLAR | DOUBLE_QUOTED_STRING | DOUBLE_QUOTED_STRING_START
+  | FALSE | FLOAT_LITERAL | HEREDOC_AT | INTEGER_LITERAL_WITHOUTQ | NAME | REGEX | SINGLE_QUOTED_STRING | TRUE | UNDEF | '}')
+
+caseValues ::= expressions_list | default_wrapper
+
+selector ::= expression '?' selector_content {pin=2}
+
+private selector_content ::= braced_selector_values_block | selector_value
+braced_selector_values_block ::= <<braced_element selector_values>>
+private selector_values ::= braced_selector_value_element (',' (braced_selector_value_element | &'}'))*
+
+private braced_selector_value_element ::= selector_value | default_selector_value { recoverWhile=recover_braced_selector_value}
+private recover_braced_selector_value ::= !(','|'}')
+
+selector_value ::= expression '=>' expression {pin=1}
+default_selector_value ::= default_wrapper '=>' expression {pin=1 extends=selector_value }
+
+private stringsList ::= importString (',' importString)*
+private importString ::= STRING | SINGLE_QUOTED_STRING | DOUBLE_QUOTED_STRING
+import_statement ::= IMPORT stringsList {pin=1}
+
+type_definition ::= (DEFINE|APPLICATION) fqn_container parenthesized_parameters_list_block? braced_statements_block {pin=1}
+
+class_definition ::= CLASS fqn_container parenthesized_parameters_list_block? class_inheritance? braced_statements_block {pin=1}
+private class_inheritance ::= INHERITS (any_name_wrapper | default_wrapper) {pin=1}
+
+any_name_wrapper ::= regular_name_wrapper | capitalized_name_wrapper
+// fixme there is no such thing as regular_name_wrapper. Actually this is a bare string. In other places NAME should be used directly.
+regular_name_wrapper ::= NAME
+// fixme Capitalized name wrapper is absolutely redundant and should be used directly see RUBY-18633
+capitalized_name_wrapper ::= CAPITALIZED_NAME
+default_wrapper ::= DEFAULT
+
+fqn_container ::= NAMESPACE_SEPARATOR ? (namespace_definition NAMESPACE_SEPARATOR)* NAME
+namespace_definition ::= NAME &NAMESPACE_SEPARATOR
+
+node_definition ::= NODE node_names_list parent_node? braced_statements_block {pin=1}
+node_names_list ::= node_name (',' node_name)*
+
+private node_name ::= regular_name_wrapper | string_literal | default_wrapper | regexp
+
+parent_node ::= <<isPuppet3>> INHERITS node_name {pin=2}
+
+braced_statements_block ::= <<braced_element statements?>>
+
+private meta braced_element ::= '{' <<braced_element_content <<x1>>>> '}' {pin=1}
+private meta braced_element_content ::= <<x1>> {recoverWhile=recoverBraced}
+private recoverBraced ::= !'}'
+
+private meta bracketed_element ::= '[' <<bracketed_element_content <<x1>>>> ']' {pin=1}
+private meta bracketed_element_content ::= <<x1>> {recoverWhile=recoverBracketed}
+private recoverBracketed ::= !']'
+
+private meta parenthesized_element ::= '(' <<parenthesized_element_content <<x1>>>> ')' {pin=1}
+private meta parenthesized_element_content ::= <<x1>> {recoverWhile=recoverParenthesized}
+private recoverParenthesized ::= !')'
+
+private meta piped_element ::= '|' <<piped_element_content <<x1>>>> '|' {pin=1}
+private meta piped_element_content ::= <<x1>> {recoverWhile=recoverPiped}
+private recoverPiped ::= !'|'
+
+fake block ::=
+
+piped_parameters_list_block ::= <<piped_element parameters_list?>>
+parenthesized_parameters_list_block ::= <<parenthesized_element parameters_list?>>
+
+private parameters_list ::= parameter (',' (parameter | &')'))*
+
+parameter ::= {varWrapper | typed_parameter } ['=' expression] {recoverWhile=recover_parameter}
+private typed_parameter ::= <<isPuppet4>> data_type varWrapper {pin=2 recoverWhile=recover_typed_parameter}
+
+private recover_parameter ::= <<recoverParameter recover_parameter_inner>>
+private recover_typed_parameter ::= <<recoverTypedParameter recover_typed_parameter_inner>>
+
+private recover_parameter_inner ::= !(')'|','|'|')
+private recover_typed_parameter_inner ::= !(')'|','|'|'|'=')
+
+array ::= <<bracketed_element expressions_list_with_tailing_comma?>> | puppet4_array
+private puppet4_array ::= <<isPuppet4>> LISTSTART <<bracketed_element_content expressions_list_with_tailing_comma?>> ']' {pin=2}
+
+hashValue ::= <<braced_element hashPairsList?>>
+private hashPairsList ::= hashPair (',' (hashPair | &'}'))*
+
+hashPair ::= key '=>' expression {pin=1 recoverWhile=recoverHashPair}
+private recoverHashPair ::= !(','|'}')
+
+// fixme actual grammar is: assignment FARROW assignment, so anything may be a key or value, but this is good for now
+private key ::= string_literal | data_type
+
+
+private hashAccessSource ::= <<isPuppet3>> varWrapper
+hashArrayAccess ::= hashAccessSource hash_array_index
+hashArrayAccesses ::= hashAccessSource hash_array_index+
+hash_array_index ::= '[' expression ']' // we can't pin here, so no template
+
+
+data_type ::=
+  <<isPuppet3>> regular_name_wrapper data_type_parameters_block
+  | capitalized_name_wrapper [<<checkNoSpaceBefore>> data_type_parameters_block]
+
+data_type_parameters_block ::= <<bracketed_element expressions_list_with_tailing_comma>>
+
+varWrapper ::= DOLLAR { VARIABLE_NAME | VARIABLE_LBRACE VARIABLE_NAME VARIABLE_RBRACE }
+
+quoted_text ::= SINGLE_QUOTED_STRING | DOUBLE_QUOTED_STRING | stringTemplate | heredoc_body
+
+// fixme regular name wrapper not working here, no idea why
+private string_literal ::= quoted_text | expressionNumeric
+
+expressionNumeric ::= INTEGER_LITERAL_WITHOUTQ | FLOAT_LITERAL
+
+private heredoc_body ::= heredoc_body_item+
+private heredoc_body_item ::= DOUBLE_QUOTED_STRING_MIDDLE | interpolatedPart
+private stringTemplate ::= DOUBLE_QUOTED_STRING_START stringTemplateInt DOUBLE_QUOTED_STRING_END
+private stringTemplateInt ::= interpolatedPart (DOUBLE_QUOTED_STRING_MIDDLE? interpolatedPart)*
+private interpolatedPart ::= varWrapper | interpolated_block
+interpolated_block ::= VAR_INTERPOLATION_START expression VAR_INTERPOLATION_END
+
+regexp ::= REGEX

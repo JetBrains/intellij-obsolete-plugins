@@ -1,0 +1,24 @@
+'someclass' at (58,67) => 1 results:
+	Puppet: CLASS_DEFINITION at 0 in ruby19014.pp
+
+'param1' at (74,80) => 1 results:
+	Puppet: VAR_WRAPPER at 16 in ruby19014.pp
+
+'param2' at (91,97) => 1 results:
+	Puppet: VAR_WRAPPER at 25 in ruby19014.pp
+
+'param3' at (108,114) => 1 results:
+	Puppet: VAR_WRAPPER at 34 in ruby19014.pp
+
+'sometype' at (171,179) => 1 results:
+	Puppet: TYPE_DEFINITION at 123 in ruby19014.pp
+
+'param1' at (199,205) => 1 results:
+	Puppet: VAR_WRAPPER at 139 in ruby19014.pp
+
+'param2' at (216,222) => 1 results:
+	Puppet: VAR_WRAPPER at 148 in ruby19014.pp
+
+'param3' at (233,239) => 1 results:
+	Puppet: VAR_WRAPPER at 157 in ruby19014.pp
+
