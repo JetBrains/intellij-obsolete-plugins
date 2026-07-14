@@ -6,75 +6,91 @@ import com.intellij.codeInsight.daemon.RelatedItemLineMarkerProvider;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.guice.GuiceBundle;
 import com.intellij.guice.GuiceIcons;
-import com.intellij.guice.model.beans.BindDescriptor;
-import com.intellij.guice.model.beans.BindToProviderDescriptor;
-import com.intellij.guice.model.renderers.GuiceBindingClassPsiElementListCellRenderer;
+import com.intellij.guice.model.renderers.GuiceEntryTargetRenderer;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
-import com.intellij.psi.PsiAnonymousClass;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiIdentifier;
-import com.intellij.util.NotNullFunction;
-import com.intellij.util.containers.ContainerUtil;
+import com.intellij.psi.*;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.uast.UClass;
+import org.jetbrains.uast.UElement;
+import org.jetbrains.uast.UastContextKt;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
+/**
+ * Class-level gutter icon: shows which {@code bind()} calls reference this class.
+ *
+ * <p>Uses the unified {@link GuiceNavigationIndex}: constructs a {@link GuiceBindingKey}
+ * for the class type and finds all {@link EntryRole#BINDING_SITE} entries with a matching key.
+ */
 public final class GuiceBindingClassAnnotator extends RelatedItemLineMarkerProvider {
 
   @Override
-  protected void collectNavigationMarkers(@NotNull PsiElement psiElement, @NotNull Collection<? super RelatedItemLineMarkerInfo<?>> result) {
+  public void collectNavigationMarkers(@NotNull List<? extends PsiElement> elements,
+                                       @NotNull Collection<? super RelatedItemLineMarkerInfo<?>> result,
+                                       boolean forNavigation) {
+    if (elements.isEmpty()) return;
+    Module module = ModuleUtilCore.findModuleForPsiElement(elements.getFirst());
+    if (module == null) return;
+    GuiceProjectModel model = GuiceProjectModel.getInstance(module.getProject());
+    if (!model.isGuiceAvailable(module)) return;
+    super.collectNavigationMarkers(elements, result, forNavigation);
+  }
 
-    if (psiElement instanceof PsiClass) {
-      final Set<BindDescriptor> descriptors =
-        GuiceInjectorManager.getBindingDescriptors(ModuleUtilCore.findModuleForPsiElement(psiElement));
+  @Override
+  protected void collectNavigationMarkers(@NotNull PsiElement psiElement,
+                                          @NotNull Collection<? super RelatedItemLineMarkerInfo<?>> result) {
+    final PsiElement parent = psiElement.getParent();
+    if (!(parent instanceof PsiNameIdentifierOwner nio)
+        || !psiElement.equals(nio.getNameIdentifier())) {
+      return;
+    }
 
-      Set<BindDescriptor> bindingDescriptors = new HashSet<>();
+    final UElement uElement = UastContextKt.toUElement(parent);
+    if (!(uElement instanceof UClass uClass)) return;
+    final PsiClass psiClass = uClass.getJavaPsi();
+    if (psiClass.getQualifiedName() == null) return;
 
-      for (BindDescriptor descriptor : descriptors) {
-        final PsiClass boundClass = descriptor.getBoundClass();
-        if (psiElement.equals(boundClass)) {
-          bindingDescriptors.add(descriptor);
+    final Module module = ModuleUtilCore.findModuleForPsiElement(psiElement);
+    if (module == null) return;
+
+    GuiceProjectModel model = GuiceProjectModel.getInstance(module.getProject());
+    if (!model.isGuiceAvailable(module)) return;
+
+    // Find all BINDING_SITE entries whose type matches this class.
+    PsiType classType = JavaPsiFacade.getElementFactory(psiClass.getProject()).createType(psiClass);
+    GuiceBindingKey key = new GuiceBindingKey(classType);
+    GuiceNavigationIndex navIndex = model.getNavigationIndex(module);
+    Set<GuiceEntry> bindings = navIndex.findByKey(key, EntryRole.BINDING_SITE);
+
+    if (!bindings.isEmpty()) {
+      Map<PsiElement, GuiceEntry> entryByTarget = new HashMap<>();
+      List<PsiElement> targets = new ArrayList<>(bindings.size());
+      for (GuiceEntry binding : bindings) {
+        PsiElement target = binding.getNavigationTarget();
+        if (target == null) continue;
+
+        // Skip self-references: @Inject constructors inside this class create
+        // a BINDING_SITE for the class's own type, but navigating from the
+        // class declaration to its own constructor is redundant.
+        if (target instanceof PsiMember member
+            && psiClass.equals(member.getContainingClass())) {
           continue;
         }
 
-        if (psiElement.equals(getBindingBaseClass(descriptor.getBindingClass()))) {
-          bindingDescriptors.add(descriptor);
-          continue;
-        }
-
-        if (descriptor instanceof BindToProviderDescriptor) {
-          final PsiClass providerClass = ((BindToProviderDescriptor)descriptor).getProviderClass();
-          if (psiElement.equals(getBindingBaseClass(providerClass))) bindingDescriptors.add(descriptor);
-        }
+        targets.add(target);
+        entryByTarget.put(target, binding);
       }
-
-      if (!bindingDescriptors.isEmpty()) {
-        final NavigationGutterIconBuilder<BindDescriptor> builder =
-          NavigationGutterIconBuilder.create(GuiceIcons.GoogleSmall, DEFAULT_CONVERTOR).
+      if (!targets.isEmpty()) {
+        final NavigationGutterIconBuilder<PsiElement> builder =
+          NavigationGutterIconBuilder.create(GuiceIcons.GoogleSmall).
             setPopupTitle(GuiceBundle.message("GuiceClassAnnotator.popup.title")).
             setTooltipText(GuiceBundle.message("GuiceClassAnnotator.popup.tooltip.text")).
-            setCellRenderer(GuiceBindingClassPsiElementListCellRenderer::new).
-            setTargets(bindingDescriptors);
+            setTargetRenderer(() -> new GuiceEntryTargetRenderer(entryByTarget)).
+            setTargets(targets);
 
-        final PsiIdentifier identifier = ((PsiClass)psiElement).getNameIdentifier();
-        if (identifier != null) {
-          result.add(builder.createLineMarkerInfo(identifier));
-        }
+        result.add(NonPersistentLineMarkerInfo.createFrom(builder, psiElement));
       }
     }
   }
-
-  private static @Nullable PsiClass getBindingBaseClass(@Nullable PsiClass bindingClass) {
-    if (bindingClass instanceof PsiAnonymousClass) {
-      return ((PsiAnonymousClass)bindingClass).getBaseClassType().resolve();
-    }
-    return bindingClass;
-  }
-
-  public static final NotNullFunction<BindDescriptor, Collection<? extends PsiElement>> DEFAULT_CONVERTOR =
-    o -> ContainerUtil.createMaybeSingletonList(o.getBindExpression());
 }

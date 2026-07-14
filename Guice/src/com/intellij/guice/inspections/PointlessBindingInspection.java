@@ -3,19 +3,37 @@ package com.intellij.guice.inspections;
 
 import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.codeInspection.LocalQuickFix;
-import com.intellij.codeInspection.ProblemDescriptor;
+import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.guice.GuiceBundle;
 import com.intellij.guice.constants.GuiceAnnotations;
-import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.project.Project;
+import com.intellij.guice.utils.GuiceUtils;
 import com.intellij.psi.*;
-import com.intellij.psi.util.PsiUtil;
-import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.uast.UCallExpression;
+import org.jetbrains.uast.visitor.AbstractUastNonRecursiveVisitor;
 
-public final class PointlessBindingInspection extends BaseInspection {
-  private static final Logger LOGGER = Logger.getInstance("PointlessBindingInspection");
+/**
+ * Reports pointless untargeted {@code bind()} calls where the bound class has no
+ * {@code @Inject}-annotated constructors, fields, or methods, making the binding useless.
+ *
+ * <p>Example:
+ * <pre>
+ * // Flagged: Foo has no @Inject constructor, fields, or methods
+ * bind(Foo.class);
+ * bind&lt;Foo&gt;()          // Kotlin
+ *
+ * // OK: Foo has @Inject members
+ * bind(Bar.class);     // where Bar has @Inject constructor
+ *
+ * // OK: targeted binding (has .to(...) chain)
+ * bind(Foo.class).to(FooImpl.class);
+ * </pre>
+ */
+public final class PointlessBindingInspection extends BaseUastInspection {
+  public PointlessBindingInspection() {
+    super(UCallExpression.class);
+  }
 
   @Override
   protected @NotNull String buildErrorString(Object... infos) {
@@ -23,8 +41,8 @@ public final class PointlessBindingInspection extends BaseInspection {
   }
 
   @Override
-  public BaseInspectionVisitor buildVisitor() {
-    return new Visitor();
+  public @NotNull AbstractUastNonRecursiveVisitor buildUastVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
+    return new Visitor(this, holder, isOnTheFly);
   }
 
   @Override
@@ -32,60 +50,29 @@ public final class PointlessBindingInspection extends BaseInspection {
     return new DeleteBindingFix();
   }
 
-  private static class DeleteBindingFix implements LocalQuickFix {
-    @Override
-    public @NotNull String getName() {
-      return GuiceBundle.message("delete.binding");
+  private static class Visitor extends BaseUastInspectionVisitor {
+    Visitor(@NotNull BaseUastInspection inspection, @NotNull ProblemsHolder holder, boolean onTheFly) {
+      super(inspection, holder, onTheFly);
     }
 
     @Override
-    public @NotNull String getFamilyName() {
-      return "";
-    }
-
-    @Override
-    public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-      final PsiMethodCallExpression element = (PsiMethodCallExpression)descriptor.getPsiElement();
-      try {
-        element.getParent().delete();
+    public boolean visitCallExpression(@NotNull UCallExpression expression) {
+      if (!"bind".equals(expression.getMethodName())) {
+        return true;
       }
-      catch (IncorrectOperationException e) {
-        LOGGER.error(e);
+      PsiClass psiClass = GuiceUtils.resolveClassArgument(expression);
+      if (psiClass == null) {
+        return true;
       }
-    }
-  }
-
-  private static class Visitor extends BaseInspectionVisitor {
-    @Override
-    public void visitMethodCallExpression(@NotNull PsiMethodCallExpression expression) {
-      super.visitMethodCallExpression(expression);
-      final PsiReferenceExpression methodExpression = expression.getMethodExpression();
-      final String methodName = methodExpression.getReferenceName();
-      if (!"bind".equals(methodName)) {
-        return;
+      // Check that this is an untargeted binding (i.e. not part of a chain like bind(...).to(...))
+      if (GuiceUtils.isInnerCallInChain(expression)) {
+        return true;
       }
-      final PsiExpression[] args = expression.getArgumentList().getExpressions();
-      if (args.length != 1) {
-        return;
-      }
-      final PsiExpression arg = PsiUtil.skipParenthesizedExprDown(args[0]);
-      if (!(arg instanceof PsiClassObjectAccessExpression)) {
-        return;
-      }
-      final PsiTypeElement classTypeElement = ((PsiClassObjectAccessExpression)arg).getOperand();
-      final PsiType classType = classTypeElement.getType();
-      if (!(classType instanceof PsiClassType)) {
-        return;
-      }
-      final PsiElement parent = expression.getParent();
-      if (!(parent instanceof PsiExpressionStatement)) {
-        return;
-      }
-      final PsiClass psiClass = ((PsiClassType)classType).resolve();
-      if (psiClass != null && usesInject(psiClass)) {
-        return;
+      if (usesInject(psiClass)) {
+        return true;
       }
       registerError(expression);
+      return true;
     }
 
     private static boolean usesInject(PsiClass aClass) {

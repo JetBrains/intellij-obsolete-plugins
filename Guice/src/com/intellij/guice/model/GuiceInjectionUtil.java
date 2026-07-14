@@ -5,102 +5,124 @@ import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.codeInspection.dataFlow.StringExpressionHelper;
 import com.intellij.guice.constants.GuiceAnnotations;
 import com.intellij.guice.model.beans.BindDescriptor;
-import com.intellij.guice.model.jam.GuiceInject;
-import com.intellij.guice.model.jam.GuiceProvides;
+import com.intellij.guice.model.extensions.GuiceBindingMatchStrategy;
 import com.intellij.guice.utils.GuiceUtils;
-import com.intellij.jam.JamService;
-import com.intellij.jam.model.util.JamCommonUtil;
+import com.intellij.psi.JavaPsiFacade;
+import com.intellij.psi.JavaRecursiveElementVisitor;
+import com.intellij.psi.PsiAnnotation;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiClassType;
+import com.intellij.psi.PsiCodeBlock;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiExpression;
+import com.intellij.psi.PsiField;
+import com.intellij.psi.PsiLambdaExpression;
+import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiMethodCallExpression;
+import com.intellij.psi.PsiParameter;
+import com.intellij.psi.PsiReference;
+import com.intellij.psi.PsiReferenceExpression;
+import com.intellij.psi.PsiReturnStatement;
+import com.intellij.psi.PsiType;
+import com.intellij.psi.PsiVariable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
-import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.util.PsiUtil;
+import java.util.Collection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.uast.UCallExpression;
+import org.jetbrains.uast.UExpression;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static com.intellij.jam.JamService.*;
+
 
 public final class GuiceInjectionUtil {
-  public static Set<InjectionPointDescriptor> getInjectionPoints(@NotNull Project project, @NotNull GlobalSearchScope scope) {
-    Set<InjectionPointDescriptor> ips = new HashSet<>();
-    final JamService service = getJamService(project);
-
-    for (String injectAnno : GuiceAnnotations.INJECTS) {
-      for (GuiceInject inject : service.getJamFieldElements(GuiceInject.FIELD_META, injectAnno, scope)) {
-        ips.addAll(inject.getInjectionPoints());
-      }
-      for (GuiceInject inject : service.getJamMethodElements(GuiceInject.METHOD_META, injectAnno, scope)) {
-        ips.addAll(inject.getInjectionPoints());
-      }
-    }
-    return ips;
-  }
-
-  public static @NotNull Set<InjectionPointDescriptor> getInjectionPoints(@NotNull PsiClass psiClass) {
-    return getInjectionPoints(psiClass, true);
-  }
 
   public static @NotNull Set<InjectionPointDescriptor> getInjectionPoints(@NotNull PsiClass psiClass, boolean checkDeep) {
     Set<InjectionPointDescriptor> ips = new HashSet<>();
-    JamService service = getJamService(psiClass.getProject());
     if (psiClass.isValid()) {
+      collectInjectionPoints(psiClass, ips, checkDeep);
 
-      int checkFlags = CHECK_CLASS | CHECK_METHOD | CHECK_FIELD;
-      if (checkDeep) checkFlags |= CHECK_DEEP;
-
-      for (GuiceInject<?> inject : service.getAnnotatedMembersList(psiClass, GuiceInject.SEM_KEY, checkFlags)) {
-        ips.addAll(inject.getInjectionPoints());
+      if (com.intellij.psi.util.InheritanceUtil.isInheritor(psiClass, "com.google.inject.Module")) {
+        ips.addAll(getGetProviderInjectionPoints(psiClass));
       }
     }
     return ips;
   }
 
-  public static @NotNull List<GuiceProvides> getProvides(@NotNull Project project, @NotNull GlobalSearchScope scope) {
-    final JamService service = getJamService(project);
-
-    return service.getJamMethodElements(GuiceProvides.METHOD_META, GuiceAnnotations.PROVIDES, scope);
-  }
-
-  public static @NotNull Set<InjectionPointDescriptor> getInjectionPoints(@NotNull BindDescriptor descriptor,
-                                                                          @NotNull Set<? extends InjectionPointDescriptor> allInjectionPointDescriptors) {
-    Set<InjectionPointDescriptor> ips = new HashSet<>();
-    for (InjectionPointDescriptor ip : allInjectionPointDescriptors) {
-      final PsiType type = ip.getType();
-
-      if (type instanceof PsiClassType) {
-        final PsiClass psiClass = ((PsiClassType)type).resolve();
-        if (psiClass != null && psiClass.equals(descriptor.getBoundClass()) && checkBindingAnnotations(ip, descriptor)) {
-          ips.add(ip);
+  private static void collectInjectionPoints(@NotNull PsiClass psiClass, @NotNull Set<InjectionPointDescriptor> ips, boolean checkDeep) {
+    for (PsiField field : psiClass.getFields()) {
+      if (AnnotationUtil.isAnnotated(field, GuiceAnnotations.INJECTS, 0)) {
+        ips.add(new InjectionPointDescriptor(field));
+      }
+    }
+    for (PsiMethod method : psiClass.getMethods()) {
+      if (AnnotationUtil.isAnnotated(method, GuiceAnnotations.INJECTS, 0) ||
+          AnnotationUtil.isAnnotated(method, GuiceBindingMatchStrategy.getAllProvidesAnnotations(), 0)) {
+        for (PsiParameter parameter : method.getParameterList().getParameters()) {
+          ips.add(new InjectionPointDescriptor(parameter));
         }
       }
     }
+    for (PsiMethod constructor : psiClass.getConstructors()) {
+      if (AnnotationUtil.isAnnotated(constructor, GuiceAnnotations.INJECTS, 0)) {
+        for (PsiParameter parameter : constructor.getParameterList().getParameters()) {
+          ips.add(new InjectionPointDescriptor(parameter));
+        }
+      }
+    }
+    if (checkDeep) {
+      PsiClass superClass = psiClass.getSuperClass();
+      if (superClass != null && !"java.lang.Object".equals(superClass.getQualifiedName())) {
+        collectInjectionPoints(superClass, ips, true);
+      }
+    }
+  }
 
+  private static @NotNull Collection<InjectionPointDescriptor> getGetProviderInjectionPoints(@NotNull PsiClass psiClass) {
+    return getGetProviderInjectionPoints(psiClass.getProject(), new com.intellij.psi.search.LocalSearchScope(psiClass.getNavigationElement()));
+  }
+
+  private static @NotNull Collection<InjectionPointDescriptor> getGetProviderInjectionPoints(@NotNull Project project, @NotNull com.intellij.psi.search.SearchScope scope) {
+    final List<InjectionPointDescriptor> ips = new ArrayList<>();
+    final Set<PsiElement> expressions = new HashSet<>();
+    expressions.addAll(getUastCallExpressions(project, scope, "com.google.inject.Binder", "getProvider"));
+    expressions.addAll(getUastCallExpressions(project, scope, "com.google.inject.AbstractModule", "getProvider"));
+    expressions.addAll(getUastCallExpressions(project, scope, "com.google.inject.PrivateModule", "getProvider"));
+
+    for (PsiElement expr : expressions) {
+      ips.add(new InjectionPointDescriptor(expr));
+    }
     return ips;
   }
 
-  public static @NotNull Set<InjectionPointDescriptor> getInjectionPoints(@NotNull GuiceProvides provides,
-                                                                          @NotNull Set<? extends InjectionPointDescriptor> allInjectionPointDescriptors) {
-
-    Set<InjectionPointDescriptor> ips = new HashSet<>();
-
-    final PsiType productType = provides.getProductType();
-    if (productType != null) {
-      for (InjectionPointDescriptor ip : allInjectionPointDescriptors) {
-        final PsiType type = ip.getType();
-
-        if (type != null && productType.isAssignableFrom(type)) {
-          if (checkBindingAnnotations(ip.getBindingAnnotations(), provides.getBindingAnnotations())) {
-            ips.add(ip);
+  private static @NotNull Set<PsiElement> getUastCallExpressions(@NotNull Project project,
+                                                                 @NotNull com.intellij.psi.search.SearchScope scope,
+                                                                 @NotNull String fqn,
+                                                                 @NotNull String methodName) {
+    Set<PsiElement> expressions = new HashSet<>();
+    final PsiClass aClass = JavaPsiFacade.getInstance(project).findClass(fqn, GlobalSearchScope.allScope(project));
+    if (aClass != null) {
+      final PsiMethod[] methods = aClass.findMethodsByName(methodName, false);
+      for (PsiMethod method : methods) {
+        for (PsiReference reference : com.intellij.psi.search.searches.ReferencesSearch.search(method, scope).findAll()) {
+          final PsiElement element = reference.getElement();
+          final UCallExpression uCall = org.jetbrains.uast.UastUtils.findContaining(element, UCallExpression.class);
+          if (uCall != null) {
+            final PsiElement sourcePsi = uCall.getSourcePsi();
+            if (sourcePsi != null) {
+              expressions.add(sourcePsi);
+            }
           }
         }
       }
     }
-
-    return ips;
+    return expressions;
   }
 
   public static boolean checkBindingAnnotations(@NotNull Set<? extends PsiAnnotation> annotations, @NotNull Set<? extends PsiAnnotation> candidateAnnotations) {
@@ -119,80 +141,67 @@ public final class GuiceInjectionUtil {
   }
 
   private static boolean compareAnnotations(@NotNull PsiAnnotation anno, @NotNull PsiAnnotation candidateAnno) {
-    String fqn1 = anno.getQualifiedName();
-    if (fqn1 != null && fqn1.equals(candidateAnno.getQualifiedName())) {
-         return  compareAnnotationAttributes(getAnnotationAttributeValues(anno), getAnnotationAttributeValues(candidateAnno));
-    }
-
-    return false;
+    return AnnotationUtil.equal(anno, candidateAnno);
   }
 
-  private static boolean compareAnnotationAttributes(@NotNull Set<Pair<String, PsiAnnotationMemberValue>> attrs,
-                                                     @NotNull Set<Pair<String, PsiAnnotationMemberValue>> candidateAttrs) {
-    if (attrs.isEmpty() && candidateAttrs.isEmpty()) return true;
-    for (Pair<String, PsiAnnotationMemberValue> valuePair_1 : attrs) {
-      for (Pair<String, PsiAnnotationMemberValue> valuePair_2 : candidateAttrs) {
-        if (valuePair_1.first.equals(valuePair_2.first)) {
-          final PsiAnnotationMemberValue value_1 = valuePair_1.getSecond();
-          final PsiAnnotationMemberValue value_2 = valuePair_2.getSecond();
-
-          if (value_1 instanceof PsiReference) {
-            if (value_2 instanceof PsiReference) {
-              PsiElement element1 = ((PsiReference)value_1).resolve();
-              PsiElement element2 = ((PsiReference)value_2).resolve();
-              return element1 != null && element2 != null && element1.equals(element2);
-            }
-          } else {
-            Object attrValue = JamCommonUtil.getObjectValue(value_1, Object.class);
-            Object candidateAttrValue = JamCommonUtil.getObjectValue(value_2, Object.class);
-
-            return attrValue != null && candidateAttrValue != null && attrValue.equals(candidateAttrValue);
-          }
-          return false;
-        }
-      }
-    }
-
-    return false;
-  }
-
-  private static @NotNull Set<Pair<String, PsiAnnotationMemberValue>> getAnnotationAttributeValues(@NotNull PsiAnnotation annotation) {
-    Set<Pair<String, PsiAnnotationMemberValue>> pairs = new HashSet<>();
-
-    final PsiJavaCodeReferenceElement referenceElement = annotation.getNameReferenceElement();
-    if (referenceElement != null) {
-      PsiElement resolved = referenceElement.resolve();
-      if (resolved != null) {
-        PsiMethod[] methods = ((PsiClass)resolved).getMethods();
-        for (PsiMethod psiMethod : methods) {
-          if (PsiUtil.isAnnotationMethod(psiMethod)) {
-            String attributeName = psiMethod.getName();
-            pairs.add(Pair.create(attributeName, annotation.findAttributeValue(attributeName)));
-          }
-        }
-      }
-    }
-    return pairs;
-  }
 
   public static boolean checkBindingAnnotations(InjectionPointDescriptor ip, @NotNull BindDescriptor descriptor) {
     final Set<PsiAnnotation> bindingAnnotations = ip.getBindingAnnotations();
     if (bindingAnnotations.size() > 1) return false;
 
-    final PsiMethodCallExpression expression = descriptor.getBindExpression();
-    final PsiClass annotatedWith = getCallExpressionType(expression, "annotatedWith");
-    if (annotatedWith == null && bindingAnnotations.isEmpty()) return true;
+    if (descriptor instanceof com.intellij.guice.model.beans.JitBindDescriptor) {
+      return bindingAnnotations.isEmpty();
+    }
 
-    if (annotatedWith != null && bindingAnnotations.size() == 1) {
+    final UCallExpression expression = GuiceUtils.getCallExpression(descriptor.getBindExpression());
+    if (expression == null) return false;
+
+    PsiClass annotatedWith = getCallExpressionType(expression, "annotatedWith");
+    if (annotatedWith == null) {
+      final UExpression bindArg = GuiceUtils.getArgumentOfCallInChain(expression, "bind");
+      if (bindArg != null) {
+        annotatedWith = GuiceUtils.getQualifierFromExpression(bindArg);
+      }
+    }
+    if (annotatedWith == null) {
+      // Check whether .annotatedWith() is textually present in the chain even though
+      // we couldn't resolve its argument (e.g., the annotation class doesn't exist yet).
+      // In that case the binding explicitly has a qualifier — it must not match
+      // unqualified injection points.
+      if (GuiceUtils.findCallInChain(expression, "annotatedWith") != null) {
+        return false;
+      }
+      return bindingAnnotations.isEmpty();
+    }
+
+    if (bindingAnnotations.size() == 1) {
       final PsiAnnotation bindingAnno = bindingAnnotations.iterator().next();
-      if (GuiceAnnotations.NAMED.equals(annotatedWith.getQualifiedName())) {
-        if (GuiceAnnotations.NAMED.equals(bindingAnno.getQualifiedName())) {
-          final PsiExpression annotatedWithExpression = GuiceUtils.getArgumentOfCallInChain(expression, "annotatedWith");
+      final String annotatedWithName = annotatedWith.getQualifiedName();
+      final String bindingAnnoName = bindingAnno.getQualifiedName();
+      if (annotatedWithName != null && GuiceAnnotations.NAMEDS.contains(annotatedWithName)) {
+        if (bindingAnnoName != null && GuiceAnnotations.NAMEDS.contains(bindingAnnoName)) {
+          final UExpression annotatedWithExpression = GuiceUtils.getArgumentOfCallInChain(expression, "annotatedWith");
           if (annotatedWithExpression != null) {
-            final String nameValue = getNameValue(annotatedWithExpression);
-            if (nameValue == null) return true; // impossible to define name
-
-            return nameValue.equals(AnnotationUtil.getStringAttributeValue(bindingAnno, "value"));
+            final PsiElement sourcePsi = annotatedWithExpression.getSourcePsi();
+            if (sourcePsi instanceof PsiExpression) {
+              final String nameValue = getNameValue((PsiExpression)sourcePsi);
+              if (nameValue == null) return true; // impossible to define name
+              return nameValue.equals(AnnotationUtil.getStringAttributeValue(bindingAnno, "value"));
+            }
+            return true;
+          }
+          final UExpression bindArg = GuiceUtils.getArgumentOfCallInChain(expression, "bind");
+          if (bindArg != null) {
+            final UExpression namedExpr = GuiceUtils.getNamedExpressionFromKeyGet(bindArg);
+            if (namedExpr != null) {
+              final PsiElement sourcePsi = namedExpr.getSourcePsi();
+              if (sourcePsi instanceof PsiExpression) {
+                final String nameValue = getNameValue((PsiExpression)sourcePsi);
+                if (nameValue == null) return true;
+                return nameValue.equals(AnnotationUtil.getStringAttributeValue(bindingAnno, "value"));
+              }
+              return true;
+            }
           }
         }
         return false;
@@ -255,9 +264,12 @@ public final class GuiceInjectionUtil {
           }
         }
       }
-      final PsiExpression named = GuiceUtils.getArgumentOfCallInChain(expression, "named");
-      if (named != null) {
-        return named;
+      final UCallExpression uCall = GuiceUtils.getCallExpression(expression);
+      if (uCall != null) {
+        final UExpression namedArg = GuiceUtils.getArgumentOfCallInChain(uCall, "named");
+        if (namedArg != null && namedArg.getSourcePsi() instanceof PsiExpression named) {
+          return named;
+        }
       }
     }
     if (annotatedWithExpression instanceof PsiReferenceExpression) {
@@ -272,24 +284,27 @@ public final class GuiceInjectionUtil {
     return null;
   }
 
-  public static @Nullable PsiClass getCallExpressionType(@NotNull PsiMethodCallExpression expression, final String name) {
+  public static @Nullable PsiClass getCallExpressionType(@NotNull UCallExpression expression, final String name) {
     PsiClass aClass = null;
-    final PsiExpression psiExpression = GuiceUtils.getArgumentOfCallInChain(expression, name);
-    if (psiExpression != null) {
-      if (psiExpression instanceof PsiClassObjectAccessExpression) {
-        final PsiType classType = ((PsiClassObjectAccessExpression)psiExpression).getOperand().getType();
-        if (classType instanceof PsiClassType) {
-          aClass = ((PsiClassType)classType).resolve();
-        }
+    final UExpression uExpression = GuiceUtils.getArgumentOfCallInChain(expression, name);
+    if (uExpression != null) {
+      final PsiType type = GuiceUtils.getBindingTypeFromExpression(uExpression);
+      if (type instanceof PsiClassType) {
+        aClass = ((PsiClassType)type).resolve();
       }
-      else {
-        final PsiType psiType = psiExpression.getType();
-        if (psiType instanceof PsiClassType) {
-          aClass = ((PsiClassType)psiType).resolve();
+    } else {
+      final UCallExpression inCall = GuiceUtils.findCallInChain(expression, name);
+      if (inCall != null) {
+        final List<PsiType> typeArgs = inCall.getTypeArguments();
+        if (!typeArgs.isEmpty()) {
+          final PsiType type = typeArgs.getFirst();
+          if (type instanceof PsiClassType) {
+            aClass = ((PsiClassType)type).resolve();
+          }
         }
       }
     }
-
     return aClass;
   }
+
 }

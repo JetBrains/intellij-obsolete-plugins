@@ -3,21 +3,49 @@ package com.intellij.guice.inspections;
 
 import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.codeInspection.LocalQuickFix;
+import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.guice.GuiceBundle;
 import com.intellij.guice.constants.GuiceAnnotations;
 import com.intellij.psi.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.uast.UCallExpression;
+import org.jetbrains.uast.UClassLiteralExpression;
+import org.jetbrains.uast.UExpression;
+import org.jetbrains.uast.visitor.AbstractUastNonRecursiveVisitor;
 
-public final class UnnecessaryStaticInjectionInspection extends BaseInspection {
+import java.util.List;
+
+/**
+ * Reports {@code requestStaticInjection()} calls for classes that have no static
+ * {@code @Inject}-annotated fields or methods. Without any static injection points,
+ * the call is unnecessary and can be removed.
+ *
+ * <p>Example:
+ * <pre>
+ * // Flagged: Foo has no static @Inject members
+ * requestStaticInjection(Foo.class);
+ *
+ * // OK: Foo has a static @Inject field
+ * class Foo {
+ *     {@literal @}Inject static Logger logger;
+ * }
+ * requestStaticInjection(Foo.class);
+ * </pre>
+ */
+public final class UnnecessaryStaticInjectionInspection extends BaseUastInspection {
+  public UnnecessaryStaticInjectionInspection() {
+    super(UCallExpression.class);
+  }
+
   @Override
   protected @NotNull String buildErrorString(Object... infos) {
     return GuiceBundle.message("unnecessary.static.injection.problem.descriptor");
   }
 
   @Override
-  public BaseInspectionVisitor buildVisitor() {
-    return new Visitor();
+  public @NotNull AbstractUastNonRecursiveVisitor buildUastVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
+    return new Visitor(this, holder, isOnTheFly);
   }
 
   @Override
@@ -25,22 +53,23 @@ public final class UnnecessaryStaticInjectionInspection extends BaseInspection {
     return new DeleteBindingFix();
   }
 
-  private static class Visitor extends BaseInspectionVisitor {
+  private static class Visitor extends BaseUastInspectionVisitor {
+    Visitor(@NotNull BaseUastInspection inspection, @NotNull ProblemsHolder holder, boolean onTheFly) {
+      super(inspection, holder, onTheFly);
+    }
+
     @Override
-    public void visitMethodCallExpression(@NotNull PsiMethodCallExpression expression) {
-      super.visitMethodCallExpression(expression);
-      final PsiReferenceExpression methodExpression = expression.getMethodExpression();
-      final String methodName = methodExpression.getReferenceName();
+    public boolean visitCallExpression(@NotNull UCallExpression expression) {
+      final String methodName = expression.getMethodName();
       if (!"requestStaticInjection".equals(methodName)) {
-        return;
+        return true;
       }
-      final PsiExpression[] args = expression.getArgumentList().getExpressions();
-      for (PsiExpression arg : args) {
-        if (!(arg instanceof PsiClassObjectAccessExpression)) {
+      final List<UExpression> args = expression.getValueArguments();
+      for (UExpression arg : args) {
+        if (!(arg instanceof UClassLiteralExpression classLiteral)) {
           continue;
         }
-        final PsiTypeElement classTypeElement = ((PsiClassObjectAccessExpression)arg).getOperand();
-        final PsiType classType = classTypeElement.getType();
+        final PsiType classType = classLiteral.getType();
         if (!(classType instanceof PsiClassType)) {
           continue;
         }
@@ -49,9 +78,10 @@ public final class UnnecessaryStaticInjectionInspection extends BaseInspection {
           continue;
         }
         if (!classHasStaticInjects(classToBindStatically)) {
-          registerError(classTypeElement);
+          registerError(arg);
         }
       }
+      return true;
     }
 
     private static boolean classHasStaticInjects(PsiClass aClass) {

@@ -1,8 +1,17 @@
-// Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
   id("java")
-  id("org.jetbrains.intellij.platform") version "2.11.0"
+  id("org.jetbrains.kotlin.jvm") version "2.3.0"
+  id("org.jetbrains.intellij.platform") version "2.16.0"
+}
+
+java {
+  toolchain {
+    languageVersion.set(JavaLanguageVersion.of(25))
+  }
 }
 
 group = "com.intellij.guice"
@@ -17,20 +26,43 @@ repositories {
 
 dependencies {
   intellijPlatform {
-    intellijIdea("2025.3.1")
+    intellijIdea("2026.1")
     bundledPlugin("com.intellij.java")
-    bundledPlugin("com.intellij.properties")
-    bundledPlugin("com.intellij.modules.ultimate")
+    bundledPlugin("org.jetbrains.kotlin")
+    testFramework(TestFrameworkType.Platform)
+    testFramework(TestFrameworkType.Plugin.Java)
+    testFramework(TestFrameworkType.JUnit5)
   }
+  testImplementation("com.google.truth:truth:1.4.2")
 }
 
-java.sourceSets["main"].java {
-  srcDir("gen")
-  srcDir("src")
+java {
+  sourceSets.getByName("main") {
+    java {
+      srcDir("gen")
+      srcDir("src")
+    }
+    kotlin {
+      srcDir("gen")
+      srcDir("src")
+    }
+    resources {
+      srcDir("resources")
+    }
+  }
+  sourceSets.getByName("test") {
+    java {
+      srcDir("test")
+    }
+    kotlin {
+      srcDir("test")
+    }
+  }
+
 }
 
-java.sourceSets["main"].resources {
-  srcDir("resources")
+kotlin {
+  jvmToolchain(25)
 }
 
 intellijPlatform {
@@ -46,7 +78,13 @@ intellijPlatform {
 tasks {
   // Set the JVM compatibility versions
   withType<JavaCompile> {
-    sourceCompatibility = "21"
-    targetCompatibility = "21"
+    options.release = 25
+    sourceCompatibility = "25"
+    targetCompatibility = "25"
+  }
+  withType<KotlinCompile> {
+    compilerOptions {
+      jvmTarget.set(JvmTarget.JVM_25)
+    }
   }
 }

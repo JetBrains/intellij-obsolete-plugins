@@ -3,6 +3,7 @@ package com.intellij.guice.inspections;
 
 import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.codeInspection.LocalQuickFix;
+import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.guice.GuiceBundle;
 import com.intellij.guice.constants.GuiceAnnotations;
 import com.intellij.guice.utils.AnnotationUtils;
@@ -10,18 +11,43 @@ import com.intellij.guice.utils.GuiceUtils;
 import com.intellij.psi.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.uast.UCallExpression;
+import org.jetbrains.uast.visitor.AbstractUastNonRecursiveVisitor;
 
 import static com.intellij.codeInsight.AnnotationUtil.CHECK_HIERARCHY;
 
-public final class RedundantToBindingInspection extends BaseInspection {
+/**
+ * Reports redundant {@code .to()} bindings where the target class is the same as the bound
+ * class (a self-binding), or where the target matches the class already specified by an
+ * {@code @ImplementedBy} annotation on the bound type.
+ *
+ * <p>Example:
+ * <pre>
+ * // Flagged: self-binding is redundant
+ * bind(Foo.class).to(Foo.class);
+ *
+ * // Flagged: @ImplementedBy already points to FooImpl
+ * {@literal @}ImplementedBy(FooImpl.class)
+ * interface Foo {}
+ * bind(Foo.class).to(FooImpl.class);  // redundant
+ *
+ * // OK: binding to a different implementation
+ * bind(Foo.class).to(SpecialFoo.class);
+ * </pre>
+ */
+public final class RedundantToBindingInspection extends BaseUastInspection {
+  public RedundantToBindingInspection() {
+    super(UCallExpression.class);
+  }
+
   @Override
   protected @NotNull String buildErrorString(Object... infos) {
     return GuiceBundle.message("redundant.to.binding.problem.descriptor");
   }
 
   @Override
-  public BaseInspectionVisitor buildVisitor() {
-    return new Visitor();
+  public @NotNull AbstractUastNonRecursiveVisitor buildUastVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
+    return new Visitor(this, holder, isOnTheFly);
   }
 
   @Override
@@ -29,67 +55,58 @@ public final class RedundantToBindingInspection extends BaseInspection {
     return new DeleteBindingFix();
   }
 
-  private static class Visitor extends BaseInspectionVisitor {
+  private static class Visitor extends BaseUastInspectionVisitor {
+    Visitor(@NotNull BaseUastInspection inspection, @NotNull ProblemsHolder holder, boolean onTheFly) {
+      super(inspection, holder, onTheFly);
+    }
+
     @Override
-    public void visitMethodCallExpression(@NotNull PsiMethodCallExpression expression) {
-      super.visitMethodCallExpression(expression);
-      final PsiReferenceExpression methodExpression = expression.getMethodExpression();
-      final String methodName = methodExpression.getReferenceName();
-      if (!"to".equals(methodName)) {
-        return;
+    public boolean visitCallExpression(@NotNull UCallExpression expression) {
+      if (!"to".equals(expression.getMethodName())) {
+        return true;
       }
-      final PsiExpression[] args = expression.getArgumentList().getExpressions();
-      if (args.length != 1) {
-        return;
-      }
-      final PsiExpression arg = args[0];
-      if (!(arg instanceof PsiClassObjectAccessExpression)) {
-        return;
-      }
-      final PsiTypeElement classTypeElement = ((PsiClassObjectAccessExpression)arg).getOperand();
-      final PsiType classType = classTypeElement.getType();
-      if (!(classType instanceof PsiClassType)) {
-        return;
-      }
-      final PsiClass referentClass = ((PsiClassType)classType).resolve();
+      PsiClass referentClass = GuiceUtils.resolveClassArgument(expression);
       if (referentClass == null) {
-        return;
+        return true;
       }
       final PsiClass boundClass = GuiceUtils.findImplementedClassForBinding(expression);
       if (boundClass == null) {
-        return;
+        return true;
       }
-      if (GuiceUtils.findAnnotatedWithCallForBinding(expression) != null) {
-        return;
+      if (GuiceUtils.findCallInChain(expression, "annotatedWith") != null) {
+        return true;
       }
       if (AnnotationUtil.isAnnotated(boundClass, GuiceAnnotations.PROVIDED_BY, CHECK_HIERARCHY)) {
-        return;
+        return true;
       }
       if (AnnotationUtil.isAnnotated(boundClass, GuiceAnnotations.IMPLEMENTED_BY, CHECK_HIERARCHY)) {
-        final PsiAnnotation implementedByAnnotation = boundClass.getModifierList().findAnnotation(GuiceAnnotations.IMPLEMENTED_BY);
-        if (implementedByAnnotation == null) return;
+        PsiModifierList modifierList = boundClass.getModifierList();
+        if (modifierList == null) return true;
+        final PsiAnnotation implementedByAnnotation = modifierList.findAnnotation(GuiceAnnotations.IMPLEMENTED_BY);
+        if (implementedByAnnotation == null) return true;
         final PsiElement defaultValue = AnnotationUtils.findDefaultValue(implementedByAnnotation);
         if (defaultValue == null) {
-          return;
+          return true;
         }
         if (!(defaultValue instanceof PsiClassObjectAccessExpression)) {
-          return;
+          return true;
         }
         final PsiTypeElement implementByClass = ((PsiClassObjectAccessExpression)defaultValue).getOperand();
         final PsiType implmenetedByClass = implementByClass.getType();
         if (!(implmenetedByClass instanceof PsiClassType)) {
-          return;
+          return true;
         }
         final PsiClass implementedByClass = ((PsiClassType)implmenetedByClass).resolve();
         if (referentClass.equals(implementedByClass)) {
-          registerError(classTypeElement);
+          registerError(expression);
         }
       }
       else {
         if (boundClass.equals(referentClass)) {
-          registerError(classTypeElement);
+          registerError(expression);
         }
       }
+      return true;
     }
   }
 }
