@@ -21,7 +21,15 @@ dependencies {
         bundledPlugin("org.intellij.groovy")
     }
 
-    compileOnly("org.grails:grails-core:1.2.0")
+    // grails-core 1.2.0 transitively drags in the groovy-all 1.6.7. Under 2026.2 that
+    // shadows the modern Groovy compiler AST API this module is written against (e.g.
+    // ModuleNode.addStaticStarImport). Exclude it and compile against a modern Groovy so the AST
+    // types resolve; at JPS runtime the Grails project's own Groovy is used, so the compile-time
+    // Groovy only needs matching fully-qualified names.
+    compileOnly("org.grails:grails-core:1.2.0") {
+        exclude(group = "org.codehaus.groovy", module = "groovy-all")
+    }
+    compileOnly("org.codehaus.groovy:groovy:3.0.25")
 }
 
 java.sourceSets["main"].java {

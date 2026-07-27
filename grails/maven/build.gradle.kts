@@ -10,7 +10,7 @@ plugins {
 group = "org.intellij.grails.maven"
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(25)
 }
 
 repositories {
@@ -24,6 +24,11 @@ dependencies {
     intellijPlatform {
         intellijIdea(properties("platformVersion"))
         bundledPlugin("org.jetbrains.idea.maven")
+        // Java debugger APIs (GenericDebuggerRunner, DebuggerUtils, DebuggerSettings) are split
+        // across these java-plugin modules in 2026.2
+        bundledModule("intellij.java.debugger")
+        bundledModule("intellij.java.debugger.impl")
+        bundledModule("intellij.java.debugger.impl.shared")
     }
 
     compileOnly(project(":grails-rt"))

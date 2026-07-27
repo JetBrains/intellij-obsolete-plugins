@@ -7,7 +7,7 @@ fun properties(key: String) = project.findProperty(key).toString()
 plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "2.3.0"
-    id("org.jetbrains.intellij.platform") version "2.14.0"
+    id("org.jetbrains.intellij.platform") version "2.18.1"
 }
 
 group = "org.intellij.grails"
@@ -28,6 +28,7 @@ dependencies {
         bundledPlugin("com.intellij.persistence")
         bundledPlugin("com.intellij.javaee.jpa")
         bundledPlugin("com.intellij.jsp")
+        bundledPlugin("com.intellij.javaee.el")
         bundledPlugin("com.intellij.javaee.web")
         bundledPlugin("org.intellij.groovy")
         bundledPlugin("com.intellij.database")
@@ -83,7 +84,7 @@ dependencies {
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(25)
 }
 
 java.sourceSets["main"].java {

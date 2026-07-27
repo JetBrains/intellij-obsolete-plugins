@@ -28,13 +28,8 @@ public class Grails2_0_JUnitPatcher extends CompilationUnitPatcher {
       @Override
       public void call(SourceUnit source, GeneratorContext context, ClassNode classNode) throws CompilationFailedException {
         if (hasTestForAnnotation(classNode)) {
-          source.getAST().addStaticStarImport(null, ClassHelper.make("org.junit.Assert"));
+          source.getAST().addStaticStarImport("org.junit.Assert", ClassHelper.make("org.junit.Assert"));
         }
-      }
-
-      @Override
-      public void doPhaseOperation(CompilationUnit unit) throws CompilationFailedException {
-        super.doPhaseOperation(unit);
       }
     }, Phases.CONVERSION);
 
@@ -72,11 +67,6 @@ public class Grails2_0_JUnitPatcher extends CompilationUnitPatcher {
             method.addAnnotation(annotationNode);
           }
         }
-      }
-
-      @Override
-      public void doPhaseOperation(CompilationUnit unit) throws CompilationFailedException {
-        super.doPhaseOperation(unit);
       }
     }, Phases.INSTRUCTION_SELECTION);
   }

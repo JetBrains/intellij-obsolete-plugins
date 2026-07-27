@@ -21,6 +21,8 @@ dependencies {
         intellijIdea(properties("platformVersion"))
         bundledPlugin("com.intellij.copyright")
         bundledPlugin("com.intellij.jsp")
+        // JspFile moved to the intellij.jsp content module (java plugin) in 2026.2
+        bundledModule("intellij.jsp")
         bundledModule("intellij.javaee.jsp.copyright")
     }
 

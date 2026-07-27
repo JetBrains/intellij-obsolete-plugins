@@ -20,13 +20,14 @@ repositories {
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(25)
 }
 
 dependencies {
     intellijPlatform {
         intellijIdea(properties("platformVersion"))
         bundledPlugin("org.intellij.groovy")
+        bundledPlugin("com.intellij.gradle")
         bundledPlugin("org.jetbrains.plugins.gradle")
 
         // add to _production_ deps

@@ -16,6 +16,15 @@
   </description>
   <vendor>JetBrains</vendor>
 
+  <content namespace="grails">
+    <module name="Grails.copyright"/>
+    <module name="Grails.coverage"/>
+    <module name="Grails.hibernate"/>
+    <module name="Grails.i18n"/>
+    <module name="Grails.langInjection"/>
+    <module name="Grails.maven"/>
+  </content>
+
   <dependencies>
     <module name="intellij.javaee.platform"/>
     <module name="intellij.javaee.platform.impl"/>
