@@ -113,7 +113,10 @@ public final class UiXmlUnresolvedReferencesInspection extends BaseGwtInspection
       }
       else {
         if (resolvedReference instanceof PsiClass psiClass) {
-          if (!InheritanceUtil.isInheritor(psiClass, UiBinderUtil.WIDGET_BASE_CLASS)) {
+          // GWT UiBinder also accepts non-widget UIObject subclasses added through custom element parsers
+          // (e.g. MenuItem inside a MenuBar), so those must not be reported as "doesn't implement IsWidget" (IDEA-246722).
+          if (!InheritanceUtil.isInheritor(psiClass, UiBinderUtil.WIDGET_BASE_CLASS)
+              && !InheritanceUtil.isInheritor(psiClass, UiBinderUtil.UI_OBJECT_CLASS)) {
             String message = GwtBundle.message("problem.description.class.is.not.widget", simpleName);
             problems.add(manager.createProblemDescriptor(tag, reference.getRangeInElement(), message,
                                                          ProblemHighlightType.GENERIC_ERROR, isOnTheFly));

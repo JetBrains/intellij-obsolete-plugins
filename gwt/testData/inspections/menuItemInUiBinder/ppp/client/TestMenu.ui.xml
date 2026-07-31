@@ -1,0 +1,12 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+  <g:HTMLPanel>
+    <g:MenuBar ui:field="menu">
+      <g:MenuItem text="Menu1">
+        <g:MenuBar vertical="true">
+          <g:MenuItem text="Menu2"/>
+        </g:MenuBar>
+      </g:MenuItem>
+    </g:MenuBar>
+  </g:HTMLPanel>
+</ui:UiBinder>

@@ -57,6 +57,10 @@ public class GwtInspectionsTest extends GwtInspectionsTestCase {
     doTest(new UiXmlUnresolvedReferencesInspection());
   }
 
+  public void testMenuItemInUiBinder() {
+    doTest(new UiXmlUnresolvedReferencesInspection());
+  }
+
   public void testOverlayTypeRestrictions() {
     doTest(new GwtOverlayTypeRestrictionsInspection());
   }

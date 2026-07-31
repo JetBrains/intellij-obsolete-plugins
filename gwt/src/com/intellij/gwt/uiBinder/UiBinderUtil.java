@@ -26,6 +26,9 @@ public final class UiBinderUtil {
   public static final @NonNls String ELEMENT_BASE_CLASS = "com.google.gwt.dom.client.Element";
   public static final @NonNls String WIDGET_BASE_CLASS = "com.google.gwt.user.client.ui.IsWidget";
   public static final @NonNls String WIDGET_CLASS = "com.google.gwt.user.client.ui.Widget";
+  // Base class of GWT UI types that are usable in UiBinder templates via custom element parsers even though they are
+  // not widgets (e.g. MenuItem, TreeItem, StackLayoutPanel headers).
+  public static final @NonNls String UI_OBJECT_CLASS = "com.google.gwt.user.client.ui.UIObject";
   public static final @NonNls String URN_IMPORT_PREFIX = "urn:import:";
   public static final @NonNls String UI_BINDER_NAMESPACE = "urn:ui:com.google.gwt.uibinder";
   public static final @NonNls String UI_FIELD_ATTRIBUTE = "field";
