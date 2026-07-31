@@ -65,7 +65,8 @@ public final class GwtInconsistentSerializableClassInspection extends BaseGwtIns
     List<ProblemDescriptor> descriptors = new ArrayList<>();
     final PsiField[] psiFields = aClass.getFields();
     for (PsiField psiField : psiFields) {
-      if (!psiField.hasModifierProperty(PsiModifier.TRANSIENT)) {
+      // Static fields (including static final) are never serialized by GWT RPC, so skip them (IDEA-297190).
+      if (!psiField.hasModifierProperty(PsiModifier.TRANSIENT) && !psiField.hasModifierProperty(PsiModifier.STATIC)) {
         final PsiType type = psiField.getType();
         if (!serializableChecker.isSerializable(type)) {
           final String description = GwtBundle.message("problem.description.field.0.is.not.serializable", type.getPresentableText());
