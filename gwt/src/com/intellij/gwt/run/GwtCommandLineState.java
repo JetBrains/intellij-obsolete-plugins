@@ -62,6 +62,7 @@ import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.application.PluginPathManager;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.application.WriteAction;
+import com.intellij.openapi.components.PathMacroManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
@@ -398,7 +399,8 @@ public final class GwtCommandLineState extends JavaCommandLineStateEx {
   }
 
   private String getWorkingDirectoryPath() {
-    return StringUtil.nullize(myRunConfigurationState.WORKING_DIRECTORY);
+    final String workingDirectory = StringUtil.nullize(myRunConfigurationState.WORKING_DIRECTORY);
+    return workingDirectory == null ? null : expandModuleDir(workingDirectory);
   }
 
   @Override
@@ -645,12 +647,13 @@ public final class GwtCommandLineState extends JavaCommandLineStateEx {
   }
 
   private String expandModuleDir(String value) {
-    if (myModuleDir != null && value.contains(PathMacroUtil.DEPRECATED_MODULE_DIR)) {
-      return value.replace(PathMacroUtil.DEPRECATED_MODULE_DIR, myModuleDir);
+    // Expand project-level path macros ($PROJECT_DIR$, $USER_HOME$, ...) in addition to $MODULE_DIR$ so that macros
+    // used in run-configuration parameters and the working directory are resolved at execution time (IDEA-377758).
+    final String expanded = PathMacroManager.getInstance(myProject).expandPath(value);
+    if (myModuleDir != null && expanded.contains(PathMacroUtil.DEPRECATED_MODULE_DIR)) {
+      return expanded.replace(PathMacroUtil.DEPRECATED_MODULE_DIR, myModuleDir);
     }
-    else {
-      return value;
-    }
+    return expanded;
   }
 
   private static final class IdeGwtDependenciesResolver implements GwtDependenciesResolver {
