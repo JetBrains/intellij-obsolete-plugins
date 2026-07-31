@@ -21,9 +21,12 @@ public enum GwtVersionImpl implements GwtVersion {
   VERSION_2_5,
   VERSION_2_6,
   VERSION_2_7,
-  VERSION_2_8;
+  VERSION_2_8,
+  VERSION_2_9,
+  VERSION_2_10,
+  VERSION_2_11;
 
-  public static final GwtVersionImpl LATEST = VERSION_2_8;
+  public static final GwtVersionImpl LATEST = VERSION_2_11;
 
   private static final @NonNls String[] GWT_15_SAMPLE_TEMPLATES = {
       "java/client/App.java.ft",
@@ -240,6 +243,12 @@ public enum GwtVersionImpl implements GwtVersion {
 
   @Override
   public @NotNull LanguageLevel getHighestSupportedLanguageLevel() {
+    if (isAtLeast(VERSION_2_11)) {
+      return LanguageLevel.JDK_17;
+    }
+    if (isAtLeast(VERSION_2_10)) {
+      return LanguageLevel.JDK_11;
+    }
     if (isAtLeast(VERSION_2_8)) {
       return LanguageLevel.JDK_1_8;
     }
