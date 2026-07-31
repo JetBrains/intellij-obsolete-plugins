@@ -58,7 +58,11 @@ public final class GwtSuperSourceElementFinder extends PsiElementFinder {
   public GwtSuperSourceElementFinder(Project project) {
     myProject = project;
     myPsiManager = PsiManager.getInstance(project);
-    MessageBusConnection busConnection = myProject.getMessageBus().connect();
+    // Tie all listener registrations to the plugin-scoped cache service so they are removed when the plugin is
+    // unloaded; a parent-less message-bus connection / PSI tree change listener would otherwise retain this finder
+    // (and its PluginClassLoader) forever, leaking memory on dynamic plugin unload (IDEA-339371).
+    GwtSuperSourceClassCacheImpl cacheService = (GwtSuperSourceClassCacheImpl)GwtSuperSourceClassCache.getInstance(project);
+    MessageBusConnection busConnection = myProject.getMessageBus().connect(cacheService);
     busConnection.subscribe(ModuleRootListener.TOPIC, new ModuleRootListener() {
       @Override
       public void rootsChanged(@NotNull ModuleRootEvent event) {
@@ -115,12 +119,12 @@ public final class GwtSuperSourceElementFinder extends PsiElementFinder {
       public void childrenChanged(@NotNull PsiTreeChangeEvent event) {
         processChange(event);
       }
-    });
+    }, cacheService);
 
     LowMemoryWatcher.register(() -> {
       myNonExistentSuperSourcePackages.clear();
       mySuperSourceClassesByDirectory.clear();
-    }, (GwtSuperSourceClassCacheImpl) GwtSuperSourceClassCache.getInstance(project));
+    }, cacheService);
   }
 
   private void clearCaches() {
