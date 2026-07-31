@@ -44,10 +44,10 @@ dependencies {
         pluginModule(project(":dev"))
 
         // additional plugins required for testing
+        // (org.jetbrains.idea.maven is already provided by the bundledPlugin declaration above)
         testBundledPlugin("com.intellij.spring")
         testBundledPlugin("com.intellij.spring.mvc")
         testBundledPlugin("com.intellij.javaee")
-        testBundledPlugin("org.jetbrains.idea.maven")
 
         testFramework(TestFrameworkType.Platform)
         testFramework(TestFrameworkType.Plugin.Java)
