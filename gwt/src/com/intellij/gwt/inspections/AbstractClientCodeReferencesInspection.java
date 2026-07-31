@@ -7,12 +7,16 @@ import com.intellij.gwt.module.GwtModulesManager;
 import com.intellij.gwt.module.model.GwtModule;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.JavaRecursiveElementWalkingVisitor;
+import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiJavaCodeReferenceElement;
 import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiModifierList;
+import com.intellij.psi.PsiModifierListOwner;
 import com.intellij.psi.javadoc.PsiDocComment;
+import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -43,6 +47,12 @@ public abstract class AbstractClientCodeReferencesInspection extends BaseGwtInsp
 
       @Override
       public void visitReferenceElement(@NotNull PsiJavaCodeReferenceElement reference) {
+        // Code annotated with @GwtIncompatible (matched by simple name, as GWT itself does) is stripped by the GWT
+        // compiler, so references inside it must not be reported (IDEA-120419).
+        if (isUnderGwtIncompatible(reference)) {
+          super.visitReferenceElement(reference);
+          return;
+        }
         final PsiElement resolved = reference.resolve();
         if (resolved instanceof PsiClass referencedClass) {
           String className = referencedClass.getQualifiedName();
@@ -65,6 +75,23 @@ public abstract class AbstractClientCodeReferencesInspection extends BaseGwtInsp
     });
 
     return problems.toArray(ProblemDescriptor.EMPTY_ARRAY);
+  }
+
+  private static boolean isUnderGwtIncompatible(@NotNull PsiElement element) {
+    PsiModifierListOwner owner = PsiTreeUtil.getParentOfType(element, PsiModifierListOwner.class, false);
+    while (owner != null) {
+      final PsiModifierList modifierList = owner.getModifierList();
+      if (modifierList != null) {
+        for (PsiAnnotation annotation : modifierList.getAnnotations()) {
+          final PsiJavaCodeReferenceElement nameReference = annotation.getNameReferenceElement();
+          if (nameReference != null && "GwtIncompatible".equals(nameReference.getReferenceName())) {
+            return true;
+          }
+        }
+      }
+      owner = PsiTreeUtil.getParentOfType(owner, PsiModifierListOwner.class, true);
+    }
+    return false;
   }
 
   protected void checkMethodReference(PsiJavaCodeReferenceElement reference,
