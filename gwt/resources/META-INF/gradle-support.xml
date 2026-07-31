@@ -1,0 +1,10 @@
+<idea-plugin>
+  <extensions defaultExtensionNs="com.intellij">
+    <gwt.sdkType implementation="com.intellij.gwt.gradle.GwtGradleSdkType"/>
+    <externalProjectDataService implementation="com.intellij.gwt.gradle.GwtDependencyDataService"/>
+    <externalProjectDataService implementation="com.intellij.gwt.gradle.GwtArtifactsDataService"/>
+  </extensions>
+  <extensions defaultExtensionNs="org.jetbrains.plugins.gradle">
+    <executionEnvironmentProvider implementation="com.intellij.gwt.gradle.GwtGradleExecutionEnvironmentProvider"/>
+  </extensions>
+</idea-plugin>

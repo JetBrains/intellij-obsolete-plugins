@@ -1,0 +1,5 @@
+<module>
+  <source path="client" includes="a/*/b.xml">
+    <include name="*xxx/*"/>
+  </source>
+</module>

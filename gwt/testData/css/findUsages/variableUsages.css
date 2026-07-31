@@ -1,0 +1,10 @@
+@def length 10em;
+
+.foo {
+    width: length;
+    height: length;
+}
+
+.bar {
+  padding: lengt<caret>h;
+}

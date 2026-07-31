@@ -1,0 +1,16 @@
+<idea-plugin>
+
+  <extensions defaultExtensionNs="org.jetbrains.idea.maven">
+    <importer implementation="com.intellij.gwt.maven.GwtTotspFacetImporter" order="after web"/>
+    <importer implementation="com.intellij.gwt.maven.GwtCodehausFacetImporter" order="after web"/>
+    <importer implementation="com.intellij.gwt.maven.GwtLtgtFacetImporter" order="after web"/>
+    <importer implementation="com.intellij.gwt.maven.GwtLtgtModuleImporter" order="last"/>
+
+    <projectResolutionContributor implementation="com.intellij.gwt.maven.GwtCodehausMavenProjectResolutionContributor"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <gwt.sdkType implementation="com.intellij.gwt.maven.GwtMavenSdkType"/>
+    <projectService serviceImplementation="com.intellij.gwt.maven.GwtLtgtModuleWatcher"/>
+  </extensions>
+</idea-plugin>

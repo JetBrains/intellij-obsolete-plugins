@@ -1,0 +1,11 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+  <g:Button/>
+  <g:<error descr="Cannot resolve symbol 'InvalidWidget' in 'com.google.gwt.user.client.ui'">InvalidWidget</error>/>
+  <g:<error descr="Class 'AttachDetachException' doesn't implement 'IsWidget' interface">AttachDetachException</error>/>
+  <g:DockLayoutPanel>
+    <g:north size="0"/>
+  </g:DockLayoutPanel>
+</ui:UiBinder>

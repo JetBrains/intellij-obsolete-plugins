@@ -1,0 +1,108 @@
+{
+  "inspections": [
+    {
+      "id": "NonSerializableServiceParameters",
+      "codeQualityCategory": "Reliability"
+    },
+    {
+      "id": "GwtDefaultPackageNotRegistered",
+      "codeQualityCategory": "Sanity"
+    },
+    {
+      "id": "GwtUiHandlerErrors",
+      "codeQualityCategory": "Reliability"
+    },
+    {
+      "id": "NonJREEmulationClassesInClientCode",
+      "codeQualityCategory": "Sanity"
+    },
+    {
+      "id": "GWTRemoteServiceAsyncCheck",
+      "codeQualityCategory": "Reliability"
+    },
+    {
+      "id": "GwtInconsistentSerializableClass",
+      "codeQualityCategory": "Reliability"
+    },
+    {
+      "id": "GwtJavaFromJSMethodCalls",
+      "codeQualityCategory": "Reliability"
+    },
+    {
+      "id": "GwtSetServiceEntryPointCalls",
+      "codeQualityCategory": "Code Style"
+    },
+    {
+      "id": "GwtServiceNotRegistered",
+      "codeQualityCategory": "Sanity"
+    },
+    {
+      "id": "GwtObsoleteTypeArgsJavadocTag",
+      "codeQualityCategory": "Code Style"
+    },
+    {
+      "id": "GwtClientClassFromNonInheritedModule",
+      "codeQualityCategory": "Sanity"
+    },
+    {
+      "id": "GwtDeprecatedPropertyKeyJavadocTag",
+      "codeQualityCategory": "Code Style"
+    },
+    {
+      "id": "gwtRawAsyncCallback",
+      "codeQualityCategory": "Sanity"
+    },
+    {
+      "id": "GwtMethodWithParametersInConstantsInterface",
+      "codeQualityCategory": "Sanity"
+    },
+    {
+      "id": "GwtToHtmlReferences",
+      "codeQualityCategory": "Reliability"
+    },
+    {
+      "id": "GwtOverlayTypeRestrictionsViolated",
+      "codeQualityCategory": "Sanity"
+    },
+    {
+      "id": "GWTStyleCheck",
+      "codeQualityCategory": "Reliability"
+    },
+    {
+      "id": "GwtUiFieldAssignment",
+      "codeQualityCategory": "Sanity"
+    },
+    {
+      "id": "GwtUiFieldErrors",
+      "codeQualityCategory": "Reliability"
+    },
+    {
+      "id": "GwtCssResourceErrors",
+      "codeQualityCategory": "Reliability"
+    },
+    {
+      "id": "GwtInconsistentI18nInterface",
+      "codeQualityCategory": "Reliability"
+    },
+    {
+      "id": "GwtIncorrectArgumentOfGwtCreateMethod",
+      "codeQualityCategory": "Reliability"
+    },
+    {
+      "id": "GwtDeprecatedEventListeners",
+      "codeQualityCategory": "Reliability"
+    },
+    {
+      "id": "GwtUiBinderErrors",
+      "codeQualityCategory": "Reliability"
+    },
+    {
+      "id": "GwtUiXmlReferences",
+      "codeQualityCategory": "Sanity"
+    },
+    {
+      "id": "GwtJavaScriptReferences",
+      "codeQualityCategory": "Sanity"
+    }
+  ]
+}

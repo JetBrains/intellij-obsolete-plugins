@@ -1,0 +1,14 @@
+<idea-plugin>
+
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <plugin id="com.intellij.spring.mvc"/>
+    <module name="intellij.java.psi"/>
+    <module name="intellij.spring.mvc.core"/>
+  </dependencies>
+  <!-- endregion -->
+
+  <extensions defaultExtensionNs="com.intellij">
+    <gwt.unregisteredServletFilter implementation="com.intellij.gwt.spring.SpringControllerServletCondition"/>
+  </extensions>
+</idea-plugin>

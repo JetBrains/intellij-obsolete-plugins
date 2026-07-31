@@ -1,0 +1,14 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'
+>
+  <ui:style src="style.css">
+    @def INNER 100%;
+
+    div {
+      width: INNER;
+      width: OUTER;
+      width: <error descr="Mismatched property value (<anchor-size()>)"><error descr="Mismatched property value ([-webkit-fill-available | stretch] | [-webkit-fit-content | -moz-fit-content | intrinsic | fit-content] | contain)"><error descr="Mismatched property value (auto | <length-percentage> | [-moz-min-content | min-intrinsic | min-content] | [-webkit-max-content | -moz-max-content | intrinsic | max-content] | fit-content() | <calc-size()>)"><error descr="Mismatched property value (initial | inherit | unset | revert | revert-layer)">ERROR</error></error></error></error>;
+    }
+  </ui:style>
+  <g:HTMLPanel/>
+</ui:UiBinder>

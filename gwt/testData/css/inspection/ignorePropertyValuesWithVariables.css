@@ -1,0 +1,6 @@
+@def name 100%;
+
+div {
+  width: name;
+  width: <error descr="Mismatched property value (<anchor-size()>)"><error descr="Mismatched property value ([-webkit-fill-available | stretch] | [-webkit-fit-content | -moz-fit-content | intrinsic | fit-content] | contain)"><error descr="Mismatched property value (auto | <length-percentage> | [-moz-min-content | min-intrinsic | min-content] | [-webkit-max-content | -moz-max-content | intrinsic | max-content] | fit-content() | <calc-size()>)"><error descr="Mismatched property value (initial | inherit | unset | revert | revert-layer)">name1</error></error></error></error>;
+}

@@ -1,0 +1,4 @@
+<module>
+  <servlet path="/MyService1" class="server.MyServiceImpl"/>
+  <servlet path="/MyService2" class="server.MyServiceImpl"/>
+</module>

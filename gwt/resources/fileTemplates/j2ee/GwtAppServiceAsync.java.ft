@@ -1,0 +1,7 @@
+package ${PACKAGE_NAME};
+
+import com.google.gwt.user.client.rpc.AsyncCallback;
+
+#parse("File Header.java")
+public interface ${NAME} {
+}

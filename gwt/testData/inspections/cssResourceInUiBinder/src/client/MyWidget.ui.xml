@@ -1,0 +1,13 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'>
+  <ui:style type='client.MyWidget.MyStyle'>
+    .my-class {}
+
+    .myLabelClass {}
+
+    .my-unused-class {}
+  </ui:style>
+
+  <ui:style>
+    .my-class-2 {}
+  </ui:style>
+</ui:UiBinder>

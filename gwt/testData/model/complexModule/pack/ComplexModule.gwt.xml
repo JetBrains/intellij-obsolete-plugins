@@ -1,0 +1,9 @@
+<module>
+  <inherits name='com.google.gwt.user.User'/>
+  <inherits name="MyModule"/>
+
+  <source path="client1"/>
+  <public path="public1/public2"/>
+  <servlet path="/path" class="MyClass"/>
+  <super-source path="super1"/>
+</module>

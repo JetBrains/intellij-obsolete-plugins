@@ -1,0 +1,13 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+             xmlns:g="urn:import:com.google.gwt.user.client.ui"
+             xmlns:c="urn:import:client"
+>
+  <g:HTMLPanel>
+    <c:MyWidget URL="1234"></c:MyWidget>
+    <c:MyWidget uRL="1234"></c:MyWidget>
+    <c:MyWidget value="1234"></c:MyWidget>
+    <c:MyWidget <error descr="Attribute Value is not allowed here">Value</error>="1234"></c:MyWidget>
+  </g:HTMLPanel>
+</ui:UiBinder>

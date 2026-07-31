@@ -1,0 +1,10 @@
+@if user.agent safari {
+  .selector {
+    color: red;
+  }
+}
+@else {
+  .selector {
+    color: green;
+  }
+}

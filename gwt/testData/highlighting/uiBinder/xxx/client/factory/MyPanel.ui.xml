@@ -1,0 +1,7 @@
+<g:HTMLPanel xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'
+             xmlns:my='urn:import:xxx.client.factory' >
+
+  <my:Data ui:field='data' param='value'/>
+
+</g:HTMLPanel>

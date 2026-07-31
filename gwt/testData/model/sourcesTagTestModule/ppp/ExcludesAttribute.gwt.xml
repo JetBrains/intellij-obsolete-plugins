@@ -1,0 +1,3 @@
+<module>
+  <source path="client" excludes="a/r/b.xml,**/*.java" />
+</module>

@@ -1,0 +1,7 @@
+@mixin buttonBackground {
+  color: white;
+}
+
+@viewport {
+  <warning descr="Property 'color' is allowed only in following rules: page margin rule, regular ruleset, @page">color</warning>: white;
+}

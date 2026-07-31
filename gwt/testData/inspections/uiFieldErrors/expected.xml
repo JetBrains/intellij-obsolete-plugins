@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<problems>
+  <problem>
+    <file>SomeWidget.java</file>
+    <line>17</line>
+    <description>is not annotated</description>
+  </problem>
+  <problem>
+    <file>SomeWidget.java</file>
+    <line>18</line>
+    <description>should not be 'private'</description>
+  </problem>
+  <problem>
+    <file>SomeWidget.java</file>
+    <line>19</line>
+    <description>Expected</description>
+  </problem>
+  <problem>
+    <file>SomeWidget.java</file>
+    <line>20</line>
+    <description>is not bound to tag</description>
+  </problem>
+  <problem>
+    <file>SomeWidget.ui.xml</file>
+    <line>6</line>
+    <description>is not annotated</description>
+  </problem>
+  <problem>
+    <file>SomeWidget.ui.xml</file>
+    <line>7</line>
+    <description>should not be 'private'</description>
+  </problem>
+  <problem>
+    <file>SomeWidget.ui.xml</file>
+    <line>8</line>
+    <description>Expected</description>
+  </problem>
+  <problem>
+    <file>SomeWidget.ui.xml</file>
+    <line>10</line>
+    <description>Duplicate declaration</description>
+  </problem>
+  <problem>
+    <file>SomeWidget.ui.xml</file>
+    <line>11</line>
+    <description>Duplicate declaration</description>
+  </problem>
+  <problem>
+    <file>SomeWidget.java</file>
+    <line>26</line>
+    <description>Expected</description>
+  </problem>
+  <problem>
+    <file>SomeWidget.ui.xml</file>
+    <line>17</line>
+    <description>Expected</description>
+  </problem>
+  <problem>
+    <file>SomeWidget.java</file>
+    <line>28</line>
+    <description>Expected</description>
+  </problem>
+  <problem>
+    <file>SomeWidget.ui.xml</file>
+    <line>19</line>
+    <description>Expected</description>
+  </problem>
+</problems>
+

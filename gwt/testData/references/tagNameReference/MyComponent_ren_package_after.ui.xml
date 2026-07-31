@@ -1,0 +1,7 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:xxx='urn:import:pkg.xxx'>
+  <div>
+    <xxx:MyWidget ui:field="myWidget"/>
+    <xxx:zzz.MySubWidget ui:field="mySubWidget"/>
+  </div>
+</ui:UiBinder>

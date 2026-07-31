@@ -1,0 +1,8 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+    <ui:with field='obj' type='ppp.client.uiWith.MyAttributes'/>
+
+    <g:HTMLPanel>
+      <g:Image resource='{obj.getMy<caret>Attribute}:'/>
+    </g:HTMLPanel>
+</ui:UiBinder>

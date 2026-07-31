@@ -1,0 +1,6 @@
+<idea-plugin>
+  <extensions defaultExtensionNs="com.jetbrains">
+    <javaScriptDebugAware implementation="com.intellij.gwt.run.JavaToJavaScriptDebugAware"/>
+    <fileUrlMapper implementation="com.intellij.gwt.run.GwtFileUrlMapper"/>
+  </extensions>
+</idea-plugin>

@@ -1,0 +1,4 @@
+@if user.agent safari {
+  .selector {
+  }
+}

@@ -1,0 +1,18 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+  <ui:style>
+    .my-inner-style {}
+  </ui:style>
+  <ui:style field='ext' src="external.css"/>
+  <ui:with field='res' type="ppp.client.MyMessages"/>
+  <g:HTMLPanel>
+    <g:Button addStyleNames="{unresolvedRoot}" text="Click me"/>
+    <g:Button addStyleNames="{res.unresolvedMethod}" text="Click me"/>
+    <g:Button addStyleNames="{res.hello}" text="Click me"/>
+
+    <g:Button addStyleNames="{style.my-inner-style}" text="Click me"/>
+    <g:Button addStyleNames="{style.unknown-inner-style}" text="Click me"/>
+    <g:Button addStyleNames="{ext.ExternalStyle}" text="Click me"/>
+    <g:Button addStyleNames="{ext.UnknownExternalStyle}" text="Click me"/>
+  </g:HTMLPanel>
+</ui:UiBinder>

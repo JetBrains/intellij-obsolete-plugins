@@ -1,0 +1,5 @@
+@def big 100px;
+@def redColor #f00;
+.selector {
+  border: big solid redColor;
+}

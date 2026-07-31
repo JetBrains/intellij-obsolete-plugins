@@ -1,0 +1,5 @@
+<module>
+  <source path="client">
+    <exclude name="**/*.xml"/>
+  </source>
+</module>

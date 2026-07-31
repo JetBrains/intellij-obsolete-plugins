@@ -1,0 +1,10 @@
+@def new_name 10em;
+
+.foo {
+    width: new_name;
+    height: new_name;
+}
+
+.bar {
+  padding: new_n<caret>ame;
+}

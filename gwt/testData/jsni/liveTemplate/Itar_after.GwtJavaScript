@@ -1,0 +1,6 @@
+var obj;
+
+for (var i = 0; i < obj.length; i++) {
+    var objElement = obj[i];
+    <caret>
+}

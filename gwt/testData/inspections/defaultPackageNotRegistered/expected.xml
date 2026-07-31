@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<problems>
+  <problem>
+    <file>Module1.gwt.xml</file>
+    <line>2</line>
+    <description>not registered</description>
+  </problem>
+  <problem>
+    <file>Module1.gwt.xml</file>
+    <line>3</line>
+    <description>not registered</description>
+  </problem>
+</problems>
+

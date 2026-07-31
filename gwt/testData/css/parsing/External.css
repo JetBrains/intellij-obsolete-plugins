@@ -1,0 +1,5 @@
+@external oldSelector1, oldSelector2;
+@external oldSelector3;
+.obfuscated .oldSelector1 {
+  color: red;
+}

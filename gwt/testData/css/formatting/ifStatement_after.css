@@ -1,0 +1,5 @@
+@if user.agent safari {
+    .selector {
+        color: red
+    }
+}

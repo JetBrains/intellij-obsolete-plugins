@@ -1,0 +1,23 @@
+package ${PACKAGE_NAME}.client;
+
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.rpc.RemoteService;
+import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
+
+@RemoteServiceRelativePath("${SHORT_SERVLET_PATH}")
+public interface ${NAME}Service extends RemoteService {
+    // Sample interface method of remote interface
+    String getMessage(String msg);
+
+    /**
+     * Utility/Convenience class.
+     * Use ${NAME}Service.App.getInstance() to access static instance of ${NAME}ServiceAsync
+     */
+    public static class App {
+      private static ${NAME}ServiceAsync ourInstance = GWT.create(${NAME}Service.class);
+
+      public static synchronized ${NAME}ServiceAsync getInstance() {
+        return ourInstance;
+      }
+    }
+}

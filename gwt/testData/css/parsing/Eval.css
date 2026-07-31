@@ -1,0 +1,4 @@
+@eval myColor com.MyModule.getErrorColor();
+div {
+  color: myColor;
+}

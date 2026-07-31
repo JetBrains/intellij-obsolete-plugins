@@ -1,0 +1,6 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:ppp='urn:import:ppp.client'>
+  <div>
+    <ppp:MyWidget int<caret>P />
+  </div>
+</ui:UiBinder>

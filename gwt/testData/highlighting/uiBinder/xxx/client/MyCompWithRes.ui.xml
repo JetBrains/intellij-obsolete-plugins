@@ -1,0 +1,18 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder' xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+
+  <ui:with field='res' type='xxx.client.Resources'/>
+
+  <g:HTMLPanel>
+    <g:Image resource='{res.logo}'/>
+
+    <div class='{res.style.mainBlock}'>
+      <div class='{res.style.userPictureSprite}'/>
+
+      <div>
+        Well hello there
+        <span class='{res.style.nameSpan}' ui:field='nameSpan'/>
+      </div>
+    </div>
+
+  </g:HTMLPanel>
+</ui:UiBinder>

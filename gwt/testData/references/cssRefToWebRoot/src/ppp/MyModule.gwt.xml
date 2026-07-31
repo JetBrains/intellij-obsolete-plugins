@@ -1,0 +1,4 @@
+<module>
+  <stylesheet src="/absolute.css"/>
+  <stylesheet src="../relative.css"/>
+</module>

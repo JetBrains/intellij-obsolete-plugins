@@ -1,0 +1,5 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'>
+  <div>
+    <span ui:field="nameS<caret>panField"/>
+  </div>
+</ui:UiBinder>

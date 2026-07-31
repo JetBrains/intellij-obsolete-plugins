@@ -1,0 +1,6 @@
+<module>
+  <source path="client"/>
+  <source path="client2"/>
+  <public path="public"/>
+  <public path="public2"/>
+</module>

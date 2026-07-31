@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>${NAME} Application</title>
+		<link rel="stylesheet" href="${NAME}.css">
+	</head>
+	<body>
+		<script type="text/javascript" src="${GWT_MODULE_PATH}.nocache.js"></script>
+		<h1>${NAME} Application</h1>
+	</body>
+</html>

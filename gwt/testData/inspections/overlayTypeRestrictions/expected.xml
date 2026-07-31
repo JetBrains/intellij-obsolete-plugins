@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<problems>
+  <problem>
+    <file>ConstructorWithBody.java</file>
+    <line>4</line>
+    <description>Constructor in overlay type must have empty body</description>
+  </problem>
+  <problem>
+    <file>ConstructorWithParameter.java</file>
+    <line>4</line>
+    <description>Constructor in overlay type cannot have parameters</description>
+  </problem>
+  <problem>
+    <file>PublicConstructor.java</file>
+    <line>4</line>
+    <description>Constructor in overlay type must be protected</description>
+  </problem>
+  <problem>
+    <file>WithoutConstructor.java</file>
+    <line>3</line>
+    <description>Overlay type must have protected, empty constructor without parameters</description>
+  </problem>
+  <problem>
+    <file>InnerClasses.java</file>
+    <line>8</line>
+    <description>Inner classes in overlay type must be static</description>
+  </problem>
+  <problem>
+    <file>InstanceField.java</file>
+    <line>4</line>
+    <description>Overlay type cannot have instance fields</description>
+  </problem>
+  <problem>
+    <file>NonFinalMethods.java</file>
+    <line>10</line>
+    <description>Instance methods in overlay type must be final</description>
+  </problem>
+</problems>
+

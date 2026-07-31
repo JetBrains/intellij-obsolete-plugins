@@ -1,0 +1,11 @@
+.my-class {}
+
+.myLabelClass {}
+
+.my-unused-class {}
+
+.baseClass {}
+
+@if (true) {
+   .insideIf {}
+}

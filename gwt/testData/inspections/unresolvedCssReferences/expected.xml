@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<problems>
+  <problem>
+    <file>MyModule.java</file>
+    <line>8</line>
+    <description>UnknownStyle</description>
+  </problem>
+  <problem>
+    <file>MyModule.java</file>
+    <line>10</line>
+    <description>UnknownStyle</description>
+  </problem>
+  <problem>
+    <file>MyElement.ui.xml</file>
+    <line>5</line>
+    <description>UnknownStyle</description>
+  </problem>
+  <problem>
+    <file>MyElement.ui.xml</file>
+    <line>6</line>
+    <description>UnknownStyle</description>
+  </problem>
+</problems>
+

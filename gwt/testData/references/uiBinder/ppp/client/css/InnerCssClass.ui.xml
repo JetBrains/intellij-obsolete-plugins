@@ -1,0 +1,8 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+  <ui:style>
+    .my-inner-class {}
+    .my-inner-class2 {}
+  </ui:style>
+  <g:Button styleName="some-class {style.my-inner-<caret>class}"/>
+</ui:UiBinder>

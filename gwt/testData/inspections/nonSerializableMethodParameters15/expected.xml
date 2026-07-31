@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<problems>
+  <problem>
+    <file>MyService.java</file>
+    <line>7</line>
+    <description>Type 'java.util.Collection&lt;java.lang.Object&gt;' is not serializable</description>
+  </problem>
+</problems>
+

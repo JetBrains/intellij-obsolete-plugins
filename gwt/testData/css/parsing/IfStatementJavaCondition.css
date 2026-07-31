@@ -1,0 +1,4 @@
+@if (com.MyModule.isEnabled()) {
+  .selector {
+  }
+}

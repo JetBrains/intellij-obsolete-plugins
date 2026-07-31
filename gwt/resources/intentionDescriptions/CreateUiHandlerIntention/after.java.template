@@ -1,0 +1,5 @@
+public class MyWidget extends Composite {
+  @UiHandler("<spot>listBox</spot>")
+  public void <spot>listBox</spot>Something(SomethingEvent event) {
+  }
+}

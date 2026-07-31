@@ -1,0 +1,9 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'>
+  <div>
+    <div   ui:field="myDiv"/>
+    <div   ui:field="theDiv"/>
+
+    <table ui:field="myTable"/>
+    <table ui:field="theTable"/>
+  </div>
+</ui:UiBinder>

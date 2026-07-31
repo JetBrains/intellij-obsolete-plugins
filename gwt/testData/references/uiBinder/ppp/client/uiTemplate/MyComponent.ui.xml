@@ -1,0 +1,7 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+
+  <div>
+    <span ui:field="nameS<caret>p"/>
+  </div>
+</ui:UiBinder>

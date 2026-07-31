@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<problems>
+  <problem>
+    <file>MyCssResource.java</file>
+    <line>3</line>
+    <description>my-unused-class</description>
+  </problem>
+  <problem>
+    <file>MyCssResource.java</file>
+    <line>7</line>
+    <description>my-unresolved-class-1</description>
+  </problem>
+  <problem>
+    <file>MyCssResource.java</file>
+    <line>10</line>
+    <description>myUnresolvedClass2</description>
+  </problem>
+</problems>
+

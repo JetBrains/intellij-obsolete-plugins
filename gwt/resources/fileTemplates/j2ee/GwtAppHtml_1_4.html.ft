@@ -1,0 +1,10 @@
+<html>
+	<head>
+		<title>${NAME} Application</title>
+		<link rel="stylesheet" href="${NAME}.css">
+	</head>
+	<body>
+		<script type="text/javascript" language="javascript" src="${GWT_MODULE_NAME}.nocache.js"></script>
+		<h1>${NAME} Application</h1>
+	</body>
+</html>

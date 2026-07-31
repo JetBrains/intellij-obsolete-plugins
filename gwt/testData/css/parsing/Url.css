@@ -1,0 +1,5 @@
+@url myUrl methodName;
+
+.selector {
+    cursor: myUrl;
+}

@@ -1,0 +1,5 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:p='urn:import:pkg.subPackage'>
+  <div>
+  </div>
+</ui:UiBinder>

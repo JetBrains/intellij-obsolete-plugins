@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<problems>
+  <problem>
+    <file>MyWidget.java</file>
+    <line>6</line>
+    <description>my-unused-class</description>
+  </problem>
+  <problem>
+    <file>MyWidget.java</file>
+    <line>10</line>
+    <description>my-unresolved-class-1</description>
+  </problem>
+  <problem>
+    <file>MyWidget.java</file>
+    <line>13</line>
+    <description>myUnresolvedClass2</description>
+  </problem>
+</problems>
+

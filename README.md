@@ -43,3 +43,4 @@ This repository includes the following plugins:
   * [XSLT Debugger](https://plugins.jetbrains.com/plugin/1818-xslt-debugger)
   * [Chef](https://plugins.jetbrains.com/plugin/7548-chef)
   * [Puppet](https://plugins.jetbrains.com/plugin/7180-puppet)
+  * [GWT](https://plugins.jetbrains.com/plugin/14590-gwt)

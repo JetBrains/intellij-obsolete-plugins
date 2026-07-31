@@ -1,0 +1,8 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+    <ui:with field='res' type='ppp.client.uiWith.MyResources'/>
+
+    <g:HTMLPanel>
+      <div class='{res.style.mainBlo<caret>ck}'/>
+    </g:HTMLPanel>
+</ui:UiBinder>

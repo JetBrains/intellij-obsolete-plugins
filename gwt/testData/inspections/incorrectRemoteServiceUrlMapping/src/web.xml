@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="2.4"
+         xmlns="http://java.sun.com/xml/ns/j2ee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd" >
+  <servlet>
+      <servlet-name>MyService</servlet-name>
+      <servlet-class>lib.server.MyServiceImpl</servlet-class>
+  </servlet>
+  <servlet-mapping>
+      <servlet-name>MyService</servlet-name>
+      <url-pattern>/app.MyModule/service</url-pattern>
+  </servlet-mapping>
+
+
+  <servlet>
+      <servlet-name>AppService</servlet-name>
+      <servlet-class>app.server.AppServiceImpl</servlet-class>
+  </servlet>
+  <servlet-mapping>
+      <servlet-name>AppService</servlet-name>
+      <url-pattern>/app.MyModule/appService</url-pattern>
+  </servlet-mapping>
+
+</web-app>

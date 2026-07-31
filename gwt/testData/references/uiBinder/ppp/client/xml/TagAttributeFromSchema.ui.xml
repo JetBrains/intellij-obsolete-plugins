@@ -1,0 +1,9 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+  <div>
+    <g:DockLayoutPanel>
+      <g:west si<caret>z>
+      </g:west>
+    </g:DockLayoutPanel>
+  </div>
+</ui:UiBinder>

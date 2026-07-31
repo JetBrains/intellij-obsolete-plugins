@@ -1,0 +1,8 @@
+${GWT_MODULE_DOCTYPE}
+<module>
+
+  <inherits name='com.google.gwt.user.User'/>
+
+  <entry-point class='${ENTRY_POINT_CLASS}'/>
+
+</module>

@@ -1,0 +1,10 @@
+@def big 100px;
+div {
+    color: red;
+}
+
+@eval myColor com.MyModule.getErrorColor();
+@url myUrl methodName;
+div {
+    color: blue;
+}

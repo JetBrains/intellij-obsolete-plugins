@@ -1,0 +1,5 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+  <ui:import field='ppp.client.uiImport.MyEnum.FIRST' />
+  <g:Label text="{FIRST.<caret>name}"/>
+</ui:UiBinder>

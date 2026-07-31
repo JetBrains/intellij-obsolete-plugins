@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<problems>
+  <problem>
+    <file>SomeWidget.java</file>
+    <line>23</line>
+    <description>Assignment to @UiField</description>
+  </problem>
+  <problem>
+    <file>SomeWidget.java</file>
+    <line>25</line>
+    <description>Assignment to @UiField</description>
+  </problem>
+</problems>
+

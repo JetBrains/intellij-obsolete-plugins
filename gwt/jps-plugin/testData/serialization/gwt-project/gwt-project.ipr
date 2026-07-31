@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ArtifactManager">
+    <artifact name="gwt">
+      <output-path>$PROJECT_DIR$/out/artifacts/gwt</output-path>
+      <root id="root">
+        <element id="gwt-compiler-output" facet="gwt-project/gwt/GWT" />
+        <element id="gwt-compiler-deploy-output" facet="gwt-project/gwt/GWT" />
+      </root>
+    </artifact>
+  </component>
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/dep/dep.iml" filepath="$PROJECT_DIR$/dep/dep.iml" />
+      <module fileurl="file://$PROJECT_DIR$/gwt-project.iml" filepath="$PROJECT_DIR$/gwt-project.iml" />
+    </modules>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_6" project-jdk-name="1.7" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/out" />
+  </component>
+  <component name="libraryTable">
+    <library name="gwt-user">
+      <CLASSES>
+        <root url="jar://$USER_HOME$/applications/gwt-2.4.0/gwt-user.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES>
+        <root url="jar://$USER_HOME$/applications/gwt-2.4.0/gwt-user.jar!/" />
+      </SOURCES>
+    </library>
+  </component>
+</project>
+

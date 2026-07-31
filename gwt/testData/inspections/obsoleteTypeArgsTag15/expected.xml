@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<problems>
+  <problem>
+    <file>MyService.java</file>
+    <line>4</line>
+    <description>deprecated</description>
+  </problem>
+  <problem>
+    <file>MyService.java</file>
+    <line>10</line>
+    <description>deprecated</description>
+  </problem>
+</problems>
+

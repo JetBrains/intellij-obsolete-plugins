@@ -1,0 +1,21 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'>
+  <ui:style>
+    .pretty { background-color: Skyblue; }
+  </ui:style>
+
+  <ui:style field='unresolvedStyle'>
+  </ui:style>
+
+  <ui:style field='typedStyle' type="pack.client.CssWidget.MyStyle">
+    .pretty { background-color: Orange; }
+  </ui:style>
+
+  <ui:style field='unresolvedTypedStyle' type="pack.client.CssWidget.MyStyle">
+    .pretty { background-color: Orange; }
+  </ui:style>
+
+  <ui:style type="pack.client.CssWidget.MyStyle">
+    .pretty { background-color: Orange; }
+  </ui:style>
+
+</ui:UiBinder>

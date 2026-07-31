@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<problems>
+  <problem>
+    <file>SomeWidget.java</file>
+    <line>24</line>
+    <description>Cannot resolve</description>
+  </problem>
+  <problem>
+    <file>SomeWidget.java</file>
+    <line>28</line>
+    <description>should not be 'private'</description>
+  </problem>
+  <problem>
+    <file>SomeWidget.java</file>
+    <line>31</line>
+    <description>must have a single event parameter defined</description>
+  </problem>
+  <problem>
+    <file>SomeWidget.java</file>
+    <line>34</line>
+    <description>is not an event</description>
+  </problem>
+  <problem>
+    <file>SomeWidget.java</file>
+    <line>36</line>
+    <description>does not have 'addHandler' method</description>
+  </problem>
+  <problem>
+    <file>SomeWidget.java</file>
+    <line>40</line>
+    <description>Cannot get EventHandler type</description>
+  </problem>
+</problems>
+

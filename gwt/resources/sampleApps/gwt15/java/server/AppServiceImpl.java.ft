@@ -1,0 +1,11 @@
+package ${PACKAGE_NAME}.server;
+
+import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+import ${PACKAGE_NAME}.client.${NAME}Service;
+
+public class ${NAME}ServiceImpl extends RemoteServiceServlet implements ${NAME}Service {
+    // Implementation of sample interface method
+    public String getMessage(String msg) {
+      return "Client said: \"" + msg + "\"<br>Server answered: \"Hi!\"";
+    }
+}

@@ -1,0 +1,8 @@
+<html>
+<body>
+Reports classes that implement the <code>IsSerializable</code> or <code>Serializable</code> interface but don't meet the requirements for serializable classes.
+<p>Serializable classes must have a public constructor without arguments, and all their fields without the <code>transient</code> modifier must be serializable.</p>
+<p>The quick-fix adds a constructor without arguments if it's missing, or sets the <code>public</code> modifier for it.</p>
+</body>
+</html>
+

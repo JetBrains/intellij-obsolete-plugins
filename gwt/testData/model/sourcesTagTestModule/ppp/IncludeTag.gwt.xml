@@ -1,0 +1,7 @@
+<module>
+  <source path="client">
+    <include name="**/*.xml"/>
+    <include name="**/*.JAVA"/>
+    <include name="*xxx/*"/>
+  </source>
+</module>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<problems>
+  <problem>
+    <file>MyServiceAsync.java</file>
+    <line>3</line>
+    <description>consistent</description>
+  </problem>
+  <problem>
+    <file>MyService.java</file>
+    <line>3</line>
+    <description>method</description>
+  </problem>
+</problems>
+

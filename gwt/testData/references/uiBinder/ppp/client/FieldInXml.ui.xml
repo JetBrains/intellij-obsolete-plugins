@@ -1,0 +1,7 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'>
+
+  <div>
+    <span ui:field="span"/>
+    <span ui:field="span2"/>
+  </div>
+</ui:UiBinder>

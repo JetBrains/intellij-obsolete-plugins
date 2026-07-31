@@ -1,0 +1,12 @@
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+             xmlns:g="urn:import:com.google.gwt.user.client.ui"
+             xmlns:my="urn:import:xxx.client">
+  <g:HTMLPanel>
+      <my:MySubClassWithUiChild>
+        <my:inner>
+          <g:TextBox />
+        </my:inner>
+      </my:MySubClassWithUiChild>
+  </g:HTMLPanel>
+
+</ui:UiBinder>

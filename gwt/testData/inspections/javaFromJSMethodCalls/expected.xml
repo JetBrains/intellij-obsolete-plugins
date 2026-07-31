@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<problems>
+  <problem>
+    <file>MyClass.java</file>
+    <line>8</line>
+    <description>Incorrect number of arguments for 'MyClass.mmm(int)' method: 1 expected but 0 found</description>
+  </problem>
+  <problem>
+    <file>MyClass.java</file>
+    <line>9</line>
+    <description>instance</description>
+  </problem>
+</problems>
+

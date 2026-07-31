@@ -1,0 +1,11 @@
+<idea-plugin>
+  <dependencies>
+    <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+    <module name="intellij.dev.psiViewer"/>
+    <module name="intellij.xml.psi.impl"/>
+    <!-- endregion -->
+  </dependencies>
+  <extensions defaultExtensionNs="com.intellij.dev">
+    <psiViewer.extension implementation="com.intellij.gwt.dev.psiViewer.GwtUiXmlPsiViewerExtension"/>
+  </extensions>
+</idea-plugin>

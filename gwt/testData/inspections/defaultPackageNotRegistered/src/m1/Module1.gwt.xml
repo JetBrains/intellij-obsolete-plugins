@@ -1,0 +1,4 @@
+<module>
+  <super-source path="super"/>
+  <public path="public2"/>
+</module>

@@ -1,0 +1,5 @@
+<module>
+  <source path="client" casesensitive="false">
+    <include name="**/*.JAVA"/>
+  </source>
+</module>

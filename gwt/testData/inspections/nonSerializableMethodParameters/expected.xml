@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<problems>
+  <problem>
+    <file>MyService.java</file>
+    <line>6</line>
+    <description>Type 'java.lang.Math' is not serializable</description>
+  </problem>
+  <problem>
+    <file>MyService.java</file>
+    <line>20</line>
+    <description>Type 'java.util.List&lt;java.lang.Math&gt;' is not serializable</description>
+  </problem>
+  <problem>
+    <file>MyService.java</file>
+    <line>22</line>
+    <description>Type of 'java.util.Collection' elements is not specified</description>
+  </problem>
+  <problem>
+    <file>MyService.java</file>
+    <line>27</line>
+    <description>Type of 'java.util.Collection' elements is not specified</description>
+  </problem>
+  <problem>
+    <file>MyService.java</file>
+    <line>32</line>
+    <description>Type of 'java.util.List' elements is not specified</description>
+  </problem>
+  <problem>
+    <file>MyService.java</file>
+    <line>37</line>
+    <description>Type of 'java.util.List' elements is not specified</description>
+  </problem>
+  <problem>
+    <file>MyService.java</file>
+    <line>42</line>
+    <description>Type 'java.util.List&lt;java.lang.Str&gt;' is not serializable</description>
+  </problem>
+  <problem>
+    <file>MyService.java</file>
+    <line>47</line>
+    <description>Type 'java.util.Listqwerty' is not serializable</description>
+  </problem>
+  <problem>
+    <file>MyService.java</file>
+    <line>49</line>
+    <description>Generics are not supported in GWT before 1.5 version</description>
+  </problem>
+  <problem>
+    <file>MyService.java</file>
+    <line>51</line>
+    <description>'java.lang.Throwable' is not a checked exception</description>
+  </problem>
+  <problem>
+    <file>MyService.java</file>
+    <line>53</line>
+    <description>'java.lang.Exception' is not serializable</description>
+  </problem>
+  <problem>
+    <file>MyService.java</file>
+    <line>55</line>
+    <description>'java.lang.ArrayIndexOutOfBoundsException' is not serializable</description>
+  </problem>
+</problems>
+

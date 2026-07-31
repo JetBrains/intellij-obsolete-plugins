@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.intellij.gwt.run.GwtRunConfigurationEditor">
+  <grid id="27dc6" binding="myMainPanel" layout-manager="GridLayoutManager" row-count="13" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="0" left="0" bottom="0" right="0"/>
+    <constraints>
+      <xy x="20" y="20" width="500" height="496"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <component id="86e25" class="com.intellij.ui.components.JBLabel" binding="myModuleLabel">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <labelFor value="d1e7d"/>
+          <text resource-bundle="messages/GwtBundle" key="label.choose.module.text"/>
+        </properties>
+      </component>
+      <vspacer id="41261">
+        <constraints>
+          <grid row="12" column="0" row-span="1" col-span="2" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+        </constraints>
+      </vspacer>
+      <component id="d1e7d" class="com.intellij.application.options.ModulesComboBox" binding="myModulesBox">
+        <constraints>
+          <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="7" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="1ff65" class="javax.swing.JCheckBox" binding="myPatchWebXmlCheckBox">
+        <constraints>
+          <grid row="10" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text resource-bundle="messages/GwtBundle" key="checkbox.text.use.custom.web.xml"/>
+        </properties>
+      </component>
+      <component id="47937" class="com.intellij.openapi.ui.TextFieldWithBrowseButton" binding="myWebXmlField">
+        <constraints>
+          <grid row="11" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="2" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="ef80a" class="com.intellij.ui.components.JBLabel" binding="myGwtModuleLabel">
+        <constraints>
+          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <labelFor value="61a36"/>
+          <text resource-bundle="messages/GwtBundle" key="label.text.gwt.module.to.load"/>
+        </properties>
+      </component>
+      <component id="61a36" class="com.intellij.ui.ComboboxWithBrowseButton" binding="myGwtModuleComboBox" custom-create="true">
+        <constraints>
+          <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="7" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="d94a5" class="com.intellij.ui.components.JBCheckBox" binding="myOpenInBrowserCheckBox" default-binding="true">
+        <constraints>
+          <grid row="7" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text resource-bundle="messages/GwtBundle" key="checkbox.open.in.browser"/>
+        </properties>
+      </component>
+      <grid id="2907c" binding="myBrowserSelectorPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+        <constraints>
+          <grid row="7" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children/>
+      </grid>
+      <component id="985d1" class="javax.swing.JCheckBox" binding="myUpdateResourcesOnFrameCheckBox" default-binding="true">
+        <constraints>
+          <grid row="9" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text resource-bundle="messages/GwtBundle" key="checkbox.update.resources.on.frame.deactivation"/>
+        </properties>
+      </component>
+      <component id="7a8e0" class="com.intellij.ui.components.JBCheckBox" binding="myUseSuperDevModeCheckBox">
+        <constraints>
+          <grid row="1" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text resource-bundle="messages/GwtBundle" key="checkbox.use.super.dev.mode"/>
+        </properties>
+      </component>
+      <component id="2a1e8" class="javax.swing.JCheckBox" binding="myStartJavaScriptDebuggerCheckBox" default-binding="true">
+        <constraints>
+          <grid row="8" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text resource-bundle="messages/GwtBundle" key="checkbox.with.javascript.debugger"/>
+        </properties>
+      </component>
+      <component id="40516" class="com.intellij.execution.ui.CommonJavaParametersPanel" binding="myCommonProgramParameters" custom-create="true">
+        <constraints>
+          <grid row="3" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="2" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="12bae" class="javax.swing.JComboBox" binding="myServerComboBox">
+        <constraints>
+          <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="7" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="b2eb9" class="com.intellij.ui.components.JBLabel" binding="myServerLabel">
+        <constraints>
+          <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <labelFor value="12bae"/>
+          <text resource-bundle="messages/GwtBundle" key="label.server"/>
+        </properties>
+      </component>
+      <component id="acc4d" class="com.intellij.ui.components.JBLabel" binding="myStartPageLabel">
+        <constraints>
+          <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <labelFor value="32a17"/>
+          <text resource-bundle="messages/GwtBundle" key="label.html.to.open.text"/>
+        </properties>
+      </component>
+      <component id="32a17" class="com.intellij.ui.ComboboxWithBrowseButton" binding="myHtmlPageBox">
+        <constraints>
+          <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="7" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="e88bd" class="com.intellij.execution.ui.JrePathEditor" binding="myJrePathEditor">
+        <constraints>
+          <grid row="6" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="2" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+      </component>
+    </children>
+  </grid>
+</form>

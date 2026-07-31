@@ -1,0 +1,11 @@
+<html>
+<body>
+Reports a GWT module descriptor that doesn't register default <i>client</i> or <i>public</i> folders, but registers custom source or public folders.
+<p>GWT implicitly treats the <i>client</i> folder as a client-side source path only if there are no <code>source</code> and <code>super-source</code> tags in the gwt.xml file.
+  So, if the <i>client</i> folder exists, but it is not registered in the gwt.xml file, and gwt.xml declares custom <code>source</code> or <code>super-source</code> tags, most
+  probably this indicates a mistake.</p>
+<p>Similarly, if gwt.xml declares custom <i>public</i> folders, but doesn't register an existing folder with the
+  default name, this may also indicate a mistake.</p>
+<p>The quick-fix adds an explicit registration for the default folder to the gwt.xml file.</p>
+</body>
+</html>

@@ -1,0 +1,8 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'
+             xmlns:my='urn:import:xxx.client.param'>
+  <g:HorizontalPanel>
+    <<error descr="Element my:WidgetWithParam doesn't have required attribute param">my:WidgetWithParam</error> ui:field="regular"/>
+    <my:WidgetWithParam ui:field="provided"/>
+  </g:HorizontalPanel>
+</ui:UiBinder>

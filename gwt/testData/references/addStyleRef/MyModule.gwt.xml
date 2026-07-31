@@ -1,0 +1,4 @@
+<module>
+  <inherits name="ppp.MyInherited"/>
+  <stylesheet src="Additional.css"/>
+</module>

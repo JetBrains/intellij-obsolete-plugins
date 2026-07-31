@@ -1,0 +1,14 @@
+${GWT_MODULE_DOCTYPE}
+<module>
+
+	<!-- Inherit the core Web Toolkit stuff.                  -->
+	<inherits name='com.google.gwt.user.User'/>
+
+	<!-- Specify the app entry point class.                   -->
+	<entry-point class='${PACKAGE_NAME}.client.${NAME}'/>
+
+
+  <!-- Specify the app servlets.                   -->
+  <servlet path='/${PACKAGE_NAME}.${NAME}/${NAME}Service' class='${PACKAGE_NAME}.server.${NAME}ServiceImpl'/>
+
+</module>

@@ -1,0 +1,8 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'
+             xmlns:ppp='urn:import:ppp.client'>
+
+  <div>
+    <ppp:<caret> />
+  </div>
+</ui:UiBinder>

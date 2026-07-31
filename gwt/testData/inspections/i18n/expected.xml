@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<problems>
+  <problem>
+    <file>MyConstants.java</file>
+    <line>11</line>
+    <description>prop4</description>
+  </problem>
+  <problem>
+    <file>MyMessages.java</file>
+    <line>9</line>
+    <description>undeclared</description>
+  </problem>
+  <problem>
+    <file>MyConstants.properties</file>
+    <line>2</line>
+    <description>prop2</description>
+  </problem>
+</problems>
+

@@ -1,0 +1,13 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+    <g:HTMLPanel>
+        <g:ListBox>
+            <g:item value='1' <error descr="Attribute attr is not allowed here">attr</error>='a'>
+               first
+            </g:item>
+            <<error descr="Element g:element is not allowed here">g:<error descr="Cannot resolve symbol 'element' in 'com.google.gwt.user.client.ui'">element</error></error>>
+               second
+            </<error descr="Element g:element is not allowed here">g:element</error>>
+        </g:ListBox>
+    </g:HTMLPanel>
+</ui:UiBinder>

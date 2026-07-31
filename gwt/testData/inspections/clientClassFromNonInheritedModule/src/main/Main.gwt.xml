@@ -1,0 +1,4 @@
+<module>
+  <entry-point class='main.client.MyModule'/>
+  <inherits name="dep1.Dep1"/>
+</module>

@@ -1,0 +1,3 @@
+<module>
+  <source path="client" includes="a/r/*.xml" />
+</module>

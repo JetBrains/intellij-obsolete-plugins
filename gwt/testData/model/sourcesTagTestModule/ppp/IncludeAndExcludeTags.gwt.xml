@@ -1,0 +1,6 @@
+<module>
+  <source path="client">
+    <include name="a/**"/>
+    <exclude name="**/*.java"/>
+  </source>
+</module>

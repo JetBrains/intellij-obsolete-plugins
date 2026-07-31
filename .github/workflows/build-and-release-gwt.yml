@@ -1,0 +1,37 @@
+# Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+name: Build and Release GWT
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Build with Gradle
+        run: ./gradlew buildPlugin
+        working-directory: gwt
+
+      - name: Read version from gradle.properties
+        id: version
+        run: |
+          VERSION=$(grep '^pluginVersion\s*=' gradle.properties | sed 's/pluginVersion\s*=\s*\(.*\)/\1/')
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+        working-directory: gwt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: gwt-v${{ steps.version.outputs.version }}
+          name: GWT v${{ steps.version.outputs.version }}
+          files: gwt/build/distributions/*.zip

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<problems>
+  <problem>
+    <file>MyElement.ui.xml</file>
+    <line>9</line>
+    <description>Cannot resolve</description>
+  </problem>
+  <problem>
+    <file>MyElement.ui.xml</file>
+    <line>10</line>
+    <description>Cannot resolve</description>
+  </problem>
+  <problem>
+    <file>MyElement.ui.xml</file>
+    <line>14</line>
+    <description>unknown-inner-style</description>
+  </problem>
+  <problem>
+    <file>MyElement.ui.xml</file>
+    <line>16</line>
+    <description>UnknownExternalStyle</description>
+  </problem>
+</problems>
+

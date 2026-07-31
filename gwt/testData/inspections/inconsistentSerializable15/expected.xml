@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<problems>
+  <problem>
+    <file>WithoutDefaultConstructor.java</file>
+    <line>1</line>
+    <description>constructor</description>
+  </problem>
+
+  <problem>
+    <file>WithoutDefaultConstructor2.java</file>
+    <line>1</line>
+    <description>constructor</description>
+  </problem>
+</problems>
+
