@@ -109,8 +109,9 @@ public final class HostedModeWarDirectoryGenerator {
         //delete only files copied by IDEA
         toDelete.addAll(cache.getTargetPaths());
         int i = 0;
+        int[] lastPercent = {-1};
         for (Couple<File> pair : myFilesToCopy) {
-          indicator.setFraction(((double)i++) / myFilesToCopy.size());
+          setFractionThrottled(indicator, i++, myFilesToCopy.size(), lastPercent);
           indicator.checkCanceled();
           final File source = pair.getFirst();
           final String targetPath = cache.getTargetPath(source.getPath());
@@ -121,9 +122,10 @@ public final class HostedModeWarDirectoryGenerator {
       }
 
       int i = 0;
+      int[] deletePercent = {-1};
       indicator.setText(GwtBundle.message("progress.indicator.deleting.obsolete.files"));
       for (String targetPath : toDelete) {
-        indicator.setFraction(((double)i++)/toDelete.size());
+        setFractionThrottled(indicator, i++, toDelete.size(), deletePercent);
         indicator.checkCanceled();
         LOG.debug("Deleting " + targetPath);
         updated = true;
@@ -133,9 +135,10 @@ public final class HostedModeWarDirectoryGenerator {
       Set<String> removeFromCache = new HashSet<>(cache.getSourcePaths());
       Set<String> targetPaths = CollectionFactory.createFilePathSet();
       i = 0;
+      int[] copyPercent = {-1};
       indicator.setText(GwtBundle.message("progress.indicator.copying.files"));
       for (Couple<File> pair : myFilesToCopy) {
-        indicator.setFraction(((double)i++) / myFilesToCopy.size());
+        setFractionThrottled(indicator, i++, myFilesToCopy.size(), copyPercent);
         indicator.checkCanceled();
         final File source = pair.getFirst();
         final File target = pair.getSecond();
@@ -163,6 +166,19 @@ public final class HostedModeWarDirectoryGenerator {
     }
 
     return updated;
+  }
+
+  /**
+   * Updates the progress fraction only when the whole-percent value actually changes. Calling
+   * {@link ProgressIndicator#setFraction} on every processed file floods the EDT with invokeLater calls and trips the
+   * platform's FrequentEventDetector on large projects (IDEA-161408); throttling caps updates at ~100 per loop.
+   */
+  private static void setFractionThrottled(@NotNull ProgressIndicator indicator, int current, int total, int[] lastPercent) {
+    int percent = total <= 0 ? 0 : (int)(100L * current / total);
+    if (percent != lastPercent[0]) {
+      indicator.setFraction(percent / 100.0);
+      lastPercent[0] = percent;
+    }
   }
 
   public void updateResources(final Project project, final @Nullable String configurationName) {
