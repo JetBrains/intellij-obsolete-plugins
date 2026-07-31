@@ -49,6 +49,10 @@ public class Gwt2InspectionsTest extends GwtInspectionsTestCase {
     doTest(new GwtServiceNotRegisteredInspection());
   }
 
+  public void testUnregisteredServiceWithWebServletAnnotation() {
+    doTest(new GwtServiceNotRegisteredInspection());
+  }
+
   public void testUiFieldErrors() {
     doTest(new GwtUiFieldErrorsInspection());
   }

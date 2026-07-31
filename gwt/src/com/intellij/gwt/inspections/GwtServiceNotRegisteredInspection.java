@@ -16,6 +16,7 @@
 
 package com.intellij.gwt.inspections;
 
+import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.codeInspection.InspectionManager;
 import com.intellij.codeInspection.LocalQuickFix;
 import com.intellij.codeInspection.ProblemDescriptor;
@@ -151,6 +152,11 @@ public final class GwtServiceNotRegisteredInspection extends BaseGwtInspection {
     return problems.toArray(ProblemDescriptor.EMPTY_ARRAY);
   }
 
+  private static boolean isRegisteredWithWebServletAnnotation(@NotNull PsiClass aClass) {
+    return AnnotationUtil.isAnnotated(aClass, List.of("javax.servlet.annotation.WebServlet",
+                                                      "jakarta.servlet.annotation.WebServlet"), 0);
+  }
+
   private static boolean containsServletPath(final ServletMapping mapping, GwtModule serviceModule, final String relativePath,
                                              Module module) {
     final GwtModulesManager gwtModulesManager = GwtModulesManager.getInstance(module.getProject());
@@ -199,6 +205,12 @@ public final class GwtServiceNotRegisteredInspection extends BaseGwtInspection {
       if (condition.value(aClass)) {
         return null;
       }
+    }
+
+    // A service implementation registered via the Servlet 3.0+ @WebServlet annotation needs no web.xml <servlet>
+    // entry, so it must not be reported as unregistered (IDEA-97995).
+    if (isRegisteredWithWebServletAnnotation(aClass)) {
+      return null;
     }
 
     String serviceName = service.getName();
