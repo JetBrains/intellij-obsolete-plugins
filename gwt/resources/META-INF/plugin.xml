@@ -137,6 +137,7 @@
     <css.classOrIdUsagesProvider implementation="com.intellij.gwt.references.search.GwtCssClassUsagesProvider"/>
     <referencesSearch implementation="com.intellij.gwt.references.search.GwtToHtmlTagIdReferencesSearcher"/>
     <definitionsSearch implementation="com.intellij.gwt.i18n.PropertiesSearcher"/>
+    <properties.implicitPropertyUsageProvider implementation="com.intellij.gwt.i18n.GwtImplicitPropertyUsageProvider"/>
 
     <directClassInheritorsSearch implementation="com.intellij.gwt.rpc.GwtAsyncServiceClassInheritorSearcher$Direct"/>
     <classInheritorsSearch implementation="com.intellij.gwt.rpc.GwtAsyncServiceClassInheritorSearcher$Deep"/>

@@ -19,6 +19,7 @@ package com.intellij.gwt.i18n;
 import com.intellij.gwt.GwtTestCase;
 import com.intellij.lang.properties.IProperty;
 import com.intellij.lang.properties.psi.PropertiesFile;
+import com.intellij.lang.properties.psi.Property;
 import com.intellij.pom.java.LanguageLevel;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiMethod;
@@ -74,6 +75,22 @@ public class GwtI18nManagerTest extends GwtTestCase {
     final PsiMethod method = assertOneElement(aClass.getMethods());
     assertSame(method, myManager.getMethod(property));
     assertSame(property, assertOneElement(myManager.getProperties(method)));
+  }
+
+  public void testImplicitPropertyUsage() {
+    addGwtModule("/i18n/manager", "src");
+    final PsiClass aClass = myJavaFacade.findClass("client.MyConstants", GlobalSearchScope.allScope(myProject));
+    assertNotNull(aClass);
+    final PsiMethod method1 = assertOneElement(aClass.findMethodsByName("prop1", false));
+    final IProperty[] properties1 = myManager.getProperties(method1);
+    assertTrue(properties1.length > 0);
+
+    // Properties backing a Constants/Messages interface method must be treated as implicitly used (IDEA-109938).
+    final GwtImplicitPropertyUsageProvider provider = new GwtImplicitPropertyUsageProvider();
+    for (IProperty property : properties1) {
+      assertTrue("Property '" + property.getKey() + "' should be reported as used",
+                 provider.isUsed((Property)property));
+    }
   }
 
   public void testConvertPropertyName2Method() {
