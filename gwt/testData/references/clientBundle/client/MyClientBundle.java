@@ -6,6 +6,9 @@ public interface MyClientBundle extends ClientBundle {
   @Source("app.css")
   MyCssResource css();
 
+  @Source("client/app.css")
+  MyCssResource cssByAbsolutePath();
+
   @Source("renameCssClass/methodName.css")
   client.renameCssClass.MethodName css2();
 

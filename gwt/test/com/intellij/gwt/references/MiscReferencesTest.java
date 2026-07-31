@@ -39,6 +39,17 @@ public class MiscReferencesTest extends GwtReferencesTestCase {
     assertVariantsContains(unresolvable, "aaaaa", "slot2");
   }
 
+  public void testClientBundleSourceByAbsolutePath() {
+    final VirtualFile root = addGwtModule("references/clientBundle");
+    final VirtualFile file = root.findFileByRelativePath("client/MyClientBundle.java");
+    assertNotNull(file);
+
+    // A package-absolute @Source path (relative to the source root) must resolve to the CSS file (IDEA-61461).
+    PsiLiteralExpression source = findElementByString(file, "client/app.css", PsiLiteralExpression.class);
+    assertTrue(ContainerUtil.exists(getResolveResults(source),
+                                    e -> e.getContainingFile() instanceof CssFile && "app.css".equals(e.getContainingFile().getName())));
+  }
+
   public void testAddStyleReferences() {
     final VirtualFile root = addGwtModule("references/addStyleRef");
     final VirtualFile file = root.findFileByRelativePath("client/MyClientClass.java");

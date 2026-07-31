@@ -2,17 +2,26 @@ package com.intellij.gwt.clientBundle.jam;
 
 import com.intellij.jam.JamConverter;
 import com.intellij.jam.JamStringAttributeElement;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtilCore;
+import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiAnnotationMemberValue;
+import com.intellij.psi.PsiDirectory;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileSystemItem;
 import com.intellij.psi.PsiLanguageInjectionHost;
+import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.impl.source.resolve.reference.impl.providers.FileReference;
 import com.intellij.psi.impl.source.resolve.reference.impl.providers.FileReferenceSet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Collection;
+import java.util.LinkedHashSet;
 
 public class SourceFileJamConverter extends JamConverter<PsiFile> {
   private final Condition<PsiFileSystemItem> myCompletionFilter;
@@ -72,6 +81,31 @@ public class SourceFileJamConverter extends JamConverter<PsiFile> {
       protected Condition<PsiFileSystemItem> getReferenceCompletionFilter() {
         return myCompletionFilter;
       }
+
+      @Override
+      public @NotNull Collection<PsiFileSystemItem> computeDefaultContexts() {
+        // GWT resolves @Source both relative to the ClientBundle's package and as an absolute path from a
+        // source/classpath root, so a value like "com/example/client/Style.css" must resolve too (IDEA-61461).
+        Collection<PsiFileSystemItem> contexts = new LinkedHashSet<>(super.computeDefaultContexts());
+        addSourceRoots(contexts, getElement());
+        return contexts;
+      }
     };
+  }
+
+  private static void addSourceRoots(@NotNull Collection<PsiFileSystemItem> contexts, @Nullable PsiElement element) {
+    if (element == null) return;
+    PsiFile file = element.getContainingFile();
+    VirtualFile virtualFile = file != null ? file.getVirtualFile() : null;
+    if (virtualFile == null) return;
+    Module module = ModuleUtilCore.findModuleForFile(virtualFile, file.getProject());
+    if (module == null) return;
+    PsiManager psiManager = file.getManager();
+    for (VirtualFile root : ModuleRootManager.getInstance(module).getSourceRoots()) {
+      PsiDirectory directory = psiManager.findDirectory(root);
+      if (directory != null) {
+        contexts.add(directory);
+      }
+    }
   }
 }
