@@ -145,7 +145,6 @@ public final class GwtCommandLineState extends JavaCommandLineStateEx {
   private Disposable myFrameListenerDisposable;
   private final GwtRunConfiguration.GwtRunConfigurationState myRunConfigurationState;
   private String myOutputDirPath;
-  private String myPatchedShellParameters;
   private ParametersList myPatchedShellParametersList;
   private final String myModuleDir;
 
@@ -260,7 +259,11 @@ public final class GwtCommandLineState extends JavaCommandLineStateEx {
       programParameters.add("-style");
       programParameters.add(myFacet.getConfiguration().getOutputStyle().getId());
     }
-    addParametersString(programParameters, myPatchedShellParameters);
+    // Consume the already-parsed parameters directly instead of re-joining and re-parsing them: an extra
+    // join/parse round-trip corrupted lone dash-flag arguments such as -includeJsInteropExports (IDEA-339121).
+    for (String param : myPatchedShellParametersList.getParameters()) {
+      addParameter(programParameters, param);
+    }
     if (myUiConnection != null) {
       programParameters.add("-remoteUI");
       programParameters.add(myRemoteUiPort + ":" + "IntelliJIdea");
@@ -393,7 +396,6 @@ public final class GwtCommandLineState extends JavaCommandLineStateEx {
       programParameters.add("-sourceLevel", sourceLevel);
     }
     myPatchedShellParametersList = programParameters;
-    myPatchedShellParameters = ParametersList.join(programParameters.getParameters());
     myOutputDirPath = outputDirPath;
   }
 
