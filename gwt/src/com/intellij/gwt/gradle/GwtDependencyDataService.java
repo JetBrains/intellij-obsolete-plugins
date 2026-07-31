@@ -23,6 +23,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.jps.gwt.model.GwtSdkPaths;
 import org.jetbrains.jps.gwt.model.impl.sdk.GwtGradleSdkPaths;
 import org.jetbrains.plugins.gradle.util.GradleConstants;
 
@@ -43,7 +44,7 @@ public final class GwtDependencyDataService extends AbstractProjectDataService<L
                          @NotNull IdeModifiableModelsProvider modelsProvider) {
     for (DataNode<LibraryDependencyData> node : toImport) {
       String externalName = node.getData().getExternalName();
-      if (externalName.startsWith("com.google.gwt:gwt-servlet:") || externalName.startsWith("com.google.gwt:gwt-user:")) {
+      if (isGwtUserOrServletCoordinate(externalName)) {
         Set<String> paths = node.getData().getTarget().getPaths(LibraryPathType.BINARY);
         final String path = ContainerUtil.getFirstItem(paths);
         if (path != null) {
@@ -54,6 +55,20 @@ public final class GwtDependencyDataService extends AbstractProjectDataService<L
         }
       }
     }
+  }
+
+  /**
+   * Recognizes the gwt-user/gwt-servlet library under both the legacy {@code com.google.gwt} coordinates and the
+   * {@code org.gwtproject} coordinates introduced in GWT 2.10 (IDEA-391227).
+   */
+  private static boolean isGwtUserOrServletCoordinate(@NotNull String externalName) {
+    for (String group : new String[]{GwtSdkPaths.OLD_GROUP_ID, GwtSdkPaths.NEW_GROUP_ID}) {
+      if (externalName.startsWith(group + ":" + GwtSdkPaths.GWT_USER_ARTIFACT_ID + ":")
+          || externalName.startsWith(group + ":gwt-servlet:")) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private static void setupGwtFacet(@NotNull Module module, @NotNull String pathToGwtJar, @NotNull IdeModifiableModelsProvider modelsProvider) {

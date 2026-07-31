@@ -16,9 +16,9 @@ import java.util.Set;
 
 public class GwtGradleSdkPaths implements GwtSdkPaths {
   public static final @NonNls String TYPE_ID = "gradle";
-  private final String myBasePath;//path to 'com.google.gwt' directory under .gradle/caches
+  private final String myBasePath;//path to the GWT group directory (com.google.gwt or org.gwtproject) under .gradle/caches
   private final String myVersion;
-  private final String myDevDirPath;//path to com.google.gwt/gwt-dev/<version>/
+  private final String myDevDirPath;//path to <group>/gwt-dev/<version>/
 
   public GwtGradleSdkPaths(String homeDirectoryPath, final String version) {
     myDevDirPath = homeDirectoryPath;
