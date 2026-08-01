@@ -13,7 +13,7 @@ import com.intellij.gwt.uiBinder.GwtUiXmlFileUtil;
 import com.intellij.gwt.uiBinder.UiBinderUtil;
 import com.intellij.gwt.uiBinder.mapping.UiBinderMappingService;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.MultiValuesMap;
+import com.intellij.util.containers.MultiMap;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.JavaPsiFacade;
@@ -49,7 +49,7 @@ public final class GwtUiFieldErrorsInspection extends BaseGwtInspection {
     if (facet == null) return null;
 
     if (file instanceof XmlFile xmlFile) {
-      final MultiValuesMap<String,XmlAttributeValue> map = GwtUiXmlFileUtil.getFieldNameToAttributeMap(xmlFile);
+      final MultiMap<String, XmlAttributeValue> map = GwtUiXmlFileUtil.getFieldNameToAttributeMap(xmlFile);
       if (map != null && !map.isEmpty()) {
         final List<PsiClass> psiClasses = UiBinderMappingService.getInstance(facet.getModule()).getBoundClasses(xmlFile);
         if (psiClasses.isEmpty()) {
@@ -104,10 +104,10 @@ public final class GwtUiFieldErrorsInspection extends BaseGwtInspection {
 
   private static void checkUiBinderClass(PsiClass psiClass, XmlFile xmlFile, InspectionManager manager, boolean onTheFly,
                                   List<ProblemDescriptor> problems) {
-    final MultiValuesMap<String, XmlAttributeValue> attributes = GwtUiXmlFileUtil.getFieldNameToAttributeMap(xmlFile);
+    final MultiMap<String, XmlAttributeValue> attributes = GwtUiXmlFileUtil.getFieldNameToAttributeMap(xmlFile);
 
     for (PsiField field : psiClass.getFields()) {
-      final XmlAttributeValue attribute = attributes != null ? attributes.getFirst(field.getName()) : null;
+      final XmlAttributeValue attribute = attributes != null ? ContainerUtil.getFirstItem(attributes.get(field.getName())) : null;
       final PsiIdentifier nameIdentifier = field.getNameIdentifier();
       if (attribute != null) {
         checkUiField(field, manager, onTheFly, nameIdentifier, new TextRange(0, nameIdentifier.getTextLength()), attribute, problems);

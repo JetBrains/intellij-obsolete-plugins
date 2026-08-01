@@ -38,8 +38,16 @@ public class GwtPropertyDescriptor extends AbstractCssPropertyDescriptor impleme
   }
 
   @Override
-  public boolean getInherited() {
+  public boolean isInherited() {
     return false;
+  }
+
+  // getInherited() is deprecated for removal but still abstract in CssPropertyDescriptor, so it must be
+  // implemented; delegate to isInherited() which carries the actual logic.
+  @SuppressWarnings("removal")
+  @Override
+  public boolean getInherited() {
+    return isInherited();
   }
 
   @Override

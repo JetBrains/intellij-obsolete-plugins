@@ -351,7 +351,7 @@ public class GwtClassMemberReference extends PsiReferenceBase.Poly<JSGwtReferenc
       newElementName += oldElementName.substring(i);
     }
     String newText = getRangeInElement().replace(oldText, newElementName);
-    ASTNode newNode = JSChangeUtil.createExpressionFromText(myElement.getProject(), newText, GwtLanguageDialect.GWT_DIALECT);
+    ASTNode newNode = JSChangeUtil.createExpressionFromText(myElement.getProject(), newText, GwtLanguageDialect.GWT_DIALECT, false);
     return myElement.replace((JSExpression)newNode.getPsi());
   }
 

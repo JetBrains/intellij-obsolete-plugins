@@ -7,7 +7,7 @@ import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.gwt.uiBinder.mapping.UiBinderMappingService;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.util.MultiValuesMap;
+import com.intellij.util.containers.MultiMap;
 import com.intellij.patterns.PsiElementPattern;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
@@ -60,7 +60,7 @@ public final class GwtUiFieldNameCompletionContributor extends CompletionContrib
         if (uiXmlFiles.isEmpty()) return;
 
         for (XmlFile uiXmlFile : uiXmlFiles) {
-          MultiValuesMap<String, XmlAttributeValue> fieldNameToAttributeMap = getFieldNameToAttributeMap(uiXmlFile);
+          MultiMap<String, XmlAttributeValue> fieldNameToAttributeMap = getFieldNameToAttributeMap(uiXmlFile);
           if (fieldNameToAttributeMap == null) continue;
 
           for (Map.Entry<String, Collection<XmlAttributeValue>> entry : fieldNameToAttributeMap.entrySet()) {

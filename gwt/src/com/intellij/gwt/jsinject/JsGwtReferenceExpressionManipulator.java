@@ -23,7 +23,7 @@ public final class JsGwtReferenceExpressionManipulator extends AbstractElementMa
                                                           final @NotNull TextRange range, final String newContent)
     throws IncorrectOperationException {
     String newText = range.replace(element.getText(), newContent);
-    ASTNode callExpression = JSChangeUtil.createExpressionFromText(element.getProject(), newText + "()", GwtLanguageDialect.GWT_DIALECT);
+    ASTNode callExpression = JSChangeUtil.createExpressionFromText(element.getProject(), newText + "()", GwtLanguageDialect.GWT_DIALECT, false);
     PsiElement referenceExpression = callExpression.getPsi(JSCallExpression.class).getMethodExpression();
     LOG.assertTrue(referenceExpression != null, newText);
     if (!(referenceExpression instanceof JSGwtReferenceExpressionImpl)) {

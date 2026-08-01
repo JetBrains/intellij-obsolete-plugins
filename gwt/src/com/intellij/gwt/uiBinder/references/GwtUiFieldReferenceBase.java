@@ -4,7 +4,7 @@ import com.intellij.codeInsight.completion.JavaLookupElementBuilder;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.gwt.uiBinder.GwtUiXmlFileUtil;
 import com.intellij.gwt.uiBinder.UiBinderUtil;
-import com.intellij.openapi.util.MultiValuesMap;
+import com.intellij.util.containers.MultiMap;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementResolveResult;
@@ -52,10 +52,10 @@ public abstract class GwtUiFieldReferenceBase<T extends PsiElement> extends PsiP
 
     if (mySearchInXml) {
       for (XmlFile xmlFile : findUiXmlFiles()) {
-        final MultiValuesMap<String,XmlAttributeValue> fields = GwtUiXmlFileUtil.getFieldNameToAttributeMap(xmlFile);
+        final MultiMap<String, XmlAttributeValue> fields = GwtUiXmlFileUtil.getFieldNameToAttributeMap(xmlFile);
         if (fields != null) {
           for (String fieldName : fields.keySet()) {
-            final XmlAttributeValue attributeValue = fields.getFirst(fieldName);
+            final XmlAttributeValue attributeValue = ContainerUtil.getFirstItem(fields.get(fieldName));
             final XmlTag tag = PsiTreeUtil.getParentOfType(attributeValue, XmlTag.class);
             if (!lookupElements.containsKey(fieldName) && tag != null) {
               lookupElements.put(fieldName, LookupElementBuilder.create(tag, fieldName));
