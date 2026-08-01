@@ -140,3 +140,22 @@ Declared in `resources/META-INF/plugin.xml`, all `dynamic`:
   (see `BaseGwtInspection.shouldCheck`).
 - **Two "module" concepts**: the IntelliJ `Module` (facet host) vs. the GWT `GwtModule` (a `*.gwt.xml`
   DOM). `GwtModulesManager` and `GwtModule` bridge them — don't conflate them.
+
+## 11. Build & module layout
+
+- **Gradle build** (IntelliJ Platform Gradle Plugin 2.x). The root `build.gradle.kts` builds the plugin;
+  `settings.gradle.kts` adds subprojects `jps-plugin` (the external build process, packaged as
+  `gwt-jps.jar`), `runtime` (small runtime jar), and the plugin **content modules** `spring` and `dev`.
+  Platform version and language level live in `gradle.properties`. Build with `./gradlew buildPlugin`;
+  `verifyPluginProjectConfiguration` validates the descriptor. Tests run from `test/` (JetBrains-only
+  test bases are quarantined under `test-quarantined/` and excluded from compilation).
+- **Gradle integration needs *both* Gradle plugin dependencies** — they are distinct, not redundant:
+  `bundledPlugin("com.intellij.gradle")` is the base "Gradle" plugin (provides
+  `org.jetbrains.plugins.gradle.util.*`, e.g. `GradleConstants`), while
+  `bundledPlugin("org.jetbrains.plugins.gradle")` is the separate "Gradle for Java" plugin that owns the
+  `intellij.gradle.java` module referenced by `gradle-support.xml`.
+- **`.gitignore` gotcha.** The root `**/build` rule ignores Gradle *output* dirs, but the plugin also has
+  *source* packages named `build`: `com.intellij.gwt.build` (IDE side, `GwtBuildTargetScopeProvider`) and
+  `org.jetbrains.jps.gwt.build` (JPS side, incl. `GwtBuilder`). These stay in VCS only because of the
+  `!**/src/**/build/` negations in the root `.gitignore` — keep those, and if you add a file under any
+  `.../src/.../build/` package, confirm `git status` actually shows it.
