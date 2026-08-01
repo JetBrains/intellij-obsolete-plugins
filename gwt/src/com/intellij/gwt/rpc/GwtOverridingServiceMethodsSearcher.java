@@ -23,9 +23,7 @@ public final class GwtOverridingServiceMethodsSearcher extends GwtSearcherBase<P
         if (!consumer.process(syncMethod)) {
           return false;
         }
-        if (!OverridingMethodsSearch.search(syncMethod, queryParameters.getScope(), queryParameters.isCheckDeep()).forEach(consumer)) {
-          return false;
-        }
+        return OverridingMethodsSearch.search(syncMethod, queryParameters.getScope(), queryParameters.isCheckDeep()).forEach(consumer);
       }
     }
     return true;

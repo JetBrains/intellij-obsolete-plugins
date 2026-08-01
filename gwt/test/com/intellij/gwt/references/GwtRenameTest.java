@@ -47,8 +47,8 @@ public class GwtRenameTest extends GwtTestCase {
 
     rename(method, "newProp");
 
-    assertEquals("newProp", files[0].getProperties().get(0).getKey());
-    assertEquals("newProp", files[1].getProperties().get(0).getKey());
+    assertEquals("newProp", files[0].getProperties().getFirst().getKey());
+    assertEquals("newProp", files[1].getProperties().getFirst().getKey());
 
     final PsiMethod method2 = assertOneElement(aClass.findMethodsByName("prop2", false));
 

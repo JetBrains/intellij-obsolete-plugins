@@ -52,7 +52,10 @@ public final class UiXmlTagNameRefactoringUtil {
     String nsPrefix = generateUniqueName(name, prefix -> xmlTag.getNamespaceByPrefix(prefix).isEmpty());
 
     XmlFile containingFile = ((XmlFile)xmlTag.getContainingFile());
-    containingFile.getRootTag().setAttribute("xmlns:" + nsPrefix, URN_IMPORT_PREFIX + newPackage);
+    XmlTag rootTag = containingFile.getRootTag();
+    if (rootTag != null) {
+      rootTag.setAttribute("xmlns:" + nsPrefix, URN_IMPORT_PREFIX + newPackage);
+    }
     return nsPrefix;
   }
 }

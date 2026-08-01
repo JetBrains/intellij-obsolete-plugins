@@ -20,16 +20,14 @@ public class GwtTagWidgetReference extends TagNameReference {
 
   @Override
   public PsiElement bindToElement(@NotNull PsiElement element) {
-    if (element instanceof PsiClass) {
+    if (element instanceof PsiClass psiClass) {
       XmlTag xmlTag = getTagElement();
-      if (xmlTag != null) {
-        PsiClass psiClass = (PsiClass)element;
-
+      String newQualifiedClassName = psiClass.getQualifiedName();
+      if (xmlTag != null && newQualifiedClassName != null) {
         String oldNamespacePackage = trimStart(xmlTag.getNamespace(), URN_IMPORT_PREFIX);
         String oldTagName = trimStart(xmlTag.getName(), xmlTag.getNamespacePrefix() + ":");
 
         String oldQualifiedClassName = oldNamespacePackage + "." + oldTagName;
-        String newQualifiedClassName = psiClass.getQualifiedName();
 
         String oldPackage = getPackageName(oldQualifiedClassName);
         String newPackage = getPackageName(newQualifiedClassName);

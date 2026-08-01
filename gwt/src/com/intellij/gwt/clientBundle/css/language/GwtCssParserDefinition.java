@@ -21,7 +21,7 @@ public final class GwtCssParserDefinition extends CSSParserDefinition {
   }
 
   @Override
-  public @NotNull PsiParser createParser(Project project) {
+  public @NotNull PsiParser createParser(@NotNull Project project) {
     return new GwtCssParser();
   }
 }

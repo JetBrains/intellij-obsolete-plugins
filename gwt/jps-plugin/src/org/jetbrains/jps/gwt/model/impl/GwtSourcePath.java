@@ -124,9 +124,7 @@ public class GwtSourcePath implements Comparable<GwtSourcePath> {
       if (!myFullPath.equalsIgnoreCase(that.myFullPath)) return false;
     }
     if (!myIncludes.equals(that.myIncludes)) return false;
-    if (!myExcludes.equals(that.myExcludes)) return false;
-
-    return true;
+    return myExcludes.equals(that.myExcludes);
   }
 
   @Override

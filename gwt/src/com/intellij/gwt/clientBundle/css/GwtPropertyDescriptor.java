@@ -77,9 +77,7 @@ public class GwtPropertyDescriptor extends AbstractCssPropertyDescriptor impleme
     if (!(o instanceof GwtPropertyDescriptor that)) return false;
 
     if (!myPropertyName.equals(that.myPropertyName)) return false;
-    if (!myValue.equals(that.myValue)) return false;
-
-    return true;
+    return myValue.equals(that.myValue);
   }
 
   @Override

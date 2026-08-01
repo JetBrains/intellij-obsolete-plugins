@@ -81,8 +81,7 @@ public class MiscReferencesTest extends GwtReferencesTestCase {
   }
 
   public void testCssClassReferencesToWebRoots() {
-    VirtualFile root = addGwtModule("references/cssRefToWebRoot");
-
+    addGwtModule("references/cssRefToWebRoot");
   }
 
   public void testModuleReference() {

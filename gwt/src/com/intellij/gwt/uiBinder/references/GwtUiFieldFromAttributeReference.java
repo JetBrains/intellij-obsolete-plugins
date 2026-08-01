@@ -23,7 +23,7 @@ public class GwtUiFieldFromAttributeReference extends GwtUiFieldReferenceBase<Xm
   @Override
   protected @NotNull List<PsiClass> findUiBinderClasses() {
     final PsiFile containingFile = myElement.getContainingFile();
-    if (containingFile == null) return null;
+    if (containingFile == null) return Collections.emptyList();
 
     return UiBinderMappingService.getBoundClassesForFile(containingFile.getOriginalFile());
   }

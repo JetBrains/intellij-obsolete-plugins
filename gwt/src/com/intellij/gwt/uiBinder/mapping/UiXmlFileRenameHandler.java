@@ -21,7 +21,7 @@ public class UiXmlFileRenameHandler extends GwtAssociatedElementRenameHandler<Xm
   protected @NotNull Collection<? extends PsiElement> findAssociatedElements(@NotNull XmlFile baseElement) {
     final List<PsiClass> classes = UiBinderMappingService.getBoundClassesForFile(baseElement);
     if (classes.size() == 1) {
-      final PsiClass psiClass = classes.get(0);
+      final PsiClass psiClass = classes.getFirst();
       if (isBoundWithoutAnnotation(psiClass, baseElement)) {
         return Collections.singletonList(psiClass);
       }

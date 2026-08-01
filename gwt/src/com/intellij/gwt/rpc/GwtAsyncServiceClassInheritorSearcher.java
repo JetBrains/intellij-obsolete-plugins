@@ -16,12 +16,7 @@ public class GwtAsyncServiceClassInheritorSearcher {
     @Override
     protected boolean doExecute(DirectClassInheritorsSearch.SearchParameters queryParameters, Processor<? super PsiClass> consumer) {
       PsiClass synchronousInterface = RemoteServiceUtil.findSynchronousInterface(queryParameters.getClassToProcess());
-      if (synchronousInterface != null) {
-        if (!consumer.process(synchronousInterface)) {
-          return false;
-        }
-      }
-      return true;
+      return synchronousInterface == null || consumer.process(synchronousInterface);
     }
   }
 

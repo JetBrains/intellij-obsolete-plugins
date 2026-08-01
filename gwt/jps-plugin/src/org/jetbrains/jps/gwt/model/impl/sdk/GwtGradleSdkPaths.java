@@ -40,7 +40,7 @@ public class GwtGradleSdkPaths implements GwtSdkPaths {
   }
 
   private @NotNull String getArtifactPath(String name) {
-    String path = getArtifactPath(new File(myBasePath), name, myVersion, null);
+    String path = getArtifactPath(new File(myBasePath), name, myVersion);
     if (path != null) {
       return path;
     }
@@ -62,11 +62,11 @@ public class GwtGradleSdkPaths implements GwtSdkPaths {
     return getArtifactPath("gwt-servlet");
   }
 
-  private static @Nullable String getArtifactPath(@NotNull File baseDir, @NotNull String name, @NotNull String version, @Nullable String suffix) {
+  private static @Nullable String getArtifactPath(@NotNull File baseDir, @NotNull String name, @NotNull String version) {
     File[] subDirs = new File(baseDir, name + "/" + version).listFiles();
     if (subDirs != null) {
       for (File subDir : subDirs) {
-        File jar = new File(subDir, name + "-" + version + (suffix != null ? "-" + suffix : "") + ".jar");
+        File jar = new File(subDir, name + "-" + version + ".jar");
         if (jar.exists()) {
           return jar.getAbsolutePath();
         }

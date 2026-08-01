@@ -20,14 +20,9 @@ public final class GwtAsyncMethodSearcher extends GwtSearcherBase<MethodSignatur
 
     PsiMethod method = queryParameters.getMethod();
     PsiClass async = RemoteServiceUtil.findAsynchronousInterface(method.getContainingClass());
-    if (async != null) {
-      PsiMethod asyncMethod = RemoteServiceUtil.findMethodInAsync(method, async);
-      if (asyncMethod != null) {
-        if (!consumer.process(MethodSignatureBackedByPsiMethod.create(asyncMethod, PsiSubstitutor.EMPTY))) {
-          return false;
-        }
-      }
-    }
-    return true;
+    if (async == null) return true;
+
+    PsiMethod asyncMethod = RemoteServiceUtil.findMethodInAsync(method, async);
+    return asyncMethod == null || consumer.process(MethodSignatureBackedByPsiMethod.create(asyncMethod, PsiSubstitutor.EMPTY));
   }
 }
