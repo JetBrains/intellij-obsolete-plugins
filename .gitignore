@@ -2,3 +2,8 @@
 **/build
 **/.gradle
 **/.intellijPlatform
+
+# Keep source packages that happen to be named "build" (e.g. org.jetbrains.jps.gwt.build);
+# the **/build rule above is only meant to ignore Gradle output directories.
+!**/src/**/build/
+!**/src/**/build/**
