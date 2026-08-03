@@ -68,7 +68,7 @@
     <!-- endregion -->
   </dependencies>
 
-  <content namespace="jetbrains">
+  <content namespace="intellij-gwt">
     <module name="intellij.gwt.spring"/>
     <module name="intellij.gwt.dev"/>
   </content>
