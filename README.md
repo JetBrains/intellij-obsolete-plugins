@@ -39,7 +39,7 @@ This repository includes the following plugins:
   * [Spring OSGi](https://plugins.jetbrains.com/plugin/16877-spring-osgi)
   * [Helidon](https://plugins.jetbrains.com/plugin/16874-helidon)
   * [Properties Resource Bundle Editor](https://plugins.jetbrains.com/plugin/17035-resource-bundle-editor)
-  * [Grails](https://plugins.jetbrains.com/plugin/18504-grails)
+  * [Grails](https://plugins.jetbrains.com/plugin/18504-grails) Donated to Apache Software Foundation, stored here: https://github.com/apache/grails-intellij-plugin 
   * [XSLT Debugger](https://plugins.jetbrains.com/plugin/1818-xslt-debugger)
   * [Chef](https://plugins.jetbrains.com/plugin/7548-chef)
   * [Puppet](https://plugins.jetbrains.com/plugin/7180-puppet)
