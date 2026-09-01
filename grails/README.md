@@ -1,0 +1,1 @@
+The plugin is donated to Apache Software Foundation. The new repository is https://github.com/apache/grails-intellij-plugin
