@@ -1,0 +1,83 @@
+<idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude">
+  <id>com.intellij.bigdatatools.flink</id>
+  <name>Flink</name>
+  <vendor>JetBrains</vendor>
+
+  <description><![CDATA[
+<p>Monitor and submit Flink jobs from the IDE.</p>
+
+<p>The dedicated Flink tool window allows you to preview:
+<ul>
+  <li>A list of jobs with their details: exceptions, checkpoints, and configurations</li>
+  <li>Task Managers with the ability to view logs, stdout, log list, and thread dump</li>
+  <li>Job manager with the information on configuration, logs, stdout, and log list</li>
+</ul>
+</p>
+
+<p>The Flink plugin will automatically install the Metastore Core and <a href="https://plugins.jetbrains.com/plugin/21706-remote-file-systems">Remote File Systems</a> plugins.
+The Remote File Systems plugin lets you connect to remote storages, and Metastore Core lets you connect to:
+<ul>
+  <li>AWS Glue</li>
+  <li>AWS EMR</li>
+  <li>Dataproc</li>
+  <li>Hive Metastore</li>
+  <li>Hadoop YARN</li>
+</ul>
+</p>
+
+<p>This plugin is a part of the <a href="https://plugins.jetbrains.com/bundles/8-big-data-tools">Big Data Tools</a> plugin bundle.</p>
+    ]]></description>
+
+  <xi:include href="bdide-flink.xml"/>
+
+  <dependencies>
+    <plugin id="com.intellij.modules.ultimate"/>
+    <plugin id="com.intellij.bigdatatools.binary.files"/>
+    <plugin id="com.intellij.bigdatatools.rfs"/>
+    <plugin id="com.intellij.bigdatatools.metastore.core"/>
+    <plugin id="intellij.bigdatatools.awsBase"/>
+    <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+    <plugin id="com.intellij.bigdatatools.core"/>
+    <plugin id="intellij.bigdatatools.coreUi"/>
+    <module name="intellij.libraries.gson"/>
+    <module name="intellij.libraries.http.client"/>
+    <module name="intellij.libraries.kotlin.reflect"/>
+    <module name="intellij.platform.analysis"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.impl"/>
+    <module name="intellij.platform.core.ui"/>
+    <module name="intellij.platform.credentialStore"/>
+    <module name="intellij.platform.editor.ui"/>
+    <module name="intellij.platform.execution"/>
+    <module name="intellij.platform.execution.impl"/>
+    <module name="intellij.platform.graph"/>
+    <module name="intellij.platform.ide"/>
+    <module name="intellij.platform.ide.core"/>
+    <module name="intellij.platform.ide.impl"/>
+    <module name="intellij.platform.lang"/>
+    <module name="intellij.platform.lang.impl"/>
+    <module name="intellij.platform.projectModel"/>
+    <module name="intellij.platform.statistics"/>
+    <module name="intellij.platform.util.ui"/>
+    <!-- endregion -->
+  </dependencies>
+  <content namespace="jetbrains"/>
+
+  <resource-bundle>messages.FlinkBundle</resource-bundle>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <dependencySupport kind="java" coordinate="org.apache.flink:flink-core" displayName="flink-core"/>
+    <dependencySupport kind="java" coordinate="java:org.apache.flink:flink-streaming-java" displayName="flink-streaming-java"/>
+
+    <dependencySupport kind="python" coordinate="apache-flink" displayName="apache-flink"/>
+  </extensions>
+
+  <change-notes><![CDATA[
+<h2 style="padding:0;margin:0;line-height:0px">Changes in 2023.3</h2>
+<ul>
+	<li>Fixed some localization issues</li>
+</ul>
+
+<p>The full release notes are available <a href="https://youtrack.jetbrains.com/issues?q=project:%20BDIDE%20%20Available%20in:%20%7B2023.3%7D%20State:%20Fixed,%20Verified,%20%7BWithout%20verification%7D%20sort%20by:%20project,%20Type,%20votes%20BDT%20Plugin:%20Flink">here</a>.</p>
+]]></change-notes>
+</idea-plugin>

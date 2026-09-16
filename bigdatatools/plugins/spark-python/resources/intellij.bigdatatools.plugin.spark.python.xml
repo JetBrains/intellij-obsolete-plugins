@@ -1,0 +1,61 @@
+<idea-plugin package="com.intellij.bigdatatools.plugin.spark.python">
+  <dependencies>
+    <plugin id="com.intellij.modules.python"/>
+    <plugin id="Pythonid"/>
+    <module name="intellij.python"/>
+    <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+    <module name="intellij.bigdatatools.plugin.spark.assistance"/>
+    <module name="intellij.platform.analysis"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.impl"/>
+    <module name="intellij.platform.editor.ui"/>
+    <module name="intellij.platform.execution"/>
+    <module name="intellij.platform.execution.impl"/>
+    <module name="intellij.platform.ide.core"/>
+    <module name="intellij.platform.ide.impl"/>
+    <module name="intellij.platform.lang"/>
+    <module name="intellij.platform.lang.core"/>
+    <module name="intellij.platform.lang.impl"/>
+    <module name="intellij.platform.projectModel"/>
+    <module name="intellij.platform.statistics"/>
+    <!-- endregion -->
+  </dependencies>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <registryKey key="spark.python.debug.highlight.schema" defaultValue="false"
+                 description="Highlight Dataframes with calculated schema" restartRequired="false"/>
+
+    <configurationType implementation="com.intellij.bigdatatools.plugin.spark.python.submit.PySparkSubmitConfigurationType"/>
+    <project.converterProvider implementation="com.intellij.bigdatatools.plugin.spark.python.submit.PySparkApplicationRunConfigurationConverterProvider" id="spark-to-pyspark-run-configuration"/>
+    <runLineMarkerContributor
+      language="Python"
+      implementationClass="com.intellij.bigdatatools.plugin.spark.python.submit.gutter.SparkRunLineMarkerContributorPython"/>
+    <bigdatatools.sparkConfigurationProducerProvider
+      language="Python"
+      implementationClass="com.intellij.bigdatatools.plugin.spark.python.submit.gutter.SparkRunLineMarkerContributorPython"/>
+
+    <completion.contributor language="Python"
+                            implementationClass="com.intellij.bigdatatools.plugin.spark.python.submit.inspections.completion.PySparkDataFrameColumnNamesCompletionContributor"/>
+
+    <localInspection language="Python" shortName="PySparkDataFrameColumnInspection" suppressId="PySparkColumnCheck"
+                     bundle="messages.SparkAssistanceBundle" key="INSP.NAME.wrong.column" groupKey="INSP.GROUP.spark" isInternal="false"
+                     enabledByDefault="true" level="WARNING"
+                     implementationClass="com.intellij.bigdatatools.plugin.spark.python.submit.inspections.PySparkDataFrameColumnInspection"/>
+
+    <directoryProjectGenerator implementation="com.intellij.bigdatatools.plugin.spark.python.submit.wizard.PyV3SparkGenerator"/>
+
+    <moduleBuilder builderClass="com.intellij.bigdatatools.plugin.spark.python.submit.wizard.PySparkModuleBuilder"/>
+
+    <codeInsight.inlayProvider
+      language="Python"
+      implementationClass="com.intellij.bigdatatools.plugin.spark.python.inlay.PythonDataframeInlayHintsProvider"
+      isEnabledByDefault="true"
+      settingsKeyId="python.dataframe.inlay.hints"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="Pythonid">
+    <typeProvider implementation="com.intellij.bigdatatools.plugin.spark.python.submit.inspections.type.PySparkTypeProvider"/>
+    <pythonDocumentationQuickInfoProvider
+      implementation="com.intellij.bigdatatools.plugin.spark.python.submit.inspections.documentation.PySparkDataFrameSchemaDocumentationProvider"/>
+  </extensions>
+</idea-plugin>

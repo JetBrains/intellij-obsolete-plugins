@@ -1,0 +1,134 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_provided_library")
+
+### auto-generated section `build intellij.bigdatatools.sparkSubmit` start
+jvm_provided_library(
+    name = "platform_ssh_provided",
+    lib = "//platform/ssh",
+)
+
+jvm_provided_library(
+    name = "community_libraries_miglayout-swing_provided",
+    lib = "@community//libraries/miglayout-swing",
+)
+
+jvm_library(
+    name = "sparkSubmit",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+            "gen/**/*.kt",
+            "gen/**/*.java",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bigdatatools.sparkSubmit",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@community//libraries/asm",
+        "@community//platform/analysis-api:analysis",
+        "@community//platform/util/concurrency",
+        "@community//platform/editor-ui-api:editor-ui",
+        "@community//platform/core-impl",
+        "@community//platform/remote-core",
+        "@community//platform/platform-impl:ide-impl",
+        "//plugins/webDeployment",
+        "@community//platform/util/progress",
+        "@community//platform/observable",
+        "@community//platform/core-ui",
+        "@community//platform/platform-util-io:ide-util-io",
+        "@community//platform/util/jdom",
+        "//plugins/bigdatatools/core",
+        "@community//platform/platform-api:ide",
+        "@community//platform/ide-core",
+        "@community//platform/progress/shared:ide-progress",
+        "@community//platform/projectModel-api:projectModel",
+        "@community//platform/xdebugger-api:debugger",
+        "@community//platform/execution-impl",
+        "@community//platform/lang-impl",
+        "@community//java/compiler/openapi:java-compiler",
+        "@community//platform/core-api:core",
+        "@community//platform/statistics",
+        "@community//platform/util/coroutines",
+        "@community//platform/util:util-ui",
+        "@community//platform/util-ex",
+        "//plugins/bigdatatools/core-ui",
+        "//platform/ssh-core",
+        "//platform/ssh-ui",
+        "@community//platform/execution",
+        ":platform_ssh_provided",
+        ":community_libraries_miglayout-swing_provided",
+    ],
+)
+
+jvm_library(
+    name = "sparkSubmit_test_lib",
+    testonly = True,
+    srcs = glob(
+        [],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bigdatatools.sparkSubmit",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        ":sparkSubmit",
+        "@community//libraries/asm:asm_test_lib",
+        "@community//platform/analysis-api:analysis_test_lib",
+        "@community//platform/util/concurrency:concurrency_test_lib",
+        "@community//platform/editor-ui-api:editor-ui_test_lib",
+        "@community//platform/core-impl:core-impl_test_lib",
+        "@community//platform/remote-core:remote-core_test_lib",
+        "//platform/ssh",
+        "//platform/ssh:ssh_test_lib",
+        "@community//platform/platform-impl:ide-impl_test_lib",
+        "//plugins/webDeployment:webDeployment_test_lib",
+        "@community//platform/util/progress:progress_test_lib",
+        "@community//platform/observable:observable_test_lib",
+        "@community//platform/vcs-api:vcs",
+        "@community//platform/vcs-api:vcs_test_lib",
+        "@community//libraries/miglayout-swing",
+        "@community//libraries/miglayout-swing:miglayout-swing_test_lib",
+        "@community//platform/core-ui:core-ui_test_lib",
+        "@community//platform/platform-util-io:ide-util-io_test_lib",
+        "@community//platform/testFramework",
+        "@community//platform/testFramework:testFramework_test_lib",
+        "@community//platform/util/jdom:jdom_test_lib",
+        "//plugins/bigdatatools/core:core_test_lib",
+        "@community//platform/platform-api:ide_test_lib",
+        "@community//platform/ide-core:ide-core_test_lib",
+        "@community//platform/progress/shared:ide-progress_test_lib",
+        "@community//platform/projectModel-api:projectModel_test_lib",
+        "@community//platform/xdebugger-api:debugger_test_lib",
+        "@community//platform/execution-impl:execution-impl_test_lib",
+        "@community//platform/lang-impl:lang-impl_test_lib",
+        "@community//java/compiler/openapi:java-compiler_test_lib",
+        "@community//platform/core-api:core_test_lib",
+        "@community//platform/statistics:statistics_test_lib",
+        "@community//platform/util/coroutines:coroutines_test_lib",
+        "@community//platform/util:util-ui_test_lib",
+        "@community//platform/util-ex:util-ex_test_lib",
+        "//plugins/bigdatatools/core-ui:core-ui_test_lib",
+        "//platform/ssh-core:ssh-core_test_lib",
+        "//platform/ssh-ui:ssh-ui_test_lib",
+        "@community//platform/execution:execution_test_lib",
+    ],
+)
+### auto-generated section `build intellij.bigdatatools.sparkSubmit` end
+
+### auto-generated section `iml intellij.bigdatatools.sparkSubmit` start
+exports_files(
+    [
+        "intellij.bigdatatools.sparkSubmit.iml",
+        "resources/META-INF/bdide-spark-submit-core.xml",
+        "resources/META-INF/mock_web_deployment_config.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.bigdatatools.sparkSubmit` end

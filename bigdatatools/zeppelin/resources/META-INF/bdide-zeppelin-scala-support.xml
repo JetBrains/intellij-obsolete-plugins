@@ -1,0 +1,59 @@
+<idea-plugin>
+  <depends optional="true" config-file="bdide-zeppelin-scala-database-support.xml">com.intellij.database</depends>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <bigdatatools.zeppelin.interpreterSupport implementation="com.intellij.bigdatatools.zeppelin.notebook.interpreter.supported.scala.ZeppelinScalaInterpreterSupport"/>
+    <bigdatatools.zeppelin.zeppelinCustomPsiFileFactory
+      implementation="com.intellij.bigdatatools.zeppelin.psi.ZeppelinCustomScalaFileFactory"/>
+    <bigdatatools.zeppelin.scalaSdkDependencyPatcher
+      implementation="com.intellij.bigdatatools.zeppelin.dependency.resolver.ScalaSdkDependencyPatcherImpl"/>
+    <editor.linePainter implementation="com.intellij.bigdatatools.zeppelin.ztools.variableview.ZeppelinVariableLinePainter"/>
+    <lang.importOptimizer language="Zeppelin"
+                          implementationClass="com.intellij.bigdatatools.zeppelin.notebook.interpreter.supported.scala.ZeppelinScalaImportOptimizer"/>
+    <useScopeOptimizer implementation="com.intellij.bigdatatools.zeppelin.psi.ZeppelinScalaScopeOptimizer"/>
+      <referencesSearch implementation="com.intellij.bigdatatools.zeppelin.psi.ZeppelinCustomScopeSearcher"/>
+      <!--suppress PluginXmlValidity -->
+      <completion.contributor language="Scala"
+                              implementationClass="com.intellij.bigdatatools.zeppelin.ztools.completion.ZeppelinScalaColumnsCompletionContributor"/>
+      <lang.quoteHandler language="Zeppelin" implementationClass="com.intellij.bigdatatools.zeppelin.editor.ZeppelinQuoteHandler"/>
+      <daemon.highlightInfoFilter
+              implementation="com.intellij.bigdatatools.zeppelin.notebook.interpreter.supported.scala.ZeppelinScalaHighlightFilter"/>
+      <!--suppress PluginXmlValidity -->
+      <localInspection
+        implementationClass="com.intellij.bigdatatools.zeppelin.notebook.interpreter.supported.scala.ZeppelinScalaResUsageFilter"
+        groupBundle="messages.ZeppelinBundle" groupKey="inspection.scala" enabledByDefault="true" language="Scala" level="WARNING"
+        key="zeppelin.res.usage.inspection" bundle="messages.ZeppelinBundle"/>
+      <bigdatatools.zeppelin.ztools.wordscollector
+        implementation="com.intellij.bigdatatools.zeppelin.ztools.collector.ZtoolsScalaTablesCollector"/>
+      <bigdatatools.zeppelin.ztools.declscollector
+              implementation="com.intellij.bigdatatools.zeppelin.ztools.collector.ZtoolsScalaDeclCollector"/>
+      <bigdatatools.zeppelin.extensionToolbarActionProvider
+              implementation="com.intellij.bigdatatools.zeppelin.refactoring.ZeppelinToolbarExtractActionProvider"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="org.intellij.scala">
+    <fileDeclarationsContributor
+        implementation="com.intellij.bigdatatools.zeppelin.notebook.interpreter.supported.scala.ZeppelinScalaDeclarationContributor"/>
+    <scalaIntentionAvailabilityChecker
+        implementation="com.intellij.bigdatatools.zeppelin.integration.ZeppelinCodeInsightChecker"/>
+  </extensions>
+
+  <actions resource-bundle="messages.ZeppelinBundle">
+    <action id="Zeppelin.ExtractJob"
+            class="com.intellij.bigdatatools.zeppelin.refactoring.ZeppelinExtractJobAction"/>
+
+    <action id="Zeppelin.ExtractToMethod"
+            class="com.intellij.bigdatatools.zeppelin.refactoring.ZeppelinExtractToMethodAction"/>
+
+    <group id="Zeppelin.ExtractSelectedActions" compact="true" popup="true">
+      <reference ref="Zeppelin.ExtractJob"/>
+      <reference ref="Zeppelin.ExtractToMethod"/>
+      <separator/>
+      <add-to-group group-id="ZeppelinCellActions"/>
+    </group>
+
+    <action id="Zeppelin.ExtractCell" class="com.intellij.bigdatatools.zeppelin.refactoring.ZeppelinExtractCellAction"/>
+
+    <action id="Zeppelin.ExtractNotebook" class="com.intellij.bigdatatools.zeppelin.refactoring.ZeppelinExtractNotebookAction"/>
+  </actions>
+</idea-plugin>

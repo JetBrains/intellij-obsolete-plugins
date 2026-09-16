@@ -1,0 +1,26 @@
+<idea-plugin package="com.intellij.bigdatatools.plugin.spark.maven">
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <module name="intellij.maven"/>
+    <module name="intellij.platform.analysis"/>
+    <module name="intellij.platform.codeStyle"/>
+    <module name="intellij.platform.codeStyle.impl"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.ui"/>
+    <module name="intellij.platform.editor.ui"/>
+    <module name="intellij.platform.execution"/>
+    <module name="intellij.platform.execution.impl"/>
+    <module name="intellij.platform.ide"/>
+    <module name="intellij.platform.ide.impl"/>
+    <module name="intellij.platform.lang.impl"/>
+    <module name="intellij.platform.projectModel"/>
+  </dependencies>
+  <!-- endregion -->
+
+  <extensions defaultExtensionNs="com.intellij">
+    <bigdatatools.buildSystemBasedStructureProviderFactory
+      implementation="com.intellij.bigdatatools.plugin.spark.maven.projectwizard.SparkMavenStructureProviderFactory"/>
+    <bigdatatools.file.selector.initializer implementation="com.intellij.bigdatatools.plugin.spark.maven.submit.MavenFileSelectorInitializer"/>
+    <bigdatatools.file.selector.option implementation="com.intellij.bigdatatools.plugin.spark.maven.submit.FileSelectorOptionMaven"/>
+  </extensions>
+</idea-plugin>

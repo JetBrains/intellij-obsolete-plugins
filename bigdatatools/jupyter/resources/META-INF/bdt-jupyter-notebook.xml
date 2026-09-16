@@ -1,0 +1,5 @@
+<idea-plugin>
+  <extensions defaultExtensionNs="com.intellij">
+    <lang.treePatcher language="Markdown" implementationClass="com.intellij.psi.templateLanguages.MiddleTreePatcher"/>
+  </extensions>
+</idea-plugin>

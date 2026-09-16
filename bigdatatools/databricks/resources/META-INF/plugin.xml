@@ -1,0 +1,133 @@
+<idea-plugin>
+  <id>com.intellij.bigdatatools.databricks</id>
+  <name>Databricks</name>
+  <vendor>JetBrains</vendor>
+
+  <description><![CDATA[
+<h2>Databricks</h2>
+The Databricks integration with PyCharm allows you to build your data and AI apps on the <a href="https://www.databricks.com/">Databricks Data Intelligence Platform</a> directly within the IDE, enhancing the data intelligence platform with the powerful Python IDE by JetBrains.
+<h2>Features</h2>
+Write code using smart completion, linters, local debugging, and a handy UI while running it in the cloud without any additional configurations.<br>
+The plugin allows you to:
+<ul>
+<li>Connect to the Databricks cluster directly via PyCharm.</li>
+<li>Run Jupyter notebooks as Databricks workflows.</li>
+<li>Run Python scripts as Databricks workflows or on a remote cluster.</li>
+<li>Synchronize project files to the Databricks workspace.</li>
+</ul>
+<p>The plugin requires a Databricks account.</p>
+<p><a href="https://www.jetbrains.com/help/pycharm/databricks.html">Head over to the documentation</a> to get step-by-step instructions on how to use the plugin.</p>
+    ]]></description>
+
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <module name="intellij.jupyter.core"/>
+    <module name="intellij.libraries.gson"/>
+    <module name="intellij.libraries.http.client"/>
+    <module name="intellij.libraries.ini4j"/>
+    <module name="intellij.libraries.jackson"/>
+    <module name="intellij.libraries.jackson.databind"/>
+    <module name="intellij.libraries.jcef"/>
+    <module name="intellij.libraries.kotlin.reflect"/>
+    <module name="intellij.platform.analysis"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.impl"/>
+    <module name="intellij.platform.core.ui"/>
+    <module name="intellij.platform.credentialStore"/>
+    <module name="intellij.platform.editor.ui"/>
+    <module name="intellij.platform.execution"/>
+    <module name="intellij.platform.execution.impl"/>
+    <module name="intellij.platform.ide"/>
+    <module name="intellij.platform.ide.concurrency"/>
+    <module name="intellij.platform.ide.core"/>
+    <module name="intellij.platform.ide.impl"/>
+    <module name="intellij.platform.ide.progress"/>
+    <module name="intellij.platform.lang"/>
+    <module name="intellij.platform.lang.impl"/>
+    <module name="intellij.platform.projectModel"/>
+    <module name="intellij.platform.statistics"/>
+    <module name="intellij.platform.ui.jcef"/>
+    <module name="intellij.platform.util.coroutines"/>
+    <module name="intellij.platform.util.ex"/>
+    <module name="intellij.platform.util.ui"/>
+  </dependencies>
+  <!-- endregion -->
+  <depends>com.intellij.modules.ultimate</depends>
+
+  <depends>com.intellij.bigdatatools.core</depends>
+  <depends>intellij.bigdatatools.coreUi</depends>
+  <depends>intellij.bigdatatools.awsBase</depends>
+  <content namespace="jetbrains"/>
+
+  <resource-bundle>messages.DatabricksBundle</resource-bundle>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <statistics.counterUsagesCollector implementationClass="com.intellij.bigdatatools.databricks.statistic.DatabricksFeatureCollector"/>
+
+    <postStartupActivity implementation="com.intellij.bigdatatools.databricks.toolwindow.DatabricksToolWindowShowActivity"/>
+
+    <!-- Temporary disabled until the implementation will nt be finished.
+    <configurationType implementation="com.intellij.bigdatatools.databricks.run.configuration.DatabricksRunConfigurationType"/>
+    -->
+
+    <applicationService serviceImplementation="com.intellij.bigdatatools.databricks.toolwindow.config.DatabricksToolWindowSettings"/>
+    <bigdatatools.bdiConnectionSettingProvider
+      implementation="com.intellij.bigdatatools.databricks.settings.DatabricksSettingsProvider"/>
+
+    <toolWindow id="DatabricksToolWindow" anchor="bottom" canCloseContents="true"
+                icon="com.intellij.bigdatatools.databricks.icons.BigdatatoolsDatabricksIcons.DatabricksToolWindow"
+                factoryClass="com.intellij.bigdatatools.databricks.toolwindow.DatabricksToolWindowFactory"/>
+
+    <bigdatatools.rfs.fileContentDownloader
+      implementation="com.intellij.bigdatatools.databricks.rfs.localcache.DatabricksWorkspaceContentDownloader"/>
+
+    <bigdatatools.rfs.driver.interDriverCopyHandler
+      implementation="com.intellij.bigdatatools.databricks.rfs.copyhandler.DatabricksToDatabricksCopyHandler"/>
+    <bigdatatools.rfs.driver.interDriverCopyHandler
+      implementation="com.intellij.bigdatatools.databricks.rfs.copyhandler.LocalToDatabricksCopyHandler"/>
+    <bigdatatools.rfs.driver.interDriverCopyHandler
+      implementation="com.intellij.bigdatatools.databricks.rfs.copyhandler.DatabricksToLocalCopyHandler"/>
+    <applicationSettings service="com.intellij.bigdatatools.databricks.toolwindow.config.DatabricksToolWindowSettings"/>
+  </extensions>
+
+  <actions resource-bundle="messages.DatabricksBundle">
+    <action id="Databricks.StartCluster" class="com.intellij.bigdatatools.databricks.actions.DatabricksStartServerAction"
+            icon="AllIcons.Actions.Execute"/>
+    <action id="Databricks.RestartCluster" class="com.intellij.bigdatatools.databricks.actions.DatabricksRestartServerAction"
+            icon="AllIcons.Actions.Restart"/>
+    <action id="Databricks.StopCluster" class="com.intellij.bigdatatools.databricks.actions.DatabricksStopServerAction"
+            icon="AllIcons.Actions.Suspend"/>
+    <action id="Databricks.OpenClusterInBrowser" class="com.intellij.bigdatatools.databricks.actions.DatabricksOpenClusterPageInBrowser"
+            icon="AllIcons.General.Web"/>
+
+    <!-- This action is used externally on Jupyter toolbar. It does not shows text on toolbar. -->
+    <action id="Databricks.RunAsWorkflowFile" class="com.intellij.bigdatatools.databricks.actions.DatabricksRunWorkflowAction"
+            icon="AllIcons.Providers.Databricks">
+      <add-to-group group-id="JupyterEditorLeftToolbarActions" relative-to-action="NotebookRunAllAction" anchor="after"/>
+      <add-to-group group-id="EditorPopupMenu" relative-to-action="PyExecuteCellAction" anchor="after"/>
+      <add-to-group group-id="JupyterEditorPopupActions" relative-to-action="NotebookRunAllBelowAction" anchor="after"/>
+    </action>
+
+    <action id="Databricks.RunAsShellFile" class="com.intellij.bigdatatools.databricks.actions.DatabricksRunShellAction"
+            icon="AllIcons.Providers.Databricks">
+      <add-to-group group-id="EditorPopupMenu" relative-to-action="Databricks.RunAsWorkflowFile" anchor="after"/>
+    </action>
+
+    <!-- CEF Browser actions and groups-->
+    <action id="Databricks.WorkflowOpenInEditorAction"
+            class="com.intellij.bigdatatools.databricks.toolwindow.controllers.workflow.WorkflowOpenInEditorAction"
+    icon="AllIcons.ToolbarDecorator.Export"/>
+
+    <group id="Databricks.WorkflowToggleCodeGroup" popup="true" icon="AllIcons.Actions.Show">
+      <action id="Databricks.WorkflowToggleCodeAction"
+              class="com.intellij.bigdatatools.databricks.toolwindow.controllers.workflow.WorkflowToggleCodeAction"/>
+      <action id="Databricks.WorkflowToggleGeneratedCellAction"
+              class="com.intellij.bigdatatools.databricks.toolwindow.controllers.workflow.WorkflowToggleGeneratedCellAction"/>
+    </group>
+
+    <group id="Databricks.WorkflowToolbar">
+      <reference ref="Databricks.WorkflowOpenInEditorAction"/>
+      <reference ref="Databricks.WorkflowToggleCodeGroup"/>
+    </group>
+  </actions>
+</idea-plugin>

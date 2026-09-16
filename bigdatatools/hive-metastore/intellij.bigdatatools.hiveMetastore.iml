@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/gen" isTestSource="false" generated="true" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="intellij.platform.core" />
+    <orderEntry type="module" module-name="intellij.platform.core.impl" />
+    <orderEntry type="module" module-name="intellij.platform.editor.ui" />
+    <orderEntry type="module" module-name="intellij.platform.ide" />
+    <orderEntry type="module" module-name="intellij.platform.ide.impl" />
+    <orderEntry type="module" module-name="intellij.platform.ide.core" />
+    <orderEntry type="module" module-name="intellij.libraries.kotlin.reflect" />
+    <orderEntry type="module" module-name="intellij.platform.execution.impl" />
+    <orderEntry type="module" module-name="intellij.platform.core.ui" />
+    <orderEntry type="module" module-name="intellij.libraries.miglayout.swing" scope="PROVIDED" />
+    <orderEntry type="module" module-name="intellij.json.backend" />
+    <orderEntry type="module" module-name="intellij.platform.projectModel" />
+    <orderEntry type="module" module-name="intellij.platform.testFramework" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.libraries.gson" />
+    <orderEntry type="module" module-name="intellij.bigdatatools.core" />
+    <orderEntry type="module" module-name="intellij.bigdatatools.hdfs" />
+    <orderEntry type="module-library">
+      <library name="bigdatatools: apache.hive.metastore" type="repository">
+        <properties maven-id="org.apache.hive:hive-metastore:3.1.3">
+          <verification>
+            <artifact url="file://$MAVEN_REPOSITORY$/org/apache/hive/hive-metastore/3.1.3/hive-metastore-3.1.3.jar">
+              <sha256sum>6af6ec693134e7db237ec2cc20a3cbd0e49834021fc989446fd61068d0331bf9</sha256sum>
+            </artifact>
+            <artifact url="file://$MAVEN_REPOSITORY$/org/apache/hive/hive-standalone-metastore/3.1.3/hive-standalone-metastore-3.1.3.jar">
+              <sha256sum>779d11d856d9f41b5f78658fdf7ddf1626f03c7ae5d808582484c3744597a1f3</sha256sum>
+            </artifact>
+            <artifact url="file://$MAVEN_REPOSITORY$/io/dropwizard/metrics/metrics-jvm/3.1.0/metrics-jvm-3.1.0.jar">
+              <sha256sum>5368b443636b199dad6ab60cfab97ab854f63678ccbf92cb22e5faeb355325d8</sha256sum>
+            </artifact>
+            <artifact url="file://$MAVEN_REPOSITORY$/io/dropwizard/metrics/metrics-json/3.1.0/metrics-json-3.1.0.jar">
+              <sha256sum>fa0b11982c8dc00b776905b5a8e74c2be12e34098abb85a8e6dd73675e5d784d</sha256sum>
+            </artifact>
+            <artifact url="file://$MAVEN_REPOSITORY$/org/apache/hive/hive-storage-api/2.7.0/hive-storage-api-2.7.0.jar">
+              <sha256sum>b764dfada0b3320b4899d854e5ba4c82a9dc96bbc73bcb79e7734a25275d27bd</sha256sum>
+            </artifact>
+            <artifact url="file://$MAVEN_REPOSITORY$/org/apache/logging/log4j/log4j-core/2.17.1/log4j-core-2.17.1.jar">
+              <sha256sum>c967f223487980b9364e94a7c7f9a8a01fd3ee7c19bdbf0b0f9f8cb8511f3d41</sha256sum>
+            </artifact>
+            <artifact url="file://$MAVEN_REPOSITORY$/org/datanucleus/datanucleus-api-jdo/4.2.4/datanucleus-api-jdo-4.2.4.jar">
+              <sha256sum>f30f1f09658329190811468e58a622f069d97a7284d67a88b8d01c809ab3d1f3</sha256sum>
+            </artifact>
+            <artifact url="file://$MAVEN_REPOSITORY$/org/datanucleus/datanucleus-core/4.1.17/datanucleus-core-4.1.17.jar">
+              <sha256sum>adb64b5ec1837821e289fc82b04c13f6b5a2f1c68a24628bcec6a7c43b5f5bca</sha256sum>
+            </artifact>
+            <artifact url="file://$MAVEN_REPOSITORY$/org/datanucleus/datanucleus-rdbms/4.1.19/datanucleus-rdbms-4.1.19.jar">
+              <sha256sum>a189e10fb48dc0fa550721ee2206a1df8a2fd68d213149bf68793976b0ade687</sha256sum>
+            </artifact>
+            <artifact url="file://$MAVEN_REPOSITORY$/org/apache/thrift/libfb303/0.9.3/libfb303-0.9.3.jar">
+              <sha256sum>23fc397a42181b17bb7d0fada2213735ed8db38cfbf038d12b9c00ea7419e11b</sha256sum>
+            </artifact>
+            <artifact url="file://$MAVEN_REPOSITORY$/org/apache/thrift/libthrift/0.9.3/libthrift-0.9.3.jar">
+              <sha256sum>bca5e8cdee1e0fbf563de7d41c452385e7bed69723fa28225a9ce718a8ee3419</sha256sum>
+            </artifact>
+          </verification>
+          <exclude>
+            <dependency maven-id="org.apache.hive:hive-serde" />
+            <dependency maven-id="org.apache.hive:hive-shims" />
+            <dependency maven-id="org.apache.orc:orc-core" />
+            <dependency maven-id="com.fasterxml.jackson.core:jackson-databind" />
+            <dependency maven-id="com.github.joshelser:dropwizard-metrics-hadoop-metrics2-reporter" />
+            <dependency maven-id="com.google.guava:guava" />
+            <dependency maven-id="com.google.protobuf:protobuf-java" />
+            <dependency maven-id="com.jolbox:bonecp" />
+            <dependency maven-id="com.zaxxer:HikariCP" />
+            <dependency maven-id="commons-dbcp:commons-dbcp" />
+            <dependency maven-id="io.dropwizard.metrics:metrics-core" />
+            <dependency maven-id="org.slf4j:slf4j-api" />
+            <dependency maven-id="javolution:javolution" />
+            <dependency maven-id="org.antlr:antlr-runtime" />
+            <dependency maven-id="org.apache.commons:commons-lang3" />
+            <dependency maven-id="org.apache.derby:derby" />
+            <dependency maven-id="commons-lang:commons-lang" />
+            <dependency maven-id="org.apache.logging.log4j:log4j-slf4j-impl" />
+            <dependency maven-id="org.apache.logging.log4j:log4j-1.2-api" />
+            <dependency maven-id="org.apache.logging.log4j:log4j-api" />
+            <dependency maven-id="org.datanucleus:javax.jdo" />
+            <dependency maven-id="sqlline:sqlline" />
+            <dependency maven-id="org.apache.hbase:hbase-client" />
+            <dependency maven-id="commons-cli:commons-cli" />
+            <dependency maven-id="commons-pool:commons-pool" />
+            <dependency maven-id="javax.jdo:jdo-api" />
+            <dependency maven-id="org.apache.httpcomponents:httpclient" />
+            <dependency maven-id="org.apache.httpcomponents:httpcore" />
+            <dependency maven-id="co.cask.tephra:tephra-api" />
+            <dependency maven-id="co.cask.tephra:tephra-core" />
+            <dependency maven-id="co.cask.tephra:tephra-hbase-compat-1.0" />
+            <dependency maven-id="org.apache.hive:hive-upgrade-acid" />
+          </exclude>
+        </properties>
+        <CLASSES>
+          <root url="jar://$MAVEN_REPOSITORY$/org/apache/hive/hive-metastore/3.1.3/hive-metastore-3.1.3.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/apache/hive/hive-standalone-metastore/3.1.3/hive-standalone-metastore-3.1.3.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/io/dropwizard/metrics/metrics-jvm/3.1.0/metrics-jvm-3.1.0.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/io/dropwizard/metrics/metrics-json/3.1.0/metrics-json-3.1.0.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/apache/hive/hive-storage-api/2.7.0/hive-storage-api-2.7.0.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/apache/logging/log4j/log4j-core/2.17.1/log4j-core-2.17.1.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/datanucleus/datanucleus-api-jdo/4.2.4/datanucleus-api-jdo-4.2.4.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/datanucleus/datanucleus-core/4.1.17/datanucleus-core-4.1.17.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/datanucleus/datanucleus-rdbms/4.1.19/datanucleus-rdbms-4.1.19.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/apache/thrift/libfb303/0.9.3/libfb303-0.9.3.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/apache/thrift/libthrift/0.9.3/libthrift-0.9.3.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="jar://$MAVEN_REPOSITORY$/org/apache/hive/hive-metastore/3.1.3/hive-metastore-3.1.3-sources.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/apache/hive/hive-standalone-metastore/3.1.3/hive-standalone-metastore-3.1.3-sources.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/io/dropwizard/metrics/metrics-jvm/3.1.0/metrics-jvm-3.1.0-sources.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/io/dropwizard/metrics/metrics-json/3.1.0/metrics-json-3.1.0-sources.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/apache/hive/hive-storage-api/2.7.0/hive-storage-api-2.7.0-sources.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/apache/logging/log4j/log4j-core/2.17.1/log4j-core-2.17.1-sources.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/datanucleus/datanucleus-api-jdo/4.2.4/datanucleus-api-jdo-4.2.4-sources.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/datanucleus/datanucleus-core/4.1.17/datanucleus-core-4.1.17-sources.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/datanucleus/datanucleus-rdbms/4.1.19/datanucleus-rdbms-4.1.19-sources.jar!/" />
+          <root url="jar://$MAVEN_REPOSITORY$/org/apache/thrift/libthrift/0.9.3/libthrift-0.9.3-sources.jar!/" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module" module-name="intellij.libraries.asm.tools" />
+    <orderEntry type="module" module-name="intellij.libraries.xerial.snappy.java" />
+    <orderEntry type="module" module-name="intellij.libraries.commons.cli" />
+    <orderEntry type="module" module-name="intellij.platform.statistics" />
+    <orderEntry type="module" module-name="intellij.platform.util.ui" />
+    <orderEntry type="module" module-name="intellij.libraries.microba" scope="PROVIDED" />
+    <orderEntry type="module" module-name="intellij.bigdatatools.coreUi" />
+  </component>
+</module>

@@ -1,0 +1,11 @@
+<idea-plugin>
+  <extensions defaultExtensionNs="com.intellij">
+    <bigdatatools.zeppelin.ztools implementation="com.intellij.bigdatatools.zeppelin.ztools.database.ZeppelinDatabaseIntegration"/>
+    <bigdatatools.zeppelin.interpreterSupport implementation="com.intellij.bigdatatools.zeppelin.notebook.interpreter.supported.database.sparksql.ZeppelinSqlInterpreterSupport"/>
+    <bigdatatools.zeppelin.interpreterSupport implementation="com.intellij.bigdatatools.zeppelin.notebook.interpreter.supported.database.hive.ZeppelinHiveInterpreterSupport"/>
+    <highlightErrorFilter implementation="com.intellij.bigdatatools.zeppelin.notebook.interpreter.supported.database.ZeppelinSqlErrorFilter"/>
+    <lang.inspectionSuppressor language="SQL" implementationClass="com.intellij.bigdatatools.zeppelin.notebook.interpreter.supported.database.ZeppelinSqlInspectionSuppressor"/>
+    <bigdatatools.zeppelin.ztools.wordscollector
+            implementation="com.intellij.bigdatatools.zeppelin.ztools.collector.ZtoolsSqlWordsCollector"/>
+  </extensions>
+</idea-plugin>

@@ -1,0 +1,16 @@
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
+  <defs>
+    <linearGradient id="bigdata_jb-b" x1="-6.074%" x2="50%" y1="-14.015%" y2="70.962%">
+      <stop offset="0%" stop-color="#FF45ED"/>
+      <stop offset="100%" stop-color="#6B57FF"/>
+    </linearGradient>
+    <path id="bigdata_jb-a"
+          d="M35.1952057,25 L25,25 L25,35.1952057 C23.4252431,35.7172053 21.7440465,36 20,36 L19.9984947,36 L4,36 L4,4 L20,4 C28.8000753,4 36,11.1999247 36,20 C36,21.7440465 35.7172053,23.4252431 35.1952057,25 Z"/>
+  </defs>
+  <g fill="none" fill-rule="evenodd">
+    <use fill="#231F20" xlink:href="#bigdata_jb-a"/>
+    <use fill="url(#bigdata_jb-b)" xlink:href="#bigdata_jb-a"/>
+    <polygon fill="#000" points="27 40 40 40 40 27 27 27"/>
+    <polygon fill="#FFF" points="29.538 37.255 35.663 37.255 35.663 35.612 29.538 35.612"/>
+  </g>
+</svg>

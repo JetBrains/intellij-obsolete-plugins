@@ -1,0 +1,44 @@
+<idea-plugin>
+  <resource-bundle>messages.SparkSubmitBundle</resource-bundle>
+  <extensionPoints>
+    <extensionPoint qualifiedName="com.intellij.bigdatatools.remote.target"
+                    dynamic="true"
+                    interface="com.jetbrains.spark.submit.run.cluster.RemoteTargetProvider"/>
+    <extensionPoint qualifiedName="com.intellij.bigdatatools.file.selector.initializer"
+                    dynamic="true"
+                    interface="com.jetbrains.spark.submit.run.cluster.FileSelectorInitializer"/>
+    <extensionPoint qualifiedName="com.intellij.bigdatatools.file.selector.option"
+                    dynamic="true"
+                    interface="com.jetbrains.spark.submit.model.FileSelectorOption"/>
+  </extensionPoints>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <stepsBeforeRunProvider implementation="com.jetbrains.spark.submit.run.ssh.upload.UploadBeforeRunTaskProvider"/>
+    <programRunner implementation="com.jetbrains.spark.submit.run.ssh.runner.SshSparkSubmitRunner"/>
+    <statistics.projectUsagesCollector implementation="com.jetbrains.spark.submit.statistic.SparkSubmitStateCollector"/>
+
+    <notificationGroup id="SftpSparkFileUpload" displayType="TOOL_WINDOW" toolWindowId="Run" bundle="messages.SparkSubmitBundle"
+                       key="notification.group.sftpsparkfileupload"/>
+
+    <bigdatatools.remote.target implementation="com.jetbrains.spark.submit.run.cluster.ssh.SshRemoteTargetProvider" order="last"/>
+
+    <bigdatatools.file.selector.option implementation="com.jetbrains.spark.submit.model.FileSelectorOptionSshServer"/>
+    <bigdatatools.file.selector.option implementation="com.jetbrains.spark.submit.model.FileSelectorOptionUpload"/>
+    <bigdatatools.file.selector.option implementation="com.jetbrains.spark.submit.model.FileSelectorOptionUploadCluster"/>
+    <bigdatatools.file.selector.option implementation="com.jetbrains.spark.submit.model.FileSelectorOptionLocalFile"/>
+  </extensions>
+
+  <actions resource-bundle="messages.SparkSubmitBundle">
+    <group id="BigDataTools.RfsClusterChooserActionGroup">
+      <reference ref="BigDataTools.RefreshAction"/>
+      <separator/>
+      <action id="BigDataTools.CreateClusterConnectionsAction"
+              class="com.jetbrains.spark.submit.run.cluster.ui.CreateClusterConnectionAction"
+              use-shortcut-of="BigDataTools.CreateConnectionsAction" icon="AllIcons.General.Add"/>
+      <reference ref="BigDataTools.RemoveConnectionsAction"/>
+    </group>
+  </actions>
+
+
+  <depends optional="true" config-file="mock_web_deployment_config.xml">com.jetbrains.plugins.webDeployment</depends>
+</idea-plugin>

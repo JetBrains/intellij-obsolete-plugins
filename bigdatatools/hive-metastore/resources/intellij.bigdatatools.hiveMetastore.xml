@@ -1,0 +1,41 @@
+<idea-plugin>
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <plugin id="com.intellij.bigdatatools.core"/>
+    <plugin id="intellij.bigdatatools.coreUi"/>
+    <module name="intellij.json.backend"/>
+    <module name="intellij.libraries.asm.tools"/>
+    <module name="intellij.libraries.commons.cli"/>
+    <module name="intellij.libraries.gson"/>
+    <module name="intellij.libraries.kotlin.reflect"/>
+    <module name="intellij.libraries.xerial.snappy.java"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.impl"/>
+    <module name="intellij.platform.core.ui"/>
+    <module name="intellij.platform.editor.ui"/>
+    <module name="intellij.platform.execution.impl"/>
+    <module name="intellij.platform.ide"/>
+    <module name="intellij.platform.ide.core"/>
+    <module name="intellij.platform.ide.impl"/>
+    <module name="intellij.platform.projectModel"/>
+    <module name="intellij.platform.statistics"/>
+    <module name="intellij.platform.util.ui"/>
+  </dependencies>
+  <!-- endregion -->
+  <resource-bundle>messages.HiveMetastoreBundle</resource-bundle>
+  <extensions defaultExtensionNs="com.intellij">
+    <applicationService serviceImplementation="com.jetbrains.bigdatatools.hivemetastore.settings.HiveToolWindowSettings"/>
+      <statistics.counterUsagesCollector
+              implementationClass="com.jetbrains.bigdatatools.hivemetastore.statistic.HiveMetastoreSettingsCollector"/>
+
+    <toolWindow id="HiveToolWindow" anchor="bottom" canCloseContents="true"
+                icon="/icons/hiveToolWindow.svg"
+                factoryClass="com.jetbrains.bigdatatools.hivemetastore.monitoring.HiveToolWindowFactory"/>
+
+    <bigdatatools.bdiConnectionSettingProvider
+      implementation="com.jetbrains.bigdatatools.hivemetastore.settings.HiveMetastoreSettingsProvider"/>
+
+    <bigdatatools.connection.factory implementation="com.jetbrains.bigdatatools.hivemetastore.rfs.HiveMetastoreConnectionFactory"/>
+    <applicationSettings service="com.jetbrains.bigdatatools.hivemetastore.settings.HiveToolWindowSettings"/>
+  </extensions>
+</idea-plugin>

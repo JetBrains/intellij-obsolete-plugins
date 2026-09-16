@@ -1,0 +1,125 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_provided_library")
+
+### auto-generated section `build intellij.bigdatatools.emr` start
+jvm_provided_library(
+    name = "community_libraries_miglayout-swing_provided",
+    lib = "@community//libraries/miglayout-swing",
+)
+
+jvm_provided_library(
+    name = "community_libraries_microba_provided",
+    lib = "@community//libraries/microba",
+)
+
+jvm_library(
+    name = "emr",
+    srcs = glob(
+        [
+            "gen/**/*.kt",
+            "gen/**/*.java",
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bigdatatools.emr",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@community//platform/core-api:core",
+        "@community//platform/core-impl",
+        "@community//platform/credential-store",
+        "@community//platform/editor-ui-api:editor-ui",
+        "@community//platform/projectModel-api:projectModel",
+        "@community//platform/remote-core",
+        "@community//platform/util-ex",
+        "@community//platform/util:util-ui",
+        "@community//platform/platform-api:ide",
+        "@community//platform/platform-impl:ide-impl",
+        "@community//libraries/kotlin/reflect",
+        "@community//platform/analysis-api:analysis",
+        "@community//platform/execution-impl",
+        "@community//platform/core-ui",
+        "@community//json/backend",
+        "@community//libraries/gson",
+        "//plugins/bigdatatools/core",
+        "//plugins/bigdatatools/hdfs",
+        "//plugins/bigdatatools/aws",
+        "//plugins/bigdatatools/sftp",
+        "//plugins/bigdatatools/spark-sumbit:sparkSubmit",
+        "@community//platform/platform-util-io:ide-util-io",
+        "@community//platform/ide-core",
+        "@community//platform/progress/shared:ide-progress",
+        "@community//platform/execution",
+        "@community//platform/statistics",
+        "//plugins/bigdatatools/aws-base",
+        "//plugins/bigdatatools/core-ui",
+        "//platform/ssh-core",
+        ":community_libraries_miglayout-swing_provided",
+        ":community_libraries_microba_provided",
+    ],
+)
+
+jvm_library(
+    name = "emr_test_lib",
+    testonly = True,
+    srcs = glob(
+        [],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bigdatatools.emr",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        ":emr",
+        "@community//platform/core-api:core_test_lib",
+        "@community//platform/core-impl:core-impl_test_lib",
+        "@community//platform/credential-store:credential-store_test_lib",
+        "@community//platform/editor-ui-api:editor-ui_test_lib",
+        "@community//platform/projectModel-api:projectModel_test_lib",
+        "@community//platform/remote-core:remote-core_test_lib",
+        "@community//platform/util-ex:util-ex_test_lib",
+        "@community//platform/util:util-ui_test_lib",
+        "@community//platform/platform-api:ide_test_lib",
+        "@community//platform/platform-impl:ide-impl_test_lib",
+        "@community//libraries/kotlin/reflect:reflect_test_lib",
+        "@community//platform/analysis-api:analysis_test_lib",
+        "@community//platform/execution-impl:execution-impl_test_lib",
+        "@community//platform/core-ui:core-ui_test_lib",
+        "@community//libraries/miglayout-swing",
+        "@community//libraries/miglayout-swing:miglayout-swing_test_lib",
+        "@community//json/backend:backend_test_lib",
+        "@community//libraries/gson:gson_test_lib",
+        "//plugins/bigdatatools/core:core_test_lib",
+        "//plugins/bigdatatools/hdfs:hdfs_test_lib",
+        "//plugins/bigdatatools/aws:aws_test_lib",
+        "//plugins/bigdatatools/sftp:sftp_test_lib",
+        "//plugins/bigdatatools/spark-sumbit:sparkSubmit_test_lib",
+        "@community//platform/platform-util-io:ide-util-io_test_lib",
+        "@community//platform/ide-core:ide-core_test_lib",
+        "@community//platform/progress/shared:ide-progress_test_lib",
+        "@community//platform/execution:execution_test_lib",
+        "@community//platform/statistics:statistics_test_lib",
+        "@community//libraries/microba",
+        "@community//libraries/microba:microba_test_lib",
+        "//plugins/bigdatatools/aws-base:aws-base_test_lib",
+        "//plugins/bigdatatools/core-ui:core-ui_test_lib",
+        "//platform/ssh-core:ssh-core_test_lib",
+    ],
+)
+### auto-generated section `build intellij.bigdatatools.emr` end
+
+### auto-generated section `iml intellij.bigdatatools.emr` start
+exports_files(
+    [
+        "intellij.bigdatatools.emr.iml",
+        "resources/META-INF/bdide-emr.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.bigdatatools.emr` end

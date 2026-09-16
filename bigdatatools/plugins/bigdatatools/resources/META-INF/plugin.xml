@@ -1,0 +1,181 @@
+<idea-plugin>
+  <id>com.intellij.bigdatatools</id>
+  <name>Big Data Tools</name>
+  <vendor>JetBrains</vendor>
+
+  <description><![CDATA[
+    <p>A bundle of plugins for data engineers and other specialists engaged with big data workloads. Installed in your favorite JetBrains IDE, Big Data Tools helps develop, visualize, debug, and monitor big data pipelines built in Scala, Python, and SQL.</p>
+    <br>
+
+    <h3 style="padding:0;margin:0;line-height:0px">Use Big Data Tools for:</h3>
+    <ul>
+      <li>Running and monitoring Spark or Flink jobs directly from your IDE.</li>
+      <li>Working with Amazon EMR clusters.</li>
+      <li>Viewing big data files, such as CSV, Parquet, ORC, and Avro.</li>
+      <li>Previewing Hive Metastore databases.</li>
+      <li>Getting insights about your Hadoop environment.</li>
+    </ul>
+
+    <h3 style="padding:0;margin:0;line-height:0px">Built-in tools and integrations:</h3>
+    <ul>
+      <li><b>Supported languages:</b> Scala, Python, SQL.</li>
+      <li><b>Monitoring:</b> Hadoop, Spark, Hive Metastore, Flink, AWS Glue.</li>
+      <li><b>Remote file storages:</b> AWS S3, Google Cloud Storage, Microsoft Azure, Tencent Cloud Object Storage (COS), DigitalOcean Spaces, Alibaba OSS, Hadoop Distributed File System (HDFS), and more.</li>
+      <li><b>File systems:</b> HDFS, Local, SFTP.</li>
+      <li><b>Data processing platforms:</b> AWS EMR.</li>
+    </ul>
+    ]]></description>
+
+  <depends>com.intellij.modules.json</depends>
+
+  <depends>com.intellij.bigdatatools.binary.files</depends>
+  <depends>com.intellij.bigdatatools.rfs</depends>
+  <depends>com.intellij.bigdatatools.metastore.core</depends>
+  <depends>com.intellij.bigdatatools.spark</depends>
+  <depends>intellij.bigdatatools.awsBase</depends>
+  <depends>intellij.bigdatatools.gcloud</depends>
+  <depends>intellij.bigdatatools.azure</depends>
+
+  <depends>com.intellij.bigdatatools.flink</depends>
+
+  <change-notes><![CDATA[
+<h2 style="padding:0;margin:0;line-height:0px">Changes in 2023.3</h2>
+<h3 style="padding:0;margin:0;line-height:0px">Big Data Tools</h3>
+<h4 style="padding:0;margin:0;line-height:0px">Features</h4>
+<ul>
+	<li>Added Speed Search to the connection tree in <b>Settings | Tools | Big Data Tools</b></li>
+</ul>
+<h4 style="padding:0;margin:0;line-height:0px">Fixed Bugs</h4>
+<ul>
+	<li>Fixed performance problems with password storage</li>
+</ul>
+
+
+<h3 style="padding:0;margin:0;line-height:0px">Kafka</h3>
+<h4 style="padding:0;margin:0;line-height:0px">Features</h4>
+<ul>
+<li>Supported local Protobuf and Avro schema files</li>
+<li>Added the Show schema action for local schema files</li>
+<li>In Spring projects, Kafka connections can be created directly from the gutter</li>
+<li>Added ability to set and create consumer groups for Kafka consumer</li>
+<li>Extended the usability and functionality of the Consumer groups section of the Kafka plugin</li>
+<li>Added highlighting for avro messages for Consumer</li>
+<li>Added integer type for keys/values for Consumer and Producer</li>
+<li>Added Speed Search for Kafka tool window</li>
+<li>Added the Local port field for connections via SSH tunnel and a hint about limitation of such connections</li>
+<li>Now, installing the Kafka plugin does not require the IDE restart</li>
+</ul>
+
+<h4 style="padding:0;margin:0;line-height:0px">Fixed Bugs</h4>
+<ul>
+<li>Fixed issues with applying presets to Producer</li>
+<li>Improved validation warnings and error messages</li>
+<li>Better column sizing after changing the Producer options and table clearing</li>
+<li>Fixed generation and tree view for JSON and Protobuf schemas with references</li>
+<li>It’s possible now to put multiple schema registry URL in Kafka configuration</li>
+<li>Key/Value editor fields are hidden when random generation enabled</li>
+<li>Improved the Properties source field for Kafka connection settings</li>
+<li>Fixed exception related to the slash symbol in a Topic or Schema name</li>
+</ul>
+
+
+
+<h3 style="padding:0;margin:0;line-height:0px">Spark</h3>
+<h4 style="padding:0;margin:0;line-height:0px">Features</h4>
+<ul>
+<li>Added ability to submit Spark applications on a DataProc cluster</li>
+<li>Added ability custom Spark cluster connection for submitting applications</li>
+<li>Added automatic run configuration suggestion for PySpark projects</li>
+<li>New Pyspark project wizard available</li>
+<li>Spark project wizard reworked</li>
+<li>Added automatic run configuration suggestion for Spark projects using Scala 3</li>
+<li>Added debugging support for JVM Spark applications that were run with Run configuration</li>
+<li>Added static analysis for Spark and Pyspark DataFrame columns</li>
+<li>Added autocompletion for Spark and Pyspark DataFrame columns</li>
+<li>Added Spark jobs monitoring (EMR, Dataproc, Custom cluster) into Services toolwindow</li>
+<li>Spark monitoring Executor logs now provide two options - stdout and stderr</li>
+<li>View settings for Spark monitoring Stages in the Jobs tab and in the Stages tab are independent now</li>
+<li>Added Spark monitoring and SFTP templates for EMR clusters in the Big Data Tools toolwindow</li>
+<li>Added button to copy Spark application logs from Console</li>
+<li>Added ability to filter Spark applications `by me` (submitted by the current user)</li>
+</ul>
+
+<h4 style="padding:0;margin:0;line-height:0px">Fixed Bugs</h4>
+<ul>
+<li>Fixed limitations for the Spark applications list to avoid lack of necessary applications</li>
+<li>Spark and Hadoop monitoring view settings are saved correctly now</li>
+<li>`Delete Job` button is now disabled when a Job is executing</li>
+<li>Supported sso-session property for AWS connections</li>
+<li>AWS Glue region is saved correctly now</li>
+</ul>
+
+<h3 style="padding:0;margin:0;line-height:0px">Flink</h3>
+<ul>
+	<li>Fixed some localization issues</li>
+</ul>
+
+
+<h3 style="padding:0;margin:0;line-height:0px">Remote File Systems</h3>
+<h4 style="padding:0;margin:0;line-height:0px">Features</h4>
+<ul>
+<li>Added ability to filter by prefix for storages</li>
+<li>Added path indication to editor viewer tab</li>
+<li>Updated regions list for Linode and DigitalOcean Spaces</li>
+<li>New regions supported for Alibaba OSS</li>
+<li>Added possibility to set a custom Endpoint and Region for Alibaba OSS connection</li>
+</ul>
+
+<h4 style="padding:0;margin:0;line-height:0px">Fixed Bugs</h4>
+<ul>
+<li>Fixed sorting in Editor viewer</li>
+<li>Fixed constantly collapsed nodes</li>
+<li>Fixed credentials caching issue for S3 connections</li>
+<li>Fixed hanging UI on automatic driver refresh</li>
+<li>Content-type field added to file info for Alibaba OSS</li>
+<li>Reload, upload, compare buttons are available again for remote editable files</li>
+<li>File size for S3 connections is displayed more accurately now</li>
+<li>Shortcuts for copy file and copy absolute path are similar to the Project panel now</li>
+</ul>
+
+<h3 style="padding:0;margin:0;line-height:0px">Big Data File Viewer</h3>
+<ul>
+<li>Fixed issues on DDL opening of for tabular files</li>
+<li>Fixed int32 date column display in parquet files</li>
+<li>Fixed rendering of microseconds and nanoseconds in parquet file timestamps</li>
+<li>Parquet file viewer shows commas correctly in JSON formatted columns</li>
+<li>Umlaut characters are displayed now in the parquet files</li>
+<li>Fixed displayed ‘map’ columns for parquet files</li>
+<li>Fixed bug with opening zstd compressed parquet files</li>
+<li>Timestamp columns are displayed independent on what time zone the user opened in</li>
+<li>Array columns are displayed correctly now: header name, delimiter, and empty arrays</li>
+<li>Fixed issues with displaying rows in parquet files</li>
+<li>Data files with Chinese names can be previewed now</li>
+<li>Avro files are opened properly now</li>
+<li>Fixed exception on opening files with special characters in their names</li>
+<li>The tab of the deleted file is closed properly now</li>
+<li>Fixed issue while opening an empty CSV file</li>
+</ul>
+
+
+<h3 style="padding:0;margin:0;line-height:0px">Zeppelin</h3>
+<ul>
+<li>Indents are correct now in the Go To The Paragraph window</li>
+<li>Fixed Scala autocompletion with Kotlin plugin disabled</li>
+<li>Fixed some exceptions on connection to Zeppelin and on opening a Zeppelin notebook</li>
+</ul>
+
+<p>The full release notes are available <a href="https://youtrack.jetbrains.com/issues?q=project:%20BDIDE%20%20Available%20in:%20%7B2023.3%7D%20State:%20Fixed,%20Verified,%20%7BWithout%20verification%7D%20sort%20by:%20project,%20Type,%20votes">here</a>.</p>
+]]></change-notes>
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <plugin id="com.intellij.bigdatatools.core"/>
+    <plugin id="intellij.bigdatatools.coreUi"/>
+    <module name="intellij.platform.codeStyle"/>
+    <module name="intellij.platform.codeStyle.impl"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.ui"/>
+    <module name="intellij.platform.ide"/>
+    <module name="intellij.platform.ide.impl"/>
+  </dependencies>
+  <!-- endregion -->
+</idea-plugin>

@@ -1,0 +1,66 @@
+<idea-plugin>
+  <resource-bundle>messages.VisualisationBundle</resource-bundle>
+  <extensions defaultExtensionNs="com.intellij">
+    <applicationService serviceImplementation="com.intellij.bigdatatools.visualization.inlays.settings.InlaysSettings"/>
+
+    <applicationService serviceImplementation="com.intellij.bigdatatools.visualization.inlays.style.InlaysConfig"/>
+
+    <applicationService serviceInterface="com.intellij.bigdatatools.visualization.inlays.InlaysManager"
+                        serviceImplementation="com.intellij.bigdatatools.visualization.inlays.InlaysManagerImpl"/>
+
+    <bigdatatools.notebook.style implementation="com.intellij.bigdatatools.visualization.inlays.style.InlaysConfigurable"/>
+
+    <statistics.counterUsagesCollector
+            implementationClass="com.intellij.bigdatatools.visualization.statistics.VisualizationChangesCollector"/>
+
+    <additionalTextAttributes scheme="Default" file="colorSchemes/NotebookEditorDefault.xml"/>
+    <additionalTextAttributes scheme="Darcula" file="colorSchemes/NotebookEditorDarcula.xml"/>
+    <applicationSettings service="com.intellij.bigdatatools.visualization.inlays.style.InlaysConfig"/>
+    <applicationSettings service="com.intellij.bigdatatools.visualization.inlays.settings.InlaysSettings"/>
+  </extensions>
+
+  <applicationListeners>
+    <listener class="com.intellij.bigdatatools.visualization.inlays.utils.InlaysLafManagerListener"
+              topic="com.intellij.ide.ui.LafManagerListener"
+              activeInHeadlessMode="false" activeInTestMode="false"/>
+  </applicationListeners>
+
+  <actions resource-bundle="messages.VisualisationBundle">
+    <group id="BDI.Notebook.Gutter.Main.group">
+      <action id="BDI.Notebook.CollapseInlay" class="com.intellij.bigdatatools.visualization.inlays.actions.CollapseInlayAction"
+              icon="com.intellij.bigdatatools.visualization.BigdatatoolsVisualisationIcons.Fold"/>
+    </group>
+    <group id="BDI.Notebook.Gutter.Inlay.group">
+      <action id="BDI.Notebook.ToggleTableInlayView"
+              class="com.intellij.bigdatatools.visualization.inlays.actions.ToggleTableInlayViewAction"
+              icon="AllIcons.Nodes.DataTables"/>
+      <action id="BDI.Notebook.ToggleChartInlayView"
+              class="com.intellij.bigdatatools.visualization.inlays.actions.ToggleChartInlayViewAction"
+              icon="ChartsIcons.Chart.Chart"/>
+      <action id="BDI.Notebook.ToggleSplitInlayView"
+              class="com.intellij.bigdatatools.visualization.inlays.actions.ToggleSplitInlayViewAction"
+              icon="AllIcons.Actions.SplitVertically"/>
+      <action id="BDI.Notebook.ToggleConsoleInlayView"
+              class="com.intellij.bigdatatools.visualization.inlays.actions.ToggleConsoleInlayViewAction"
+              icon="AllIcons.Nodes.Console"/>
+    </group>
+
+    <group id="Console.EditorTableResult.Bdi.Vertical.Group">
+      <!--column list-->
+      <reference ref="Console.TableResult.FindInGrid"/>
+      <reference ref="Console.TableResult.ShowPaginationAction"/>
+      <separator/>
+      <reference ref="Console.TableResult.ShowDumpDialogGrid"/>
+      <action id="BDI.Console.TableResult.ShowDdl" class="com.intellij.bigdatatools.visualization.inlays.actions.ShowDdlAction"
+              icon="com.jetbrains.bigdatatools.common.BigdatatoolsCoreIcons.Table.Ddl"/>
+
+      <action id="BDI.Console.TableResult.BdiOpenInNewTab"
+              class="com.intellij.bigdatatools.visualization.inlays.actions.BdiOpenInNewTabAction"
+              icon="AllIcons.Ide.External_link_arrow"/>
+      <separator/>
+      <reference ref="Console.TableResult.ViewAs"/>
+      <reference ref="Console.TableResult.Options"/>
+    </group>
+
+  </actions>
+</idea-plugin>

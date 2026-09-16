@@ -1,0 +1,30 @@
+<idea-plugin>
+  <extensions defaultExtensionNs="com.intellij">
+    <!--Supported local (i.e. existing in project tree) file types-->
+    <fileType implementationClass="com.jetbrains.bigdatatools.view.filetypes.parquet.ParquetFileType"
+              fieldName="INSTANCE" name="Parquet" extensions="parquet"/>
+    <fileType.fileViewProviderFactory
+      filetype="Parquet"
+      implementationClass="com.jetbrains.bigdatatools.view.filetypes.parquet.ParquetFileViewProviderFactory"/>
+    <fileEditorProvider implementation="com.jetbrains.bigdatatools.view.filetypes.parquet.ParquetEditorProvider"/>
+    <filetype.decompiler filetype="Parquet" implementationClass="com.jetbrains.bigdatatools.view.filetypes.RfsCommonFileDecompiler"/>
+
+    <fileType.fileViewProviderFactory filetype="Avro"
+                                      implementationClass="com.jetbrains.bigdatatools.view.filetypes.avro.AvroFileViewProviderFactory"/>
+    <fileType implementationClass="com.jetbrains.bigdatatools.view.filetypes.avro.AvroFileType"
+              fieldName="INSTANCE" name="Avro" extensions="avro"/>
+    <fileEditorProvider implementation="com.jetbrains.bigdatatools.view.filetypes.avro.AvroEditorProvider"/>
+    <filetype.decompiler filetype="Avro" implementationClass="com.jetbrains.bigdatatools.view.filetypes.RfsCommonFileDecompiler"/>
+
+    <fileType implementationClass="com.jetbrains.bigdatatools.view.filetypes.orc.OrcFileType"
+              fieldName="INSTANCE" name="Orc" extensions="orc"/>
+    <fileEditorProvider implementation="com.jetbrains.bigdatatools.view.filetypes.orc.OrcEditorProvider"/>
+    <filetype.decompiler filetype="Orc" implementationClass="com.jetbrains.bigdatatools.view.filetypes.RfsCommonFileDecompiler"/>
+
+    <fileType implementationClass="com.jetbrains.bigdatatools.view.filetypes.TsvDownloadedFileType"
+              fieldName="INSTANCE" name="Tsv(downloaded)" extensions="tsv(downloaded)"/>
+    <fileType implementationClass="com.jetbrains.bigdatatools.view.filetypes.CsvDownloadedFileType"
+              fieldName="INSTANCE" name="Csv(downloaded)" extensions="Csv(downloaded)"/>
+    <!--/file types-->
+  </extensions>
+</idea-plugin>

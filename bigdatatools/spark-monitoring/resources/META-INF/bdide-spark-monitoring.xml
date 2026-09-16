@@ -1,0 +1,25 @@
+<idea-plugin>
+  <resource-bundle>messages.SparkMonitoringBundle</resource-bundle>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <bigdatatools.connection.factory implementation="com.jetbrains.spark.monitoring.rfs.driver.SparkMonitoringConnectionFactory"/>
+
+    <bigdatatools.bdiConnectionSettingProvider implementation="com.jetbrains.spark.monitoring.settings.SparkSettingsProvider"/>
+
+
+    <applicationService serviceImplementation="com.jetbrains.spark.monitoring.settings.SparkToolwindowSettings"/>
+
+    <statistics.counterUsagesCollector implementationClass="com.jetbrains.spark.monitoring.statistics.SparkMonitoringSettingsCollector"/>
+    <statistics.counterUsagesCollector implementationClass="com.jetbrains.spark.monitoring.statistics.SparkMonitoringUsagesCollector"/>
+    <statistics.projectUsagesCollector implementation="com.jetbrains.spark.monitoring.statistics.SparkMonitoringConnectionStateCollector"/>
+    <fileEditorProvider implementation="com.jetbrains.spark.monitoring.graph.editor.DotEditorProvider"/>
+
+    <registryKey key="bdide.rfs.max.children.page" defaultValue="1000"
+                 description="Max children per page for Remote file systems" restartRequired="false"/>
+
+    <notificationGroup id="SparkJobs" displayType="TOOL_WINDOW" bundle="messages.SparkMonitoringBundle"
+                       toolWindowId="Services"
+                       key="notification.group.job.updates"/>
+    <applicationSettings service="com.jetbrains.spark.monitoring.settings.SparkToolwindowSettings"/>
+  </extensions>
+</idea-plugin>

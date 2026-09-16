@@ -1,0 +1,16 @@
+<idea-plugin>
+  <extensions defaultExtensionNs="com.intellij">
+    <statistics.counterUsagesCollector implementationClass="com.jetbrains.bigdatatools.flink.statistic.FlinkSettingsCollector"/>
+    <applicationService serviceImplementation="com.jetbrains.bigdatatools.flink.toolwindow.config.FlinkToolWindowSettings"/>
+    <bigdatatools.bdiConnectionSettingProvider implementation="com.jetbrains.bigdatatools.flink.settings.FlinkSettingsProvider"/>
+    <bigdatatools.connection.factory implementation="com.jetbrains.bigdatatools.flink.rfs.FlinkConnectionFactory"/>
+
+    <toolWindow id="FlinkToolWindow" anchor="bottom" canCloseContents="true"
+                icon="/icons/toolwindowFlink.svg"
+                factoryClass="com.jetbrains.bigdatatools.flink.toolwindow.FlinkToolWindowFactory"/>
+
+    <bigdatatools.monitoring.monitoringProvider implementation="com.jetbrains.bigdatatools.flink.FlinkMonitoringServiceProviderImpl"/>
+    <fileEditorProvider implementation="com.jetbrains.bigdatatools.flink.graph.editor.FlinkEditorProvider"/>
+    <applicationSettings service="com.jetbrains.bigdatatools.flink.toolwindow.config.FlinkToolWindowSettings"/>
+  </extensions>
+</idea-plugin>
