@@ -1,0 +1,16 @@
+<idea-plugin>
+  <extensionPoints>
+    <extensionPoint qualifiedName="com.intellij.bigdatatools.sparkConfigurationProducerProvider" beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+      <with attribute="implementationClass" implements="com.intellij.bigdatatools.plugin.spark.submit.gutter.SparkConfigurationProducerProvider"/>
+    </extensionPoint>
+  </extensionPoints>
+  <actions resource-bundle="messages.SparkSubmitBundle">
+    <group id="BigDataTools.Deploy">
+      <group id="BigDataTools.Deploy.Existing"
+             class="com.intellij.bigdatatools.plugin.spark.submit.gutter.SubmitRunActionGroup"/>
+      <action id="BigDataTools.Deploy.Configure"
+              class="com.intellij.bigdatatools.plugin.spark.submit.gutter.SubmitCreateAction"
+              icon="AllIcons.General.Settings"/>
+    </group>
+  </actions>
+</idea-plugin>

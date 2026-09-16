@@ -1,0 +1,122 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_provided_library")
+
+### auto-generated section `build intellij.bigdatatools.jupyter` start
+jvm_provided_library(
+    name = "community_plugins_markdown_markdown_provided",
+    lib = "@community//plugins/markdown/core:markdown",
+)
+
+jvm_provided_library(
+    name = "community_platform_core_provided",
+    lib = "@community//platform/core-api:core",
+)
+
+jvm_provided_library(
+    name = "community_platform_core-impl_provided",
+    lib = "@community//platform/core-impl",
+)
+
+jvm_provided_library(
+    name = "community_platform_lang_provided",
+    lib = "@community//platform/lang-api:lang",
+)
+
+jvm_provided_library(
+    name = "community_platform_lang-impl_provided",
+    lib = "@community//platform/lang-impl",
+)
+
+jvm_library(
+    name = "jupyter",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+            "gen/**/*.kt",
+            "gen/**/*.java",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bigdatatools.jupyter",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@community//platform/analysis-api:analysis",
+        "@community//platform/code-style-api:codeStyle",
+        "@community//platform/editor-ui-api:editor-ui",
+        "@community//libraries/gson",
+        "@community//libraries/guava",
+        "@community//platform/platform-impl:ide-impl",
+        "@community//platform/ide-core",
+        "@community//platform/core-ui",
+        "//plugins/bigdatatools/core",
+        "@community//platform/projectModel-api:projectModel",
+        "@community//platform/util:util-ui",
+        "@community//libraries/miglayout-swing",
+        "//plugins/bigdatatools/core-ui",
+        ":community_plugins_markdown_markdown_provided",
+        ":community_platform_core_provided",
+        ":community_platform_core-impl_provided",
+        ":community_platform_lang_provided",
+        ":community_platform_lang-impl_provided",
+    ],
+)
+
+jvm_library(
+    name = "jupyter_test_lib",
+    testonly = True,
+    srcs = glob(
+        [],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bigdatatools.jupyter",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        ":jupyter",
+        "@community//plugins/markdown/core:markdown",
+        "@community//plugins/markdown/core:markdown_test_lib",
+        "@community//platform/analysis-api:analysis_test_lib",
+        "@community//platform/code-style-api:codeStyle_test_lib",
+        "@community//platform/core-api:core",
+        "@community//platform/core-api:core_test_lib",
+        "@community//platform/core-impl",
+        "@community//platform/core-impl:core-impl_test_lib",
+        "@community//platform/editor-ui-api:editor-ui_test_lib",
+        "@community//platform/lang-api:lang",
+        "@community//platform/lang-api:lang_test_lib",
+        "@community//platform/lang-impl",
+        "@community//platform/lang-impl:lang-impl_test_lib",
+        "@community//libraries/gson:gson_test_lib",
+        "@community//libraries/guava:guava_test_lib",
+        "@community//platform/platform-impl:ide-impl_test_lib",
+        "@community//platform/ide-core:ide-core_test_lib",
+        "@community//libraries/junit4",
+        "@community//libraries/junit4:junit4_test_lib",
+        "@community//libraries/mockito",
+        "@community//libraries/mockito:mockito_test_lib",
+        "@community//platform/core-ui:core-ui_test_lib",
+        "//plugins/bigdatatools/core:core_test_lib",
+        "@community//platform/projectModel-api:projectModel_test_lib",
+        "@community//platform/util:util-ui_test_lib",
+        "@community//libraries/miglayout-swing:miglayout-swing_test_lib",
+        "//plugins/bigdatatools/core-ui:core-ui_test_lib",
+    ],
+)
+### auto-generated section `build intellij.bigdatatools.jupyter` end
+
+### auto-generated section `iml intellij.bigdatatools.jupyter` start
+exports_files(
+    [
+        "intellij.bigdatatools.jupyter.iml",
+        "resources/META-INF/bdt-core-notebook.xml",
+        "resources/META-INF/bdt-jupyter-notebook.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.bigdatatools.jupyter` end

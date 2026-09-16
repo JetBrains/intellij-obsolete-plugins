@@ -1,0 +1,14 @@
+{
+  "icons": {
+    "expui": {
+      "status": {
+        "statusError.svg": "icons/status/statusError.svg",
+        "statusNotRun.svg": "icons/status/statusNotRun.svg",
+        "statusPassed.svg": "icons/status/statusPassed.svg",
+        "statusPassedIgnored.svg": "icons/status/statusPassedIgnored.svg",
+        "statusSkipped.svg": "icons/status/statusSkipped.svg",
+        "statusFailed.svg": "icons/status/statusFailed.svg"
+      }
+    }
+  }
+}

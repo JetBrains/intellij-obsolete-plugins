@@ -1,0 +1,110 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_provided_library")
+
+### auto-generated section `build intellij.bigdatatools.hiveMetastore` start
+jvm_provided_library(
+    name = "community_libraries_miglayout-swing_provided",
+    lib = "@community//libraries/miglayout-swing",
+)
+
+jvm_provided_library(
+    name = "community_libraries_microba_provided",
+    lib = "@community//libraries/microba",
+)
+
+jvm_library(
+    name = "hive-metastore",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+            "gen/**/*.kt",
+            "gen/**/*.java",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bigdatatools.hiveMetastore",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@community//platform/core-api:core",
+        "@community//platform/core-impl",
+        "@community//platform/editor-ui-api:editor-ui",
+        "@community//platform/platform-api:ide",
+        "@community//platform/platform-impl:ide-impl",
+        "@community//platform/ide-core",
+        "@community//libraries/kotlin/reflect",
+        "@community//platform/execution-impl",
+        "@community//platform/core-ui",
+        "@community//json/backend",
+        "@community//platform/projectModel-api:projectModel",
+        "@community//libraries/gson",
+        "//plugins/bigdatatools/core",
+        "//plugins/bigdatatools/hdfs",
+        "@ultimate_lib//:bigdatatools-hive_metastore-bigdatatools-apache-hive-metastore",
+        "@community//libraries/asm-tools",
+        "@community//libraries/xerial-snappy-java",
+        "@community//libraries/commons/cli",
+        "@community//platform/statistics",
+        "@community//platform/util:util-ui",
+        "//plugins/bigdatatools/core-ui",
+        ":community_libraries_miglayout-swing_provided",
+        ":community_libraries_microba_provided",
+    ],
+)
+
+jvm_library(
+    name = "hive-metastore_test_lib",
+    testonly = True,
+    srcs = glob(
+        [],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bigdatatools.hiveMetastore",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        ":hive-metastore",
+        "@community//platform/core-api:core_test_lib",
+        "@community//platform/core-impl:core-impl_test_lib",
+        "@community//platform/editor-ui-api:editor-ui_test_lib",
+        "@community//platform/platform-api:ide_test_lib",
+        "@community//platform/platform-impl:ide-impl_test_lib",
+        "@community//platform/ide-core:ide-core_test_lib",
+        "@community//libraries/kotlin/reflect:reflect_test_lib",
+        "@community//platform/execution-impl:execution-impl_test_lib",
+        "@community//platform/core-ui:core-ui_test_lib",
+        "@community//libraries/miglayout-swing",
+        "@community//libraries/miglayout-swing:miglayout-swing_test_lib",
+        "@community//json/backend:backend_test_lib",
+        "@community//platform/projectModel-api:projectModel_test_lib",
+        "@community//platform/testFramework",
+        "@community//platform/testFramework:testFramework_test_lib",
+        "@community//libraries/gson:gson_test_lib",
+        "//plugins/bigdatatools/core:core_test_lib",
+        "//plugins/bigdatatools/hdfs:hdfs_test_lib",
+        "@community//libraries/asm-tools:asm-tools_test_lib",
+        "@community//libraries/xerial-snappy-java:xerial-snappy-java_test_lib",
+        "@community//libraries/commons/cli:cli_test_lib",
+        "@community//platform/statistics:statistics_test_lib",
+        "@community//platform/util:util-ui_test_lib",
+        "@community//libraries/microba",
+        "@community//libraries/microba:microba_test_lib",
+        "//plugins/bigdatatools/core-ui:core-ui_test_lib",
+    ],
+)
+### auto-generated section `build intellij.bigdatatools.hiveMetastore` end
+
+### auto-generated section `iml intellij.bigdatatools.hiveMetastore` start
+exports_files(
+    [
+        "intellij.bigdatatools.hiveMetastore.iml",
+        "resources/intellij.bigdatatools.hiveMetastore.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.bigdatatools.hiveMetastore` end

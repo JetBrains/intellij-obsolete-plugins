@@ -1,0 +1,34 @@
+<idea-plugin>
+  <resource-bundle>messages.NotebookBundle</resource-bundle>
+  <actions>
+    <action id="NoteToggleLineWrap" class="com.intellij.bigdatatools.notebooks.core.impl.editor.actions.NotebookToggleLineWrapAction"
+            icon="AllIcons.Actions.ToggleSoftWrap"/>
+  </actions>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <copyPastePreProcessor implementation="com.intellij.bigdatatools.notebooks.core.impl.editor.paste.NotebookCopyPasteProcessor"/>
+
+    <statementUpDownMover implementation="com.intellij.bigdatatools.notebooks.core.impl.extensions.NoteLineMoverThrowDelimiter"
+                          id="NoteMover"
+                          order="first"/>
+
+    <psi.fileReferenceHelper implementation="com.intellij.bigdatatools.notebooks.core.impl.psi.resolve.NotebookFileReferenceHelper"/>
+
+    <applicationConfigurable parentId="bigdataide_conn_settings"
+                             instance="com.intellij.bigdatatools.notebooks.style.GlobalStyleConfigurable"
+                             id="Notebook.Style"
+                             bundle="messages.NotebookBundle" key="style.displayName"/>
+
+    <applicationService serviceImplementation="com.intellij.bigdatatools.notebooks.style.NoteStyleSettings"/>
+    <applicationSettings service="com.intellij.bigdatatools.notebooks.style.NoteStyleSettings"/>
+  </extensions>
+
+  <extensionPoints>
+    <extensionPoint qualifiedName="com.intellij.bigdatatools.notebook.style"
+                    interface="com.intellij.openapi.options.SearchableConfigurable"
+                    dynamic="true"/>
+    <extensionPoint qualifiedName="com.intellij.bigdatatools.corenotebook.bdtNotebookASTCellMapper"
+                    dynamic="true"
+                    interface="com.intellij.bigdatatools.notebooks.core.api.psi.NotebookASTCellMapper"/>
+  </extensionPoints>
+</idea-plugin>

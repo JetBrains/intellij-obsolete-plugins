@@ -1,0 +1,42 @@
+<idea-plugin package="com.intellij.bigdatatools.plugin.spark.java">
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <module name="intellij.java.backend"/>
+    <module name="intellij.java"/>
+    <module name="intellij.java.debugger.impl"/>
+    <module name="intellij.java.execution.impl"/>
+    <module name="intellij.java.psi"/>
+    <module name="intellij.java.ui"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.ui"/>
+    <module name="intellij.platform.debugger"/>
+    <module name="intellij.platform.debugger.impl"/>
+    <module name="intellij.platform.editor.ui"/>
+    <module name="intellij.platform.execution"/>
+    <module name="intellij.platform.execution.impl"/>
+    <module name="intellij.platform.ide.core"/>
+    <module name="intellij.platform.ide.impl"/>
+    <module name="intellij.platform.lang"/>
+    <module name="intellij.platform.lang.impl"/>
+    <module name="intellij.platform.projectModel"/>
+    <module name="intellij.platform.statistics"/>
+    <module name="intellij.platform.util.ui"/>
+  </dependencies>
+  <!-- endregion -->
+
+  <extensions defaultExtensionNs="com.intellij">
+    <configurationType implementation="com.intellij.bigdatatools.plugin.spark.java.submit.JvmSparkSubmitConfigurationType"/>
+    <runLineMarkerContributor
+      language="JAVA"
+      implementationClass="com.intellij.bigdatatools.plugin.spark.java.submit.gutter.SparkRunLineMarkerContributorJvm"/>
+    <bigdatatools.sparkConfigurationProducerProvider
+      language="JAVA"
+      implementationClass="com.intellij.bigdatatools.plugin.spark.java.submit.gutter.SparkRunLineMarkerContributorJvm"/>
+    <programRunner implementation="com.intellij.bigdatatools.plugin.spark.java.submit.SshSparkSubmitJavaDebugRunner"/>
+    <programRunner implementation="com.intellij.bigdatatools.plugin.spark.java.submit.SshSparkSubmitJavaRunner"/>
+
+    <bigdatatools.file.selector.option implementation="com.intellij.bigdatatools.plugin.spark.java.submit.FileSelectorOptionArtifact"/>
+    <bigdatatools.bdtFrameworkTemplateFactory
+            implementation="com.intellij.bigdatatools.plugin.spark.java.wizard.JavaSparkProjectLanguageHandler"/>
+  </extensions>
+</idea-plugin>

@@ -1,0 +1,399 @@
+<idea-plugin>
+  <actions resource-bundle="messages.ZeppelinBundle">
+    <action id="GotoParagraph" class="com.intellij.bigdatatools.zeppelin.editor.actions.toolbar.GoToParagraphAction"
+            use-shortcut-of="GotoLine"
+            icon="AllIcons.Actions.Forward"/>
+
+    <action id="NoteEditorDeleteLine"
+            class="com.intellij.bigdatatools.zeppelin.editor.actions.toolbar.NoteDeleteLineAction"
+            use-shortcut-of="EditorDeleteLine"/>
+
+    <action id="NoteMoveLineDown" class="com.intellij.bigdatatools.zeppelin.editor.actions.NoteMoveLineDownAction"
+            use-shortcut-of="MoveLineDown"/>
+    <action id="NoteMoveLineUp" class="com.intellij.bigdatatools.zeppelin.editor.actions.NoteMoveLineUpAction"
+            use-shortcut-of="MoveLineUp"/>
+
+    <action id="NewZeppelinFile" class="com.intellij.bigdatatools.zeppelin.file.ZeppelinCreateFileAction"
+            icon="com.intellij.bigdatatools.zeppelin.constants.ZeppelinIcons.ZEPPELIN_FILE">
+      <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFromTemplate"/>
+    </action>
+
+    <!--    <action id="NewINoteFile" class="com.intellij.bigdatatools.zeppelin.inote.file.INoteCreateFileAction">-->
+    <!--      <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFromTemplate"/>-->
+    <!--    </action>-->
+
+    <action id="ZeppelinClearCellOutput" class="com.intellij.bigdatatools.zeppelin.editor.actions.ZeppelinClearCellOutputAction">
+      <keyboard-shortcut keymap="$default" first-keystroke="control shift L"/>
+      <keyboard-shortcut keymap="Mac OS X" first-keystroke="control shift L" replace-all="true"/>
+      <keyboard-shortcut keymap="Mac OS X 10.5+" first-keystroke="control shift L" replace-all="true"/>
+    </action>
+
+    <action id="ZeppelinCloneCellAction" class="com.intellij.bigdatatools.zeppelin.editor.actions.ZeppelinCloneCellAction"/>
+
+    <action id="ZeppelinRestartCellAction" class="com.intellij.bigdatatools.zeppelin.editor.actions.ZeppelinRestartInterpreterAction"
+            icon="AllIcons.Actions.Restart"/>
+
+    <action id="ZeppelinClearOutputs" class="com.intellij.bigdatatools.zeppelin.editor.actions.ZeppelinClearAllOutputAction"/>
+
+    <action id="ZeppelinToggleCellTitle" class="com.intellij.bigdatatools.zeppelin.editor.actions.ZeppelinToggleCellTitleAction"
+            icon="AllIcons.Actions.RealIntentionBulb">
+      <keyboard-shortcut keymap="$default" first-keystroke="control shift F6"/>
+    </action>
+
+    <action id="ZeppelinRunCellAction" class="com.intellij.bigdatatools.zeppelin.editor.actions.ZeppelinRunCellAction">
+      <keyboard-shortcut keymap="$default" first-keystroke="shift ENTER"/>
+      <keyboard-shortcut keymap="Mac OS X" first-keystroke="shift ENTER" replace-all="true"/>
+      <keyboard-shortcut keymap="Mac OS X 10.5+" first-keystroke="shift ENTER" replace-all="true"/>
+    </action>
+
+    <action id="ZeppelinRunAllBelowAction" class="com.intellij.bigdatatools.zeppelin.editor.actions.ZeppelinRunAllBelowAction">
+      <keyboard-shortcut keymap="$default" first-keystroke="control shift ENTER"/>
+      <keyboard-shortcut keymap="Mac OS X" first-keystroke="control shift ENTER" replace-all="true"/>
+      <keyboard-shortcut keymap="Mac OS X 10.5+" first-keystroke="control shift ENTER" replace-all="true"/>
+    </action>
+
+    <action id="ZeppelinRunAllAboveAction" class="com.intellij.bigdatatools.zeppelin.editor.actions.ZeppelinRunAllAboveAction">
+      <keyboard-shortcut keymap="$default" first-keystroke="control shift alt ENTER"/>
+      <keyboard-shortcut keymap="Mac OS X" first-keystroke="control shift alt ENTER" replace-all="true"/>
+      <keyboard-shortcut keymap="Mac OS X 10.5+" first-keystroke="control shift alt ENTER" replace-all="true"/>
+    </action>
+
+    <action id="ZeppelinStopCellAction" class="com.intellij.bigdatatools.zeppelin.editor.actions.ZeppelinStopCellAction">
+      <keyboard-shortcut keymap="$default" first-keystroke="control alt C"/>
+      <keyboard-shortcut keymap="$default" first-keystroke="control F2"/>
+    </action>
+
+    <action id="ZeppelinRunCellSelectBelowAction"
+            class="com.intellij.bigdatatools.zeppelin.editor.actions.ZeppelinRunCellSelectBelowAction">
+      <keyboard-shortcut keymap="$default" first-keystroke="control ENTER"/>
+      <keyboard-shortcut keymap="Mac OS X" first-keystroke="control ENTER" replace-all="true"/>
+      <keyboard-shortcut keymap="Mac OS X 10.5+" first-keystroke="control ENTER" replace-all="true"/>
+    </action>
+
+    <action id="ZeppelinSelectCellAboveAction" class="com.intellij.bigdatatools.zeppelin.editor.actions.ZeppelinSelectCellAboveAction">
+      <keyboard-shortcut keymap="$default" first-keystroke="control UP"/>
+      <keyboard-shortcut keymap="Mac OS X" first-keystroke="control UP" replace-all="true"/>
+      <keyboard-shortcut keymap="Mac OS X 10.5+" first-keystroke="control UP" replace-all="true"/>
+    </action>
+
+    <action id="ZeppelinInsertCellAboveAction" class="com.intellij.bigdatatools.zeppelin.editor.actions.ZeppelinInsertCellAboveAction">
+      <keyboard-shortcut keymap="$default" first-keystroke="control alt A"/>
+      <keyboard-shortcut keymap="Mac OS X" first-keystroke="control alt A" replace-all="true"/>
+      <keyboard-shortcut keymap="Mac OS X 10.5+" first-keystroke="control alt A" replace-all="true"/>
+    </action>
+
+    <action id="ZeppelinInsertCellBelowAction" class="com.intellij.bigdatatools.zeppelin.editor.actions.ZeppelinInsertCellBelowAction">
+      <keyboard-shortcut keymap="$default" first-keystroke="control alt B"/>
+      <keyboard-shortcut keymap="Mac OS X" first-keystroke="control alt B" replace-all="true"/>
+      <keyboard-shortcut keymap="Mac OS X 10.5+" first-keystroke="control alt B" replace-all="true"/>
+    </action>
+
+    <action id="ZeppelinDeleteCellAction" class="com.intellij.bigdatatools.zeppelin.editor.actions.ZeppelinDeleteCellAction">
+      <keyboard-shortcut keymap="$default" first-keystroke="control alt D"/>
+      <keyboard-shortcut keymap="Mac OS X" first-keystroke="control alt D" replace-all="true"/>
+      <keyboard-shortcut keymap="Mac OS X 10.5+" first-keystroke="control alt D" replace-all="true"/>
+    </action>
+
+    <action id="ZeppelinMoveCellBelowAction" class="com.intellij.bigdatatools.zeppelin.editor.actions.ZeppelinMoveCellBelowAction">
+      <keyboard-shortcut keymap="$default" first-keystroke="control alt J"/>
+    </action>
+
+    <action id="ZeppelinMergeCellsAction" class="com.intellij.bigdatatools.zeppelin.editor.actions.ZeppelinMergeCellAction">
+      <keyboard-shortcut keymap="$default" first-keystroke="control shift M"/>
+    </action>
+
+    <action id="ZeppelinSplitCellAction" class="com.intellij.bigdatatools.zeppelin.editor.actions.ZeppelinSplitCellAction">
+      <keyboard-shortcut keymap="$default" first-keystroke="control shift S"/>
+    </action>
+
+    <action id="ZeppelinMoveCellAboveAction" class="com.intellij.bigdatatools.zeppelin.editor.actions.ZeppelinMoveCellAboveAction">
+      <keyboard-shortcut keymap="$default" first-keystroke="control alt K"/>
+    </action>
+
+    <action id="ZeppelinSelectCellBelowAction" class="com.intellij.bigdatatools.zeppelin.editor.actions.ZeppelinSelectCellBelowAction">
+      <keyboard-shortcut keymap="$default" first-keystroke="control DOWN"/>
+      <keyboard-shortcut keymap="Mac OS X" first-keystroke="control DOWN" replace-all="true"/>
+      <keyboard-shortcut keymap="Mac OS X 10.5+" first-keystroke="control DOWN" replace-all="true"/>
+    </action>
+
+    <group id="ZeppelinCellActions">
+      <reference ref="ZeppelinToggleCellTitle"/>
+      <separator/>
+      <reference ref="ZeppelinRunCellAction"/>
+      <reference ref="ZeppelinStopCellAction"/>
+      <separator/>
+      <reference ref="ZeppelinClearCellOutput"/>
+      <reference ref="ZeppelinDeleteCellAction"/>
+      <separator/>
+      <reference ref="ZeppelinMoveCellAboveAction"/>
+      <reference ref="ZeppelinMoveCellBelowAction"/>
+      <separator/>
+      <reference ref="ZeppelinSplitCellAction"/>
+      <reference ref="ZeppelinMergeCellsAction"/>
+      <reference ref="ZeppelinInsertCellAboveAction"/>
+      <reference ref="ZeppelinInsertCellBelowAction"/>
+      <separator/>
+      <reference ref="ZeppelinCloneCellAction"/>
+      <reference ref="ZeppelinRestartCellAction"/>
+      <separator/>
+    <!--  <add-to-group group-id="EditorPopupMenu" anchor="before" relative-to-action="CopyReference"/> -->
+    </group>
+
+    <group id="ZeppelinEditorPopupMenu">
+      <reference ref="$Cut"/>
+      <reference ref="$Copy"/>
+      <reference ref="$Paste"/>
+      <separator/>
+      <reference ref="ZeppelinCellActions"/>
+    </group>
+
+    <action id="BdideZeppelinGotoNotebookAction"
+            class="com.intellij.bigdatatools.zeppelin.integration.GotoZeppelinNotebookAction">
+      <keyboard-shortcut keymap="$default" first-keystroke="control shift alt G"/>
+      <keyboard-shortcut keymap="Mac OS X" first-keystroke="control shift alt G"/>
+    </action>
+
+    <action id="BigDataTools.Zeppelin.CopyNoteUrlAction" class="com.intellij.bigdatatools.zeppelin.drivers.actions.ZeppelinCopyNoteUrlAction">
+      <add-to-group group-id="BigDataTools.CopyReferencePopupGroup"/>
+    </action>
+    <group id="BigDataTools.RfsPane.ZeppelinFileActionGroup">
+      <action id="BigDataTools.Zeppelin.CreateNoteAction" class="com.intellij.bigdatatools.zeppelin.drivers.actions.ZeppelinCreateNoteAction" use-shortcut-of="BigDataTools.NewElement">
+          <add-to-group group-id="BigDataTools.NewGroup" relative-to-action="BigDataTools.CreateFileAction" anchor="after"/>
+      </action>
+      <action id="BigDataTools.Zeppelin.ClearOutputAction" class="com.intellij.bigdatatools.zeppelin.drivers.actions.ClearOutputAction"/>
+      <add-to-group group-id="BigDataTools.RfsPane.FileActionGroup"/>
+    </group>
+    <group id="BigDataTools.RfsPane.ZeppelinActionGroup">
+      <separator/>
+      <action id="BigDataTools.Zeppelin.RestoreAllAction"
+              class="com.intellij.bigdatatools.zeppelin.drivers.actions.ZeppelinRestoreAllAction"
+              icon="AllIcons.Diff.Revert"/>
+      <action id="BigDataTools.Zeppelin.EmptyTrashAction"
+              class="com.intellij.bigdatatools.zeppelin.drivers.actions.ZeppelinEmptyTrashAction"/>
+      <action id="BigDataTools.Zeppelin.MoveToTrashAction"
+              class="com.intellij.bigdatatools.zeppelin.drivers.actions.ZeppelinMoveToTrashAction" use-shortcut-of="$Delete"/>
+      <action id="BigDataTools.Zeppelin.RestoreAction" class="com.intellij.bigdatatools.zeppelin.drivers.actions.ZeppelinRestoreAction"
+              icon="AllIcons.Diff.Revert"/>
+      <action id="BigDataTools.Zeppelin.DeleteAction" class="com.intellij.bigdatatools.zeppelin.drivers.actions.ZeppelinDeleteAction"
+              use-shortcut-of="$Delete"/>
+      <separator/>
+      <add-to-group group-id="BigDataTools.RfsPane.RfsActionGroup" anchor="before"
+                    relative-to-action="BigDataTools.RfsPane.OtherActionGroup"/>
+    </group>
+
+    <action id="BigDataTools.Zeppelin.StateViewer.Open"
+            class="com.intellij.bigdatatools.zeppelin.editor.actions.toolbar.ShowStateViewerAction"
+            icon="AllIcons.Toolwindows.ToolWindowVariableView"/>
+    <action id="BigDataTools.Zeppelin.Toggle.Presentation"
+            class="com.intellij.bigdatatools.zeppelin.editor.actions.toolbar.ZeppelinTogglePresentationAction"/>
+
+    <action class="com.intellij.bigdatatools.zeppelin.editor.actions.toolbar.OpenInExternalBrowserAction"/>
+    <action class="com.intellij.bigdatatools.zeppelin.editor.actions.toolbar.ZeppelinCopyLinkAction"/>
+    <action class="com.intellij.bigdatatools.zeppelin.editor.actions.toolbar.ZeppelinExportToHtmlAction"/>
+    <action class="com.intellij.bigdatatools.zeppelin.editor.actions.toolbar.ZeppelinRunAllAction"/>
+    <action class="com.intellij.bigdatatools.zeppelin.editor.actions.toolbar.ZeppelinStopAllAction"/>
+  </actions>
+
+  <extensionPoints>
+    <extensionPoint qualifiedName="com.intellij.bigdatatools.zeppelin.interpreterSupport"
+                    interface="com.intellij.bigdatatools.zeppelin.notebook.interpreter.supported.InterpreterSupport"
+                    dynamic="true"/>
+    <extensionPoint qualifiedName="com.intellij.bigdatatools.zeppelin.zeppelinCustomPsiFileFactory"
+                    interface="com.intellij.bigdatatools.zeppelin.psi.ZeppelinCustomPsiFileFactory"
+                    dynamic="true"/>
+    <extensionPoint qualifiedName="com.intellij.bigdatatools.zeppelin.ztools"
+                    interface="com.intellij.bigdatatools.zeppelin.ztools.controller.ZtoolsService"
+                    dynamic="true"/>
+    <extensionPoint qualifiedName="com.intellij.bigdatatools.zeppelin.ztools.wordscollector"
+                    interface="com.intellij.bigdatatools.zeppelin.ztools.collector.ZtoolsWordsCollector"
+                    dynamic="true"/>
+    <extensionPoint qualifiedName="com.intellij.bigdatatools.zeppelin.ztools.declscollector"
+                    interface="com.intellij.bigdatatools.zeppelin.ztools.collector.ZtoolsDeclCollector"
+                    dynamic="true"/>
+    <extensionPoint qualifiedName="com.intellij.bigdatatools.zeppelin.zeppelinAutoImportPlacer"
+                    interface="com.intellij.bigdatatools.zeppelin.integration.ZeppelinAutoImportPlacer"
+                    dynamic="true"/>
+    <extensionPoint qualifiedName="com.intellij.bigdatatools.zeppelin.customDependencyResolveProvider"
+                    interface="com.intellij.bigdatatools.zeppelin.dependency.resolver.CustomDependencyResolveProvider"
+                    dynamic="true"/>
+    <extensionPoint qualifiedName="com.intellij.bigdatatools.zeppelin.scalaSdkDependencyPatcher"
+                    interface="com.intellij.bigdatatools.zeppelin.dependency.resolver.ScalaSdkDependencyPatcher"
+                    dynamic="true"/>
+    <extensionPoint qualifiedName="com.intellij.bigdatatools.zeppelin.extensionToolbarActionProvider"
+                    interface="com.intellij.bigdatatools.zeppelin.editor.actions.toolbar.ZeppelinExtensionToolbarActionProvider"
+                    dynamic="true"/>
+  </extensionPoints>
+
+  <extensions defaultExtensionNs="com.intellij">
+
+    <postStartupActivity implementation="com.intellij.bigdatatools.zeppelin.ztools.variableview.VariableViewActivity"/>
+    <applicationService serviceImplementation="com.intellij.bigdatatools.zeppelin.cache.GlobalDependenciesPathStorage"/>
+
+    <applicationService serviceImplementation="com.intellij.bigdatatools.zeppelin.style.ZeppelinStyleSettings"/>
+
+    <bigdatatools.notebook.style
+            implementation="com.intellij.bigdatatools.zeppelin.style.ZeppelinStyleConfigurable"/>
+
+    <applicationService
+            serviceImplementation="com.intellij.bigdatatools.zeppelin.dependency.collector.user.ZeppelinGlobalUserDependenciesStorage"/>
+
+    <registryKey key="bdide.is.browser.addon.oauth.enabled" defaultValue="false"
+                 description="Enable oauth for Zeppelin through browser addon. Unstable" restartRequired="false"/>
+
+    <intentionAction>
+      <bundleName>messages.ZeppelinBundle</bundleName>
+      <skipBeforeAfter>true</skipBeforeAfter>
+      <categoryKey>group.names.zeppelin</categoryKey>
+      <className>com.intellij.bigdatatools.zeppelin.integration.intentions.ZeppelinRestartInterpreterIntention</className>
+    </intentionAction>
+
+    <intentionAction>
+      <bundleName>messages.ZeppelinBundle</bundleName>
+      <skipBeforeAfter>true</skipBeforeAfter>
+      <categoryKey>group.names.zeppelin</categoryKey>
+      <className>com.intellij.bigdatatools.zeppelin.integration.intentions.ZeppelinShowTitleIntention</className>
+    </intentionAction>
+
+    <intentionAction>
+      <bundleName>messages.ZeppelinBundle</bundleName>
+      <skipBeforeAfter>true</skipBeforeAfter>
+      <categoryKey>group.names.zeppelin</categoryKey>
+      <className>com.intellij.bigdatatools.zeppelin.integration.intentions.ZeppelinHideTitleIntention</className>
+    </intentionAction>
+
+    <intentionAction>
+      <bundleName>messages.ZeppelinBundle</bundleName>
+      <skipBeforeAfter>true</skipBeforeAfter>
+      <categoryKey>group.names.zeppelin</categoryKey>
+      <className>com.intellij.bigdatatools.zeppelin.integration.intentions.ZeppelinRunCellIntention</className>
+    </intentionAction>
+
+    <intentionAction>
+      <bundleName>messages.ZeppelinBundle</bundleName>
+      <skipBeforeAfter>true</skipBeforeAfter>
+      <categoryKey>group.names.zeppelin</categoryKey>
+      <className>com.intellij.bigdatatools.zeppelin.integration.intentions.ZeppelinRunAllBelowCellIntention</className>
+    </intentionAction>
+
+    <intentionAction>
+      <bundleName>messages.ZeppelinBundle</bundleName>
+      <skipBeforeAfter>true</skipBeforeAfter>
+      <categoryKey>group.names.zeppelin</categoryKey>
+      <className>com.intellij.bigdatatools.zeppelin.integration.intentions.ZeppelinRunAllAboveCellIntention</className>
+    </intentionAction>
+
+    <statistics.counterUsagesCollector implementationClass="com.intellij.bigdatatools.zeppelin.statistics.StateViewerUsageCollector"/>
+    <statistics.counterUsagesCollector implementationClass="com.intellij.bigdatatools.zeppelin.statistics.ZeppelinNotebookUsageCollector"/>
+    <statistics.counterUsagesCollector implementationClass="com.intellij.bigdatatools.zeppelin.statistics.ZeppelinBindingsUsageCollector"/>
+    <statistics.counterUsagesCollector implementationClass="com.intellij.bigdatatools.zeppelin.statistics.ZeppelinInstanceUsageCollector"/>
+    <statistics.counterUsagesCollector
+            implementationClass="com.intellij.bigdatatools.zeppelin.statistics.ZeppelinInterpreterUsageCollector"/>
+    <statistics.projectUsagesCollector implementation="com.intellij.bigdatatools.zeppelin.statistics.ZeppelinConnectionStateCollector"/>
+
+    <writingAccessProvider
+            implementation="com.intellij.bigdatatools.zeppelin.components.containers.editor.connection.ZeppelinRemoteFileWritingAccessProvider"/>
+
+    <ignoredFileProvider implementation="com.intellij.bigdatatools.zeppelin.vcs.ZeppelinIgnoreFileProvider"
+                         order="after VCS.DefaultIgnoredFileProvider"/>
+
+    <editorNotificationProvider
+            implementation="com.intellij.bigdatatools.zeppelin.integration.ZeppelinPluginAdvertiserEditorNotificationProvider"/>
+    <editorNotificationProvider
+            implementation="com.intellij.bigdatatools.zeppelin.ztools.offers.ZtoolsAdvertiserEditorNotificationProvider"/>
+
+    <multiLangCommenter implementation="com.intellij.bigdatatools.zeppelin.notebook.interpreter.ZeppelinCommentProvider" order="first"/>
+    <!--        Storage configs-->
+    <toolWindow id="zeppelin-shell-toolwindow" anchor="bottom"
+                icon="AllIcons.Toolwindows.ToolWindowVariableView"
+                factoryClass="com.intellij.bigdatatools.zeppelin.idea.toolwindow.ZtoolsToolWindowFactory" canCloseContents="true"/>
+    <fileEditorProvider implementation="com.intellij.bigdatatools.zeppelin.editor.ZeppelinEditorProvider" order="first"/>
+
+    <fileType implementationClass="com.intellij.bigdatatools.zeppelin.file.ZeppelinFileType" fieldName="INSTANCE" name="Zeppelin"
+              language="Zeppelin" extensions="zpln"/>
+    <lang.substitutor language="Zeppelin"
+                      implementationClass="com.intellij.bigdatatools.zeppelin.language.ZeppelinTemplateLanguageSubstitutor"/>
+
+    <!--    <fileType implementationClass="com.intellij.bigdatatools.zeppelin.inote.file.INoteFileType" fieldName="INSTANCE" name="INotebook"-->
+    <!--              language="Zeppelin" extensions="inote"/>-->
+
+    <!--<selectInTarget implementation="com.intellij.bigdatatools.zeppelin.integration.ZeppelinSelectInTarget"/>-->
+    <editorHighlighterProvider filetype="Zeppelin"
+                               implementationClass="com.intellij.bigdatatools.zeppelin.notebook.interpreter.ZeppelinEditorHighlighterProvider"/>
+
+    <lang.fileViewProviderFactory language="Zeppelin"
+                                  implementationClass="com.intellij.bigdatatools.zeppelin.notebook.parser.ZeppelinFileViewProviderFactory"/>
+    <lang.parserDefinition language="Zeppelin"
+                           implementationClass="com.intellij.bigdatatools.zeppelin.notebook.parser.ZeppelinParserDefinition"/>
+    <lang.treePatcher language="Zeppelin" implementationClass="com.intellij.psi.templateLanguages.MiddleTreePatcher"/>
+    <lang.ast.factory language="Zeppelin" implementationClass="com.intellij.bigdatatools.zeppelin.psi.ZeppelinOuterAstFactory"/>
+
+    <editorTabTitleProvider implementation="com.intellij.bigdatatools.zeppelin.models.ZeppelinTabTitleProvider"/>
+
+    <xdebugger.settings implementation="com.intellij.bigdatatools.zeppelin.ztools.variableview.ZeppelinDebuggerSettings"/>
+
+    <resolveScopeProvider implementation="com.intellij.bigdatatools.zeppelin.dependency.NoteResolveScopeProvider"/>
+
+    <applicationService serviceImplementation="com.intellij.bigdatatools.zeppelin.idea.toolwindow.ZtoolsGlobalSettings"/>
+
+    <bigdatatools.rfs.rfsFileTypeViewer implementation="com.intellij.bigdatatools.zeppelin.drivers.ZeppelinFileTypeViewer"/>
+
+    <bigdatatools.notebook.fileService implementation="com.intellij.bigdatatools.zeppelin.file.ZeppelinNotebookFileService"/>
+
+    <bigdatatools.rfs.driver.interDriverCopyHandler
+            implementation="com.intellij.bigdatatools.zeppelin.drivers.copyhandler.ZeppelinToZeppelinCopyHandler"/>
+    <bigdatatools.rfs.driver.interDriverCopyHandler
+            implementation="com.intellij.bigdatatools.zeppelin.drivers.copyhandler.InternalZeppelinCopyHandler"/>
+    <bigdatatools.rfs.driver.interDriverCopyHandler
+            implementation="com.intellij.bigdatatools.zeppelin.drivers.copyhandler.ZeppelinToLocalCopyHandler"/>
+    <bigdatatools.rfs.driver.interDriverCopyHandler
+            implementation="com.intellij.bigdatatools.zeppelin.drivers.copyhandler.LocalToZeppelinCopyHandler"/>
+
+    <bigdatatools.connection.factory implementation="com.intellij.bigdatatools.zeppelin.connection.ZeppelinConnectionFactory"/>
+
+    <bigdatatools.zeppelin.zeppelinAutoImportPlacer
+            implementation="com.intellij.bigdatatools.zeppelin.integration.ZeppelinCurrentCellPlacer"/>
+    <bigdatatools.zeppelin.zeppelinAutoImportPlacer
+            implementation="com.intellij.bigdatatools.zeppelin.integration.ZeppelinFirstCellPlacer"/>
+
+    <bigdatatools.zeppelin.ztools implementation="com.intellij.bigdatatools.zeppelin.ztools.variableview.ZeppelinVariableViewIntegration"/>
+    <lang.psiStructureViewFactory language="Zeppelin"
+                                  implementationClass="com.intellij.bigdatatools.zeppelin.structureview.ZeppelinStructureViewFactory"/>
+    <bigdatatools.bdiConnectionSettingProvider implementation="com.intellij.bigdatatools.zeppelin.settings.ZeppelinSettingsProvider"/>
+    <bigdatatools.corenotebook.bdtNotebookASTCellMapper implementation="com.intellij.bigdatatools.zeppelin.psi.ZeppelinASTCellMapper"/>
+    <actionPromoter implementation="com.intellij.bigdatatools.zeppelin.editor.actions.ZeppelinEditorActionPromoter" order="first"/>
+
+    <virtualFileSystem key="zeppelin" implementationClass="com.intellij.bigdatatools.zeppelin.models.ZeppelinVirtualFileSystem"/>
+
+    <editorActionHandler action="EditorPaste" implementationClass="com.intellij.bigdatatools.zeppelin.editor.actions.ZeppelinPasteHandler"
+                         order="first"/>
+
+    <editorNotificationProvider
+      implementation="com.intellij.bigdatatools.zeppelin.components.containers.editor.connection.NoConnectionNotificationProvider"/>
+
+    <lang.formatter language="Zeppelin" implementationClass="com.intellij.bigdatatools.zeppelin.formatter.ZeppelinFormattingModelBuilder"/>
+    <lang.whiteSpaceFormattingStrategy language="Zeppelin"
+                                       implementationClass="com.intellij.bigdatatools.zeppelin.formatter.ZeppelinWhiteSpaceFormattingStrategy"/>
+
+    <gotoFileContributor implementation="com.intellij.bigdatatools.zeppelin.integration.ZeppelinNotebookNameContributor"/>
+    <searchEverywhereContributor implementation="com.intellij.bigdatatools.zeppelin.integration.ZeppelinEverywhereContributorFactory"/>
+
+    <bigdatatools.zeppelin.interpreterSupport
+      implementation="com.intellij.bigdatatools.zeppelin.notebook.interpreter.supported.raw.ZeppelinRawInterpreterSupport"/>
+    <completion.contributor language="Zeppelin"
+                            implementationClass="com.intellij.bigdatatools.zeppelin.completion.ZeppelinMarkerCompletionContributor"/>
+
+    <editorNotificationProvider
+      implementation="com.intellij.bigdatatools.zeppelin.components.containers.editor.connection.EmptyBindingsNotificationProvider"/>
+    <projectSdkSetupValidator id="zeppelinJavaSdk"
+                              implementation="com.intellij.bigdatatools.zeppelin.utils.ZeppelinJavaProjectSdkSetupValidator"/>
+
+    <applicationService serviceImplementation="com.intellij.bigdatatools.zeppelin.ztools.settings.ZtoolsPersistentService"/>
+    <applicationSettings service="com.intellij.bigdatatools.zeppelin.dependency.collector.user.ZeppelinGlobalUserDependenciesStorage"/>
+    <applicationSettings service="com.intellij.bigdatatools.zeppelin.idea.toolwindow.ZtoolsGlobalSettings"/>
+    <applicationSettings service="com.intellij.bigdatatools.zeppelin.cache.GlobalDependenciesPathStorage"/>
+    <applicationSettings service="com.intellij.bigdatatools.zeppelin.style.ZeppelinStyleSettings"/>
+    <applicationSettings service="com.intellij.bigdatatools.zeppelin.ztools.settings.ZtoolsPersistentService"/>
+    <projectSettings service="com.intellij.bigdatatools.zeppelin.cache.ProjectDependenciesPathStorage"/>
+    <projectSettings service="com.intellij.bigdatatools.zeppelin.dependency.collector.user.ZeppelinProjectUserDependenciesStorage"/>
+  </extensions>
+</idea-plugin>

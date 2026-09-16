@@ -1,0 +1,20 @@
+<idea-plugin>
+  <resource-bundle>messages.HadoopMonitoringBundle</resource-bundle>
+  <extensions defaultExtensionNs="com.intellij">
+    <bigdatatools.connection.factory implementation="com.jetbrains.hadoop.monitoring.rfs.driver.HadoopMonitoringConnectionFactory"/>
+
+    <toolWindow id="hadoop-toolwindow" anchor="bottom" icon="/icons/toolWindowHadoop.svg"
+                factoryClass="com.jetbrains.hadoop.monitoring.toolwindow.HadoopToolWindowFactory" canCloseContents="true"/>
+
+    <applicationService serviceImplementation="com.jetbrains.hadoop.monitoring.settings.HadoopSettings"/>
+    <bigdatatools.bdiConnectionSettingProvider implementation="com.jetbrains.hadoop.monitoring.settings.HadoopSettingsProvider"/>
+
+    <statistics.validation.customValidationRule implementation="com.jetbrains.hadoop.monitoring.statistics.ColumnNamesWhiteListRule"/>
+
+    <statistics.counterUsagesCollector implementationClass="com.jetbrains.hadoop.monitoring.statistics.HadoopSettingsCollector"/>
+    <statistics.counterUsagesCollector implementationClass="com.jetbrains.hadoop.monitoring.statistics.HadoopMonitoringUsagesCollector"/>
+    <statistics.projectUsagesCollector
+      implementation="com.jetbrains.hadoop.monitoring.statistics.HadoopMonitoringConnectionStateCollector"/>
+    <applicationSettings service="com.jetbrains.hadoop.monitoring.settings.HadoopSettings"/>
+  </extensions>
+</idea-plugin>

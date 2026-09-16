@@ -1,0 +1,71 @@
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.util.zip.ZipFile
+
+buildscript {
+
+  repositories {
+    mavenCentral()
+    maven { url 'https://cache-redirector.jetbrains.com/repo1.maven.org/maven2' }
+  }
+}
+
+apply plugin: 'base'
+
+repositories {
+  maven { url "https://cache-redirector.jetbrains.com/jetbrains.bintray.com/intellij-third-party-dependencies" }
+  maven { url 'https://cache-redirector.jetbrains.com/repo1.maven.org/maven2' }
+}
+
+static void unzipFile(File file, String parentPath) {
+  def zipFile = new ZipFile(file)
+  zipFile.entries().each { it ->
+    // final String targetPath = file.getParent() + '/' + it.name
+    final String targetPath = parentPath + '/' + it.name
+    def path = Paths.get(targetPath)
+    if (it.directory) {
+      Files.createDirectories(path)
+    } else {
+      def parentDir = path.getParent()
+      if (!Files.exists(parentDir)) {
+        Files.createDirectories(parentDir)
+      }
+
+      if (!Files.exists(path)) {
+        Files.copy(zipFile.getInputStream(it), path)
+      }
+    }
+  }
+}
+
+static void downloadFile(String url, String targetFile) {
+  def f = new File(targetFile)
+  if (f.exists())
+    return
+
+  new File(f.getParent()).mkdir()
+  new URL(url).withInputStream { i -> f.withOutputStream { it << i } }
+}
+
+static void downloadExternalPlugin(String url, String fileName, String downloadDir) {
+  String targetFileName = "$downloadDir/$fileName"
+  downloadFile(url, targetFileName)
+
+  File targetFile = new File(targetFileName)
+  unzipFile(targetFile, downloadDir)
+
+  targetFile.delete()
+}
+
+task downloadExternalPlugins {
+  String baseDir = "${rootProject.rootDir.path}/downloaded/scala"
+  File baseFile = new File(baseDir)
+
+  if (baseFile.exists()) baseFile.delete()
+  if (!baseFile.exists()) baseFile.mkdirs()
+
+  downloadExternalPlugin (
+    "https://plugins.jetbrains.com/plugin/download?rel=true&updateId=968095",
+    'scala-intellij-bin-2026.1.7.zip', baseDir
+  )
+}

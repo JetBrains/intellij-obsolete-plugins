@@ -1,0 +1,54 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.bigdatatools.zeppelin.libraries` start
+jvm_library(
+    name = "libraries",
+    srcs = glob(
+        [],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bigdatatools.zeppelin.libraries",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = [
+        # do not sort,
+        "@ultimate_lib//:bigdatatools-zeppelin-libraries-com-neovisionaries-nv-websocket-client-2-9",
+        "@ultimate_lib//:bigdatatools-zeppelin-libraries-org-bitbucket-cowwoc-diff-match-patch-1-2",
+    ],
+    runtime_deps = [
+        # do not sort,
+        "@ultimate_lib//:bigdatatools-zeppelin-libraries-com-neovisionaries-nv-websocket-client-2-9",
+        "@ultimate_lib//:bigdatatools-zeppelin-libraries-org-bitbucket-cowwoc-diff-match-patch-1-2",
+    ],
+)
+
+jvm_library(
+    name = "libraries_test_lib",
+    testonly = True,
+    srcs = glob(
+        [],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bigdatatools.zeppelin.libraries",
+    visibility = ["//visibility:public"],
+    exports = [
+        # do not sort,
+        "@ultimate_lib//:bigdatatools-zeppelin-libraries-com-neovisionaries-nv-websocket-client-2-9",
+        "@ultimate_lib//:bigdatatools-zeppelin-libraries-org-bitbucket-cowwoc-diff-match-patch-1-2",
+    ],
+    runtime_deps = [":libraries"],
+)
+### auto-generated section `build intellij.bigdatatools.zeppelin.libraries` end
+
+### auto-generated section `iml intellij.bigdatatools.zeppelin.libraries` start
+exports_files(
+    [
+        "intellij.bigdatatools.zeppelin.libraries.iml",
+        "resources/intellij.bigdatatools.zeppelin.libraries.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.bigdatatools.zeppelin.libraries` end

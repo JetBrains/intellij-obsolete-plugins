@@ -1,0 +1,19 @@
+<idea-plugin>
+  <resource-bundle>messages.DataprocBundle</resource-bundle>
+  <extensions defaultExtensionNs="com.intellij">
+    <statistics.counterUsagesCollector implementationClass="com.jetbrains.bigdatatools.dataproc.statistic.DataprocSettingsCollector"/>
+    <bigdatatools.bdiConnectionSettingProvider implementation="com.jetbrains.bigdatatools.dataproc.settings.DataprocSettingsProvider"/>
+    <applicationService serviceImplementation="com.jetbrains.bigdatatools.dataproc.settings.DataprocToolWindowSettings"/>
+    <applicationService serviceImplementation="com.jetbrains.bigdatatools.dataproc.settings.DataprocSshKeysStorage"/>
+
+    <toolWindow id="DataprocToolWindow" anchor="bottom" canCloseContents="true"
+                icon="/icons/dataprocToolwindow.svg"
+                factoryClass="com.jetbrains.bigdatatools.dataproc.toolwindow.DataprocToolWindowFactory"/>
+
+    <bigdatatools.remote.target implementation="com.jetbrains.bigdatatools.dataproc.target.DataprocRemoteTargetProvider"/>
+    <bigdatatools.file.selector.option implementation="com.jetbrains.bigdatatools.dataproc.ui.component.FileSelectorOptionGcs"/>
+    <bigdatatools.file.selector.option implementation="com.jetbrains.bigdatatools.dataproc.ui.component.FileSelectorOptionUploadDataproc"/>
+    <applicationSettings service="com.jetbrains.bigdatatools.dataproc.settings.DataprocSshKeysStorage"/>
+    <applicationSettings service="com.jetbrains.bigdatatools.dataproc.settings.DataprocToolWindowSettings"/>
+  </extensions>
+</idea-plugin>

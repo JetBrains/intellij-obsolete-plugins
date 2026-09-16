@@ -1,0 +1,32 @@
+// Copyright 2000-2018 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
+{
+  parserClass="com.intellij.bigdatatools.notebooks.zeppelin.psi.ZeppelinParser"
+  extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
+
+  psiClassPrefix="Psi"
+  psiImplClassSuffix="Impl"
+  psiPackage="com.intellij.bigdatatools.notebooks.core.api.psi"
+  psiImplPackage="com.intellij.bigdatatools.notebooks.core.impl.psi.impl"
+
+  elementTypeHolderClass="com.intellij.bigdatatools.notebooks.zeppelin.psi.ZeppelinTypes"
+  elementTypeClass="com.intellij.bigdatatools.zeppelin.psi.ZeppelinElementType"
+  tokenTypeClass="com.intellij.bigdatatools.zeppelin.psi.ZeppelinTokenType"
+
+  tokens = [
+    ANY="regexp:.*"
+    NEWLINE="regexp:\n"
+  ]
+}
+
+// We have to create this trivial PSI element to receive PsiTreeChangeListener.childReplaced events for notebook children
+notebook_file ::= notebook
+notebook ::= stem_cell? cell*
+stem_cell ::= source {
+  implements="com.intellij.bigdatatools.notebooks.core.impl.psi.PsiCellBase"
+}
+cell ::= cell_marker cell_magic? source {
+  implements="com.intellij.bigdatatools.notebooks.core.impl.psi.PsiCellBase"
+}
+cell_marker ::= CODE_MARKER | SQL_MARKER | HIVE_MARKER |SCALA_MARKER | MARKDOWN_MARKER | SH_MARKER | RAW_MARKER
+source ::= CODE_SOURCE| SQL_SOURCE | HIVE_SOURCE | SCALA_SOURCE | MARKDOWN_SOURCE | SH_SOURCE | RAW_SOURCE?
+cell_magic ::= MAGIC

@@ -1,0 +1,18 @@
+<idea-plugin>
+  <resource-bundle>messages.GlueBundle</resource-bundle>
+  <extensions defaultExtensionNs="com.intellij">
+    <statistics.counterUsagesCollector implementationClass="com.jetbrains.bigdatatools.glue.statistic.GlueSettingsCollector"/>
+
+    <applicationService serviceImplementation="com.jetbrains.bigdatatools.glue.settings.GlueToolWindowSettings"/>
+
+    <toolWindow id="GlueToolWindow" anchor="bottom" canCloseContents="true"
+                icon="/icons/awsGlueToolwindow.svg"
+                factoryClass="com.jetbrains.bigdatatools.glue.monitoring.GlueToolWindowFactory"/>
+
+    <bigdatatools.bdiConnectionSettingProvider
+      implementation="com.jetbrains.bigdatatools.glue.settings.GlueSettingsProvider"/>
+
+    <bigdatatools.connection.factory implementation="com.jetbrains.bigdatatools.glue.rfs.GlueConnectionFactory"/>
+    <applicationSettings service="com.jetbrains.bigdatatools.glue.settings.GlueToolWindowSettings"/>
+  </extensions>
+</idea-plugin>

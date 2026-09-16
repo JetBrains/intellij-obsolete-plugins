@@ -1,0 +1,64 @@
+<idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude">
+  <id>com.intellij.bigdatatools.binary.files</id>
+  <name>Big Data File Viewer</name>
+  <vendor>JetBrains</vendor>
+
+  <description><![CDATA[
+<p>View the following big data files in a table format:
+<ul>
+	<li>Parquet</li>
+	<li>ORC</li>
+	<li>Avro</li>
+</ul>
+</p>
+
+<p>It also provides a preview for CSV files in <a href="https://plugins.jetbrains.com/plugin/21706-remote-file-systems">remote file systems</a>.
+In your local project, the preview is by default provided by the Database plugin.</p>
+
+<p>This plugin is a part of the <a href="https://plugins.jetbrains.com/bundles/8-big-data-tools">Big Data Tools</a> plugin bundle.</p>
+    ]]></description>
+
+  <depends>com.intellij.modules.ultimate</depends>
+
+  <depends>com.intellij.bigdatatools.core</depends>
+  <depends>intellij.bigdatatools.coreUi</depends>
+  <depends>intellij.bigdatatools.awsBase</depends>
+
+  <xi:include href="bdide-binary-files-support.xml" xpointer="xpointer(/idea-plugin/*)"/>
+
+  <change-notes><![CDATA[
+<h2 style="padding:0;margin:0;line-height:0px">Changes in 2023.3</h2>
+<ul>
+<li>Fixed issues on DDL opening of for tabular files</li>
+<li>Fixed int32 date column display in parquet files</li>
+<li>Fixed rendering of microseconds and nanoseconds in parquet file timestamps</li>
+<li>Parquet file viewer shows commas correctly in JSON formatted columns</li>
+<li>Umlaut characters are displayed now in the parquet files</li>
+<li>Fixed displayed ‘map’ columns for parquet files</li>
+<li>Fixed bug with opening zstd compressed parquet files</li>
+<li>Timestamp columns are displayed independent on what time zone the user opened in</li>
+<li>Array columns are displayed correctly now: header name, delimiter, and empty arrays</li>
+<li>Fixed issues with displaying rows in parquet files</li>
+<li>Data files with Chinese names can be previewed now</li>
+<li>Avro files are opened properly now</li>
+<li>Fixed exception on opening files with special characters in their names</li>
+<li>The tab of the deleted file is closed properly now</li>
+<li>Fixed issue while opening an empty CSV file</li>
+</ul>
+
+<p>The full release notes are available <a href="https://youtrack.jetbrains.com/issues?q=project:%20BDIDE%20%20Available%20in:%20%7B2023.3%7D%20State:%20Fixed,%20Verified,%20%7BWithout%20verification%7D%20sort%20by:%20project,%20Type,%20votes%20BDT%20Plugin:%20%7BBig%20Data%20File%20Viewer%7D">here</a>.</p>
+]]></change-notes>
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <module name="intellij.platform.analysis"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.impl"/>
+    <module name="intellij.platform.editor.ex"/>
+    <module name="intellij.platform.editor.ui"/>
+    <module name="intellij.platform.ide"/>
+    <module name="intellij.platform.ide.impl"/>
+    <module name="intellij.platform.projectModel"/>
+  </dependencies>
+  <!-- endregion -->
+  <content namespace="jetbrains"/>
+</idea-plugin>

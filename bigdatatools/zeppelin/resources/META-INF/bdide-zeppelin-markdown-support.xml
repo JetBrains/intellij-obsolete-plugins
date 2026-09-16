@@ -1,0 +1,5 @@
+<idea-plugin>
+  <extensions defaultExtensionNs="com.intellij">
+    <bigdatatools.zeppelin.interpreterSupport implementation="com.intellij.bigdatatools.zeppelin.notebook.interpreter.supported.markdown.ZeppelinMarkdownInterpreterSupport"/>
+   </extensions>
+</idea-plugin>

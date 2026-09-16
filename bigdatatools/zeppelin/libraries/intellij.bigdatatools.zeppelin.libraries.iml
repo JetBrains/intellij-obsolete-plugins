@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/resources" type="java-resource" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module-library" exported="">
+      <library name="com.neovisionaries:nv-websocket-client:2.9" type="repository">
+        <properties maven-id="com.neovisionaries:nv-websocket-client:2.9">
+          <verification>
+            <artifact url="file://$MAVEN_REPOSITORY$/com/neovisionaries/nv-websocket-client/2.9/nv-websocket-client-2.9.jar">
+              <sha256sum>f364c891e17375ccb9f3c26e854fe6e5a59ed4764910eff7eebba66c28ed8d29</sha256sum>
+            </artifact>
+          </verification>
+        </properties>
+        <CLASSES>
+          <root url="jar://$MAVEN_REPOSITORY$/com/neovisionaries/nv-websocket-client/2.9/nv-websocket-client-2.9.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="jar://$MAVEN_REPOSITORY$/com/neovisionaries/nv-websocket-client/2.9/nv-websocket-client-2.9-sources.jar!/" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="org.bitbucket.cowwoc:diff-match-patch:1.2" type="repository">
+        <properties maven-id="org.bitbucket.cowwoc:diff-match-patch:1.2">
+          <verification>
+            <artifact url="file://$MAVEN_REPOSITORY$/org/bitbucket/cowwoc/diff-match-patch/1.2/diff-match-patch-1.2.jar">
+              <sha256sum>1c9debaa96aa26a6f057723380a4c1f5d9734c429bdb34cb2090da39b9cf2c62</sha256sum>
+            </artifact>
+          </verification>
+        </properties>
+        <CLASSES>
+          <root url="jar://$MAVEN_REPOSITORY$/org/bitbucket/cowwoc/diff-match-patch/1.2/diff-match-patch-1.2.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="jar://$MAVEN_REPOSITORY$/org/bitbucket/cowwoc/diff-match-patch/1.2/diff-match-patch-1.2-sources.jar!/" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+  </component>
+</module>

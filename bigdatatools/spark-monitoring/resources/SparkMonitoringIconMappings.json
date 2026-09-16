@@ -1,0 +1,7 @@
+{
+  "icons": {
+    "expui": {
+      "spark.svg": "icons/sparkToolWindow.svg"
+    }
+  }
+}

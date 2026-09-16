@@ -1,0 +1,29 @@
+<idea-plugin>
+  <resource-bundle>messages.EmrBundle</resource-bundle>
+  <actions>
+    <group id="BigDataTools.RfsPane.EmrActionGroup">
+      <action id="BigDataTools.EmrViewAction" class="com.intellij.bigdatatools.emr.actions.EmrViewAction"
+              icon="AllIcons.Actions.Preview"/>
+      <action id="BigDataTools.EmrCreateDependAction" class="com.intellij.bigdatatools.emr.actions.EmrCreateDependAction"/>
+      <add-to-group group-id="BigDataTools.RfsPane.FileActionGroup"/>
+    </group>
+  </actions>
+  <extensions defaultExtensionNs="com.intellij">
+    <statistics.counterUsagesCollector implementationClass="com.intellij.bigdatatools.emr.statistic.EmrSettingsCollector"/>
+
+    <bigdatatools.remote.target implementation="com.intellij.bigdatatools.emr.target.EmrRemoteTargetProvider"/>
+
+    <bigdatatools.bdiConnectionSettingProvider implementation="com.intellij.bigdatatools.emr.settings.EmrSettingsProvider"/>
+    <bigdatatools.file.selector.option implementation="com.intellij.bigdatatools.emr.ui.component.FileSelectorOptionS3"/>
+    <bigdatatools.file.selector.option implementation="com.intellij.bigdatatools.emr.ui.component.FileSelectorOptionServerEmr"/>
+    <bigdatatools.file.selector.option implementation="com.intellij.bigdatatools.emr.ui.component.FileSelectorOptionUploadEmrWithS3"/>
+    <bigdatatools.file.selector.option implementation="com.intellij.bigdatatools.emr.ui.component.FileSelectorOptionUploadEmrWithoutS3"/>
+    <applicationService serviceImplementation="com.intellij.bigdatatools.emr.settings.EmrToolWindowSettings"/>
+    <applicationService serviceImplementation="com.intellij.bigdatatools.emr.settings.EmrSshKeysStorage"/>
+    <toolWindow id="EmrToolWindow" anchor="bottom" canCloseContents="true"
+                icon="/icons/toolWindowEmr.svg"
+                factoryClass="com.intellij.bigdatatools.emr.toolwindow.EmrToolWindowFactory"/>
+    <applicationSettings service="com.intellij.bigdatatools.emr.settings.EmrSshKeysStorage"/>
+    <applicationSettings service="com.intellij.bigdatatools.emr.settings.EmrToolWindowSettings"/>
+  </extensions>
+</idea-plugin>

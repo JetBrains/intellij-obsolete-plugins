@@ -1,0 +1,138 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_provided_library")
+
+### auto-generated section `build intellij.bigdatatools.hadoopMonitoring` start
+jvm_provided_library(
+    name = "community_libraries_miglayout-swing_provided",
+    lib = "@community//libraries/miglayout-swing",
+)
+
+jvm_provided_library(
+    name = "community_libraries_kotlinx_coroutines_core_provided",
+    lib = "@community//libraries/kotlinx/coroutines/core",
+)
+
+jvm_library(
+    name = "hadoop-monitoring",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+            "gen/**/*.kt",
+            "gen/**/*.java",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bigdatatools.hadoopMonitoring",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@community//platform/analysis-api:analysis",
+        "@community//platform/analysis-impl",
+        "@community//platform/util/concurrency",
+        "@community//platform/core-api:core",
+        "@community//platform/core-impl",
+        "@community//platform/credential-store",
+        "@community//platform/xdebugger-api:debugger",
+        "@community//platform/xdebugger-impl:debugger-impl",
+        "@community//platform/editor-ui-api:editor-ui",
+        "@community//platform/editor-ui-ex:editor-ex",
+        "@community//platform/execution",
+        "@community//platform/execution-impl",
+        "@community//platform/platform-api:ide",
+        "@community//platform/platform-impl:ide-impl",
+        "@community//platform/lang-api:lang",
+        "@community//platform/lang-impl",
+        "@community//platform/platform-impl/concurrency",
+        "@community//platform/ide-core",
+        "@community//platform/projectModel-api:projectModel",
+        "@community//libraries/gson",
+        "@community//libraries/kotlin/reflect",
+        "@lib//:kotlin-stdlib",
+        "@community//platform/smRunner",
+        "@community//libraries/jsoup",
+        "@community//platform/util",
+        "@community//platform/core-ui",
+        "@community//platform/util/jdom",
+        "@community//platform/util:util-ui",
+        "//plugins/bigdatatools/core",
+        "@community//platform/statistics",
+        "@community//libraries/http-client",
+        "//plugins/bigdatatools/core-ui",
+        ":community_libraries_miglayout-swing_provided",
+        ":community_libraries_kotlinx_coroutines_core_provided",
+    ],
+)
+
+jvm_library(
+    name = "hadoop-monitoring_test_lib",
+    testonly = True,
+    srcs = glob(
+        [],
+        allow_empty = True,
+    ),
+    module_name = "intellij.bigdatatools.hadoopMonitoring",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        ":hadoop-monitoring",
+        "@community//libraries/junit4",
+        "@community//libraries/junit4:junit4_test_lib",
+        "@community//platform/analysis-api:analysis_test_lib",
+        "@community//platform/analysis-impl:analysis-impl_test_lib",
+        "@community//platform/util/concurrency:concurrency_test_lib",
+        "@community//platform/core-api:core_test_lib",
+        "@community//platform/core-impl:core-impl_test_lib",
+        "@community//platform/credential-store:credential-store_test_lib",
+        "@community//platform/xdebugger-api:debugger_test_lib",
+        "@community//platform/xdebugger-impl:debugger-impl_test_lib",
+        "@community//platform/editor-ui-api:editor-ui_test_lib",
+        "@community//platform/editor-ui-ex:editor-ex_test_lib",
+        "@community//platform/execution:execution_test_lib",
+        "@community//platform/execution-impl:execution-impl_test_lib",
+        "@community//platform/platform-api:ide_test_lib",
+        "@community//platform/platform-impl:ide-impl_test_lib",
+        "@community//platform/lang-api:lang_test_lib",
+        "@community//platform/lang-impl:lang-impl_test_lib",
+        "@community//platform/platform-impl/concurrency:concurrency_test_lib",
+        "@community//platform/ide-core:ide-core_test_lib",
+        "@community//platform/projectModel-api:projectModel_test_lib",
+        "@community//platform/testFramework",
+        "@community//platform/testFramework:testFramework_test_lib",
+        "@community//libraries/gson:gson_test_lib",
+        "@community//libraries/kotlin/reflect:reflect_test_lib",
+        "@community//platform/platform-tests:tests",
+        "@community//platform/platform-tests:tests_test_lib",
+        "@community//platform/smRunner:smRunner_test_lib",
+        "@community//libraries/jsoup:jsoup_test_lib",
+        "@community//platform/util:util_test_lib",
+        "@community//libraries/miglayout-swing",
+        "@community//libraries/miglayout-swing:miglayout-swing_test_lib",
+        "@community//libraries/kotlinx/coroutines/core",
+        "@community//libraries/kotlinx/coroutines/core:core_test_lib",
+        "//platform/ssh",
+        "//platform/ssh:ssh_test_lib",
+        "@community//platform/core-ui:core-ui_test_lib",
+        "@community//platform/util/jdom:jdom_test_lib",
+        "@community//platform/util:util-ui_test_lib",
+        "//plugins/bigdatatools/core:core_test_lib",
+        "@community//platform/statistics:statistics_test_lib",
+        "@community//libraries/http-client:http-client_test_lib",
+        "//plugins/bigdatatools/core-ui:core-ui_test_lib",
+    ],
+)
+### auto-generated section `build intellij.bigdatatools.hadoopMonitoring` end
+
+### auto-generated section `iml intellij.bigdatatools.hadoopMonitoring` start
+exports_files(
+    [
+        "intellij.bigdatatools.hadoopMonitoring.iml",
+        "resources/META-INF/bdide-hadoop-monitoring.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.bigdatatools.hadoopMonitoring` end

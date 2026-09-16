@@ -1,0 +1,175 @@
+<idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude" package="com.intellij.bigdatatools.plugin.spark">
+  <id>com.intellij.bigdatatools.spark</id>
+  <name>Spark</name>
+  <vendor>JetBrains</vendor>
+
+  <description><![CDATA[
+<p>Submit Spark/PySpark jobs via using run configurations in your IDE.</p>
+
+<p>Monitor Spark jobs from the IDE.</p>
+
+<p>The Spark plugin will automatically install the Metastore Core and <a href="https://plugins.jetbrains.com/plugin/21706-remote-file-systems">Remote File Systems</a> plugins.
+The Remote File Systems plugin lets you connect to remote storages, and Metastore Core lets you connect to:
+<ul>
+  <li>AWS Glue</li>
+  <li>AWS EMR</li>
+  <li>Dataproc</li>
+  <li>Hive Metastore</li>
+  <li>Hadoop YARN</li>
+</ul>
+</p>
+
+<p>This plugin is a part of the <a href="https://plugins.jetbrains.com/bundles/8-big-data-tools">Big Data Tools</a> plugin bundle.</p>
+    ]]></description>
+
+  <content namespace="jetbrains">
+    <module name="intellij.bigdatatools.plugin.spark.assistance"/>
+    <module name="intellij.bigdatatools.plugin.spark.gradle"/>
+    <module name="intellij.bigdatatools.plugin.spark.maven"/>
+    <module name="intellij.bigdatatools.plugin.spark.java"/>
+    <module name="intellij.bigdatatools.plugin.spark.scala"/>
+    <module name="intellij.bigdatatools.plugin.spark.python"/>
+  </content>
+
+  <dependencies>
+    <plugin id="com.intellij.modules.ultimate"/>
+    <plugin id="com.intellij.bigdatatools.binary.files"/>
+    <plugin id="com.intellij.bigdatatools.rfs"/>
+    <plugin id="com.intellij.bigdatatools.metastore.core"/>
+    <plugin id="intellij.bigdatatools.awsBase"/>
+    <plugin id="intellij.bigdatatools.azure"/>
+    <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+    <plugin id="com.intellij.bigdatatools.core"/>
+    <plugin id="intellij.bigdatatools.coreUi"/>
+    <plugin id="intellij.bigdatatools.gcloud"/>
+    <module name="intellij.platform.codeStyle"/>
+    <module name="intellij.platform.codeStyle.impl"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.ui"/>
+    <module name="intellij.platform.editor.ui"/>
+    <module name="intellij.platform.execution"/>
+    <module name="intellij.platform.execution.impl"/>
+    <module name="intellij.platform.execution.serviceView"/>
+    <module name="intellij.platform.ide"/>
+    <module name="intellij.platform.ide.core"/>
+    <module name="intellij.platform.ide.impl"/>
+    <module name="intellij.platform.ide.progress"/>
+    <module name="intellij.platform.lang"/>
+    <module name="intellij.platform.lang.core"/>
+    <module name="intellij.platform.lang.impl"/>
+    <module name="intellij.platform.projectModel"/>
+    <module name="intellij.platform.remote.core"/>
+    <module name="intellij.platform.statistics"/>
+    <module name="intellij.platform.util.coroutines"/>
+    <module name="intellij.platform.util.ex"/>
+    <module name="intellij.platform.util.ui"/>
+    <!-- endregion -->
+  </dependencies>
+
+  <xi:include href="bdide-spark-submit.xml"/>
+  <xi:include href="bdide-spark-monitoring.xml"/>
+  <xi:include href="bdide-common-wizard.xml"/>
+
+  <resource-bundle>messages.SparkBundle</resource-bundle>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <dependencySupport kind="java" coordinate="org.apache.spark:spark-core_2.13" displayName="spark-core_2.13"/>
+    <dependencySupport kind="java" coordinate="org.apache.spark:spark-core_2.12" displayName="spark-core_2.12"/>
+    <dependencySupport kind="python" coordinate="pyspark" displayName="pyspark"/>
+
+    <bigdatatools.monitoring.monitoringProvider
+      implementation="com.intellij.bigdatatools.plugin.spark.SparkMonitoringServiceProviderImpl"/>
+    <serviceViewContributor implementation="com.intellij.bigdatatools.plugin.spark.services.SparkJobServiceViewContributor"/>
+    <consoleInputFilterProvider implementation="com.intellij.bigdatatools.plugin.spark.console.SparkConsoleFilterProvider"/>
+
+    <bigdatatools.remote.target implementation="com.intellij.bigdatatools.plugin.spark.arbitrary.target.ArbitraryClusterTargetProvider"/>
+    <bigdatatools.bdiConnectionSettingProvider
+      implementation="com.intellij.bigdatatools.plugin.spark.arbitrary.ArbitrarySparkSettingsProvider"/>
+    <statistics.counterUsagesCollector
+      implementationClass="com.intellij.bigdatatools.plugin.spark.arbitrary.ArbitraryClusterSettingsCollector"/>
+
+    <applicationSettings service="com.intellij.bigdatatools.plugin.spark.arbitrary.ArbitraryClusterToolWindowSettings"/>
+  </extensions>
+
+  <actions resource-bundle="messages.BdtActionsBundle">
+    <group id="BigDataTools.RfsPane.ArbitraryClusterActionGroup">
+      <action id="BigDataTools.ArbitraryClusterCreateDependAction"
+              class="com.intellij.bigdatatools.plugin.spark.arbitrary.actions.ArbitraryCreateDependAction"/>
+      <add-to-group group-id="BigDataTools.RfsPane.FileActionGroup"/>
+    </group>
+
+
+    <group id="BigDataTools.ServicesActionGroup" popup="true">
+      <action id="BigDataTools.Services.RenameAction"
+              class="com.intellij.bigdatatools.plugin.spark.services.actions.RenameServiceConnection"
+              use-shortcut-of="RenameElement"/>
+      <separator/>
+      <action id="BigDataTools.Services.EnableAction"
+              class="com.intellij.bigdatatools.plugin.spark.services.actions.EnableServiceConnection"/>
+      <action id="BigDataTools.Services.DisableAction"
+              class="com.intellij.bigdatatools.plugin.spark.services.actions.DisableServiceConnection"/>
+      <action id="BigDataTools.Services.DeleteAction"
+              class="com.intellij.bigdatatools.plugin.spark.services.actions.DeleteServiceConnection"
+              use-shortcut-of="$Delete"/>
+      <action id="BigDataTools.Services.RefreshAction"
+              icon="AllIcons.Actions.Refresh"
+              class="com.intellij.bigdatatools.plugin.spark.services.actions.RefreshServiceConnection"/>
+      <action id="BigDataTools.Services.OpenSettingsAction"
+              icon="AllIcons.General.Settings"
+              class="com.intellij.bigdatatools.plugin.spark.services.actions.OpenServiceConnectionSetting"
+              use-shortcut-of="EditSource"/>
+    </group>
+  </actions>
+
+  <actions resource-bundle="messages.BdtCommonBundle">
+    <group id="ServiceView.AddSparkService" popup="true"
+           class="com.intellij.bigdatatools.plugin.spark.services.actions.AddSparkServiceActionGroup">
+      <add-to-group group-id="ServiceView.AddService"/>
+
+      <action id="BigDataTools.Services.AddArbitrary"
+              class="com.intellij.bigdatatools.plugin.spark.arbitrary.actions.AddArbitraryServiceAction"
+              icon="com.intellij.bigdatatools.plugin.spark.BigdatatoolsPluginSparkIcons.ArbitraryCluster"/>
+      <action id="BigDataTools.Services.AddEMR"
+              class="com.intellij.bigdatatools.emr.actions.AddEmrServiceAction"
+              icon="com.intellij.bigdatatools.hdfs.icons.BigdatatoolsHdfsIcons.StorageIcons.AmazonEmr"/>
+      <action id="BigDataTools.Services.AddDataproc"
+              class="com.jetbrains.bigdatatools.dataproc.actions.AddDataprocServiceAction"
+              icon="com.intellij.bigdatatools.dataproc.icons.BigdatatoolsDataprocIcons.Dataproc"/>
+    </group>
+  </actions>
+
+  <change-notes><![CDATA[
+<h2 style="padding:0;margin:0;line-height:0px">Changes in 2023.3</h2>
+<h4 style="padding:0;margin:0;line-height:0px">Features</h4>
+<ul>
+<li>Added ability to submit Spark applications on a DataProc cluster</li>
+<li>Added ability custom Spark cluster connection for submitting applications</li>
+<li>Added automatic run configuration suggestion for PySpark projects</li>
+<li>New Pyspark project wizard available</li>
+<li>Spark project wizard reworked</li>
+<li>Added automatic run configuration suggestion for Spark projects using Scala 3</li>
+<li>Added debugging support for JVM Spark applications that were run with Run configuration</li>
+<li>Added static analysis for Spark and Pyspark DataFrame columns</li>
+<li>Added autocompletion for Spark and Pyspark DataFrame columns</li>
+<li>Added Spark jobs monitoring (EMR, Dataproc, Custom cluster) into Services toolwindow</li>
+<li>Spark monitoring Executor logs now provide two options - stdout and stderr</li>
+<li>View settings for Spark monitoring Stages in the Jobs tab and in the Stages tab are independent now</li>
+<li>Added Spark monitoring and SFTP templates for EMR clusters in the Big Data Tools toolwindow</li>
+<li>Added button to copy Spark application logs from Console</li>
+<li>Added ability to filter Spark applications `by me` (submitted by the current user)</li>
+</ul>
+
+<h4 style="padding:0;margin:0;line-height:0px">Fixed Bugs</h4>
+<ul>
+<li>Fixed limitations for the Spark applications list to avoid lack of necessary applications</li>
+<li>Spark and Hadoop monitoring view settings are saved correctly now</li>
+<li>`Delete Job` button is now disabled when a Job is executing</li>
+<li>Supported sso-session property for AWS connections</li>
+<li>AWS Glue region is saved correctly now</li>
+</ul>
+
+<p>The full release notes are available <a href="https://youtrack.jetbrains.com/issues?q=project:%20BDIDE%20%20Available%20in:%20%7B2023.3%7D%20State:%20Fixed,%20Verified,%20%7BWithout%20verification%7D%20sort%20by:%20project,%20Type,%20votes%20BDT%20Plugin:%20Spark">here</a>.</p>
+]]></change-notes>
+</idea-plugin>
+
+

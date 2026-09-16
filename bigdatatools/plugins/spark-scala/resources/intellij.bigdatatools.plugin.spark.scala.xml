@@ -1,0 +1,71 @@
+<idea-plugin package="com.intellij.bigdatatools.plugin.spark.scala">
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <plugin id="org.intellij.scala"/>
+    <module name="intellij.bigdatatools.plugin.spark.assistance"/>
+    <module name="intellij.bigdatatools.plugin.spark.java"/>
+    <module name="intellij.gradle.toolingExtension.impl"/>
+    <module name="intellij.java.psi"/>
+    <module name="intellij.maven"/>
+    <module name="intellij.platform.analysis"/>
+    <module name="intellij.platform.codeStyle"/>
+    <module name="intellij.platform.codeStyle.impl"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.impl"/>
+    <module name="intellij.platform.core.ui"/>
+    <module name="intellij.platform.editor.ui"/>
+    <module name="intellij.platform.execution"/>
+    <module name="intellij.platform.execution.impl"/>
+    <module name="intellij.platform.externalSystem.impl"/>
+    <module name="intellij.platform.ide"/>
+    <module name="intellij.platform.ide.core"/>
+    <module name="intellij.platform.ide.impl"/>
+    <module name="intellij.platform.lang"/>
+    <module name="intellij.platform.projectModel"/>
+  </dependencies>
+  <!-- endregion -->
+
+  <actions resource-bundle="messages.SparkScalaBundle">
+    <action id="BigDataTools.TypeInfo" class="com.intellij.bigdatatools.plugin.spark.scala.dfanalysis.action.DfShowComputedAction">
+      <keyboard-shortcut first-keystroke="control shift g" keymap="$default"/>
+      <keyboard-shortcut first-keystroke="control shift g" keymap="Mac OS X"/>
+      <keyboard-shortcut first-keystroke="control shift g" keymap="Mac OS X 10.5+"/>
+    </action>
+  </actions>
+
+  <extensionPoints>
+    <extensionPoint
+      qualifiedName="com.jetbrains.bigdatatools.common.dfanalysis.typeSourceProvider"
+      interface="com.intellij.bigdatatools.plugin.spark.scala.dfanalysis.DfTypeSourceProvider"
+      dynamic="true"/>
+  </extensionPoints>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <bigdatatools.buildSystemBasedStructureProviderFactory
+      implementation="com.intellij.bigdatatools.plugin.spark.scala.projectwizard.SparkSbtStructureProviderFactory"/>
+    <runLineMarkerContributor
+      language="Scala"
+      implementationClass="com.intellij.bigdatatools.plugin.spark.scala.submit.gutter.SparkRunLineMarkerContributorScala"/>
+    <bigdatatools.sparkConfigurationProducerProvider
+      language="Scala"
+      implementationClass="com.intellij.bigdatatools.plugin.spark.scala.submit.gutter.SparkRunLineMarkerContributorScala"/>
+
+    <highlightingPassFactory implementation="com.intellij.bigdatatools.plugin.spark.scala.dfanalysis.impl.DfScalaHighlightingPassFactory"/>
+
+    <completion.contributor language="Scala"
+                            implementationClass="com.intellij.bigdatatools.plugin.spark.scala.dfanalysis.completion.DfColumnNamesCompletionContributor"
+                            order="first"/>
+    <completion.ml.featuresOverride language="Scala"
+                                    implementationClass="com.intellij.bigdatatools.plugin.spark.scala.dfanalysis.completion.SparkScalaRankingFeaturesOverrides"/>
+
+    <bigdatatools.bdtFrameworkTemplateFactory
+      implementation="com.intellij.bigdatatools.plugin.spark.scala.projectwizard.ScalaSparkProjectLanguageHandler"/>
+
+    <codeInsight.inlayProvider
+      language="Scala"
+      implementationClass="com.intellij.bigdatatools.plugin.spark.scala.dfanalysis.inlay.ScalaDataframeInlayHintsProvider"
+      isEnabledByDefault="true"
+      settingsKeyId="scala.dataframe.inlay.hints"/>
+
+  </extensions>
+</idea-plugin>

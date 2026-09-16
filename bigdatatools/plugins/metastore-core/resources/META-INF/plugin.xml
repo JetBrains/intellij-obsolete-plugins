@@ -1,0 +1,53 @@
+<idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude">
+  <id>com.intellij.bigdatatools.metastore.core</id>
+  <name>Metastore Core</name>
+  <vendor>JetBrains</vendor>
+
+  <description><![CDATA[
+<p>Connect to:
+<ul>
+  <li>AWS Glue</li>
+  <li>AWS EMR</li>
+  <li>Dataproc</li>
+  <li>Hive Metastore</li>
+  <li>Hadoop YARN</li>
+</ul>
+</p>
+
+<p>It will be installed with <a href="https://plugins.jetbrains.com/plugin/21700-spark">Spark</a> and <a href="https://plugins.jetbrains.com/plugin/21702-flink">Flink</a> plugins.</p>
+
+<p>This plugin is a part of the <a href="https://plugins.jetbrains.com/bundles/8-big-data-tools">Big Data Tools</a> plugin bundle.</p>
+    ]]></description>
+
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <module name="intellij.platform.codeStyle"/>
+    <module name="intellij.platform.codeStyle.impl"/>
+    <module name="intellij.platform.core.ui"/>
+    <module name="intellij.platform.ide"/>
+    <module name="intellij.platform.ide.impl"/>
+  </dependencies>
+  <!-- endregion -->
+  <depends>com.intellij.modules.ultimate</depends>
+
+  <depends>com.intellij.bigdatatools.core</depends>
+  <depends>com.intellij.bigdatatools.binary.files</depends>
+  <depends>com.intellij.bigdatatools.rfs</depends>
+  <depends>intellij.bigdatatools.coreUi</depends>
+  <depends>intellij.bigdatatools.awsBase</depends>
+  <depends>intellij.bigdatatools.gcloud</depends>
+
+  <content namespace="jetbrains">
+    <module name="intellij.bigdatatools.hiveMetastore" loading="embedded"/>
+  </content>
+  <content>
+    <module name="intellij.libraries.xerial.snappy.java" loading="embedded"/>
+  </content>
+
+  <xi:include href="/META-INF/bdide-spark-submit-core.xml"/>
+  <xi:include href="/META-INF/bdide-emr.xml"/>
+  <xi:include href="/META-INF/bdide-hadoop-monitoring.xml"/>
+  <xi:include href="/META-INF/bdide-glue.xml"/>
+  <xi:include href="/META-INF/bdide-dataproc.xml"/>
+
+</idea-plugin>

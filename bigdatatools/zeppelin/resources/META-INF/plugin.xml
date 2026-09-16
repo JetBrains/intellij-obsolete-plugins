@@ -1,0 +1,117 @@
+<idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude">
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <module name="intellij.database.dialects.base"/>
+    <module name="intellij.database.dialects.hive"/>
+    <module name="intellij.database.dialects.hivebase"/>
+    <module name="intellij.database.dialects.spark"/>
+    <module name="intellij.database.impl"/>
+    <module name="intellij.java.aetherDependencyResolver"/>
+    <module name="intellij.java.psi"/>
+    <module name="intellij.java.ui"/>
+    <module name="intellij.libraries.gson"/>
+    <module name="intellij.libraries.http.client"/>
+    <module name="intellij.libraries.kotlin.reflect"/>
+    <module name="intellij.libraries.kotlinx.collections.immutable"/>
+    <module name="intellij.libraries.maven.resolver.provider"/>
+    <module name="intellij.libraries.okhttp"/>
+    <module name="intellij.platform.analysis"/>
+    <module name="intellij.platform.analysis.impl"/>
+    <module name="intellij.platform.builtInServer"/>
+    <module name="intellij.platform.builtInServer.impl"/>
+    <module name="intellij.platform.codeStyle"/>
+    <module name="intellij.platform.codeStyle.impl"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.impl"/>
+    <module name="intellij.platform.core.ui"/>
+    <module name="intellij.platform.credentialStore"/>
+    <module name="intellij.platform.debugger"/>
+    <module name="intellij.platform.debugger.impl"/>
+    <module name="intellij.platform.debugger.impl.ui"/>
+    <module name="intellij.platform.editor.ex"/>
+    <module name="intellij.platform.editor.ui"/>
+    <module name="intellij.platform.execution"/>
+    <module name="intellij.platform.ide"/>
+    <module name="intellij.platform.ide.core"/>
+    <module name="intellij.platform.ide.core.plugins"/>
+    <module name="intellij.platform.ide.impl"/>
+    <module name="intellij.platform.ide.progress"/>
+    <module name="intellij.platform.indexing"/>
+    <module name="intellij.platform.lang"/>
+    <module name="intellij.platform.lang.core"/>
+    <module name="intellij.platform.lang.impl"/>
+    <module name="intellij.platform.projectFrame"/>
+    <module name="intellij.platform.projectModel"/>
+    <module name="intellij.platform.refactoring"/>
+    <module name="intellij.platform.statistics"/>
+    <module name="intellij.platform.util.ex"/>
+    <module name="intellij.platform.util.ui"/>
+    <module name="intellij.platform.vcs"/>
+  </dependencies>
+  <!-- endregion -->
+  <id>com.intellij.bigdatatools.zeppelin</id>
+  <name>Zeppelin</name>
+  <vendor>JetBrains</vendor>
+
+  <description><![CDATA[
+<p>The plugin provides support for exploratory analysis, visualization, and prototyping jobs in <a href="https://zeppelin.apache.org/">Zeppelin</a> notebooks.</p>
+
+<p>The plugin also provides:
+<ul>
+   <li>Python, Scala, and SQL completion and imports suggestions, you're used to when editing local files</li>
+   <li>Completion for dataframe columns from Hive Metastore and AWS Glue</li>
+   <li>Table cell output visualization via different charts</li>
+   <li>Opening spark jobs in Spark Monitoring</li>
+</ul>
+</p>
+
+<p>Additionally, you can view the notebook runtime data, such as local variables and SQL schemas for the current Zeppelin session.</p>
+
+<p>This plugin is a part of the <a href="https://plugins.jetbrains.com/bundles/8-big-data-tools">Big Data Tools</a> plugin bundle.</p>
+    ]]></description>
+
+  <depends>com.intellij.modules.ultimate</depends>
+
+  <depends>com.intellij.bigdatatools.core</depends>
+  <depends>com.intellij.bigdatatools.binary.files</depends>
+  <depends>com.intellij.bigdatatools.rfs</depends>
+  <depends>com.intellij.bigdatatools.metastore.core</depends>
+  <depends>com.intellij.bigdatatools.spark</depends>
+  <depends>intellij.bigdatatools.coreUi</depends>
+  <depends>intellij.bigdatatools.awsBase</depends>
+
+  <content namespace="jetbrains">
+    <module name="intellij.bigdatatools.zeppelin.frontend"/>
+  </content>
+
+  <!-- Library wrapper module used only by this plugin. The <content> tag has no 'namespace' attribute on purpose: that
+       registers it in this plugin's implicit private namespace, so another plugin bundling its own copy cannot clash at
+       runtime. loading="embedded" because intellij.bigdatatools.zeppelin is a plain main-jar module whose sources import
+       these packages directly, so the classes must be on the plugin's main classloader. -->
+  <content>
+    <module name="intellij.bigdatatools.zeppelin.libraries" loading="embedded"/>
+  </content>
+
+  <!--  Supporting interpreters-->
+  <depends optional="true" config-file="bdide-zeppelin-scala-support.xml">org.intellij.scala</depends>
+  <depends optional="true" config-file="bdide-zeppelin-database-support.xml">com.intellij.database</depends>
+  <depends optional="true" config-file="bdide-zeppelin-markdown-support.xml">org.intellij.plugins.markdown</depends>
+  <depends optional="true" config-file="bdide-zeppelin-bash-support.xml">com.jetbrains.sh</depends>
+
+  <xi:include href="bdide-visualisation.xml" xpointer="xpointer(/idea-plugin/*)"/>
+  <xi:include href="bdt-core-notebook.xml" xpointer="xpointer(/idea-plugin/*)"/>
+  <xi:include href="bdide-zeppelin.xml" xpointer="xpointer(/idea-plugin/*)"/>
+
+  <resource-bundle>messages.ZeppelinBundle</resource-bundle>
+
+  <change-notes><![CDATA[
+<h2 style="padding:0;margin:0;line-height:0px">Changes in 2023.3</h2>
+<ul>
+<li>Indents are correct now in the Go To The Paragraph window</li>
+<li>Fixed Scala autocompletion with Kotlin plugin disabled</li>
+<li>Fixed some exceptions on connection to Zeppelin and on opening a Zeppelin notebook</li>
+</ul>
+
+<p>The full release notes are available <a href="https://youtrack.jetbrains.com/issues?q=project:%20BDIDE%20%20Available%20in:%20%7B2023.3%7D%20State:%20Fixed,%20Verified,%20%7BWithout%20verification%7D%20sort%20by:%20project,%20Type,%20votes%20BDT%20Plugin:%20Zeppelin">here</a>.</p>
+]]></change-notes>
+</idea-plugin>

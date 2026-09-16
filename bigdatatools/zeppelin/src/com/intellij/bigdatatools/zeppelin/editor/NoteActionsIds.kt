@@ -1,0 +1,5 @@
+package com.intellij.bigdatatools.zeppelin.editor
+
+enum class NoteActionsIds {
+  RUN_ALL, STOP_ALL, CLEAR_ALL_OUTPUT, OPEN_INTERPRETER_BINDINGS, OPEN_IN_EXTERNAL_BROWSER, OPEN_DEPENDENCIES, EXPORT_TO_HTML, EXTRACT_SCALA
+}

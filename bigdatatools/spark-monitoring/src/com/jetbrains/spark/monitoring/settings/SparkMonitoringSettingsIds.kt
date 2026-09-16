@@ -1,0 +1,3 @@
+package com.jetbrains.spark.monitoring.settings
+
+object SparkMonitoringSettingsIds
