@@ -3,3 +3,9 @@
 rootProject.name = "Big Data Tools Obsolete Plugins"
 
 include("binaryFilesSupport")
+
+include("metastoreCore")
+project(":metastoreCore").projectDir = file("plugins/metastore-core")
+
+include("hiveMetastore")
+project(":hiveMetastore").projectDir = file("hive-metastore")
