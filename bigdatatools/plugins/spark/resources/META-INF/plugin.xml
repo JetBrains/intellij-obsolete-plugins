@@ -36,6 +36,7 @@ The Remote File Systems plugin lets you connect to remote storages, and Metastor
     <plugin id="com.intellij.bigdatatools.binary.files"/>
     <plugin id="com.intellij.bigdatatools.rfs"/>
     <plugin id="com.intellij.bigdatatools.metastore.core"/>
+    <plugin id="com.intellij.completion.ml.ranking"/>
     <plugin id="intellij.bigdatatools.awsBase"/>
     <plugin id="intellij.bigdatatools.azure"/>
     <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->

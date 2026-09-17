@@ -11,3 +11,9 @@ include("hiveMetastore")
 project(":hiveMetastore").projectDir = file("hive-metastore")
 
 include("flink")
+
+include("spark")
+project(":spark").projectDir = file("plugins/spark")
+
+include("sparkGradleTooling")
+project(":sparkGradleTooling").projectDir = file("plugins/spark-gradle-tooling")
