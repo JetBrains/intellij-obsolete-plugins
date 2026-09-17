@@ -9,6 +9,7 @@ import com.intellij.openapi.roots.libraries.PersistentLibraryKind
 import com.intellij.openapi.roots.libraries.ui.OrderRoot
 import org.jetbrains.idea.maven.utils.library.RepositoryLibraryProperties
 import org.jetbrains.plugins.scala.project.`ScalaLibraryProperties$`
+import org.jetbrains.plugins.scala.project.`ReplClasspath$`
 import scala.Option
 import scala.jdk.javaapi.CollectionConverters
 import java.nio.file.Path
@@ -47,7 +48,9 @@ class ScalaSdkDependencyPatcherImpl : DefaultSdkDependencyPatcher() {
         libModifiableModel.properties = `ScalaLibraryProperties$`.`MODULE$`.apply(
           Option.apply(version),
           CollectionConverters.asScala(compilerJars).toSeq(),
-          CollectionConverters.asScala(emptyList<Path>()).toSeq()
+          CollectionConverters.asScala(emptyList<Path>()).toSeq(),
+          Option.empty(),
+          `ReplClasspath$`.`MODULE$`.fromPaths(CollectionConverters.asScala(emptyList<Path>()).toSeq())
         )
       }
       catch (t: Throwable) {

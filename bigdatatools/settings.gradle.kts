@@ -14,6 +14,8 @@ include("flink")
 
 include("databricks")
 
+include("zeppelin")
+
 include("spark")
 project(":spark").projectDir = file("plugins/spark")
 
