@@ -12,6 +12,8 @@ project(":hiveMetastore").projectDir = file("hive-metastore")
 
 include("flink")
 
+include("databricks")
+
 include("spark")
 project(":spark").projectDir = file("plugins/spark")
 
