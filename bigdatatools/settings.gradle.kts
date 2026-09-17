@@ -9,3 +9,5 @@ project(":metastoreCore").projectDir = file("plugins/metastore-core")
 
 include("hiveMetastore")
 project(":hiveMetastore").projectDir = file("hive-metastore")
+
+include("flink")
