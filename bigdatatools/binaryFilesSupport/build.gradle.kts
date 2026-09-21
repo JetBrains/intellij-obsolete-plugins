@@ -14,6 +14,11 @@ repositories {
 }
 
 dependencies {
+  implementation("org.apache.parquet:parquet-hadoop:1.17.0")
+  implementation("org.apache.hadoop:hadoop-client:3.5.0")
+  implementation("org.apache.orc:orc-core:1.6.2")
+  implementation("org.apache.avro:avro:1.12.2")
+
   intellijPlatform {
     intellijIdeaUltimate(providers.gradleProperty("platformVersion"))
 
