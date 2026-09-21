@@ -26,5 +26,35 @@
     <fileType implementationClass="com.jetbrains.bigdatatools.view.filetypes.CsvDownloadedFileType"
               fieldName="INSTANCE" name="Csv(downloaded)" extensions="Csv(downloaded)"/>
     <!--/file types-->
+
+    <fileEditorProvider implementation="com.jetbrains.bigdatatools.common.table.editor.BdiTableEditorProvider"/>
   </extensions>
+
+  <extensions defaultExtensionNs="com.intellij.bigdatatools.rfs">
+    <fileMetaInfoProvider implementation="com.jetbrains.bigdatatools.common.rfs.localcache.metainfo.CsvMetaInfoProvider"/>
+    <fileMetaInfoProvider implementation="com.jetbrains.bigdatatools.common.rfs.localcache.metainfo.ParquetMetaInfoProvider"/>
+    <fileMetaInfoProvider implementation="com.jetbrains.bigdatatools.common.rfs.localcache.metainfo.ORCMetaInfoProvider"/>
+    <fileMetaInfoProvider implementation="com.jetbrains.bigdatatools.common.rfs.localcache.metainfo.AvroMetaInfoProvider"/>
+
+    <fileContentDownloader implementation="com.jetbrains.bigdatatools.common.rfs.localcache.filetypes.CsvContentDownloader"/>
+    <fileContentDownloader implementation="com.jetbrains.bigdatatools.common.rfs.localcache.filetypes.ParquetContentDownloader"/>
+    <fileContentDownloader implementation="com.jetbrains.bigdatatools.common.rfs.localcache.filetypes.ORCContentDownloader"/>
+    <fileContentDownloader implementation="com.jetbrains.bigdatatools.common.rfs.localcache.filetypes.AvroDownloader"/>
+
+    <rfsFileTypeViewer implementation="com.jetbrains.bigdatatools.common.rfs.localcache.filetypes.OrcFileViewer"/>
+    <rfsFileTypeViewer implementation="com.jetbrains.bigdatatools.common.rfs.localcache.filetypes.AvroViewer"/>
+    <rfsFileTypeViewer implementation="com.jetbrains.bigdatatools.common.rfs.localcache.filetypes.ParquetFileViewer"/>
+  </extensions>
+
+  <actions resource-bundle="messages.BinaryFilesSupportBundle">
+    <group id="BDTShowDDL">
+      <add-to-group group-id="Console.EditorTableResult.Group" anchor="last"/>
+      <action id="BDI.Console.TableResult.ShowParquetDdl"
+              class="com.jetbrains.bigdatatools.common.editor.decorator.actions.ShowParquetDdlAction"
+              icon="com.jetbrains.bigdatatools.common.BigdatatoolsCoreIcons.Table.Ddl"/>
+      <action id="BDI.Console.TableResult.LoadFullFile"
+              class="com.jetbrains.bigdatatools.common.editor.decorator.actions.LoadFullFileAction"
+              icon="AllIcons.Actions.Download"/>
+    </group>
+  </actions>
 </idea-plugin>
