@@ -18,7 +18,7 @@ public final class MutationUtils {
   public static void negateExpression(PsiExpression exp) throws IncorrectOperationException {
     final PsiJavaParserFacade facade = JavaPsiFacade.getInstance(exp.getProject()).getParserFacade();
 
-    PsiExpression expressionToReplace = exp;
+    final PsiExpression expressionToReplace;
     final @NonNls String expString;
     final @NonNls String newExpressionText = exp.getText();
     if ("true".equals(newExpressionText)) {
@@ -38,6 +38,7 @@ public final class MutationUtils {
       expString = BoolUtils.getNegated(exp).getText();
     }
     else if (ComparisonUtils.isComparison(exp)) {
+      expressionToReplace = exp;
       final PsiBinaryExpression binaryExpression =
         (PsiBinaryExpression)exp;
       final String negatedComparison =
@@ -46,8 +47,8 @@ public final class MutationUtils {
       final PsiExpression rhs = binaryExpression.getROperand();
       assert rhs != null;
       expString = lhs.getText() + negatedComparison + rhs.getText();
-    }
-    else {
+    } else {
+      expressionToReplace = exp;
       if (ParenthesesUtils.getPrecedence(exp) > ParenthesesUtils.PREFIX_PRECEDENCE) {
         expString = "!(" + newExpressionText + ')';
       }

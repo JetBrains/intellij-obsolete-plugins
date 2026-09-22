@@ -2,6 +2,7 @@
 package com.intellij.guice.inspections;
 
 import com.intellij.codeInsight.AnnotationUtil;
+import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.guice.GuiceBundle;
 import com.intellij.guice.constants.GuiceAnnotations;
 import com.intellij.guice.utils.AnnotationUtils;
@@ -9,36 +10,70 @@ import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.uast.UAnnotation;
+import org.jetbrains.uast.visitor.AbstractUastNonRecursiveVisitor;
 
 import static com.intellij.codeInsight.AnnotationUtil.CHECK_HIERARCHY;
 
-public final class SingletonInjectsScopedInspection extends BaseInspection {
+/**
+ * Reports {@code @Singleton} classes that inject {@code @SessionScoped} or
+ * {@code @RequestScoped} dependencies. A singleton lives for the entire application
+ * lifetime, so directly injecting a narrower-scoped dependency causes it to be
+ * captured once and reused incorrectly. Use a {@code Provider} instead.
+ *
+ * <p>Example:
+ * <pre>
+ * // Flagged: singleton injects a session-scoped dependency
+ * {@literal @}Singleton
+ * class AppCache {
+ *     {@literal @}Inject UserSession session; // UserSession is @SessionScoped
+ * }
+ *
+ * // OK: use Provider to obtain scoped instances on demand
+ * {@literal @}Singleton
+ * class AppCache {
+ *     {@literal @}Inject Provider&lt;UserSession&gt; sessionProvider;
+ * }
+ * </pre>
+ */
+public final class SingletonInjectsScopedInspection extends BaseUastInspection {
+  public SingletonInjectsScopedInspection() {
+    super(UAnnotation.class);
+  }
+
   @Override
   protected @NotNull String buildErrorString(Object... infos) {
     return GuiceBundle.message("singleton.injects.scoped.problem.descriptor");
   }
 
   @Override
-  public BaseInspectionVisitor buildVisitor() {
-    return new Visitor();
+  public @NotNull AbstractUastNonRecursiveVisitor buildUastVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
+    return new Visitor(this, holder, isOnTheFly);
   }
 
-  private static class Visitor extends BaseInspectionVisitor {
+  private static class Visitor extends BaseUastInspectionVisitor {
+    Visitor(@NotNull BaseUastInspection inspection, @NotNull ProblemsHolder holder, boolean onTheFly) {
+      super(inspection, holder, onTheFly);
+    }
+
     @Override
-    public void visitAnnotation(@NotNull PsiAnnotation annotation) {
-      super.visitAnnotation(annotation);
-      final String qualifiedName = annotation.getQualifiedName();
-      if (qualifiedName == null || !GuiceAnnotations.INJECTS.contains(qualifiedName)) {
-        return;
+    public boolean visitAnnotation(@NotNull UAnnotation annotation) {
+      final PsiElement sourcePsi = annotation.getSourcePsi();
+      if (!(sourcePsi instanceof PsiAnnotation psiAnnotation)) {
+        return true;
       }
-      final PsiClass containingClass = PsiTreeUtil.getParentOfType(annotation, PsiClass.class);
+      final String qualifiedName = psiAnnotation.getQualifiedName();
+      if (qualifiedName == null || !GuiceAnnotations.INJECTS.contains(qualifiedName)) {
+        return true;
+      }
+      final PsiClass containingClass = PsiTreeUtil.getParentOfType(psiAnnotation, PsiClass.class);
       if (containingClass == null) {
-        return;
+        return true;
       }
       if (!AnnotationUtil.isAnnotated(containingClass, "com.google.inject.Singleton", CHECK_HIERARCHY)) {
-        return;
+        return true;
       }
-      final PsiElement owner = annotation.getParent().getParent();
+      final PsiElement owner = psiAnnotation.getParent().getParent();
       if (owner instanceof PsiField field) {
         checkForScopedInjection(field.getTypeElement());
       }
@@ -48,6 +83,7 @@ public final class SingletonInjectsScopedInspection extends BaseInspection {
           checkForScopedInjection(parameter.getTypeElement());
         }
       }
+      return true;
     }
 
     private void checkForScopedInjection(@Nullable PsiTypeElement typeElement) {

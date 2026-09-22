@@ -3,10 +3,12 @@ package com.intellij.guice.model.jam;
 
 import com.intellij.guice.model.GuiceInjectorManager;
 import com.intellij.guice.model.InjectionPointDescriptor;
-import com.intellij.jam.JamBaseElement;
-import com.intellij.jam.reflect.JamMethodMeta;
-import com.intellij.psi.*;
-import com.intellij.semantic.SemKey;
+import com.intellij.psi.PsiAnnotation;
+import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiParameter;
+import com.intellij.psi.PsiType;
+import com.intellij.psi.SmartPointerManager;
+import com.intellij.psi.SmartPsiElementPointer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,39 +16,52 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public abstract class GuiceProvides<T extends PsiMember> extends JamBaseElement<T> {
-  public static final SemKey<GuiceProvides> SEM_KEY = SemKey.createKey("GuiceProvides");
-  public static final JamMethodMeta<GuiceProvides> METHOD_META = new JamMethodMeta<>(null, ref -> new Method(ref), SEM_KEY);
+public final class GuiceProvides {
+  private final SmartPsiElementPointer<PsiMethod> myMethodPointer;
 
-  protected GuiceProvides(PsiElementRef<?> ref) {
-    super(ref);
+  public GuiceProvides(@NotNull PsiMethod method) {
+    myMethodPointer = SmartPointerManager.createPointer(method);
   }
 
-  public abstract List<InjectionPointDescriptor> getInjectionPoints();
+  /**
+   * Returns the {@code @Provides} method, or {@code null} if the element has been deleted.
+   */
+  public @Nullable PsiMethod getPsiElement() {
+    return myMethodPointer.getElement();
+  }
+
+  public @Nullable PsiType getProductType() {
+    PsiMethod method = myMethodPointer.getElement();
+    if (method == null) return null;
+    return method.getReturnType();
+  }
 
   public @NotNull Set<PsiAnnotation> getBindingAnnotations() {
-    return GuiceInjectorManager.getBindingAnnotations(getPsiElement());
+    PsiMethod method = myMethodPointer.getElement();
+    if (method == null) return Set.of();
+    return GuiceInjectorManager.getBindingAnnotations(method);
   }
 
-  public abstract @Nullable PsiType getProductType();
-
-  public static final class Method extends GuiceProvides<PsiMethod> {
-    public Method(PsiElementRef<?> ref) {
-      super(ref);
+  public List<InjectionPointDescriptor> getInjectionPoints() {
+    PsiMethod method = myMethodPointer.getElement();
+    if (method == null) return List.of();
+    List<InjectionPointDescriptor> descriptors = new ArrayList<>();
+    for (PsiParameter parameter : method.getParameterList().getParameters()) {
+      descriptors.add(new InjectionPointDescriptor(parameter));
     }
+    return descriptors;
+  }
 
-    @Override
-    public PsiType getProductType() {
-      return getPsiElement().getReturnType();
-    }
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    GuiceProvides provides = (GuiceProvides) o;
+    return myMethodPointer.equals(provides.myMethodPointer);
+  }
 
-    @Override
-    public List<InjectionPointDescriptor> getInjectionPoints() {
-      List<InjectionPointDescriptor> descriptors = new ArrayList<>();
-      for (PsiParameter parameter : getPsiElement().getParameterList().getParameters()) {
-        descriptors.add(new InjectionPointDescriptor(parameter));
-      }
-      return descriptors;
-    }
+  @Override
+  public int hashCode() {
+    return myMethodPointer.hashCode();
   }
 }

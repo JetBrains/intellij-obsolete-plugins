@@ -1,4 +1,4 @@
-<idea-plugin package="com.intellij.guice">
+<idea-plugin>
   <id>com.intellij.guice</id>
   <name>Guice</name>
   <category>JVM Frameworks</category>
@@ -15,14 +15,24 @@
   <vendor>JetBrains</vendor>
 
   <dependencies>
-    <plugin id="com.intellij.properties"/>
     <plugin id="com.intellij.java"/>
-    <plugin id="com.intellij.modules.ultimate"/>
-    <module name="intellij.properties.backend"/>
-    <module name="intellij.properties.backend.psi"/>
+    <!--<plugin id="org.jetbrains.kotlin"/>-->
+    <module name="intellij.java.analysis"/>
+    <module name="intellij.java.analysis.impl"/>
+    <module name="intellij.java.impl"/>
+    <module name="intellij.java.ultimate.icons"/>
   </dependencies>
 
   <resource-bundle>messages.GuiceBundle</resource-bundle>
+
+  <extensionPoints>
+    <extensionPoint name="bindingContributor"
+                    interface="com.intellij.guice.model.extensions.GuiceBindingContributor"
+                    dynamic="true"/>
+    <extensionPoint name="bindingMatchStrategy"
+                    interface="com.intellij.guice.model.extensions.GuiceBindingMatchStrategy"
+                    dynamic="true"/>
+  </extensionPoints>
 
   <actions>
     <group id="GuiceActionGroup" class="com.intellij.guice.actions.GuiceActionGroup" popup="true"
@@ -37,69 +47,86 @@
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">
-    <semContributor implementation="com.intellij.guice.model.jam.GuiceSemContributor"/>
     <fileTemplateGroup implementation="com.intellij.guice.actions.GuiceTemplatesFactory"/>
     <codeInsight.implicitSubclassProvider implementation="com.intellij.guice.inspections.GuiceImplicitSubclassProvider"/>
+  </extensions>
 
-    <codeInsight.lineMarkerProvider language="JAVA" order="last" implementationClass="com.intellij.guice.model.GuiceBindingClassAnnotator"/>
-    <codeInsight.lineMarkerProvider language="JAVA" order="last"
+  <!-- Built-in binding contributors and match strategies -->
+  <extensions defaultExtensionNs="com.intellij.guice">
+    <bindingContributor implementation="com.intellij.guice.model.extensions.StandardBindingContributor"/>
+    <bindingContributor implementation="com.intellij.guice.model.extensions.OptionalBinderContributor"/>
+    <bindingContributor implementation="com.intellij.guice.model.extensions.SetMultibinderContributor"/>
+    <bindingContributor implementation="com.intellij.guice.model.extensions.MapBinderContributor"/>
+    <bindingContributor implementation="com.intellij.guice.model.extensions.MultimapBinderContributor"/>
+    <bindingContributor implementation="com.intellij.guice.model.extensions.AssistedInjectContributor"/>
+
+    <bindingMatchStrategy implementation="com.intellij.guice.model.extensions.OptionalBindMatchStrategy"/>
+    <bindingMatchStrategy implementation="com.intellij.guice.model.extensions.SetMultibindMatchStrategy"/>
+    <bindingMatchStrategy implementation="com.intellij.guice.model.extensions.MapMultibindMatchStrategy"/>
+    <bindingMatchStrategy implementation="com.intellij.guice.model.extensions.MultimapBindMatchStrategy"/>
+    <bindingMatchStrategy implementation="com.intellij.guice.model.extensions.ThrowingProviderMatchStrategy"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <codeInsight.lineMarkerProvider language="UAST" order="last" implementationClass="com.intellij.guice.model.GuiceBindingClassAnnotator"/>
+    <codeInsight.lineMarkerProvider language="UAST" order="last"
                                     implementationClass="com.intellij.guice.model.GuiceInjectionsClassAnnotator"/>
-    <localInspection language="JAVA" shortName="SessionScopedInjectsRequestScoped" bundle="messages.GuiceBundle"
+    <localInspection language="UAST" shortName="SessionScopedInjectsRequestScoped" bundle="messages.GuiceBundle"
                      key="session.scoped.injects.request.scoped.display.name" groupKey="group.guice.inspections.name" enabledByDefault="true"
                      level="WARNING" implementationClass="com.intellij.guice.inspections.SessionScopedInjectsRequestScopedInspection"/>
-    <localInspection language="JAVA" shortName="SingletonInjectsScoped" bundle="messages.GuiceBundle"
+    <localInspection language="UAST" shortName="SingletonInjectsScoped" bundle="messages.GuiceBundle"
                      key="singleton.injects.scoped.display.name" groupKey="group.guice.inspections.name" enabledByDefault="true" level="WARNING"
                      implementationClass="com.intellij.guice.inspections.SingletonInjectsScopedInspection"/>
-    <localInspection language="JAVA" shortName="InvalidImplementedBy" bundle="messages.GuiceBundle"
+    <localInspection language="UAST" shortName="InvalidImplementedBy" bundle="messages.GuiceBundle"
                      key="invalid.implemented.by.display.name" groupKey="group.guice.inspections.name" enabledByDefault="true" level="WARNING"
                      implementationClass="com.intellij.guice.inspections.InvalidImplementedByInspection"/>
-    <localInspection language="JAVA" shortName="InvalidProvidedBy" bundle="messages.GuiceBundle"
+    <localInspection language="UAST" shortName="InvalidProvidedBy" bundle="messages.GuiceBundle"
                      key="invalid.provided.by.display.name"
                      groupKey="group.guice.inspections.name" enabledByDefault="true" level="WARNING"
                      implementationClass="com.intellij.guice.inspections.InvalidProvidedByInspection"/>
-    <localInspection language="JAVA" shortName="UninstantiableImplementedByClass" bundle="messages.GuiceBundle"
+    <localInspection language="UAST" shortName="UninstantiableImplementedByClass" bundle="messages.GuiceBundle"
                      key="uninstantiable.implemented.by.class.display.name" groupKey="group.guice.inspections.name" enabledByDefault="true"
                      level="WARNING" implementationClass="com.intellij.guice.inspections.UninstantiableImplementedByClassInspection"/>
-    <localInspection language="JAVA" shortName="UninstantiableBinding" bundle="messages.GuiceBundle"
+    <localInspection language="UAST" shortName="UninstantiableBinding" bundle="messages.GuiceBundle"
                      key="uninstantiable.binding.display.name" groupKey="group.guice.inspections.name" enabledByDefault="true" level="WARNING"
                      implementationClass="com.intellij.guice.inspections.UninstantiableBindingInspection"/>
-    <localInspection language="JAVA" shortName="UninstantiableProvidedByClass" bundle="messages.GuiceBundle"
+    <localInspection language="UAST" shortName="UninstantiableProvidedByClass" bundle="messages.GuiceBundle"
                      key="uninstantiable.provided.by.class.display.name" groupKey="group.guice.inspections.name" enabledByDefault="true"
                      level="WARNING" implementationClass="com.intellij.guice.inspections.UninstantiableProvidedByClassInspection"/>
-    <localInspection language="JAVA" shortName="PointlessBinding" bundle="messages.GuiceBundle"
+    <localInspection language="UAST" shortName="PointlessBinding" bundle="messages.GuiceBundle"
                      key="pointless.binding.display.name"
                      groupKey="group.guice.inspections.name" enabledByDefault="true" level="WARNING"
                      implementationClass="com.intellij.guice.inspections.PointlessBindingInspection"/>
-    <localInspection language="JAVA" shortName="ConflictingAnnotations" bundle="messages.GuiceBundle"
+    <localInspection language="UAST" shortName="ConflictingAnnotations" bundle="messages.GuiceBundle"
                      key="conflicting.annotations.display.name" groupKey="group.guice.inspections.name" enabledByDefault="true" level="WARNING"
                      implementationClass="com.intellij.guice.inspections.ConflictingAnnotationsInspection"/>
-    <localInspection language="JAVA" shortName="RedundantToBinding" bundle="messages.GuiceBundle"
+    <localInspection language="UAST" shortName="RedundantToBinding" bundle="messages.GuiceBundle"
                      key="redundant.to.binding.display.name"
                      groupKey="group.guice.inspections.name" enabledByDefault="true" level="WARNING"
                      implementationClass="com.intellij.guice.inspections.RedundantToBindingInspection"/>
-    <localInspection language="JAVA" shortName="RedundantToProviderBinding" bundle="messages.GuiceBundle"
+    <localInspection language="UAST" shortName="RedundantToProviderBinding" bundle="messages.GuiceBundle"
                      key="redundant.to.provider.binding.display.name" groupKey="group.guice.inspections.name" enabledByDefault="true" level="WARNING"
                      implementationClass="com.intellij.guice.inspections.RedundantToProviderBindingInspection"/>
-    <localInspection language="JAVA" shortName="RedundantScopeBinding" bundle="messages.GuiceBundle"
+    <localInspection language="UAST" shortName="RedundantScopeBinding" bundle="messages.GuiceBundle"
                      key="redundant.scope.binding.display.name" groupKey="group.guice.inspections.name" enabledByDefault="true" level="WARNING"
                      implementationClass="com.intellij.guice.inspections.RedundantScopeBindingInspection"/>
-    <localInspection language="JAVA" shortName="MultipleInjectedConstructorsForClass" bundle="messages.GuiceBundle"
+    <localInspection language="UAST" shortName="MultipleInjectedConstructorsForClass" bundle="messages.GuiceBundle"
                      key="multiple.injected.constructors.for.class.display.name" groupKey="group.guice.inspections.name" enabledByDefault="true"
                      level="WARNING" implementationClass="com.intellij.guice.inspections.MultipleInjectedConstructorsForClassInspection"/>
-    <localInspection language="JAVA" shortName="MultipleBindingAnnotations" bundle="messages.GuiceBundle"
+    <localInspection language="UAST" shortName="MultipleBindingAnnotations" bundle="messages.GuiceBundle"
                      key="multiple.binding.annotations.display.name" groupKey="group.guice.inspections.name" enabledByDefault="true" level="WARNING"
                      implementationClass="com.intellij.guice.inspections.MultipleBindingAnnotationsInspection"/>
-    <localInspection language="JAVA" shortName="InvalidRequestParameters" bundle="messages.GuiceBundle"
+    <localInspection language="UAST" shortName="InvalidRequestParameters" bundle="messages.GuiceBundle"
                      key="invalid.request.parameters.display.name" groupKey="group.guice.inspections.name" enabledByDefault="true" level="WARNING"
                      implementationClass="com.intellij.guice.inspections.InvalidRequestParametersInspection"/>
-    <localInspection language="JAVA" shortName="BindingAnnotationWithoutInject" bundle="messages.GuiceBundle"
+    <localInspection language="UAST" shortName="BindingAnnotationWithoutInject" bundle="messages.GuiceBundle"
                      key="binding.annotation.without.inject.display.name" groupKey="group.guice.inspections.name" enabledByDefault="true"
                      level="WARNING" implementationClass="com.intellij.guice.inspections.BindingAnnotationWithoutInjectInspection"/>
-    <localInspection language="JAVA" shortName="InterceptionAnnotationWithoutRuntimeRetention" bundle="messages.GuiceBundle"
+    <localInspection language="UAST" shortName="InterceptionAnnotationWithoutRuntimeRetention" bundle="messages.GuiceBundle"
                      key="interception.annotation.without.runtime.retention.display.name" groupKey="group.guice.inspections.name"
                      enabledByDefault="true" level="WARNING"
                      implementationClass="com.intellij.guice.inspections.InterceptionAnnotationWithoutRuntimeRetentionInspection"/>
-    <localInspection language="JAVA" shortName="UnnecessaryStaticInjection" bundle="messages.GuiceBundle"
+    <localInspection language="UAST" shortName="UnnecessaryStaticInjection" bundle="messages.GuiceBundle"
                      key="unnecessary.static.injection.display.name" groupKey="group.guice.inspections.name" enabledByDefault="true" level="WARNING"
                      implementationClass="com.intellij.guice.inspections.UnnecessaryStaticInjectionInspection"/>
 
@@ -132,5 +159,12 @@
     </intentionAction>
 
     <implicitUsageProvider implementation="com.intellij.guice.GuiceImplicitUsageProvider"/>
+
+    <postStartupActivity implementation="com.intellij.guice.model.GuiceWorkspaceModelListener"/>
   </extensions>
+
+  <projectListeners>
+    <listener class="com.intellij.guice.model.GuiceVfsListener"
+              topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
+  </projectListeners>
 </idea-plugin>

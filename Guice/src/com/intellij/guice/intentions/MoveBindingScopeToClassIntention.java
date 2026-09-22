@@ -2,6 +2,7 @@
 package com.intellij.guice.intentions;
 
 import com.intellij.guice.GuiceBundle;
+import com.intellij.guice.model.GuiceInjectionUtil;
 import com.intellij.guice.utils.GuiceUtils;
 import com.intellij.guice.utils.MutationUtils;
 import com.intellij.psi.PsiClass;
@@ -10,6 +11,8 @@ import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.uast.UCallExpression;
+import org.jetbrains.uast.UastContextKt;
 
 public final class MoveBindingScopeToClassIntention extends Intention{
     @Override
@@ -29,15 +32,19 @@ public final class MoveBindingScopeToClassIntention extends Intention{
 
     @Override
     protected void processIntention(@NotNull PsiElement element) throws IncorrectOperationException{
-        final PsiMethodCallExpression originalCall = (PsiMethodCallExpression) element;
-        final PsiClass bindingClass = GuiceUtils.findImplementingClassForBinding(originalCall);
-        final PsiMethodCallExpression scopeCall = GuiceUtils.findScopeCallForBinding(originalCall);
-        final PsiExpression arg = scopeCall.getArgumentList().getExpressions()[0];
+        final UCallExpression uCall = UastContextKt.toUElement(element, UCallExpression.class);
+        if (uCall == null) return;
+        final PsiClass bindingClass = GuiceInjectionUtil.getCallExpressionType(uCall, "to");
+        final UCallExpression scopeCall = GuiceUtils.findCallInChain(uCall, "in");
+        if (scopeCall == null) return;
+        final PsiElement scopeCallPsi = scopeCall.getSourcePsi();
+        if (!(scopeCallPsi instanceof PsiMethodCallExpression psiScopeCall)) return;
+        final PsiExpression arg = psiScopeCall.getArgumentList().getExpressions()[0];
         final String scopeAnnotation = GuiceUtils.getScopeAnnotationForScopeExpression(arg);
         MutationUtils.addAnnotation(bindingClass, "@" + scopeAnnotation);
-        final PsiExpression qualifier = scopeCall.getMethodExpression().getQualifierExpression();
+        final PsiExpression qualifier = psiScopeCall.getMethodExpression().getQualifierExpression();
 
         assert qualifier != null;
-        MutationUtils.replaceExpression(qualifier.getText(), scopeCall);
+        MutationUtils.replaceExpression(qualifier.getText(), psiScopeCall);
     }
 }
