@@ -8,6 +8,7 @@ import com.intellij.guice.GuiceBundle;
 import com.intellij.guice.constants.GuiceAnnotations;
 import com.intellij.guice.utils.GuiceUtils;
 import com.intellij.psi.*;
+import com.intellij.psi.util.InheritanceUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.uast.UCallExpression;
@@ -47,7 +48,7 @@ public final class PointlessBindingInspection extends BaseUastInspection {
 
   @Override
   public @Nullable LocalQuickFix buildFix(PsiElement location, Object[] infos) {
-    return new DeleteBindingFix();
+    return new DeleteBindingFix(DeleteBindingFix.Mode.STATEMENT);
   }
 
   private static class Visitor extends BaseUastInspectionVisitor {
@@ -64,8 +65,12 @@ public final class PointlessBindingInspection extends BaseUastInspection {
       if (psiClass == null) {
         return true;
       }
-      // Check that this is an untargeted binding (i.e. not part of a chain like bind(...).to(...))
-      if (GuiceUtils.isInnerCallInChain(expression)) {
+      // Only an untargeted binding that is a whole statement is pointless.
+      // A chain such as bind(...).to(...), or a builder that is stored or passed on, is not.
+      if (GuiceUtils.getStatementExpression(expression) == null) {
+        return true;
+      }
+      if (!isGuiceBind(expression)) {
         return true;
       }
       if (usesInject(psiClass)) {
@@ -73,6 +78,21 @@ public final class PointlessBindingInspection extends BaseUastInspection {
       }
       registerError(expression);
       return true;
+    }
+
+    /**
+     * Tells if the call is a Guice {@code bind()}: a method of a {@code com.google.inject} class, or a method
+     * (such as a Kotlin extension {@code bind<T>()}) called on a Guice module or binder.
+     */
+    private static boolean isGuiceBind(@NotNull UCallExpression expression) {
+      PsiMethod method = expression.resolve();
+      if (method == null) return false;
+      PsiClass containingClass = method.getContainingClass();
+      String qualifiedName = containingClass != null ? containingClass.getQualifiedName() : null;
+      if (qualifiedName != null && qualifiedName.startsWith("com.google.inject.")) return true;
+      PsiType receiverType = expression.getReceiverType();
+      return InheritanceUtil.isInheritor(receiverType, "com.google.inject.Module") ||
+             InheritanceUtil.isInheritor(receiverType, "com.google.inject.Binder");
     }
 
     private static boolean usesInject(PsiClass aClass) {

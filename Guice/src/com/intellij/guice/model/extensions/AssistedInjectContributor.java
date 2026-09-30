@@ -5,7 +5,6 @@ import com.intellij.guice.model.beans.AssistedFactoryBindDescriptor;
 import com.intellij.guice.model.beans.BindDescriptor;
 import com.intellij.guice.utils.GuiceUtils;
 import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiType;
 import org.jetbrains.annotations.NotNull;
@@ -19,7 +18,7 @@ import java.util.Set;
  * Contributor for Guice {@code AssistedInject} bindings:
  * {@code FactoryModuleBuilder...build(Factory.class)}.
  */
-public final class AssistedInjectContributor implements GuiceBindingContributor {
+final class AssistedInjectContributor implements GuiceBindingContributor {
 
   private static final Set<String> BINDING_WORDS = Set.of("build");
 
@@ -34,8 +33,7 @@ public final class AssistedInjectContributor implements GuiceBindingContributor 
                              @NotNull String resolvedQName,
                              @NotNull PsiClass containingClass,
                              @NotNull Set<BindDescriptor> descriptors) {
-    if (!"com.google.inject.assistedinject.FactoryModuleBuilder".equals(resolvedQName) &&
-        !ContributorUtil.isGuicePackage(resolvedQName)) {
+    if (!"com.google.inject.assistedinject.FactoryModuleBuilder".equals(resolvedQName)) {
       return false;
     }
 
@@ -45,8 +43,7 @@ public final class AssistedInjectContributor implements GuiceBindingContributor 
     List<UExpression> args = call.getValueArguments();
     if (!args.isEmpty()) {
       PsiType factoryType = GuiceUtils.getBindingTypeFromExpression(args.getFirst());
-      PsiClass factoryClass = factoryType instanceof PsiClassType ct ? ct.resolve() : null;
-      descriptors.add(new AssistedFactoryBindDescriptor(sourcePsi, factoryClass));
+      descriptors.add(new AssistedFactoryBindDescriptor(sourcePsi, factoryType));
       return true;
     }
     return false;

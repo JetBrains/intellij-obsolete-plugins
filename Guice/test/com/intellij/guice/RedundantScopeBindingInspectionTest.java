@@ -8,29 +8,6 @@ public class RedundantScopeBindingInspectionTest extends GuiceTestBase {
   protected void setUp() throws Exception {
     super.setUp();
     myFixture.enableInspections(new RedundantScopeBindingInspection());
-
-    // Mock Scopes class
-    myFixture.addClass("""
-      package com.google.inject;
-      public class Scopes {
-        public static final Scope SINGLETON = null;
-      }
-    """);
-    // myFixture.addClass("""
-    //   package com.google.inject;
-    //   public interface Scope {}
-    // """);
-    // Mock Singleton annotation
-    myFixture.addClass("""
-      package com.google.inject;
-      import java.lang.annotation.Retention;
-      import java.lang.annotation.RetentionPolicy;
-      import java.lang.annotation.Target;
-      import java.lang.annotation.ElementType;
-      @Retention(RetentionPolicy.RUNTIME)
-      @Target(ElementType.TYPE)
-      public @interface Singleton {}
-    """);
   }
 
   public void testJavaRedundantScopeBinding() {
@@ -109,7 +86,7 @@ import test.*;
 public class MyModule extends AbstractModule {
     @Override
     protected void configure() {
-        bind(Foo.class).i<caret>n(Scopes.SINGLETON);
+        bind(Foo.class).in(Scopes.SING<caret>LETON);
     }
 }
 """);
@@ -146,7 +123,7 @@ inline fun <reified T> AbstractModule.bind(): LinkedBindingBuilder<T> = TODO()
 
 class MyModule : AbstractModule() {
     override fun configure() {
-        bind(Foo::class.java).`i<caret>n`(Scopes.SINGLETON)
+        bind(Foo::class.java).`in`(Scopes.SING<caret>LETON)
     }
 }
 """);
@@ -187,7 +164,7 @@ inline fun LinkedBindingBuilder<*>.`in`(scope: com.google.inject.Scope): Unit = 
 
 class MyModule : AbstractModule() {
     override fun configure() {
-        bind<Foo>().`i<caret>n`(Scopes.SINGLETON)
+        bind<Foo>().`in`(Scopes.SING<caret>LETON)
     }
 }
 """);

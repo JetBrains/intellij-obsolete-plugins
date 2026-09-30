@@ -4,13 +4,12 @@ package com.intellij.guice.utils;
 import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.guice.constants.GuiceAnnotations;
 import com.intellij.guice.constants.GuiceClasses;
-import com.intellij.guice.model.extensions.GuiceBindingMatchStrategy;
 import com.intellij.psi.*;
 import com.intellij.psi.util.InheritanceUtil;
-import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.TypeConversionUtil;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.uast.*;
@@ -50,15 +49,18 @@ public final class GuiceUtils {
     return false;
   }
 
+  private static final List<String> PROVIDES_RETURN_TYPE = List.of(GuiceAnnotations.PROVIDES, GuiceAnnotations.PROVIDES_INTO_OPTIONAL);
+
   public static boolean provides(PsiClass providerClass, PsiClass providedClass) {
     for (String providerFqn : GuiceClasses.PROVIDERS) {
       if (InheritanceUtil.isInheritor(providerClass, providerFqn)) {
-        return providedClass.equals(getProvidedMethodType(providerClass));
+        return providedClass.equals(getProvidedType(providerClass));
       }
     }
     PsiMethod[] allMethods = providerClass.getAllMethods();
     for (PsiMethod method : allMethods) {
-      if (AnnotationUtil.isAnnotated(method, GuiceBindingMatchStrategy.getAllProvidesAnnotations(), CHECK_HIERARCHY)) {
+      // Only @Provides and @ProvidesIntoOptional bind the return type. @ProvidesIntoSet and @CheckedProvides do not.
+      if (AnnotationUtil.isAnnotated(method, PROVIDES_RETURN_TYPE, CHECK_HIERARCHY)) {
         final PsiType returnType = method.getReturnType();
         if (returnType != null) {
           PsiClass resolved = null;
@@ -79,8 +81,13 @@ public final class GuiceUtils {
 
   public static @Nullable PsiClass getProvidedType(@Nullable PsiClass providerClass) {
     if (providerClass != null) {
+      PsiClassType providerClassType = JavaPsiFacade.getElementFactory(providerClass.getProject()).createType(providerClass);
       for (String providerFqn : GuiceClasses.PROVIDERS) {
         if (InheritanceUtil.isInheritor(providerClass, providerFqn)) {
+          PsiClass byTypeArg = resolveClass(getTypeParameter(providerClassType, providerFqn, 0));
+          if (byTypeArg != null && !(byTypeArg instanceof PsiTypeParameter)) {
+            return byTypeArg;
+          }
           return getProvidedMethodType(providerClass);
         }
       }
@@ -116,13 +123,11 @@ public final class GuiceUtils {
       }
       final PsiType returnType = method.getReturnType();
       if (returnType instanceof PsiClassType) {
-        return  ((PsiClassType)returnType).resolve();
+        return ((PsiClassType)returnType).resolve();
       }
     }
     return null;
   }
-
-
 
   /**
    * Resolves a scope expression (the argument to {@code .in()}) to the group of
@@ -137,6 +142,11 @@ public final class GuiceUtils {
    * @return the equivalent annotation FQNs (e.g., all three Singleton variants), or {@code null}
    */
   public static @Nullable Collection<String> getScopeAnnotationsForScopeExpression(UExpression arg) {
+    String fqn = getScopeAnnotationForScopeExpression(arg);
+    return fqn != null ? findScopeGroup(fqn) : null;
+  }
+
+  public static @Nullable String getScopeAnnotationForScopeExpression(UExpression arg) {
     // 1. Class literal: .in(Singleton.class) (Java) / .in(Singleton::class.java) (Kotlin)
     //    Both forms evaluate to type Class<X> — extract X from the type parameter.
     PsiType exprType = arg.getExpressionType();
@@ -147,7 +157,8 @@ public final class GuiceUtils {
         if (typeArgs.length == 1 && typeArgs[0] instanceof PsiClassType argType) {
           PsiClass scopeClass = argType.resolve();
           if (scopeClass != null) {
-            return findScopeGroup(scopeClass.getQualifiedName());
+            String fqn = scopeClass.getQualifiedName();
+            return findScopeGroup(fqn) != null ? fqn : null;
           }
         }
       }
@@ -157,8 +168,7 @@ public final class GuiceUtils {
     if (arg instanceof UReferenceExpression referenceExpression) {
       PsiElement referent = referenceExpression.resolve();
       if (referent instanceof PsiField field) {
-        String annotation = getScopeAnnotationForField(field);
-        return annotation != null ? findScopeGroup(annotation) : null;
+        return getScopeAnnotationForField(field);
       }
     }
 
@@ -166,25 +176,8 @@ public final class GuiceUtils {
   }
 
   public static @Nullable String getScopeAnnotationForScopeExpression(PsiExpression arg) {
-    if (!(arg instanceof PsiReferenceExpression referenceExpression)) {
-      // Try class literal: .in(Singleton.class)
-      if (arg instanceof PsiClassObjectAccessExpression classAccess) {
-        PsiType type = classAccess.getOperand().getType();
-        if (type instanceof PsiClassType ct) {
-          PsiClass cls = ct.resolve();
-          if (cls != null) {
-            Collection<String> group = findScopeGroup(cls.getQualifiedName());
-            return group != null && !group.isEmpty() ? group.iterator().next() : null;
-          }
-        }
-      }
-      return null;
-    }
-    final PsiElement referent = referenceExpression.resolve();
-    if (!(referent instanceof PsiField field)) {
-      return null;
-    }
-    return getScopeAnnotationForField(field);
+    UExpression uArg = UastContextKt.toUElement(arg, UExpression.class);
+    return uArg != null ? getScopeAnnotationForScopeExpression(uArg) : null;
   }
 
   /**
@@ -217,40 +210,6 @@ public final class GuiceUtils {
     return null;
   }
 
-  /**
-   * If the type is an Optional ({@code java.util.Optional<T>} or {@code com.google.common.base.Optional<T>}),
-   * extracts the element type {@code T}.
-   */
-  public static @Nullable PsiType getOptionalType(@Nullable PsiType type) {
-    PsiType inner = getTypeParameter(type, "java.util.Optional", 0);
-    if (inner == null) {
-      inner = getTypeParameter(type, "com.google.common.base.Optional", 0);
-    }
-    return inner;
-  }
-
-  public static @Nullable PsiType getMultibinderElementType(@Nullable PsiType type) {
-    return getTypeParameter(type, "java.util.Set", 0);
-  }
-
-  public static @Nullable PsiType getMultibinderValueType(@Nullable PsiType type) {
-    return getTypeParameter(type, "java.util.Map", 1);
-  }
-
-  /**
-   * If {@code type} is {@code com.google.common.collect.Multimap<K, V>}, returns {@code K}.
-   */
-  public static @Nullable PsiType getMultimapKeyType(@Nullable PsiType type) {
-    return getTypeParameter(type, "com.google.common.collect.Multimap", 0);
-  }
-
-  /**
-   * If {@code type} is {@code com.google.common.collect.Multimap<K, V>}, returns {@code V}.
-   */
-  public static @Nullable PsiType getMultimapValueType(@Nullable PsiType type) {
-    return getTypeParameter(type, "com.google.common.collect.Multimap", 1);
-  }
-
   public static @Nullable UCallExpression findCallInChain(UCallExpression call, String name) {
     if (call == null) return null;
     if (name.equals(call.getMethodName())) {
@@ -261,7 +220,7 @@ public final class GuiceUtils {
 
   public static @Nullable UExpression getArgumentOfCallInChain(UCallExpression call, final String name) {
     final UCallExpression inCall = findCallInChain(call, name);
-    return (inCall != null && inCall.getValueArgumentCount() > 0) ? inCall.getValueArguments().get(0) : null;
+    return (inCall != null && inCall.getValueArgumentCount() > 0) ? inCall.getValueArguments().getFirst() : null;
   }
 
   public static @Nullable PsiClass findImplementedClassForBinding(UCallExpression call) {
@@ -281,20 +240,24 @@ public final class GuiceUtils {
     UCallExpression current = call;
     while (current != null) {
       final String name = current.getMethodName();
-      if ("bind".equals(name) || "newOptionalBinder".equals(name) || "optionalBinder".equals(name) ||
+      if ("bind".equals(name) || "build".equals(name) || "newOptionalBinder".equals(name) || "optionalBinder".equals(name) ||
           "newSetBinder".equals(name) || "setBinder".equals(name)) {
         final List<PsiType> typeArgs = current.getTypeArguments();
         if (!typeArgs.isEmpty()) {
-          return typeArgs.get(0);
+          return typeArgs.getFirst();
         } else {
           final List<UExpression> args = current.getValueArguments();
           if (args.size() > 1) {
             return getBindingTypeFromExpression(args.get(1));
           } else if (args.size() == 1) {
-            return getBindingTypeFromExpression(args.get(0));
+            return getBindingTypeFromExpression(args.getFirst());
           }
         }
         return null;
+      }
+      if ("bindConstant".equals(name)) {
+        UExpression toArg = getArgumentOfCallInChain(call, "to");
+        return toArg != null ? toArg.getExpressionType() : null;
       }
       if ("newMapBinder".equals(name) || "mapBinder".equals(name)) {
         final List<PsiType> typeArgs = current.getTypeArguments();
@@ -308,7 +271,43 @@ public final class GuiceUtils {
         }
         return null;
       }
-      current = getReceiverCall(current);
+      UCallExpression next = getReceiverCall(current);
+      if (next == null) {
+        return getBoundTypeFromReceiverVariable(current);
+      }
+      current = next;
+    }
+    return null;
+  }
+
+  private static final Set<String> SINGLE_TYPE_BINDERS = Set.of(
+      "com.google.inject.multibindings.Multibinder",
+      "com.google.inject.multibindings.OptionalBinder",
+      GuiceClasses.LINKED_BINDING_BUILDER,
+      "com.google.inject.binder.AnnotatedBindingBuilder"
+  );
+
+  private static final Set<String> DUAL_TYPE_BINDERS = Set.of(
+      "com.google.inject.multibindings.MapBinder",
+      "com.google.common.inject.MultimapBinder"
+  );
+
+  private static @Nullable PsiType getBoundTypeFromReceiverVariable(@NotNull UCallExpression call) {
+    UExpression receiver = skipParenthesesAndCasts(getEffectiveReceiver(call));
+    if (receiver == null || !(receiver.getExpressionType() instanceof PsiClassType classType)) {
+      return null;
+    }
+    PsiType[] typeArgs = classType.getParameters();
+    if (typeArgs.length == 0) return null;
+    PsiClass receiverClass = classType.resolve();
+    if (receiverClass == null) return null;
+    String fqn = receiverClass.getQualifiedName();
+    if (fqn == null) return null;
+    if (typeArgs.length == 1 && SINGLE_TYPE_BINDERS.contains(fqn)) {
+      return typeArgs[0];
+    }
+    if (typeArgs.length == 2 && DUAL_TYPE_BINDERS.contains(fqn)) {
+      return typeArgs[1];
     }
     return null;
   }
@@ -338,7 +337,7 @@ public final class GuiceUtils {
     // 1. Try value arguments: call(Foo.class) or call(Foo::class.java)
     List<UExpression> args = call.getValueArguments();
     if (args.size() == 1) {
-      PsiType type = getBindingTypeFromExpression(args.get(0));
+      PsiType type = getBindingTypeFromExpression(args.getFirst());
       return type instanceof PsiClassType ct ? ct.resolve() : null;
     }
 
@@ -346,7 +345,7 @@ public final class GuiceUtils {
     if (args.isEmpty()) {
       List<PsiType> typeArgs = call.getTypeArguments();
       if (!typeArgs.isEmpty()) {
-        PsiType type = typeArgs.get(0);
+        PsiType type = typeArgs.getFirst();
         return type instanceof PsiClassType ct ? ct.resolve() : null;
       }
     }
@@ -363,6 +362,11 @@ public final class GuiceUtils {
     if (receiver instanceof UClassLiteralExpression) {
       return getBindingTypeFromExpression(receiver);
     }
+    // Key.get(...) or com.google.inject.Key.get(...): Java gives a qualified expression.
+    if (expression instanceof UQualifiedReferenceExpression qualified
+        && skipParenthesesAndCasts(qualified.getSelector()) instanceof UCallExpression selectorCall) {
+      expression = selectorCall;
+    }
     if (expression instanceof UCallExpression callExpression) {
       if ("get".equals(callExpression.getMethodName())) {
         final PsiMethod method = callExpression.resolve();
@@ -371,7 +375,7 @@ public final class GuiceUtils {
           if (containingClass != null && "com.google.inject.Key".equals(containingClass.getQualifiedName())) {
             final List<UExpression> args = callExpression.getValueArguments();
             if (!args.isEmpty()) {
-              return getBindingTypeFromExpression(args.get(0));
+              return getBindingTypeFromExpression(args.getFirst());
             }
           }
         }
@@ -398,70 +402,6 @@ public final class GuiceUtils {
               if (parameters.length > 0) {
                 return parameters[0];
               }
-            }
-          }
-        }
-      }
-    }
-    return null;
-  }
-
-  public static @Nullable PsiClass getQualifierFromExpression(UExpression expression) {
-    if (expression instanceof UCallExpression callExpression) {
-      if ("get".equals(callExpression.getMethodName())) {
-        final PsiMethod method = callExpression.resolve();
-        if (method != null) {
-          final PsiClass containingClass = method.getContainingClass();
-          if (containingClass != null && "com.google.inject.Key".equals(containingClass.getQualifiedName())) {
-            final List<UExpression> args = callExpression.getValueArguments();
-            if (args.size() > 1) {
-              final UExpression annoExpr = args.get(1);
-              if (annoExpr instanceof UClassLiteralExpression classLiteral) {
-                final PsiType type = classLiteral.getType();
-                if (type instanceof PsiClassType) {
-                  return ((PsiClassType)type).resolve();
-                }
-              }
-              final PsiType type = annoExpr.getExpressionType();
-              if (type instanceof PsiClassType) {
-                return ((PsiClassType)type).resolve();
-              }
-            }
-          }
-        }
-      }
-    }
-    return null;
-  }
-
-  public static @Nullable UExpression getNamedExpressionFromKeyGet(UExpression expression) {
-    if (expression instanceof UCallExpression callExpression) {
-      if ("get".equals(callExpression.getMethodName())) {
-        final PsiMethod method = callExpression.resolve();
-        if (method != null) {
-          final PsiClass containingClass = method.getContainingClass();
-          if (containingClass != null && "com.google.inject.Key".equals(containingClass.getQualifiedName())) {
-            final List<UExpression> args = callExpression.getValueArguments();
-            if (args.size() > 1) {
-              return findNamedExpression(args.get(1));
-            }
-          }
-        }
-      }
-    }
-    return null;
-  }
-
-  public static @Nullable UExpression findNamedExpression(final UExpression annotatedWithExpression) {
-    if (annotatedWithExpression instanceof UCallExpression callExpression) {
-      if ("named".equals(callExpression.getMethodName())) {
-        final PsiMethod method = callExpression.resolve();
-        if (method != null) {
-          final PsiClass containingClass = method.getContainingClass();
-          if (containingClass != null && "com.google.inject.name.Names".equals(containingClass.getQualifiedName())) {
-            final List<UExpression> args = callExpression.getValueArguments();
-            if (!args.isEmpty()) {
-              return args.get(0);
             }
           }
         }
@@ -576,6 +516,24 @@ public final class GuiceUtils {
   }
 
   /**
+   * Returns the expression that is a whole statement and ends with the call, or {@code null} if the call is
+   * part of a larger expression.
+   *
+   * <p>For {@code bind(Foo.class);} returns the call. For {@code binder().bind(Foo.class);} returns the qualified
+   * expression. For {@code LinkedBindingBuilder b = bind(Foo.class);} or {@code helper(bind(Foo.class));}
+   * returns {@code null}.
+   */
+  public static @Nullable UExpression getStatementExpression(@NotNull UCallExpression call) {
+    UExpression expression = call;
+    UElement parent = call.getUastParent();
+    if (parent instanceof UQualifiedReferenceExpression qualified && call.equals(qualified.getSelector())) {
+      expression = qualified;
+      parent = qualified.getUastParent();
+    }
+    return parent instanceof UBlockExpression ? expression : null;
+  }
+
+  /**
    * Walks a UAST expression tree to find the innermost (leftmost) call expression.
    * For {@code bind(Foo).to(Bar).in(Singleton)}, returns the {@code bind(Foo)} call.
    */
@@ -678,23 +636,13 @@ public final class GuiceUtils {
    * against the specified target class FQN.
    *
    * <p>This method is <b>inheritance-aware</b>: if the type doesn't directly have
-   * the target FQN but extends/implements it (e.g., Kotlin's {@code kotlin.collections.Map}
-   * implementing {@code java.util.Map}), the type parameters are resolved through the
-   * supertype chain using {@link TypeConversionUtil#getSuperClassSubstitutor}.
+   * the target FQN but extends or implements it (for example a custom {@code CheckedProvider}
+   * subtype), the type parameters are resolved through the supertype chain using
+   * {@link TypeConversionUtil#getSuperClassSubstitutor}.
    *
    * <p>If the resolved type parameter is a wildcard ({@code ? extends T}), the upper
-   * bound {@code T} is returned.  This handles Kotlin's declaration-site variance
+   * bound {@code T} is returned. This handles Kotlin's declaration-site variance
    * (e.g., {@code Map<K, out V>} compiling to {@code Map<K, ? extends V>}).
-   *
-   * <p>Examples:
-   * <ul>
-   *   <li>Java:   {@code Provider<BaseSessionService>}
-   *               {@code getTypeParameter(type, "com.google.inject.Provider", 0)} → {@code BaseSessionService}</li>
-   *   <li>Kotlin: {@code Map<String, Int>} (kotlin.collections.Map)
-   *               {@code getTypeParameter(type, "java.util.Map", 1)} → {@code Int}</li>
-   *   <li>Kotlin: {@code Set<Foo>} compiles to {@code Set<? extends Foo>}
-   *               {@code getTypeParameter(type, "java.util.Set", 0)} → {@code Foo}</li>
-   * </ul>
    */
   public static @Nullable PsiType getTypeParameter(@Nullable PsiType type, @NotNull String classFqn, int index) {
     if (!(type instanceof PsiClassType classType)) return null;
@@ -711,7 +659,7 @@ public final class GuiceUtils {
       return null;
     }
 
-    // Slow path: walk the supertype chain (Kotlin collections, subtypes).
+    // Slow path: walk the supertype chain (for example, a Provider implementation class).
     PsiClass targetClass = JavaPsiFacade.getInstance(psiClass.getProject())
         .findClass(classFqn, psiClass.getResolveScope());
     if (targetClass == null || !InheritanceUtil.isInheritorOrSelf(psiClass, targetClass, true)) {
@@ -738,8 +686,8 @@ public final class GuiceUtils {
    * @return the upper bound if a wildcard, or the type itself
    */
   public static @Nullable PsiType stripWildcard(@Nullable PsiType type) {
-    if (type instanceof PsiWildcardType wildcard) {
-      return wildcard.isExtends() ? wildcard.getExtendsBound() : wildcard.getBound();
+    if (type instanceof PsiWildcardType wildcard && wildcard.isExtends()) {
+      return wildcard.getExtendsBound();
     }
     return type;
   }

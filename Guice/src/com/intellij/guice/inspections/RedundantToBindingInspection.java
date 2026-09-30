@@ -8,7 +8,8 @@ import com.intellij.guice.GuiceBundle;
 import com.intellij.guice.constants.GuiceAnnotations;
 import com.intellij.guice.utils.AnnotationUtils;
 import com.intellij.guice.utils.GuiceUtils;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.uast.UCallExpression;
@@ -52,7 +53,7 @@ public final class RedundantToBindingInspection extends BaseUastInspection {
 
   @Override
   public @Nullable LocalQuickFix buildFix(PsiElement location, Object[] infos) {
-    return new DeleteBindingFix();
+    return new DeleteBindingFix(DeleteBindingFix.Mode.CHAIN_CALL);
   }
 
   private static class Visitor extends BaseUastInspectionVisitor {
@@ -80,31 +81,14 @@ public final class RedundantToBindingInspection extends BaseUastInspection {
         return true;
       }
       if (AnnotationUtil.isAnnotated(boundClass, GuiceAnnotations.IMPLEMENTED_BY, CHECK_HIERARCHY)) {
-        PsiModifierList modifierList = boundClass.getModifierList();
-        if (modifierList == null) return true;
-        final PsiAnnotation implementedByAnnotation = modifierList.findAnnotation(GuiceAnnotations.IMPLEMENTED_BY);
-        if (implementedByAnnotation == null) return true;
-        final PsiElement defaultValue = AnnotationUtils.findDefaultValue(implementedByAnnotation);
-        if (defaultValue == null) {
-          return true;
-        }
-        if (!(defaultValue instanceof PsiClassObjectAccessExpression)) {
-          return true;
-        }
-        final PsiTypeElement implementByClass = ((PsiClassObjectAccessExpression)defaultValue).getOperand();
-        final PsiType implmenetedByClass = implementByClass.getType();
-        if (!(implmenetedByClass instanceof PsiClassType)) {
-          return true;
-        }
-        final PsiClass implementedByClass = ((PsiClassType)implmenetedByClass).resolve();
+        final PsiClass implementedByClass =
+          AnnotationUtils.resolveAnnotationClassValue(boundClass, GuiceAnnotations.IMPLEMENTED_BY);
         if (referentClass.equals(implementedByClass)) {
-          registerError(expression);
+          registerClassArgumentError(expression);
         }
       }
-      else {
-        if (boundClass.equals(referentClass)) {
-          registerError(expression);
-        }
+      else if (boundClass.equals(referentClass)) {
+        registerClassArgumentError(expression);
       }
       return true;
     }

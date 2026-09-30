@@ -2,22 +2,29 @@
 package com.intellij.guice.model;
 
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
-import com.intellij.codeInsight.daemon.RelatedItemLineMarkerProvider;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.guice.GuiceBundle;
-import com.intellij.guice.model.renderers.GuiceEntryTargetRenderer;
 import com.intellij.guice.model.extensions.GuiceBindingContributor;
-
+import com.intellij.guice.model.renderers.GuiceEntryTargetRenderer;
 import com.intellij.java.ultimate.icons.JavaUltimateIcons;
-
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiMethodCallExpression;
+import com.intellij.psi.PsiNameIdentifierOwner;
+import com.intellij.psi.PsiReferenceExpression;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.uast.*;
+import org.jetbrains.uast.UCallExpression;
+import org.jetbrains.uast.UElement;
+import org.jetbrains.uast.UMethod;
+import org.jetbrains.uast.UastContextKt;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Provides gutter icons for Guice injection points and binding sites.
@@ -34,46 +41,26 @@ import java.util.*;
  *   <li>Create gutter icons from the counterpart navigation targets</li>
  * </ol>
  */
-public final class GuiceInjectionsClassAnnotator extends RelatedItemLineMarkerProvider {
+public final class GuiceInjectionsClassAnnotator extends GuiceLineMarkerProviderBase {
 
   /**
    * Method names that represent Guice call-site identifiers in the source.
-   * Computed dynamically from all {@link GuiceBindingContributor} EPs' binding words,
-   * plus {@code getProvider} (an injection-point call, not a binding contributor word).
+   * Cached on {@link GuiceBindingContributor#EP_NAME} and invalidated automatically when the EP changes.
    */
-  private static Set<String> getGuiceCallNames() {
-    Set<String> names = new HashSet<>();
-    names.add("getProvider"); // not a binding word, but a call we want gutters on
-    for (GuiceBindingContributor c : GuiceBindingContributor.EP_NAME.getExtensionList()) {
-      names.addAll(c.getBindingWords());
-    }
-    return names;
+  private static @NotNull Set<String> getGuiceCallNames() {
+    return GuiceBindingContributor.EP_NAME.computeIfAbsent(GuiceInjectionsClassAnnotator.class, () -> {
+      Set<String> names = new HashSet<>();
+      names.add("getProvider"); // not a binding word, but a call we want gutters on
+      for (GuiceBindingContributor c : GuiceBindingContributor.EP_NAME.getExtensionList()) {
+        names.addAll(c.getBindingWords());
+      }
+      return Set.copyOf(names);
+    });
   }
 
   // -----------------------------------------------------------------------
   // Entry points
   // -----------------------------------------------------------------------
-
-  @Override
-  public void collectNavigationMarkers(@NotNull List<? extends PsiElement> elements,
-                                       @NotNull Collection<? super RelatedItemLineMarkerInfo<?>> result,
-                                       boolean forNavigation) {
-    if (elements.isEmpty()) return;
-    Module module = ModuleUtilCore.findModuleForPsiElement(elements.getFirst());
-    if (module == null) return;
-    GuiceProjectModel model = GuiceProjectModel.getInstance(module.getProject());
-    if (!model.isGuiceAvailable(module)) return;
-
-    // Re-index the current file inline (cancellable) for immediate feedback.
-    // This ensures the file the user is editing has fresh entries in the
-    // navigation index, without waiting for the background debounced processing.
-    PsiFile psiFile = elements.getFirst().getContainingFile();
-    if (psiFile != null) {
-      model.reindexCurrentFile(psiFile);
-    }
-
-    super.collectNavigationMarkers(elements, result, forNavigation);
-  }
 
   @Override
   protected void collectNavigationMarkers(@NotNull PsiElement psiElement,
@@ -98,6 +85,11 @@ public final class GuiceInjectionsClassAnnotator extends RelatedItemLineMarkerPr
 
     for (GuiceEntry entry : entries) {
       Set<GuiceEntry> counterparts = navIndex.findCounterparts(entry);
+      if (counterparts.isEmpty() && entry.getRole() == EntryRole.INJECTION_POINT && !entry.isImplementationReference()) {
+        // Guice uses a JIT binding only when the key has no explicit binding.
+        GuiceEntry jitBinding = GuiceJitBindings.findConstructorBinding(entry.getKey(), psiElement);
+        if (jitBinding != null) counterparts = Set.of(jitBinding);
+      }
       if (counterparts.isEmpty()) continue;
 
       // Filter to valid entries with resolvable navigation targets.
@@ -199,14 +191,13 @@ public final class GuiceInjectionsClassAnnotator extends RelatedItemLineMarkerPr
                                     @NotNull List<GuiceEntry> counterparts,
                                     @NotNull EntryRole role,
                                     @NotNull PsiElement anchor) {
-    // Build PsiElement target list + entry lookup for the renderer.
-    Map<PsiElement, GuiceEntry> entryByTarget = new HashMap<>();
+    List<GuiceEntry> renderedEntries = new ArrayList<>(counterparts.size());
     List<PsiElement> targets = new ArrayList<>(counterparts.size());
     for (GuiceEntry cp : counterparts) {
       PsiElement target = cp.getNavigationTarget();
       if (target != null) {
         targets.add(target);
-        entryByTarget.put(target, cp);
+        renderedEntries.add(cp);
       }
     }
 
@@ -228,7 +219,7 @@ public final class GuiceInjectionsClassAnnotator extends RelatedItemLineMarkerPr
 
     builder
         .setTargets(targets)
-        .setTargetRenderer(() -> new GuiceEntryTargetRenderer(entryByTarget));
+        .setTargetRenderer(() -> new GuiceEntryTargetRenderer(renderedEntries));
     result.add(NonPersistentLineMarkerInfo.createFrom(builder, anchor));
   }
 }

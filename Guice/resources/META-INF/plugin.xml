@@ -1,4 +1,4 @@
-<idea-plugin>
+<idea-plugin package="com.intellij.guice">
   <id>com.intellij.guice</id>
   <name>Guice</name>
   <category>JVM Frameworks</category>
@@ -16,7 +16,6 @@
 
   <dependencies>
     <plugin id="com.intellij.java"/>
-    <!--<plugin id="org.jetbrains.kotlin"/>-->
     <module name="intellij.java.analysis"/>
     <module name="intellij.java.analysis.impl"/>
     <module name="intellij.java.impl"/>
@@ -46,28 +45,25 @@
     </group>
   </actions>
 
+  <!-- Built-in binding contributors and match strategies -->
+  <extensions defaultExtensionNs="com.intellij.guice">
+    <bindingContributor id="standard" order="last" implementation="com.intellij.guice.model.extensions.StandardBindingContributor"/>
+    <bindingContributor id="optionalBinder" order="last" implementation="com.intellij.guice.model.extensions.OptionalBinderContributor"/>
+    <bindingContributor id="setMultibinder" order="last" implementation="com.intellij.guice.model.extensions.SetMultibinderContributor"/>
+    <bindingContributor id="mapBinder" order="last" implementation="com.intellij.guice.model.extensions.MapBinderContributor"/>
+    <bindingContributor id="multimapBinder" order="last" implementation="com.intellij.guice.model.extensions.MultimapBinderContributor"/>
+    <bindingContributor id="assistedInject" order="last" implementation="com.intellij.guice.model.extensions.AssistedInjectContributor"/>
+
+    <bindingMatchStrategy id="optionalBinder" implementation="com.intellij.guice.model.extensions.OptionalBindMatchStrategy"/>
+    <bindingMatchStrategy id="setMultibinder" implementation="com.intellij.guice.model.extensions.SetMultibindMatchStrategy"/>
+    <bindingMatchStrategy id="mapBinder" implementation="com.intellij.guice.model.extensions.MapMultibindMatchStrategy"/>
+    <bindingMatchStrategy id="multimapBinder" implementation="com.intellij.guice.model.extensions.MultimapBindMatchStrategy"/>
+    <bindingMatchStrategy id="throwingProvider" implementation="com.intellij.guice.model.extensions.ThrowingProviderMatchStrategy"/>
+  </extensions>
+
   <extensions defaultExtensionNs="com.intellij">
     <fileTemplateGroup implementation="com.intellij.guice.actions.GuiceTemplatesFactory"/>
     <codeInsight.implicitSubclassProvider implementation="com.intellij.guice.inspections.GuiceImplicitSubclassProvider"/>
-  </extensions>
-
-  <!-- Built-in binding contributors and match strategies -->
-  <extensions defaultExtensionNs="com.intellij.guice">
-    <bindingContributor implementation="com.intellij.guice.model.extensions.StandardBindingContributor"/>
-    <bindingContributor implementation="com.intellij.guice.model.extensions.OptionalBinderContributor"/>
-    <bindingContributor implementation="com.intellij.guice.model.extensions.SetMultibinderContributor"/>
-    <bindingContributor implementation="com.intellij.guice.model.extensions.MapBinderContributor"/>
-    <bindingContributor implementation="com.intellij.guice.model.extensions.MultimapBinderContributor"/>
-    <bindingContributor implementation="com.intellij.guice.model.extensions.AssistedInjectContributor"/>
-
-    <bindingMatchStrategy implementation="com.intellij.guice.model.extensions.OptionalBindMatchStrategy"/>
-    <bindingMatchStrategy implementation="com.intellij.guice.model.extensions.SetMultibindMatchStrategy"/>
-    <bindingMatchStrategy implementation="com.intellij.guice.model.extensions.MapMultibindMatchStrategy"/>
-    <bindingMatchStrategy implementation="com.intellij.guice.model.extensions.MultimapBindMatchStrategy"/>
-    <bindingMatchStrategy implementation="com.intellij.guice.model.extensions.ThrowingProviderMatchStrategy"/>
-  </extensions>
-
-  <extensions defaultExtensionNs="com.intellij">
     <codeInsight.lineMarkerProvider language="UAST" order="last" implementationClass="com.intellij.guice.model.GuiceBindingClassAnnotator"/>
     <codeInsight.lineMarkerProvider language="UAST" order="last"
                                     implementationClass="com.intellij.guice.model.GuiceInjectionsClassAnnotator"/>

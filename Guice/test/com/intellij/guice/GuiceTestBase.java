@@ -1,136 +1,75 @@
 package com.intellij.guice;
 
+import static com.intellij.codeInsight.daemon.LineMarkerInfo.LineMarkerGutterIconRenderer;
+
+import com.google.inject.assistedinject.FactoryModuleBuilder;
+import com.intellij.codeInsight.daemon.GutterMark;
+import com.intellij.codeInsight.navigation.NavigationGutterIconRenderer;
+import com.intellij.guice.model.GuiceNavigationIndex;
+import com.intellij.guice.model.GuiceProjectModel;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.PathManager;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.progress.EmptyProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.projectRoots.JavaSdk;
+import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.roots.ContentEntry;
+import com.intellij.openapi.roots.ModifiableRootModel;
+import com.intellij.psi.PsiElement;
+import com.intellij.testFramework.LightProjectDescriptor;
+import com.intellij.testFramework.PlatformTestUtil;
+import com.intellij.testFramework.PsiTestUtil;
+import com.intellij.testFramework.fixtures.DefaultLightProjectDescriptor;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import org.jetbrains.annotations.NotNull;
 
 public abstract class GuiceTestBase extends LightJavaCodeInsightFixtureTestCase {
-  @Override
-  protected com.intellij.testFramework.LightProjectDescriptor getProjectDescriptor() {
-    return new com.intellij.testFramework.fixtures.DefaultLightProjectDescriptor() {
+  private static final LightProjectDescriptor DESCRIPTOR =
+    new DefaultLightProjectDescriptor() {
       @Override
-      public com.intellij.openapi.projectRoots.Sdk getSdk() {
+      public Sdk getSdk() {
         String javaHome = System.getProperty("java.home");
-        return com.intellij.openapi.projectRoots.JavaSdk.getInstance().createJdk("Current JDK", javaHome, false);
+        return JavaSdk.getInstance().createJdk("Current JDK", javaHome, false);
+      }
+
+      @Override
+      public void configureModule(@NotNull Module module,
+                                  @NotNull ModifiableRootModel model,
+                                  @NotNull ContentEntry contentEntry) {
+        super.configureModule(module, model, contentEntry);
+        // Kotlin test sources need the standard library (TODO(), ::class.java, type inference for bind()).
+        // The tested IDE distribution ships it with the Kotlin plugin, so no network access is necessary.
+        // Do not use the jar that holds kotlin.Unit at runtime: it is a platform jar that K2 does not treat as the stdlib.
+        Path stdlibJar = Path.of(PathManager.getHomePath(),
+                                 "plugins", "Kotlin", "kotlinc", "lib", "kotlin-stdlib.jar");
+        assert Files.isRegularFile(stdlibJar) : "No Kotlin stdlib at " + stdlibJar;
+        PsiTestUtil.addLibrary(model, "kotlin-stdlib", stdlibJar.getParent().toString(),
+                                                          stdlibJar.getFileName().toString());
+        // The real Guice API. Gradle puts these jars on the test classpath (see build.gradle.kts).
+        for (Class<?> apiClass : List.of(com.google.inject.Inject.class,
+                                         FactoryModuleBuilder.class,
+                                         javax.inject.Inject.class,
+                                         jakarta.inject.Inject.class)) {
+          Path jar = Path.of(PathManager.getJarPathForClass(apiClass));
+          PsiTestUtil.addLibrary(model, jar.getFileName().toString(), jar.getParent().toString(),
+                                 jar.getFileName().toString());
+        }
       }
     };
+
+  @Override
+  protected LightProjectDescriptor getProjectDescriptor() {
+    return DESCRIPTOR;
   }
 
   @Override
   protected void setUp() throws Exception {
     super.setUp();
-    getProject().getMessageBus().connect(getTestRootDisposable()).subscribe(
-        com.intellij.openapi.vfs.VirtualFileManager.VFS_CHANGES,
-        new com.intellij.guice.model.GuiceVfsListener(getProject())
-    );
-    // Annotations
-    myFixture.addClass("""
-      package com.google.inject;
-      import java.lang.annotation.Retention;
-      import java.lang.annotation.RetentionPolicy;
-      import java.lang.annotation.Target;
-      import java.lang.annotation.ElementType;
-      @Retention(RetentionPolicy.RUNTIME)
-      @Target({ElementType.FIELD, ElementType.METHOD, ElementType.CONSTRUCTOR})
-      public @interface Inject {}
-      """);
-    myFixture.addClass("""
-      package com.google.inject;
-      import java.lang.annotation.Retention;
-      import java.lang.annotation.RetentionPolicy;
-      import java.lang.annotation.Target;
-      import java.lang.annotation.ElementType;
-      @Retention(RetentionPolicy.RUNTIME)
-      @Target(ElementType.METHOD)
-      public @interface Provides {}
-      """);
-    myFixture.addClass("""
-      package javax.inject;
-      import java.lang.annotation.Retention;
-      import java.lang.annotation.RetentionPolicy;
-      import java.lang.annotation.Target;
-      import java.lang.annotation.ElementType;
-      @Retention(RetentionPolicy.RUNTIME)
-      @Target({ElementType.FIELD, ElementType.METHOD, ElementType.CONSTRUCTOR})
-      public @interface Inject {}
-      """);
-    myFixture.addClass("""
-      package jakarta.inject;
-      import java.lang.annotation.Retention;
-      import java.lang.annotation.RetentionPolicy;
-      import java.lang.annotation.Target;
-      import java.lang.annotation.ElementType;
-      @Retention(RetentionPolicy.RUNTIME)
-      @Target({ElementType.FIELD, ElementType.METHOD, ElementType.CONSTRUCTOR})
-      public @interface Inject {}
-      """);
-    
-    // Core binder mocks
-    myFixture.addClass("""
-      package com.google.inject;
-      public interface Module {}
-      """);
-    myFixture.addClass("""
-      package com.google.inject;
-      public interface Scope {}
-      """);
-    myFixture.addClass("""
-      package com.google.inject;
-      public interface Binder {
-        <T> com.google.inject.binder.LinkedBindingBuilder<T> bind(Class<T> clazz);
-      }
-      """);
-    myFixture.addClass("""
-      package com.google.inject.binder;
-      public interface LinkedBindingBuilder<T> {
-        void to(Class<? extends T> implementation);
-        void toInstance(T instance);
-        void toProvider(Class<? extends javax.inject.Provider<? extends T>> provider);
-        void toConstructor(java.lang.reflect.Constructor<? extends T> constructor);
-        void in(com.google.inject.Scope scope);
-        void in(Class<? extends java.lang.annotation.Annotation> scopeAnnotation);
-      }
-      """);
-    myFixture.addClass("""
-      package com.google.inject;
-      public abstract class AbstractModule implements Module {
-        protected void configure() {}
-        protected <T> com.google.inject.binder.LinkedBindingBuilder<T> bind(Class<T> clazz) { return null; }
-        protected Binder binder() { return null; }
-      }
-      """);
-    
-    // Multibinder and MapBinder/OptionalBinder
-    myFixture.addClass("""
-      package com.google.inject.multibindings;
-      import com.google.inject.Binder;
-      public class Multibinder<T> {
-        public static <T> Multibinder<T> newSetBinder(Binder binder, Class<T> type) { return null; }
-        public com.google.inject.binder.LinkedBindingBuilder<T> addBinding() { return null; }
-      }
-      """);
-    myFixture.addClass("""
-      package com.google.inject.multibindings;
-      import com.google.inject.Binder;
-      public class OptionalBinder<T> {
-        public static <T> OptionalBinder<T> newOptionalBinder(Binder binder, Class<T> type) { return null; }
-        public com.google.inject.binder.LinkedBindingBuilder<T> setBinding() { return null; }
-        public com.google.inject.binder.LinkedBindingBuilder<T> setDefault() { return null; }
-      }
-      """);
-    myFixture.addClass("""
-      package com.google.inject.multibindings;
-      import com.google.inject.Binder;
-      public class MapBinder<K, V> {
-        public static <K, V> MapBinder<K, V> newMapBinder(Binder binder, Class<K> keyType, Class<V> valueType) { return null; }
-        public com.google.inject.binder.LinkedBindingBuilder<V> addBinding(K key) { return null; }
-      }
-      """);
-    myFixture.addClass("""
-      package javax.inject;
-      public interface Provider<T> {
-        T get();
-      }
-      """);
-
     // Add dummy classes for binding targets
     myFixture.addClass("public interface MyKey {}");
     myFixture.addClass("public interface MyService {}");
@@ -142,14 +81,54 @@ public abstract class GuiceTestBase extends LightJavaCodeInsightFixtureTestCase 
       """);
   }
 
-  protected com.intellij.guice.model.GuiceNavigationIndex getNavigationIndex() {
-    com.intellij.testFramework.PlatformTestUtil.dispatchAllEventsInIdeEventQueue();
-    final com.intellij.guice.model.GuiceNavigationIndex[] indexHolder = new com.intellij.guice.model.GuiceNavigationIndex[1];
-    com.intellij.openapi.progress.ProgressManager.getInstance().runProcess(() -> {
-      com.intellij.openapi.application.ApplicationManager.getApplication().runReadAction(() -> {
-        indexHolder[0] = com.intellij.guice.model.GuiceProjectModel.getInstance(getProject()).getNavigationIndex(myFixture.getModule());
+  protected static final String TO_BINDINGS_TOOLTIP = "Navigate to Guice bind expression";
+  protected static final String TO_INJECTION_POINTS_TOOLTIP = "Navigate to injection points";
+
+  /**
+   * Highlights the file in the editor and returns the navigation targets of all gutter icons with the tooltip.
+   * Each target is given as the text of the target element with collapsed whitespace, sorted.
+   */
+  protected java.util.List<String> gutterTargets(@NotNull String tooltip) {
+    myFixture.doHighlighting();
+    java.util.List<String> result = new ArrayList<>();
+    for (GutterMark mark : myFixture.findAllGutters()) {
+      if (!tooltip.equals(mark.getTooltipText())) continue;
+      assertInstanceOf(mark, LineMarkerGutterIconRenderer.class);
+      var info = ((LineMarkerGutterIconRenderer<?>)mark).getLineMarkerInfo();
+      var handler = info.getNavigationHandler();
+      assertInstanceOf(handler, NavigationGutterIconRenderer.class);
+      for (PsiElement target : ((NavigationGutterIconRenderer)handler).getTargetElements()) {
+        result.add(target.getText().replaceAll("\\s+", " "));
+      }
+    }
+    java.util.Collections.sort(result);
+    return result;
+  }
+
+  /**
+   * Returns the text of the elements that carry a gutter icon with the tooltip, sorted.
+   */
+  protected java.util.List<String> gutterAnchors(@NotNull String tooltip) {
+    myFixture.doHighlighting();
+    java.util.List<String> result = new ArrayList<>();
+    for (GutterMark mark : myFixture.findAllGutters()) {
+      if (!tooltip.equals(mark.getTooltipText())) continue;
+      var info = ((LineMarkerGutterIconRenderer<?>)mark).getLineMarkerInfo();
+      PsiElement element = info.getElement();
+      result.add(element == null ? "<invalid>" : element.getText());
+    }
+    java.util.Collections.sort(result);
+    return result;
+  }
+
+  protected GuiceNavigationIndex getNavigationIndex() {
+    PlatformTestUtil.dispatchAllEventsInIdeEventQueue();
+    final GuiceNavigationIndex[] indexHolder = new GuiceNavigationIndex[1];
+    ProgressManager.getInstance().runProcess(() -> {
+      ApplicationManager.getApplication().runReadAction(() -> {
+        indexHolder[0] = GuiceProjectModel.getInstance(getProject()).getNavigationIndex(myFixture.getModule());
       });
-    }, new com.intellij.openapi.progress.EmptyProgressIndicator());
+    }, new EmptyProgressIndicator());
     return indexHolder[0];
   }
 }

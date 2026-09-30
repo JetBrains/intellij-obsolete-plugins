@@ -1,18 +1,14 @@
 // Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package com.intellij.guice.model;
 
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiInvalidElementAccessException;
-import com.intellij.psi.PsiPrimitiveType;
-import com.intellij.psi.PsiType;
 import com.intellij.psi.SmartPointerManager;
 import com.intellij.psi.SmartPsiElementPointer;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.*;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -99,6 +95,19 @@ public final class GuiceNavigationIndex {
     }
   }
 
+  /**
+   * Returns a copy of the paths of all files that have entries in the index.
+   */
+  public @NotNull Set<String> getIndexedFiles() {
+    lock.readLock().lock();
+    try {
+      return new HashSet<>(entriesByFile.keySet());
+    }
+    finally {
+      lock.readLock().unlock();
+    }
+  }
+
   // -----------------------------------------------------------------------
   // The SINGLE matching method — guarantees symmetric navigation
   // -----------------------------------------------------------------------
@@ -130,22 +139,44 @@ public final class GuiceNavigationIndex {
 
       Set<GuiceEntry> result = new HashSet<>();
       for (GuiceEntry candidate : candidates) {
-        try {
-          if (candidate.getRole() == oppositeRole
-              && candidate.isValid()
-              && entry.getKey().matches(candidate.getKey())) {
-            result.add(candidate);
+        if (candidate.getRole() == oppositeRole
+            && entry.getKey().matches(candidate.getKey())
+            && candidate.isValid()) {
+          result.add(candidate);
+        }
+      }
+      if (oppositeRole == EntryRole.BINDING_SITE && result.size() > 1) {
+        boolean hasExplicit = false;
+        for (GuiceEntry cp : result) {
+          if (!cp.isDefaultBinding()) {
+            hasExplicit = true;
+            break;
           }
         }
-        catch (PsiInvalidElementAccessException e) {
-          // Stale PSI — skip.
+        if (hasExplicit) {
+          result.removeIf(GuiceEntry::isDefaultBinding);
         }
+      }
+      else if (entry.isDefaultBinding() && !result.isEmpty()) {
+        result.removeIf(cp -> hasExplicitBinding(candidates, cp.getKey()));
       }
       return result;
     }
     finally {
       lock.readLock().unlock();
     }
+  }
+
+  private static boolean hasExplicitBinding(@NotNull Set<GuiceEntry> candidates, @NotNull GuiceBindingKey key) {
+    for (GuiceEntry candidate : candidates) {
+      if (candidate.getRole() == EntryRole.BINDING_SITE
+          && !candidate.isDefaultBinding()
+          && key.matches(candidate.getKey())
+          && candidate.isValid()) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -163,15 +194,10 @@ public final class GuiceNavigationIndex {
 
       Set<GuiceEntry> result = new HashSet<>();
       for (GuiceEntry candidate : candidates) {
-        try {
-          if (candidate.getRole() == role
-              && candidate.isValid()
-              && key.matches(candidate.getKey())) {
-            result.add(candidate);
-          }
-        }
-        catch (PsiInvalidElementAccessException e) {
-          // Stale PSI — skip.
+        if (candidate.getRole() == role
+            && key.matches(candidate.getKey())
+            && candidate.isValid()) {
+          result.add(candidate);
         }
       }
       return result;
@@ -250,27 +276,6 @@ public final class GuiceNavigationIndex {
     }
 
     entriesByFile.put(filePath, new FileEntries(entries, keyToEntries));
-  }
-
-  /**
-   * Extracts the FQN from a {@link PsiType} for index lookups.
-   * For class types, resolves the class and returns its qualified name.
-   * For primitive types ({@code boolean}, {@code int}, etc.), returns the
-   * FQN of the corresponding boxed wrapper ({@code java.lang.Boolean},
-   * {@code java.lang.Integer}) so that primitives and their wrappers share
-   * the same index key.
-   *
-   * @return the FQN, or {@code null} for types without a resolvable class
-   */
-  static @Nullable String getTypeFqn(@NotNull PsiType type) {
-    if (type instanceof PsiPrimitiveType primitiveType) {
-      return primitiveType.getBoxedTypeName();
-    }
-    if (type instanceof PsiClassType classType) {
-      PsiClass psiClass = classType.resolve();
-      return psiClass != null ? psiClass.getQualifiedName() : null;
-    }
-    return null;
   }
 
 }

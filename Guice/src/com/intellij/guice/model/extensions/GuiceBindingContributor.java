@@ -4,12 +4,10 @@ package com.intellij.guice.model.extensions;
 import com.intellij.guice.model.beans.BindDescriptor;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.psi.PsiClass;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.uast.UCallExpression;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -21,10 +19,9 @@ import java.util.Set;
  * dispatches call expressions to them during file processing.
  *
  * <h3>Lifecycle</h3>
+ * <p>The plugin scans the classes that implement {@code com.google.inject.Module}.
+ * A contributor cannot add other classes to the scan.
  * <ol>
- *   <li><b>File discovery</b>: {@link #getRelevantAnnotations()} and
- *       {@link #getRelevantSuperclasses()} are queried to determine which
- *       files should be scanned during initial population.</li>
  *   <li><b>Binding extraction</b>: For each call expression whose method name
  *       matches one of this contributor's {@link #getBindingWords()}, the
  *       contributor's {@link #processCall} is invoked to create descriptors.</li>
@@ -36,6 +33,8 @@ import java.util.Set;
  * <p>Implementations must be stateless and thread-safe.  All methods may be
  * called from multiple threads concurrently.
  */
+@ApiStatus.Internal
+@ApiStatus.OverrideOnly
 public interface GuiceBindingContributor {
 
   ExtensionPointName<GuiceBindingContributor> EP_NAME =
@@ -93,36 +92,5 @@ public interface GuiceBindingContributor {
                                         @NotNull String methodName,
                                         @NotNull Set<BindDescriptor> descriptors) {
     return false;
-  }
-
-  /**
-   * Returns additional annotation FQNs that should trigger file discovery
-   * during initial population.
-   *
-   * <p>Files containing elements annotated with any of these annotations will
-   * be included in the set of files to scan.
-   *
-   * <p>The default implementation returns an empty list (contributor's files
-   * are discovered via binding words and Guice module inheritance alone).
-   *
-   * @return annotation FQNs for file discovery, may be empty
-   */
-  default @NotNull Collection<String> getRelevantAnnotations() {
-    return List.of();
-  }
-
-  /**
-   * Returns additional class FQNs whose inheritors should be scanned during
-   * initial population.
-   *
-   * <p>For example, a contributor that handles bindings inside classes extending
-   * a custom base module would return that base module's FQN here.
-   *
-   * <p>The default implementation returns an empty list.
-   *
-   * @return superclass FQNs for file discovery, may be empty
-   */
-  default @NotNull Collection<String> getRelevantSuperclasses() {
-    return List.of();
   }
 }

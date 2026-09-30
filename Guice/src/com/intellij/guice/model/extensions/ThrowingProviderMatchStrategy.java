@@ -4,7 +4,6 @@ package com.intellij.guice.model.extensions;
 import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.guice.constants.GuiceAnnotations;
 import com.intellij.guice.constants.GuiceClasses;
-import com.intellij.guice.model.beans.BindDescriptor;
 import com.intellij.psi.*;
 import com.intellij.psi.util.InheritanceUtil;
 import org.jetbrains.annotations.NotNull;
@@ -26,22 +25,7 @@ import java.util.List;
  * declared type (no unwrapping by {@code getProviderType}), matching the
  * binding directly.
  */
-public final class ThrowingProviderMatchStrategy implements GuiceBindingMatchStrategy {
-
-  /** Sentinel class that no real descriptor will ever be an instance of. */
-  private static abstract class NoDescriptor extends BindDescriptor {
-    private NoDescriptor(@NotNull PsiElement callExpression) {
-      super(callExpression);
-    }
-  }
-
-  @Override
-  public @NotNull Class<? extends BindDescriptor> getDescriptorClass() {
-    // This strategy is purely annotation-driven — no programmatic binder call
-    // produces descriptors for it. Return a sentinel so the instanceof routing
-    // in extractBindingCallEntries never matches.
-    return NoDescriptor.class;
-  }
+final class ThrowingProviderMatchStrategy implements GuiceBindingMatchStrategy {
 
   @Override
   public @NotNull Collection<String> getProvidesAnnotations() {
@@ -79,21 +63,8 @@ public final class ThrowingProviderMatchStrategy implements GuiceBindingMatchStr
     if (returnType == null) return null;
 
     PsiElementFactory factory = JavaPsiFacade.getElementFactory(providesMethod.getProject());
-    return factory.createType(providerClass, returnType);
-  }
-
-  /**
-   * No injection-point unwrapping — the concrete provider type matters.
-   * {@code BackendProvider<Foo>} stays as-is; it must not be confused with
-   * {@code CheckedProvider<Foo>} or plain {@code Foo}.
-   */
-  @Override
-  public @Nullable PsiType unwrapType(@NotNull PsiType type) {
-    return null;
-  }
-
-  @Override
-  public @Nullable PsiType wrapType(@NotNull BindDescriptor descriptor) {
-    return null;  // No binder descriptors for throwing providers.
+    return providerClass.hasTypeParameters()
+           ? factory.createType(providerClass, returnType)
+           : factory.createType(providerClass);
   }
 }

@@ -38,8 +38,8 @@ import test.*;
 public class MyModule extends AbstractModule {
     @Override
     protected void configure() {
-        <warning descr="Class bind(Foo.class).to(AbstractFoo.class) is uninstantiable, and thus can not be bound">bind(Foo.class).to(AbstractFoo.class)</warning>;
-        <warning descr="Class bind(Foo.class).to(UninstantiableFoo.class) is uninstantiable, and thus can not be bound">bind(Foo.class).to(UninstantiableFoo.class)</warning>;
+        bind(Foo.class).to(<warning descr="Class AbstractFoo is uninstantiable, and thus can not be bound">AbstractFoo</warning>.class);
+        bind(Foo.class).to(<warning descr="Class UninstantiableFoo is uninstantiable, and thus can not be bound">UninstantiableFoo</warning>.class);
         
         bind(Foo.class).to(ConcreteFoo.class); // Valid
     }
@@ -82,8 +82,8 @@ inline fun <reified T> LinkedBindingBuilder<in T>.to(): Unit = TODO()
 class MyModule : AbstractModule() {
     override fun configure() {
         // Class literal
-        bind(Foo::class.java).<warning descr="Class to(AbstractFoo::class.java) is uninstantiable, and thus can not be bound">to(AbstractFoo::class.java)</warning>
-        bind(Foo::class.java).<warning descr="Class to(UninstantiableFoo::class.java) is uninstantiable, and thus can not be bound">to(UninstantiableFoo::class.java)</warning>
+        bind(Foo::class.java).to(<warning descr="Class AbstractFoo is uninstantiable, and thus can not be bound">AbstractFoo</warning>::class.java)
+        bind(Foo::class.java).to(<warning descr="Class UninstantiableFoo is uninstantiable, and thus can not be bound">UninstantiableFoo</warning>::class.java)
         
         // Reified generics extension
         bind<Foo>().<warning descr="Class to<AbstractFoo>() is uninstantiable, and thus can not be bound">to<AbstractFoo>()</warning>
@@ -94,6 +94,49 @@ class MyModule : AbstractModule() {
     }
 }
 """);
+    myFixture.testHighlighting(true, false, true);
+  }
+
+  public void testCheckedProvidesAndProvidesIntoOptional() {
+    myFixture.addClass("""
+      package com.google.inject.throwingproviders;
+      public interface CheckedProvider<T> {}
+      """);
+    myFixture.addClass("""
+      package com.google.inject.throwingproviders;
+      import java.lang.annotation.*;
+      @Retention(RetentionPolicy.RUNTIME)
+      public @interface CheckedProvides {
+        Class<? extends CheckedProvider> value();
+      }
+      """);
+    myFixture.addClass("package test; public interface Foo {}");
+    myFixture.addClass("package test; public abstract class AbstractChecked implements Foo {}");
+    myFixture.addClass("package test; public abstract class AbstractOptional implements Foo {}");
+    myFixture.addClass("""
+      package test;
+      public interface TestCheckedProvider extends com.google.inject.throwingproviders.CheckedProvider<AbstractChecked> {}
+      """);
+
+    myFixture.configureByText("MyModule.java", """
+      import com.google.inject.AbstractModule;
+      import com.google.inject.multibindings.ProvidesIntoOptional;
+      import com.google.inject.throwingproviders.CheckedProvides;
+      import test.*;
+      public class MyModule extends AbstractModule {
+        @Override
+        protected void configure() {
+          bind(Foo.class).to(<warning descr="Class AbstractChecked is uninstantiable, and thus can not be bound">AbstractChecked</warning>.class);
+          bind(Foo.class).to(AbstractOptional.class);
+        }
+
+        @CheckedProvides(TestCheckedProvider.class)
+        AbstractChecked provideChecked() { return null; }
+
+        @ProvidesIntoOptional(ProvidesIntoOptional.Type.DEFAULT)
+        AbstractOptional provideOptional() { return null; }
+      }
+      """);
     myFixture.testHighlighting(true, false, true);
   }
 }

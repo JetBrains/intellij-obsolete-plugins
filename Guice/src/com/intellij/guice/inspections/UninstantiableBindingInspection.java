@@ -5,6 +5,7 @@ import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.guice.GuiceBundle;
 import com.intellij.guice.utils.GuiceUtils;
 import com.intellij.psi.*;
+import com.intellij.psi.util.InheritanceUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.uast.UCallExpression;
 import org.jetbrains.uast.UClass;
@@ -26,6 +27,8 @@ import org.jetbrains.uast.visitor.AbstractUastNonRecursiveVisitor;
  * </pre>
  */
 public final class UninstantiableBindingInspection extends BaseUastInspection {
+  private static final String LINKED_BINDING_BUILDER = "com.google.inject.binder.LinkedBindingBuilder";
+
   public UninstantiableBindingInspection() {
     super(UCallExpression.class);
   }
@@ -62,7 +65,10 @@ public final class UninstantiableBindingInspection extends BaseUastInspection {
         return true;
       }
       final PsiClass containingClass = method.getContainingClass();
-      if (containingClass == null || !"com.google.inject.binder.LinkedBindingBuilder".equals(containingClass.getQualifiedName())) {
+      boolean isBuilderMethod = containingClass != null && LINKED_BINDING_BUILDER.equals(containingClass.getQualifiedName());
+      // A Kotlin extension such as `LinkedBindingBuilder<in T>.to<T>()` lives in a file facade class.
+      // Its receiver type still identifies it as a binding builder call.
+      if (!isBuilderMethod && !InheritanceUtil.isInheritor(expression.getReceiverType(), LINKED_BINDING_BUILDER)) {
         return true;
       }
       UClass moduleUClass = UastUtils.getParentOfType(expression, UClass.class);
@@ -70,7 +76,7 @@ public final class UninstantiableBindingInspection extends BaseUastInspection {
       if (moduleClass != null && GuiceUtils.provides(moduleClass, referentClass)) {
         return true;
       }
-      registerError(expression);
+      registerClassArgumentError(expression);
       return true;
     }
   }

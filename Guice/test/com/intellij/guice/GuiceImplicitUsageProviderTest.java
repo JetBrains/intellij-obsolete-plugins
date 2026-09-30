@@ -127,8 +127,9 @@ public class GuiceImplicitUsageProviderTest extends LightJavaCodeInsightFixtureT
   public void testInjectFieldIsImplicitUsage() {
     PsiField field = createJavaInjectField("com.google.inject.Inject", "myField");
     GuiceImplicitUsageProvider provider = new GuiceImplicitUsageProvider();
-    assertTrue(provider.isImplicitUsage(field));
-    assertTrue(provider.isImplicitRead(field));
+    // Guice writes the field. The code must read it, else the field is unused.
+    assertFalse(provider.isImplicitUsage(field));
+    assertFalse(provider.isImplicitRead(field));
     assertTrue(provider.isImplicitWrite(field));
   }
 
@@ -143,32 +144,36 @@ public class GuiceImplicitUsageProviderTest extends LightJavaCodeInsightFixtureT
   public void testKotlinInjectFieldIsImplicitUsage() {
     PsiField field = createKotlinInjectField("com.google.inject.Inject", "myField");
     GuiceImplicitUsageProvider provider = new GuiceImplicitUsageProvider();
-    assertTrue(provider.isImplicitUsage(field));
-    assertTrue(provider.isImplicitRead(field));
+    // Guice writes the field. The code must read it, else the field is unused.
+    assertFalse(provider.isImplicitUsage(field));
+    assertFalse(provider.isImplicitRead(field));
     assertTrue(provider.isImplicitWrite(field));
   }
 
   public void testJavaxInjectFieldIsImplicitUsage() {
     PsiField field = createJavaInjectField("javax.inject.Inject", "myField");
     GuiceImplicitUsageProvider provider = new GuiceImplicitUsageProvider();
-    assertTrue(provider.isImplicitUsage(field));
-    assertTrue(provider.isImplicitRead(field));
+    // Guice writes the field. The code must read it, else the field is unused.
+    assertFalse(provider.isImplicitUsage(field));
+    assertFalse(provider.isImplicitRead(field));
     assertTrue(provider.isImplicitWrite(field));
   }
 
   public void testJakartaInjectFieldIsImplicitUsage() {
     PsiField field = createJavaInjectField("jakarta.inject.Inject", "myField");
     GuiceImplicitUsageProvider provider = new GuiceImplicitUsageProvider();
-    assertTrue(provider.isImplicitUsage(field));
-    assertTrue(provider.isImplicitRead(field));
+    // Guice writes the field. The code must read it, else the field is unused.
+    assertFalse(provider.isImplicitUsage(field));
+    assertFalse(provider.isImplicitRead(field));
     assertTrue(provider.isImplicitWrite(field));
   }
 
   public void testThrowingInjectFieldIsImplicitUsage() {
     PsiField field = createJavaInjectField("com.google.inject.throwingproviders.ThrowingInject", "myField");
     GuiceImplicitUsageProvider provider = new GuiceImplicitUsageProvider();
-    assertTrue(provider.isImplicitUsage(field));
-    assertTrue(provider.isImplicitRead(field));
+    // Guice writes the field. The code must read it, else the field is unused.
+    assertFalse(provider.isImplicitUsage(field));
+    assertFalse(provider.isImplicitRead(field));
     assertTrue(provider.isImplicitWrite(field));
   }
 
@@ -183,16 +188,18 @@ public class GuiceImplicitUsageProviderTest extends LightJavaCodeInsightFixtureT
   public void testKotlinJavaxInjectFieldIsImplicitUsage() {
     PsiField field = createKotlinInjectField("javax.inject.Inject", "myField");
     GuiceImplicitUsageProvider provider = new GuiceImplicitUsageProvider();
-    assertTrue(provider.isImplicitUsage(field));
-    assertTrue(provider.isImplicitRead(field));
+    // Guice writes the field. The code must read it, else the field is unused.
+    assertFalse(provider.isImplicitUsage(field));
+    assertFalse(provider.isImplicitRead(field));
     assertTrue(provider.isImplicitWrite(field));
   }
 
   public void testKotlinJakartaInjectFieldIsImplicitUsage() {
     PsiField field = createKotlinInjectField("jakarta.inject.Inject", "myField");
     GuiceImplicitUsageProvider provider = new GuiceImplicitUsageProvider();
-    assertTrue(provider.isImplicitUsage(field));
-    assertTrue(provider.isImplicitRead(field));
+    // Guice writes the field. The code must read it, else the field is unused.
+    assertFalse(provider.isImplicitUsage(field));
+    assertFalse(provider.isImplicitRead(field));
     assertTrue(provider.isImplicitWrite(field));
   }
 }

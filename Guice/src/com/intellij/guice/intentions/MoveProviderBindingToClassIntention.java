@@ -7,6 +7,7 @@ import com.intellij.guice.utils.GuiceUtils;
 import com.intellij.guice.utils.MutationUtils;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.annotations.NotNull;
@@ -39,7 +40,7 @@ public final class MoveProviderBindingToClassIntention extends Intention{
         final UCallExpression providerCall = GuiceUtils.findCallInChain(uCall, "toProvider");
         final PsiElement providerCallPsi = providerCall.getSourcePsi();
         if (providerCallPsi instanceof PsiMethodCallExpression psiProviderCall) {
-            final com.intellij.psi.PsiExpression qualifier = psiProviderCall.getMethodExpression().getQualifierExpression();
+            final PsiExpression qualifier = psiProviderCall.getMethodExpression().getQualifierExpression();
             assert qualifier != null;
             MutationUtils.replaceExpression(qualifier.getText(), psiProviderCall);
         }

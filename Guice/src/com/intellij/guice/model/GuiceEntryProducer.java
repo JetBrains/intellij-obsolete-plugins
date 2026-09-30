@@ -5,20 +5,30 @@ import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.guice.constants.GuiceAnnotations;
 import com.intellij.guice.model.extensions.GuiceBindingMatchStrategy;
 import com.intellij.guice.model.beans.BindDescriptor;
+import com.intellij.guice.model.beans.BindToProviderDescriptor;
 import com.intellij.guice.utils.GuiceUtils;
-
-import com.intellij.psi.*;
+import com.intellij.psi.JavaPsiFacade;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiClassType;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiField;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiModifierListOwner;
+import com.intellij.psi.PsiParameter;
+import com.intellij.psi.PsiType;
+import com.intellij.psi.PsiWildcardType;
 import com.intellij.psi.presentation.java.SymbolPresentationUtil;
 import com.intellij.psi.util.InheritanceUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.uast.*;
+import org.jetbrains.uast.visitor.AbstractUastVisitor;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Produces {@link GuiceEntry} instances from PSI/UAST elements.
@@ -31,7 +41,19 @@ public final class GuiceEntryProducer {
   private GuiceEntryProducer() {}
 
   /**
-   * Extracts all {@link GuiceEntry} instances from a class.
+   * Extracts all {@link GuiceEntry} instances from the classes of a file.
+   * This includes nested, local and anonymous classes, for example {@code install(new AbstractModule() {...})}.
+   */
+  public static @NotNull Set<GuiceEntry> extractFromFile(@NotNull PsiFile file) {
+    Set<GuiceEntry> entries = new HashSet<>();
+    for (PsiClass cls : GuiceInjectorManager.collectAllClasses(file)) {
+      entries.addAll(extractFromClass(cls));
+    }
+    return entries;
+  }
+
+  /**
+   * Extracts all {@link GuiceEntry} instances from a class, without its nested classes.
    * This covers:
    * <ul>
    *   <li>{@code @Inject} fields (INJECTION_POINT)</li>
@@ -43,7 +65,7 @@ public final class GuiceEntryProducer {
    *   <li>Binding calls in module {@code configure()} methods</li>
    * </ul>
    */
-  public static @NotNull Set<GuiceEntry> extractFromClass(@NotNull PsiClass cls) {
+  private static @NotNull Set<GuiceEntry> extractFromClass(@NotNull PsiClass cls) {
     Set<GuiceEntry> entries = new HashSet<>();
 
     // @Inject fields → INJECTION_POINT
@@ -58,6 +80,8 @@ public final class GuiceEntryProducer {
 
     // Methods: @Inject methods (any class), @Provides methods (module classes only)
     for (PsiMethod method : cls.getMethods()) {
+      // The constructor loop below handles constructors.
+      if (method.isConstructor()) continue;
       boolean isInject = AnnotationUtil.isAnnotated(method, GuiceAnnotations.INJECTS, 0);
       boolean isProvides = isModule && AnnotationUtil.isAnnotated(method,
           GuiceBindingMatchStrategy.getAllProvidesAnnotations(), 0);
@@ -65,6 +89,7 @@ public final class GuiceEntryProducer {
       if (isInject || isProvides) {
         // Parameters → INJECTION_POINT
         for (PsiParameter param : method.getParameterList().getParameters()) {
+          if (GuiceQualifiers.isAssisted(param)) continue;
           GuiceEntry entry = createInjectionPointEntry(param, param.getType());
           entries.add(entry);
         }
@@ -78,25 +103,27 @@ public final class GuiceEntryProducer {
 
           // Fast path: single check against the cached set of all @ProvidesInto* annotations.
           // For standard @Provides methods (the common case), this avoids iterating strategies.
+          boolean isKotlinMethod = method.getNavigationElement() != method;
           if (AnnotationUtil.isAnnotated(method, GuiceBindingMatchStrategy.getProvidesIntoAnnotations(), 0)) {
             // @ProvidesInto*: find the matching strategy and contribute the collection type.
             for (GuiceBindingMatchStrategy strategy : GuiceBindingMatchStrategy.EP_NAME.getExtensionList()) {
               Collection<String> strategyAnnotations = strategy.getProvidesAnnotations();
               if (!strategyAnnotations.isEmpty()
                   && AnnotationUtil.isAnnotated(method, strategyAnnotations, 0)) {
-                PsiType wrappedType = strategy.wrapProvidesType(method);
-                if (wrappedType != null) {
+                for (PsiType wrappedType : strategy.wrapProvidesTypes(method)) {
+                  PsiType keyType = isKotlinMethod ? unwrapKotlinWildcards(wrappedType) : wrappedType;
                   entries.add(new GuiceEntry(
-                      new GuiceBindingKey(wrappedType), method, anchor,
-                      EntryRole.BINDING_SITE, GuiceEntryProducer::providesMethodText, strategy));
+                      new GuiceBindingKey(keyType, GuiceQualifiers.fromDeclaration(method)), method, anchor,
+                      EntryRole.BINDING_SITE, GuiceEntryProducer::providesMethodText));
                 }
                 break;
               }
             }
           } else {
             // Standard @Provides: BINDING_SITE for the exact return type.
+            PsiType keyType = isKotlinMethod ? unwrapKotlinWildcards(returnType) : returnType;
             entries.add(new GuiceEntry(
-                new GuiceBindingKey(returnType, findQualifier(method)),
+                new GuiceBindingKey(keyType, GuiceQualifiers.fromDeclaration(method)),
                 method, anchor, EntryRole.BINDING_SITE,
                 GuiceEntryProducer::providesMethodText));
           }
@@ -108,35 +135,59 @@ public final class GuiceEntryProducer {
     for (PsiMethod ctor : cls.getConstructors()) {
       if (AnnotationUtil.isAnnotated(ctor, GuiceAnnotations.INJECTS, 0)) {
         // The constructor IS a JIT binding for its containing class
-        PsiClassType classType = JavaPsiFacade.getElementFactory(cls.getProject())
-            .createType(cls);
         PsiElement anchor = resolveDeclarationAnchor(ctor);
         entries.add(new GuiceEntry(
-            new GuiceBindingKey(classType),
+            GuiceBindingKey.forClass(cls),
             ctor, anchor, EntryRole.BINDING_SITE,
             GuiceEntryProducer::providesMethodText));
 
         // Each parameter → INJECTION_POINT
         for (PsiParameter param : ctor.getParameterList().getParameters()) {
+          if (GuiceQualifiers.isAssisted(param)) continue;
           GuiceEntry entry = createInjectionPointEntry(param, param.getType());
           entries.add(entry);
         }
       }
     }
 
+    // @ImplementedBy and @ProvidedBy → BINDING_SITE for the class (a JIT binding)
+    addJitAnnotationEntries(cls, GuiceAnnotations.IMPLEMENTED_BY, entries);
+    addJitAnnotationEntries(cls, GuiceAnnotations.PROVIDED_BY, entries);
+
     // Binding calls in configure() for module classes
     if (isModule) {
       extractBindingCallEntries(cls, entries);
     }
 
-    // Recurse into inner classes
-    for (PsiClass inner : cls.getInnerClasses()) {
-      entries.addAll(extractFromClass(inner));
-    }
-
     return entries;
   }
 
+
+  /**
+   * Adds the entries of an {@code @ImplementedBy(Impl.class)} or {@code @ProvidedBy(FooProvider.class)} annotation.
+   * The annotation is a BINDING_SITE for the annotated class.
+   * Like {@code .to(Impl.class)}, it is also an implementation reference to the class in the annotation value.
+   */
+  private static void addJitAnnotationEntries(@NotNull PsiClass cls, @NotNull String annotationFqn,
+                                              @NotNull Set<GuiceEntry> entries) {
+    UClass uClass = UastContextKt.toUElement(cls, UClass.class);
+    UAnnotation annotation = uClass != null ? uClass.findAnnotation(annotationFqn) : null;
+    PsiElement annotationPsi = annotation != null ? annotation.getSourcePsi() : null;
+    if (annotationPsi == null) return;
+
+    PsiElement classAnchor = resolveDeclarationAnchor(cls);
+    entries.add(GuiceEntry.defaultBinding(GuiceBindingKey.forClass(cls), annotationPsi, classAnchor,
+                                          PsiElement::getText));
+
+    UExpression value = GuiceUtils.skipParenthesesAndCasts(annotation.findDeclaredAttributeValue("value"));
+    if (value instanceof UClassLiteralExpression literal && literal.getType() instanceof PsiClassType classType) {
+      PsiClass valueClass = classType.resolve();
+      if (valueClass != null && !valueClass.equals(cls)) {
+        entries.add(GuiceEntry.implementationReference(GuiceBindingKey.forClass(valueClass), annotationPsi,
+                                                       classAnchor, PsiElement::getText));
+      }
+    }
+  }
 
   // -----------------------------------------------------------------------
   // Injection point entry creation
@@ -146,28 +197,19 @@ public final class GuiceEntryProducer {
     if (AnnotationUtil.isAnnotated(field, GuiceAnnotations.INJECTS, 0)) {
       return true;
     }
+    // A Kotlin property without a use-site target puts @Inject on the property, not on the backing field.
+    // The light field does not see such an annotation, so ask UAST for the source declaration.
     PsiElement navElem = field.getNavigationElement();
-    if (navElem != null && navElem.getClass().getName().equals("org.jetbrains.kotlin.psi.KtProperty")) {
-      try {
-        java.lang.reflect.Method getAnnotationEntries = navElem.getClass().getMethod("getAnnotationEntries");
-        List<?> entries = (List<?>) getAnnotationEntries.invoke(navElem);
-        for (Object entryObj : entries) {
-          if (entryObj instanceof PsiElement) {
-            UAnnotation uAnno = UastContextKt.toUElement((PsiElement) entryObj, UAnnotation.class);
-            if (uAnno != null) {
-              String qName = uAnno.getQualifiedName();
-              if (qName != null) {
-                for (String injectAnno : GuiceAnnotations.INJECTS) {
-                  if (qName.equals(injectAnno)) {
-                    return true;
-                  }
-                }
-              }
-            }
-          }
-        }
-      } catch (Exception e) {
-        // Ignore reflection errors to remain robust when Kotlin plugin is missing or different version
+    if (navElem == null || navElem == field) {
+      return false;
+    }
+    UElement uElement = UastContextKt.toUElement(navElem);
+    if (!(uElement instanceof UAnnotated annotated)) {
+      return false;
+    }
+    for (String injectAnno : GuiceAnnotations.INJECTS) {
+      if (annotated.findAnnotation(injectAnno) != null) {
+        return true;
       }
     }
     return false;
@@ -177,15 +219,18 @@ public final class GuiceEntryProducer {
    * Creates an INJECTION_POINT entry for a field or parameter.
    * Handles Provider<T> unwrapping at creation time.
    */
-  private static @NonNull GuiceEntry createInjectionPointEntry(
+  private static @NotNull GuiceEntry createInjectionPointEntry(
       @NotNull PsiModifierListOwner element, @NotNull PsiType declaredType) {
+    PsiType normalizedDeclaredType = element.getNavigationElement() != element
+                                     ? unwrapKotlinWildcards(declaredType)
+                                     : declaredType;
     // Unwrap Provider<T> → T at creation time
-    PsiType resolvedType = GuiceUtils.getProviderType(declaredType);
-    if (resolvedType == null) resolvedType = declaredType;
+    PsiType resolvedType = GuiceUtils.getProviderType(normalizedDeclaredType);
+    if (resolvedType == null) resolvedType = normalizedDeclaredType;
 
     PsiElement anchor = resolveDeclarationAnchor(element);
 
-    PsiAnnotation qualifier = findQualifier(element);
+    GuiceQualifier qualifier = GuiceQualifiers.fromDeclaration(element);
 
     return new GuiceEntry(
         new GuiceBindingKey(resolvedType, qualifier),
@@ -198,7 +243,7 @@ public final class GuiceEntryProducer {
    *
    * <ul>
    *   <li>Constructor parameter: {@code ClassName(paramName)}</li>
-   *   <li>Method parameter: {@code ClassName.methodName(paramName)}</li>
+   *   <li>Method parameter: {@code methodName(paramName)}</li>
    *   <li>Field: {@code ClassName.fieldName}</li>
    * </ul>
    */
@@ -211,7 +256,7 @@ public final class GuiceEntryProducer {
           String className = cls != null ? cls.getName() : "";
           return className + "(" + param.getName() + ")";
         }
-        return method.getNameIdentifier().getText() + "(" + param.getName() + ")";
+        return method.getName() + "(" + param.getName() + ")";
       }
     }
     if (element instanceof PsiField field) {
@@ -263,15 +308,17 @@ public final class GuiceEntryProducer {
 
       PsiElement anchor = getBindingAnchor(bindExpr);
 
-      // Try each strategy — if one handles this descriptor, use its wrapType
+      // Try each strategy — if one handles this descriptor, use its wrapTypes
       boolean handled = false;
       for (GuiceBindingMatchStrategy strategy : strategies) {
-        if (strategy.getDescriptorClass().isInstance(bd)) {
-          PsiType wrappedType = strategy.wrapType(bd);
-          if (wrappedType != null) {
+        Class<? extends BindDescriptor> descriptorClass = strategy.getDescriptorClass();
+        if (descriptorClass != null && descriptorClass.isInstance(bd)) {
+          UCallExpression outermostCall = bd.getOutermostCall();
+          GuiceQualifier qualifier = outermostCall != null ? GuiceQualifiers.fromBinderCall(outermostCall) : null;
+          for (PsiType wrappedType : strategy.wrapTypes(bd)) {
             entries.add(new GuiceEntry(
-                new GuiceBindingKey(wrappedType), bindExpr, anchor, EntryRole.BINDING_SITE,
-                strategy.getTextProvider(bd), strategy));
+                new GuiceBindingKey(wrappedType, qualifier), bindExpr, anchor, EntryRole.BINDING_SITE,
+                strategy.getTextProvider(bd)));
           }
           handled = true;
           break;
@@ -281,39 +328,134 @@ public final class GuiceEntryProducer {
 
       // ---- Standard descriptors (bind().to(), untargeted, etc.) ----
 
-      // BINDING_SITE for the bound type
+      // BINDING_SITE for the bound type.
+      // The .to() tail of a multibinder element, for example newSetBinder(...).addBinding().to(Impl.class),
+      // binds no key of its own: the multibinder descriptor gives the keys.
       PsiClass boundClass = bd.getBoundClass();
-      if (boundClass != null) {
-        PsiType boundType = bd.getBoundType();
-        if (boundType == null) {
-          boundType = JavaPsiFacade.getElementFactory(boundClass.getProject())
-              .createType(boundClass);
-        }
-        PsiAnnotation qualifier = getQualifierFromBinding(bd);
+      PsiType boundType = bd.getBoundType();
+      if (boundType == null && boundClass != null) {
+        boundType = JavaPsiFacade.getElementFactory(boundClass.getProject())
+            .createType(boundClass);
+      }
+      boolean elementChain = isBinderElementChain(bd.getOutermostCall());
+      if (boundType != null && !elementChain) {
+        UCallExpression outermostCall = bd.getOutermostCall();
+        GuiceQualifier qualifier = outermostCall != null ? GuiceQualifiers.fromBindingChain(outermostCall) : null;
         entries.add(new GuiceEntry(
             new GuiceBindingKey(boundType, qualifier),
             bindExpr, anchor, EntryRole.BINDING_SITE,
             GuiceEntryProducer::standardBindText));
       }
 
-      // INJECTION_POINT for the implementation class
-      PsiClass bindingClass = bd.getBindingClass();
-      if (bindingClass != null && !bindingClass.equals(boundClass)) {
-        PsiType implType = JavaPsiFacade.getElementFactory(bindingClass.getProject())
-            .createType(bindingClass);
+      // INJECTION_POINT for the implementation or provider class
+      PsiClass implClass = bd instanceof BindToProviderDescriptor pbd ? pbd.getProviderClass() : bd.getBindingClass();
+      if (implClass != null && (elementChain || !implClass.equals(boundClass))) {
         UCallExpression outermost = bd.getOutermostCall();
         PsiElement implAnchor = outermost != null ? getToCallAnchor(outermost) : bindExpr;
-        entries.add(new GuiceEntry(
-            new GuiceBindingKey(implType),
-            bindExpr, implAnchor, EntryRole.INJECTION_POINT,
+        entries.add(GuiceEntry.implementationReference(
+            GuiceBindingKey.forClass(implClass),
+            bindExpr, implAnchor,
             GuiceEntryProducer::standardBindText));
       }
     }
+
+    extractGetProviderEntries(moduleClass, entries);
+  }
+
+  /** Classes that declare {@code getProvider(Class)} and {@code getProvider(Key)} for use inside a module. */
+  private static final Set<String> GET_PROVIDER_OWNERS = Set.of(
+      "com.google.inject.Binder",
+      "com.google.inject.PrivateBinder",
+      "com.google.inject.AbstractModule",
+      "com.google.inject.PrivateModule");
+
+  /**
+   * Adds an INJECTION_POINT entry for each {@code getProvider(Foo.class)} or {@code getProvider(Key.get(...))}
+   * call in the methods of the module class. The gutter anchor is the {@code getProvider} identifier.
+   */
+  private static void extractGetProviderEntries(@NotNull PsiClass moduleClass, @NotNull Set<GuiceEntry> entries) {
+    for (PsiMethod method : moduleClass.getMethods()) {
+      UMethod uMethod = UastContextKt.toUElement(method, UMethod.class);
+      if (uMethod == null) continue;
+      uMethod.accept(new AbstractUastVisitor() {
+        @Override
+        public boolean visitClass(@NotNull UClass node) {
+          // The recursion over the classes of the module handles a nested class.
+          return true;
+        }
+
+        @Override
+        public boolean visitCallExpression(@NotNull UCallExpression node) {
+          GuiceEntry entry = createGetProviderEntry(node);
+          if (entry != null) entries.add(entry);
+          return super.visitCallExpression(node);
+        }
+      });
+    }
+  }
+
+  private static @Nullable GuiceEntry createGetProviderEntry(@NotNull UCallExpression call) {
+    if (!"getProvider".equals(call.getMethodName()) || call.getValueArgumentCount() != 1) return null;
+    PsiMethod resolved = call.resolve();
+    PsiClass owner = resolved != null ? resolved.getContainingClass() : null;
+    if (owner == null || !GET_PROVIDER_OWNERS.contains(owner.getQualifiedName())) return null;
+
+    UExpression argument = call.getValueArguments().getFirst();
+    PsiType type = GuiceUtils.getBindingTypeFromExpression(argument);
+    if (type == null) return null;
+    UCallExpression keyGet = GuiceQualifiers.asKeyGet(argument);
+    GuiceQualifier qualifier = keyGet != null && keyGet.getValueArgumentCount() > 1
+                               ? GuiceQualifiers.fromExpression(keyGet.getValueArguments().get(1))
+                               : null;
+
+    UIdentifier identifier = call.getMethodIdentifier();
+    PsiElement anchor = identifier != null ? identifier.getSourcePsi() : null;
+    PsiElement target = call.getSourcePsi();
+    if (anchor == null || target == null) return null;
+    return new GuiceEntry(new GuiceBindingKey(type, qualifier), target, anchor, EntryRole.INJECTION_POINT,
+                          PsiElement::getText);
+  }
+
+  private static final List<String> BINDER_ELEMENT_CALLS = List.of("addBinding", "setDefault", "setBinding");
+
+  /**
+   * Unwraps {@code ? extends T} wildcards introduced by Kotlin declaration-site variance
+   * (for example {@code Set<MyService>} becoming {@code java.util.Set<? extends MyService>} in light PSI).
+   */
+  private static @NotNull PsiType unwrapKotlinWildcards(@NotNull PsiType type) {
+    if (type instanceof PsiWildcardType wildcardType && wildcardType.isExtends()) {
+      return unwrapKotlinWildcards(wildcardType.getExtendsBound());
+    }
+    if (type instanceof PsiClassType classType) {
+      PsiType[] params = classType.getParameters();
+      if (params.length == 0) return type;
+      PsiClass resolved = classType.resolve();
+      if (resolved == null) return type;
+      PsiType[] unwrapped = new PsiType[params.length];
+      boolean changed = false;
+      for (int i = 0; i < params.length; i++) {
+        unwrapped[i] = unwrapKotlinWildcards(params[i]);
+        if (unwrapped[i] != params[i]) changed = true;
+      }
+      if (!changed) return type;
+      return JavaPsiFacade.getElementFactory(resolved.getProject()).createType(resolved, unwrapped);
+    }
+    return type;
+  }
+
+  private static boolean isBinderElementChain(@Nullable UCallExpression outermost) {
+    if (outermost == null) return false;
+    for (String name : BINDER_ELEMENT_CALLS) {
+      if (GuiceUtils.findCallInChain(outermost, name) != null) return true;
+    }
+    return false;
   }
 
   // -----------------------------------------------------------------------
   // Presentable text for standard binding call chains
   // -----------------------------------------------------------------------
+
+  private static final int MAX_BIND_ARG_LENGTH = 50;
 
   /**
    * Produces a human-readable summary of a standard {@code bind().to()} chain.
@@ -335,7 +477,7 @@ public final class GuiceEntryProducer {
     uElement = GuiceUtils.getSelectorIfQualified(uElement);
     if (uElement instanceof UCallExpression call) {
       StringBuilder sb = new StringBuilder();
-      if (appendCallInChain(call, sb, "bind", true)) {
+      if (appendCallInChain(call, sb, "bind", true) || appendCallInChain(call, sb, "bindConstant", true)) {
         appendCallInChain(call, sb, "annotatedWith", false);
         if (appendCallInChain(call, sb, "to", false)) return sb.toString();
         if (appendCallInChain(call, sb, "toInstance", false)) return sb.toString();
@@ -368,7 +510,12 @@ public final class GuiceEntryProducer {
     if (!valueArgs.isEmpty()) {
       UExpression arg = valueArgs.getFirst();
       PsiElement sourcePsi = arg.getSourcePsi();
-      sb.append(sourcePsi != null ? sourcePsi.getText() : arg.toString());
+      String rawText = sourcePsi != null ? sourcePsi.getText() : arg.toString();
+      String normalized = rawText.replaceAll("\\s+", " ").trim();
+      if (normalized.length() > MAX_BIND_ARG_LENGTH) {
+        normalized = normalized.substring(0, MAX_BIND_ARG_LENGTH - 3) + "...";
+      }
+      sb.append(normalized);
     }
     sb.append(")");
     return true;
@@ -438,119 +585,5 @@ public final class GuiceEntryProducer {
     }
     PsiElement src = outermost.getSourcePsi();
     return src != null ? src : outermost.getJavaPsi();
-  }
-
-  // -----------------------------------------------------------------------
-  // Qualifier detection
-  // -----------------------------------------------------------------------
-
-  private static @Nullable PsiAnnotation findQualifier(@NotNull PsiModifierListOwner element) {
-    PsiModifierList modifierList = element.getModifierList();
-    if (modifierList == null) return null;
-
-    boolean hasUnresolved = false;
-    for (PsiAnnotation annotation : modifierList.getAnnotations()) {
-      if (isKnownNonQualifier(annotation.getQualifiedName())) {
-        // Skip known non-qualifier annotation prefixes.
-        continue;
-      }
-      PsiClass annotationClass = annotation.resolveAnnotationType();
-      if (annotationClass != null) {
-        if (AnnotationUtil.isAnnotated(annotationClass, GuiceAnnotations.BINDING_ANNOTATIONS,
-            AnnotationUtil.CHECK_HIERARCHY)) {
-          return annotation;
-        }
-        continue;
-      }
-      hasUnresolved = true;
-    }
-
-    // If any annotation couldn't be resolved and might be a qualifier,
-    // return a sentinel to prevent false matches with unqualified injection points.
-    if (hasUnresolved) {
-      return createFakeAnnotation(element, "com.intellij.guice.UnresolvedQualifier");
-    }
-    return null;
-  }
-
-  /**
-   * Checks whether an annotation FQN is known to never be a Guice qualifier.
-   * Used to avoid false "unresolved qualifier" sentinels for standard annotations.
-   */
-  private static boolean isKnownNonQualifier(@Nullable String fqn) {
-    return fqn != null && (
-        fqn.startsWith("java.") ||
-        fqn.startsWith("javax.annotation.") ||
-        fqn.startsWith("jakarta.annotation.") ||
-        fqn.startsWith("kotlin.") ||
-        fqn.startsWith("org.jetbrains.annotations.") ||
-        fqn.startsWith("com.google.inject.") ||
-        fqn.startsWith("com.google.errorprone.") ||
-        fqn.equals("Override") || fqn.equals("Deprecated") || fqn.equals("SuppressWarnings"));
-  }
-
-  private static @Nullable PsiAnnotation getQualifierFromBinding(@NotNull BindDescriptor bd) {
-    UCallExpression expression = bd.getOutermostCall();
-    if (expression == null) return null;
-
-    UCallExpression annotatedWithCall = GuiceUtils.findCallInChain(expression, "annotatedWith");
-    if (annotatedWithCall == null) return null;
-
-    PsiClass annoClass = GuiceInjectionUtil.getCallExpressionType(expression, "annotatedWith");
-    if (annoClass == null) {
-      return createFakeAnnotation(bd.getBindExpression(), "com.intellij.guice.UnresolvedQualifier");
-    }
-
-    String fqn = annoClass.getQualifiedName();
-    if (fqn == null) return null;
-
-    if (GuiceAnnotations.NAMEDS.contains(fqn)) {
-      UExpression arg = GuiceUtils.getArgumentOfCallInChain(expression, "annotatedWith");
-      if (arg != null) {
-        PsiElement sourcePsi = arg.getSourcePsi();
-        if (sourcePsi instanceof PsiExpression) {
-          PsiExpression namedExpr = GuiceInjectionUtil.findNamedExpression((PsiExpression) sourcePsi);
-          if (namedExpr != null) {
-            if (namedExpr instanceof PsiMethodCallExpression call) {
-               PsiExpression[] args = call.getArgumentList().getExpressions();
-               if (args.length == 1 && args[0] instanceof PsiLiteralExpression) {
-                 Object val = ((PsiLiteralExpression) args[0]).getValue();
-                 if (val instanceof String) {
-                   return createFakeAnnotation(bd.getBindExpression(), fqn, (String) val);
-                 }
-               }
-            }
-            if (namedExpr instanceof PsiLiteralExpression) {
-               Object val = ((PsiLiteralExpression) namedExpr).getValue();
-               if (val instanceof String) {
-                 return createFakeAnnotation(bd.getBindExpression(), fqn, (String) val);
-               }
-            }
-          }
-        }
-      }
-    }
-
-    return createFakeAnnotation(bd.getBindExpression(), fqn);
-  }
-
-  private static @Nullable PsiAnnotation createFakeAnnotation(@Nullable PsiElement context, @NotNull String fqn) {
-    if (context == null) return null;
-    try {
-      return JavaPsiFacade.getElementFactory(context.getProject())
-          .createAnnotationFromText("@" + fqn, context);
-    } catch (Exception e) {
-      return null;
-    }
-  }
-
-  private static @Nullable PsiAnnotation createFakeAnnotation(@Nullable PsiElement context, @NotNull String fqn, @NotNull String value) {
-    if (context == null) return null;
-    try {
-      return JavaPsiFacade.getElementFactory(context.getProject())
-          .createAnnotationFromText("@" + fqn + "(\"" + value + "\")", context);
-    } catch (Exception e) {
-      return null;
-    }
   }
 }

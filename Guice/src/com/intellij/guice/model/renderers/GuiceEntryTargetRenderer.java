@@ -3,6 +3,7 @@ package com.intellij.guice.model.renderers;
 
 import com.intellij.codeInsight.navigation.impl.PsiTargetPresentationRenderer;
 import com.intellij.guice.model.GuiceEntry;
+import com.intellij.ide.util.PsiElementListCellRenderer;
 import com.intellij.platform.backend.presentation.TargetPresentation;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -11,7 +12,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.Map;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Unified target presentation renderer for Guice navigation popups.
@@ -25,15 +27,25 @@ import java.util.Map;
  * and {@code GuiceInjectionPointTargetPresentationRenderer}.
  */
 public final class GuiceEntryTargetRenderer extends PsiTargetPresentationRenderer<PsiElement> {
-  private final @NotNull Map<PsiElement, GuiceEntry> myEntryByTarget;
+  private final @NotNull List<GuiceEntry> myEntries;
 
-  public GuiceEntryTargetRenderer(@NotNull Map<PsiElement, GuiceEntry> entryByTarget) {
-    myEntryByTarget = entryByTarget;
+  public GuiceEntryTargetRenderer(@NotNull Collection<GuiceEntry> entries) {
+    myEntries = List.copyOf(entries);
+  }
+
+  private @Nullable GuiceEntry findEntry(@NotNull PsiElement element) {
+    for (GuiceEntry entry : myEntries) {
+      PsiElement target = entry.getNavigationTarget();
+      if (target != null && (target.equals(element) || element.getManager().areElementsEquivalent(target, element))) {
+        return entry;
+      }
+    }
+    return null;
   }
 
   @Override
   public @NotNull String getElementText(@NotNull PsiElement element) {
-    GuiceEntry entry = myEntryByTarget.get(element);
+    GuiceEntry entry = findEntry(element);
     if (entry != null) {
       String text = entry.getPresentableText();
       if (text != null) return text;
@@ -49,7 +61,7 @@ public final class GuiceEntryTargetRenderer extends PsiTargetPresentationRendere
 
   @Override
   public @Nullable Icon getIcon(@NotNull PsiElement element) {
-    GuiceEntry entry = myEntryByTarget.get(element);
+    GuiceEntry entry = findEntry(element);
     if (entry != null) {
       Icon icon = entry.getIcon();
       if (icon != null) return icon;
@@ -67,7 +79,7 @@ public final class GuiceEntryTargetRenderer extends PsiTargetPresentationRendere
       builder = builder.containerText(containerText);
     }
 
-    var location = com.intellij.ide.util.PsiElementListCellRenderer.getModuleTextWithIcon(element);
+    var location = PsiElementListCellRenderer.getModuleTextWithIcon(element);
     if (location != null) {
       builder = builder.locationText(location.getText(), location.getIcon());
     }

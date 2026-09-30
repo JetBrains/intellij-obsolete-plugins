@@ -1,7 +1,6 @@
 // Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package com.intellij.guice.model;
 
-import com.intellij.guice.model.extensions.GuiceBindingMatchStrategy;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.SmartPointerManager;
 import com.intellij.psi.SmartPsiElementPointer;
@@ -23,7 +22,7 @@ import java.util.function.Function;
  * <ul>
  *   <li>{@link #getKey()} — <b>WHAT</b> type+qualifier is being bound/injected</li>
  *   <li>{@link #getNavigationTarget()} — <b>WHERE</b> clicking the gutter takes you</li>
- *   <li>{@link #getGutterAnchor()} — <b>WHERE</b> the gutter icon is placed</li>
+ *   <li>{@link #getGutterAnchorPointer()} — <b>WHERE</b> the gutter icon is placed</li>
  *   <li>{@link #getRole()} — whether this is an {@link EntryRole#INJECTION_POINT} or {@link EntryRole#BINDING_SITE}</li>
  *   <li>{@link #getPresentableText()} — <b>HOW</b> this entry is displayed in navigation popups</li>
  *   <li>{@link #getIcon()} — the icon representing this entry's target element</li>
@@ -41,7 +40,31 @@ public final class GuiceEntry {
   private final @NotNull SmartPsiElementPointer<PsiElement> myGutterAnchor;
   private final @NotNull EntryRole myRole;
   private final @NotNull Function<PsiElement, String> myTextProvider;
-  private final @Nullable GuiceBindingMatchStrategy myStrategy;
+  private final boolean myImplementationReference;
+  private final boolean myDefaultBinding;
+
+  /**
+   * Creates an {@link EntryRole#INJECTION_POINT} entry for the implementation class of a binding,
+   * for example {@code FooImpl} in {@code bind(Foo.class).to(FooImpl.class)}.
+   * The class gutter of the implementation class shows such entries.
+   */
+  public static @NotNull GuiceEntry implementationReference(@NotNull GuiceBindingKey key,
+                                                            @NotNull PsiElement navigationTarget,
+                                                            @NotNull PsiElement gutterAnchor,
+                                                            @NotNull Function<PsiElement, String> textProvider) {
+    return new GuiceEntry(key, navigationTarget, gutterAnchor, EntryRole.INJECTION_POINT, textProvider, true, false);
+  }
+
+  /**
+   * Creates a default (JIT annotation) {@link EntryRole#BINDING_SITE} entry for {@code @ImplementedBy}
+   * or {@code @ProvidedBy}. Explicit module bindings take precedence over default bindings.
+   */
+  public static @NotNull GuiceEntry defaultBinding(@NotNull GuiceBindingKey key,
+                                                   @NotNull PsiElement navigationTarget,
+                                                   @NotNull PsiElement gutterAnchor,
+                                                   @NotNull Function<PsiElement, String> textProvider) {
+    return new GuiceEntry(key, navigationTarget, gutterAnchor, EntryRole.BINDING_SITE, textProvider, false, true);
+  }
 
   /**
    * Creates a new entry with a custom text provider for navigation popups.
@@ -58,28 +81,24 @@ public final class GuiceEntry {
                     @NotNull PsiElement navigationTarget,
                     @NotNull PsiElement gutterAnchor,
                     @NotNull EntryRole role,
-                    @NotNull Function<PsiElement, String> textProvider) {
-    this(key, navigationTarget, gutterAnchor, role, textProvider, null);
+                    @Nullable Function<PsiElement, String> textProvider) {
+    this(key, navigationTarget, gutterAnchor, role, textProvider, false, false);
   }
 
-  /**
-   * Full constructor with strategy association.
-   *
-   * @param strategy the {@link GuiceBindingMatchStrategy} that produced this entry,
-   *                 or {@code null} for core entries (standard @Provides, @Inject, bind().to())
-   */
-  public GuiceEntry(@NotNull GuiceBindingKey key,
-                    @NotNull PsiElement navigationTarget,
-                    @NotNull PsiElement gutterAnchor,
-                    @NotNull EntryRole role,
-                    @Nullable Function<PsiElement, String> textProvider,
-                    @Nullable GuiceBindingMatchStrategy strategy) {
+  private GuiceEntry(@NotNull GuiceBindingKey key,
+                     @NotNull PsiElement navigationTarget,
+                     @NotNull PsiElement gutterAnchor,
+                     @NotNull EntryRole role,
+                     @Nullable Function<PsiElement, String> textProvider,
+                     boolean implementationReference,
+                     boolean defaultBinding) {
     myKey = key;
     myNavigationTarget = SmartPointerManager.createPointer(navigationTarget);
     myGutterAnchor = SmartPointerManager.createPointer(gutterAnchor);
     myRole = role;
-    myTextProvider = textProvider;
-    myStrategy = strategy;
+    myTextProvider = textProvider != null ? textProvider : SymbolPresentationUtil::getSymbolPresentableText;
+    myImplementationReference = implementationReference;
+    myDefaultBinding = defaultBinding;
   }
 
   public @NotNull GuiceBindingKey getKey() {
@@ -96,7 +115,6 @@ public final class GuiceEntry {
 
   /**
    * Returns the smart pointer for the gutter anchor, for use as a stable map key.
-   * Unlike {@link #getGutterAnchor()}, this does not resolve the pointer.
    */
   public @NotNull SmartPsiElementPointer<PsiElement> getGutterAnchorPointer() {
     return myGutterAnchor;
@@ -107,10 +125,18 @@ public final class GuiceEntry {
   }
 
   /**
-   * Returns the strategy (EP) that produced this entry, or {@code null} for core entries.
+   * Whether this entry refers to the implementation class of a binding, for example {@code .to(FooImpl.class)}.
    */
-  public @Nullable GuiceBindingMatchStrategy getStrategy() {
-    return myStrategy;
+  public boolean isImplementationReference() {
+    return myImplementationReference;
+  }
+
+  /**
+   * Whether this entry is a default binding from {@code @ImplementedBy} or {@code @ProvidedBy},
+   * which is overridden when an explicit module binding exists for the same key.
+   */
+  public boolean isDefaultBinding() {
+    return myDefaultBinding;
   }
 
   /**
@@ -153,18 +179,25 @@ public final class GuiceEntry {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (!(o instanceof GuiceEntry that)) return false;
+    // One binding expression can produce entries for several keys, for example Set<T> and Collection<Provider<T>>.
+    // So the key and the gutter anchor are part of the identity.
     return myRole == that.myRole
-        && Objects.equals(myNavigationTarget, that.myNavigationTarget);
+        && myImplementationReference == that.myImplementationReference
+        && myDefaultBinding == that.myDefaultBinding
+        && myKey.equals(that.myKey)
+        && Objects.equals(myNavigationTarget, that.myNavigationTarget)
+        && Objects.equals(myGutterAnchor, that.myGutterAnchor);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(myNavigationTarget, myRole);
+    return Objects.hash(myRole, myImplementationReference, myDefaultBinding, myKey, myNavigationTarget, myGutterAnchor);
   }
 
   @Override
   public String toString() {
     PsiElement target = myNavigationTarget.getElement();
-    return myRole + " " + myKey + " → " + (target != null ? target : "<invalid>");
+    String targetStr = target != null ? target.getText() : "<invalid>";
+    return myRole + "[" + myKey + " -> " + targetStr + "]";
   }
 }

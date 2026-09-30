@@ -1,20 +1,32 @@
 // Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package com.intellij.guice.model.beans;
 
+import com.intellij.guice.utils.GuiceUtils;
 import com.intellij.psi.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.uast.UCallExpression;
-import com.intellij.guice.utils.GuiceUtils;
-
 import org.jetbrains.uast.UExpression;
+
+import java.util.List;
 
 public class AssistedFactoryBindDescriptor extends BindDescriptor {
   private final @Nullable SmartPsiElementPointer<PsiClass> myFactoryClass;
+  private final @Nullable SmartTypePointer myFactoryPsiType;
+
+  public AssistedFactoryBindDescriptor(@NotNull PsiElement callExpression, @Nullable PsiType factoryPsiType) {
+    super(callExpression);
+    PsiClass factoryClass = factoryPsiType instanceof PsiClassType ct ? ct.resolve() : null;
+    myFactoryClass = factoryClass != null ? SmartPointerManager.createPointer(factoryClass) : null;
+    myFactoryPsiType = factoryPsiType != null
+                       ? SmartTypePointerManager.getInstance(callExpression.getProject()).createSmartTypePointer(factoryPsiType)
+                       : null;
+  }
 
   public AssistedFactoryBindDescriptor(@NotNull PsiElement callExpression, @Nullable PsiClass factoryClass) {
     super(callExpression);
     myFactoryClass = factoryClass != null ? SmartPointerManager.createPointer(factoryClass) : null;
+    myFactoryPsiType = null;
   }
 
   public @Nullable PsiClass getFactoryClass() {
@@ -27,6 +39,15 @@ public class AssistedFactoryBindDescriptor extends BindDescriptor {
   }
 
   @Override
+  public @Nullable PsiType getBoundType() {
+    if (myFactoryPsiType != null) {
+      return myFactoryPsiType.getType();
+    }
+    PsiClass cls = getFactoryClass();
+    return cls != null ? JavaPsiFacade.getElementFactory(cls.getProject()).createType(cls) : null;
+  }
+
+  @Override
   public @Nullable PsiClass calculateBindingClass() {
     final UCallExpression uCall = getOutermostCall();
     if (uCall != null) {
@@ -34,9 +55,9 @@ public class AssistedFactoryBindDescriptor extends BindDescriptor {
       while (current != null) {
         final String name = current.getMethodName();
         if ("implement".equals(name)) {
-          final java.util.List<UExpression> args = current.getValueArguments();
+          final List<UExpression> args = current.getValueArguments();
           if (args.size() > 1) {
-            final PsiType implType = GuiceUtils.getBindingTypeFromExpression(args.get(1));
+            final PsiType implType = GuiceUtils.getBindingTypeFromExpression(args.getLast());
             if (implType instanceof PsiClassType) {
               return ((PsiClassType)implType).resolve();
             }

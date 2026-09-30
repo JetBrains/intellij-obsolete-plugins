@@ -6,11 +6,11 @@ import com.intellij.codeInspection.LocalQuickFix;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.guice.GuiceBundle;
 import com.intellij.guice.constants.GuiceAnnotations;
+import com.intellij.guice.utils.GuiceUtils;
 import com.intellij.psi.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.uast.UCallExpression;
-import org.jetbrains.uast.UClassLiteralExpression;
 import org.jetbrains.uast.UExpression;
 import org.jetbrains.uast.visitor.AbstractUastNonRecursiveVisitor;
 
@@ -49,8 +49,8 @@ public final class UnnecessaryStaticInjectionInspection extends BaseUastInspecti
   }
 
   @Override
-  public @Nullable LocalQuickFix buildFix(PsiElement location, Object[] infos) {
-    return new DeleteBindingFix();
+  public LocalQuickFix buildFix(PsiElement location, Object[] infos) {
+    return new DeleteBindingFix(DeleteBindingFix.Mode.ARGUMENT);
   }
 
   private static class Visitor extends BaseUastInspectionVisitor {
@@ -66,10 +66,8 @@ public final class UnnecessaryStaticInjectionInspection extends BaseUastInspecti
       }
       final List<UExpression> args = expression.getValueArguments();
       for (UExpression arg : args) {
-        if (!(arg instanceof UClassLiteralExpression classLiteral)) {
-          continue;
-        }
-        final PsiType classType = classLiteral.getType();
+        // Java A.class, Kotlin A::class.java
+        final PsiType classType = GuiceUtils.getBindingTypeFromExpression(arg);
         if (!(classType instanceof PsiClassType)) {
           continue;
         }
@@ -78,7 +76,7 @@ public final class UnnecessaryStaticInjectionInspection extends BaseUastInspecti
           continue;
         }
         if (!classHasStaticInjects(classToBindStatically)) {
-          registerError(arg);
+          registerClassLiteralError(arg);
         }
       }
       return true;

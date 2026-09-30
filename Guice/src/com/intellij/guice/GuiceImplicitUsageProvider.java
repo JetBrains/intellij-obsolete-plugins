@@ -6,6 +6,7 @@ import com.intellij.codeInsight.daemon.ImplicitUsageProvider;
 import com.intellij.guice.constants.GuiceAnnotations;
 import com.intellij.guice.model.extensions.GuiceBindingMatchStrategy;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifierListOwner;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,10 +17,15 @@ public final class GuiceImplicitUsageProvider implements ImplicitUsageProvider {
     return isImplicitRead(element);
   }
 
+  /**
+   * Guice calls an {@code @Inject} method or constructor and a {@code @Provides} method, so these count as read.
+   * Guice only writes an {@code @Inject} field. The code must still read the field, else the field is unused.
+   */
   @Override
   public boolean isImplicitRead(@NotNull PsiElement element) {
-    return (element instanceof PsiModifierListOwner && AnnotationUtil.isAnnotated((PsiModifierListOwner)element, GuiceAnnotations.INJECTS, 0)) ||
-           (element instanceof PsiModifierListOwner && AnnotationUtil.isAnnotated((PsiModifierListOwner)element, GuiceBindingMatchStrategy.getAllProvidesAnnotations(), 0));
+    if (!(element instanceof PsiModifierListOwner owner)) return false;
+    if (owner instanceof PsiMethod && AnnotationUtil.isAnnotated(owner, GuiceAnnotations.INJECTS, 0)) return true;
+    return AnnotationUtil.isAnnotated(owner, GuiceBindingMatchStrategy.getAllProvidesAnnotations(), 0);
   }
 
   @Override

@@ -3,11 +3,12 @@ package com.intellij.guice.inspections;
 
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.guice.GuiceBundle;
+import com.intellij.guice.utils.AnnotationUtils;
 import com.intellij.psi.PsiType;
-import com.intellij.psi.PsiVariable;
-import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.uast.UAnnotation;
+import org.jetbrains.uast.UDeclaration;
+import org.jetbrains.uast.UVariable;
 import org.jetbrains.uast.visitor.AbstractUastNonRecursiveVisitor;
 
 /**
@@ -49,14 +50,14 @@ public final class InvalidRequestParametersInspection extends BaseUastInspection
       if (!"com.google.inject.servlet.RequestParameters".equals(annotation.getQualifiedName())) {
         return true;
       }
-      final PsiVariable variable = PsiTreeUtil.getParentOfType(annotation.getSourcePsi(), PsiVariable.class);
-      if (variable == null) {
+      final UDeclaration owner = AnnotationUtils.resolveAnnotatedDeclaration(annotation);
+      if (!(owner instanceof UVariable variable)) {
         return true;
       }
       final PsiType type = variable.getType();
-      String typeText = type.getCanonicalText();
-      typeText = typeText.replaceAll(" ", "");
-      if (typeText.equals("java.util.Map<java.lang.String,java.lang.String[]>")) {
+      String typeText = type.getCanonicalText().replace(" ", "");
+      if (typeText.equals("java.util.Map<java.lang.String,java.lang.String[]>") ||
+          typeText.equals("java.util.Map<java.lang.String,?extendsjava.lang.String[]>")) {
         return true;
       }
       registerError(annotation);

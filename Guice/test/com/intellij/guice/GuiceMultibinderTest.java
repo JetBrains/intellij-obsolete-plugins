@@ -1,7 +1,5 @@
 package com.intellij.guice;
 
-import static com.google.common.truth.Truth.assertThat;
-
 import com.intellij.guice.model.GuiceInjectorManager;
 import com.intellij.guice.model.beans.BindDescriptor;
 import com.intellij.guice.model.beans.BindToDescriptor;
@@ -25,14 +23,10 @@ public class GuiceMultibinderTest extends GuiceTestBase {
       }
       """);
 
-    Set<BindDescriptor> bindings = GuiceInjectorManager.getBindingsInFile(file);
-    // Because they share the same outermost qualified source expression,
-    // BindToDescriptor gets deduplicated in the Set by SetMultibindDescriptor
-    // due to equals() checking only the outermostSource SmartPsiElementPointer.
-    assertEquals(1, bindings.size());
-    BindDescriptor binding = bindings.iterator().next();
-    assertThat(binding).isInstanceOf(SetMultibindDescriptor.class);
-    assertEquals("MyService", ((SetMultibindDescriptor) binding).getElementType().getQualifiedName());
+    // The multibinder and its .to() tail share the call expression. Both descriptors stay.
+    SetMultibindDescriptor multibinder = findDescriptor(file, SetMultibindDescriptor.class);
+    assertEquals("MyService", multibinder.getElementType().getQualifiedName());
+    assertEquals("MyServiceImpl", findDescriptor(file, BindToDescriptor.class).getBindingClass().getQualifiedName());
   }
 
   public void testJavaMultibinderLocalVar() {
@@ -58,12 +52,10 @@ public class GuiceMultibinderTest extends GuiceTestBase {
       if (b instanceof SetMultibindDescriptor) {
         foundMultibinder = true;
         assertEquals("MyService", ((SetMultibindDescriptor) b).getElementType().getQualifiedName());
-      } else if (b instanceof BindToDescriptor) {
+      } else {
         foundBinding = true;
-        // BUT because it was defined using a local variable,
-        // it fails to walk up the receiver chain and resolve the bound class!
-        assertNull(b.getBoundClass());
-        assertEquals("MyServiceImpl", ((BindToDescriptor) b).getBindingClass().getQualifiedName());
+        assertEquals("MyService", b.getBoundClass().getQualifiedName());
+        assertEquals("MyServiceImpl", b.getBindingClass().getQualifiedName());
       }
     }
     assertTrue(foundMultibinder);
@@ -82,11 +74,8 @@ public class GuiceMultibinderTest extends GuiceTestBase {
       }
       """);
 
-    Set<BindDescriptor> bindings = GuiceInjectorManager.getBindingsInFile(file);
-    assertEquals(1, bindings.size());
-    BindDescriptor binding = bindings.iterator().next();
-    assertThat(binding).isInstanceOf(OptionalBindDescriptor.class);
-    assertEquals("MyService", ((OptionalBindDescriptor) binding).getBoundClass().getQualifiedName());
+    assertEquals("MyService", findDescriptor(file, OptionalBindDescriptor.class).getBoundClass().getQualifiedName());
+    assertEquals("MyServiceImpl", findDescriptor(file, BindToDescriptor.class).getBindingClass().getQualifiedName());
   }
 
   public void testJavaMapBinder() {
@@ -101,11 +90,18 @@ public class GuiceMultibinderTest extends GuiceTestBase {
       }
       """);
 
+    MapMultibindDescriptor mapBinder = findDescriptor(file, MapMultibindDescriptor.class);
+    assertEquals("MyKey", mapBinder.getKeyType().getQualifiedName());
+    assertEquals("MyService", mapBinder.getValueType().getQualifiedName());
+    assertEquals("MyServiceImpl", findDescriptor(file, BindToDescriptor.class).getBindingClass().getQualifiedName());
+  }
+
+  private static <T extends BindDescriptor> T findDescriptor(PsiFile file, Class<T> descriptorClass) {
     Set<BindDescriptor> bindings = GuiceInjectorManager.getBindingsInFile(file);
-    assertEquals(1, bindings.size());
-    BindDescriptor binding = bindings.iterator().next();
-    assertThat(binding).isInstanceOf(MapMultibindDescriptor.class);
-    assertEquals("MyKey", ((MapMultibindDescriptor) binding).getKeyType().getQualifiedName());
-    assertEquals("MyService", ((MapMultibindDescriptor) binding).getValueType().getQualifiedName());
+    assertEquals(2, bindings.size());
+    for (BindDescriptor binding : bindings) {
+      if (descriptorClass.isInstance(binding)) return descriptorClass.cast(binding);
+    }
+    throw new AssertionError("No " + descriptorClass.getSimpleName() + " in " + bindings);
   }
 }

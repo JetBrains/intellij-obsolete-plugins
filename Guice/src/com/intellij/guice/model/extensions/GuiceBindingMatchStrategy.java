@@ -3,49 +3,43 @@ package com.intellij.guice.model.extensions;
 
 import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.guice.constants.GuiceAnnotations;
-import com.intellij.guice.model.GuiceInjectionUtil;
 import com.intellij.guice.model.beans.BindDescriptor;
-import com.intellij.guice.model.jam.GuiceProvides;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.extensions.ExtensionPointName;
-import com.intellij.psi.*;
-import com.intellij.psi.util.TypeConversionUtil;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiType;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
-import org.jetbrains.annotations.Nullable;
 
 /**
- * Extension point for matching "special" binding descriptors against injection points.
+ * Extension point for "special" bindings such as OptionalBinder, Multibinder and MapBinder.
  *
- * <p>Standard bindings ({@code bind(Foo.class).to(Bar.class)}) are matched via the
- * type-indexed maps in {@code GuiceLiveIndex}.  Special bindings (OptionalBinder,
- * Multibinder, MapBinder, etc.) require custom matching logic — for example,
- * an {@code OptionalBinder<Foo>} should match an injection point of type
- * {@code Optional<Foo>}.
+ * <p>Each implementation handles one category of special bindings. It is identified
+ * by the {@link BindDescriptor} subclass that it operates on.
  *
- * <p>Each implementation handles one category of special bindings and is identified
- * by the {@link BindDescriptor} subclass it operates on.
- *
- * <h3>How the index uses strategies</h3>
+ * <h3>How the navigation index uses strategies</h3>
  * <ol>
- *   <li><b>Storage</b>: Descriptors whose class matches {@link #getDescriptorClass()}
- *       are stored in a separate list for linear scanning.</li>
- *   <li><b>Binding lookup</b>: When an injection point's type can be unwrapped by
- *       {@link #unwrapType}, the strategy's {@link #findMatchingBindings} is called
- *       to check all tracked descriptors.</li>
- *   <li><b>Provides targets</b>: For {@code @Provides} methods, the strategy's
- *       {@link #findMultibinderTargets} is called to find corresponding binder
- *       declarations for navigation.</li>
+ *   <li><b>Binder calls</b>: {@link com.intellij.guice.model.GuiceEntryProducer} gives a descriptor of type
+ *       {@link #getDescriptorClass()} the key from {@link #wrapType}. For example,
+ *       an {@code OptionalBinder<Foo>} gives the key {@code Optional<Foo>}.</li>
+ *   <li><b>Provides methods</b>: a method with one of the {@link #getProvidesAnnotations()}
+ *       gets the key from {@link #wrapProvidesType}. For example,
+ *       {@code @ProvidesIntoSet Foo provide()} gives the key {@code Set<Foo>}.</li>
+ *   <li><b>Presentation</b>: {@link #getTextProvider} gives the text in the navigation popup.</li>
  * </ol>
  *
  * <h3>Thread safety</h3>
  * <p>Implementations must be stateless and thread-safe.
  */
+@ApiStatus.Internal
+@ApiStatus.OverrideOnly
 public interface GuiceBindingMatchStrategy {
 
   ExtensionPointName<GuiceBindingMatchStrategy> EP_NAME =
@@ -54,14 +48,14 @@ public interface GuiceBindingMatchStrategy {
   // ---- Identity ----
 
   /**
-   * Returns the {@link BindDescriptor} subclass this strategy handles.
+   * Returns the {@link BindDescriptor} subclass this strategy handles,
+   * or {@code null} when the strategy handles only annotations via {@link #getProvidesAnnotations()}.
    *
-   * <p>The index uses this to route descriptors into a separate tracked list
-   * and to dispatch matching calls to the correct strategy.
-   *
-   * @return the descriptor class, e.g., {@code OptionalBindDescriptor.class}
+   * @return the descriptor class (e.g., {@code OptionalBindDescriptor.class}), or {@code null}
    */
-  @NotNull Class<? extends BindDescriptor> getDescriptorClass();
+  default @Nullable Class<? extends BindDescriptor> getDescriptorClass() {
+    return null;
+  }
 
   /**
    * Returns the FQNs of {@code @Provides}-style annotations this strategy handles.
@@ -88,40 +82,19 @@ public interface GuiceBindingMatchStrategy {
   // ---- Annotation caches ----
 
   /**
-   * Cached provides annotations — invalidated when the EP changes.
+   * Cached provides annotations — invalidated automatically when {@link #EP_NAME} changes.
    */
-  final class ProvidesAnnotationsCache {
-    private static volatile @Nullable Set<String> cached;
-    private static volatile @Nullable Set<String> cachedInto;
-
-    static {
-      EP_NAME.addChangeListener(() -> { cached = null; cachedInto = null; }, ApplicationManager.getApplication());
-    }
-
-    static @NotNull Set<String> get() {
-      Set<String> result = cached;
-      if (result == null) {
-        Set<String> all = new HashSet<>(GuiceAnnotations.PROVIDES_ANNOTATIONS);
-        for (GuiceBindingMatchStrategy strategy : EP_NAME.getExtensionList()) {
-          all.addAll(strategy.getProvidesAnnotations());
-        }
-        result = Set.copyOf(all);
-        cached = result;
-      }
-      return result;
-    }
-
-    static @NotNull Set<String> getInto() {
-      Set<String> result = cachedInto;
-      if (result == null) {
+  record ProvidesAnnotationsSnapshot(@NotNull Set<String> all, @NotNull Set<String> into) {
+    static @NotNull ProvidesAnnotationsSnapshot get() {
+      return EP_NAME.computeIfAbsent(ProvidesAnnotationsSnapshot.class, () -> {
         Set<String> into = new HashSet<>();
         for (GuiceBindingMatchStrategy strategy : EP_NAME.getExtensionList()) {
           into.addAll(strategy.getProvidesAnnotations());
         }
-        result = Set.copyOf(into);
-        cachedInto = result;
-      }
-      return result;
+        Set<String> all = new HashSet<>(GuiceAnnotations.PROVIDES_ANNOTATIONS);
+        all.addAll(into);
+        return new ProvidesAnnotationsSnapshot(Set.copyOf(all), Set.copyOf(into));
+      });
     }
   }
 
@@ -130,7 +103,7 @@ public interface GuiceBindingMatchStrategy {
    * {@code @CheckedProvides} plus any contributed by match strategies.
    */
   static @NotNull Set<String> getAllProvidesAnnotations() {
-    return ProvidesAnnotationsCache.get();
+    return ProvidesAnnotationsSnapshot.get().all();
   }
 
   /**
@@ -141,30 +114,15 @@ public interface GuiceBindingMatchStrategy {
    * since they should only be matched through their strategy's dispatch.
    */
   static @NotNull Set<String> getProvidesIntoAnnotations() {
-    return ProvidesAnnotationsCache.getInto();
+    return ProvidesAnnotationsSnapshot.get().into();
   }
 
   // ---- Type handling ----
 
   /**
-   * Extracts the inner type from a wrapper type matching this strategy's pattern.
-   *
-   * <p>For example, the OptionalBinder strategy extracts {@code T} from
-   * {@code Optional<T>}.  Returns {@code null} if the type doesn't match
-   * this strategy's pattern.
-   *
-   * <p>This method also serves as the relevance pre-filter: a non-null return
-   * indicates this strategy should be consulted for matching.
-   *
-   * @param type the injection point's effective type
-   * @return the unwrapped inner type, or {@code null} if not applicable
-   */
-  @Nullable PsiType unwrapType(@NotNull PsiType type);
-
-  /**
    * Constructs the full collection type for a descriptor handled by this strategy.
    *
-   * <p>This is the reverse of {@link #unwrapType}: given a {@link BindDescriptor}
+   * <p>Given a {@link BindDescriptor}
    * known to be an instance of {@link #getDescriptorClass()}, it constructs the
    * parameterized type that injection points will use.
    *
@@ -195,6 +153,33 @@ public interface GuiceBindingMatchStrategy {
     return null;
   }
 
+  /**
+   * Returns all the keys that a descriptor handled by this strategy binds.
+   * For example, a {@code Multibinder<Foo>} binds {@code Set<Foo>} and {@code Collection<Provider<Foo>>}.
+   *
+   * <p>The default implementation returns the result of {@link #wrapType}.
+   *
+   * @param descriptor a descriptor matching {@link #getDescriptorClass()}
+   * @return the bound types, may be empty
+   */
+  default @NotNull List<PsiType> wrapTypes(@NotNull BindDescriptor descriptor) {
+    PsiType type = wrapType(descriptor);
+    return type != null ? List.of(type) : List.of();
+  }
+
+  /**
+   * Returns all the keys that a {@code @ProvidesInto*} method of this strategy contributes to.
+   *
+   * <p>The default implementation returns the result of {@link #wrapProvidesType}.
+   *
+   * @param providesMethod the provides method
+   * @return the bound types, may be empty
+   */
+  default @NotNull List<PsiType> wrapProvidesTypes(@NotNull PsiMethod providesMethod) {
+    PsiType type = wrapProvidesType(providesMethod);
+    return type != null ? List.of(type) : List.of();
+  }
+
   // ---- Presentation ----
 
   /**
@@ -219,79 +204,13 @@ public interface GuiceBindingMatchStrategy {
     return null;
   }
 
-  // ---- Matching (with sensible defaults) ----
-
-  /**
-   * Tests whether a {@code @ProvidesInto*} method matches an injection point type.
-   *
-   * <p>This is the <b>single matching predicate</b> used by both forward
-   * (provides → IPs) and reverse (IP → provides) lookups, ensuring navigation
-   * consistency: if A links to B, B always links back to A.
-   *
-   * <p>The default implementation checks:
-   * <ol>
-   *   <li>The IP type can be unwrapped by this strategy</li>
-   *   <li>The provides method's return type is assignable to the unwrapped type</li>
-   *   <li>The provides method has this strategy's annotation</li>
-   *   <li>Binding annotations match</li>
-   * </ol>
-   *
-   * <p>Override to add additional checks (e.g., Map key type matching).
-   *
-   * @param provides      the {@code @ProvidesInto*} method to test
-   * @param ipType        the injection point's effective type (e.g., {@code Map<K, V>})
-   * @param ipAnnotations the injection point's binding annotations
-   * @return {@code true} if the provides method matches the injection point
-   */
-  default boolean matchesProvides(@NotNull GuiceProvides provides,
-                                  @NotNull PsiType ipType,
-                                  @NotNull Set<PsiAnnotation> ipAnnotations) {
-    PsiType unwrappedType = unwrapType(ipType);
-    if (unwrappedType == null) return false;
-
-    PsiType productType = provides.getProductType();
-    PsiMethod method = provides.getPsiElement();
-    if (productType == null || method == null) return false;
-
-    return TypeConversionUtil.isAssignable(unwrappedType, productType) &&
-           isProvidesIntoMethod(method) &&
-           GuiceInjectionUtil.checkBindingAnnotations(ipAnnotations, provides.getBindingAnnotations());
-  }
-
-  /**
-   * Finds {@code @Provides} methods that match an injection point via this
-   * strategy's "provides-into" annotation pattern.
-   *
-   * <p>The default implementation iterates candidates and delegates to
-   * {@link #matchesProvides} for each, ensuring forward/reverse consistency.
-   *
-   * @param candidates     provides methods indexed by the unwrapped type FQN
-   * @param targetType     the injection point's full effective type (e.g., {@code Map<K, V>})
-   * @param ipAnnotations  the injection point's binding annotations
-   * @param result         output set — add matching provides here
-   */
-  default void findMatchingProvides(@NotNull Set<GuiceProvides> candidates,
-                                    @NotNull PsiType targetType,
-                                    @NotNull Set<PsiAnnotation> ipAnnotations,
-                                    @NotNull Set<GuiceProvides> result) {
-    for (GuiceProvides provides : candidates) {
-      try {
-        if (matchesProvides(provides, targetType, ipAnnotations)) {
-          result.add(provides);
-        }
-      }
-      catch (PsiInvalidElementAccessException e) {
-        // Stale PSI — skip.
-      }
-    }
-  }
+  // ---- Helpers ----
 
   /**
    * Checks whether a {@code @Provides} method is annotated with this strategy's
    * "provides-into" annotation (e.g., {@code @ProvidesIntoSet} for the Set strategy).
    *
-   * <p>Used during reverse lookup (provides → injection points) to confirm that
-   * a match through {@link #unwrapType} is valid for this strategy.
+   * <p>Used by {@link #wrapProvidesType} implementations to confirm that the method belongs to this strategy.
    *
    * <p>The default implementation checks against {@link #getProvidesAnnotations()}.
    * Strategies that return a non-empty collection from that method get this for free.
@@ -302,34 +221,5 @@ public interface GuiceBindingMatchStrategy {
   default boolean isProvidesIntoMethod(@NotNull PsiMethod providesMethod) {
     Collection<String> annotations = getProvidesAnnotations();
     return !annotations.isEmpty() && AnnotationUtil.isAnnotated(providesMethod, annotations, 0);
-  }
-
-  /**
-   * Finds multibinder target elements for a {@code @Provides} method.
-   *
-   * <p>Called during {@code findMultibinderTargets()} to locate binder
-   * declarations that correspond to a {@code @ProvidesIntoSet},
-   * {@code @ProvidesIntoMap}, or similar annotated method.
-   *
-   * <p>The default implementation returns an empty list.
-   *
-   * @param providesMethod the {@code @Provides} method to find targets for
-   * @param descriptors    the tracked descriptors of type {@link #getDescriptorClass()}
-   * @return a list of PSI elements (bind expressions) for navigation
-   */
-  default @NotNull List<PsiElement> findMultibinderTargets(@NotNull PsiMethod providesMethod,
-                                                           @NotNull List<? extends BindDescriptor> descriptors) {
-    return List.of();
-  }
-
-  /**
-   * Checks whether a standard binding should be excluded from matching when
-   * the injection point's type matches this strategy's special type.
-   *
-   * @param descriptor the standard binding descriptor being checked
-   * @return {@code true} if this standard binding should be excluded
-   */
-  default boolean shouldExcludeStandardBinding(@NotNull BindDescriptor descriptor) {
-    return getDescriptorClass().isInstance(descriptor);
   }
 }

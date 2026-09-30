@@ -53,7 +53,7 @@ public final class RedundantScopeBindingInspection extends BaseUastInspection {
 
   @Override
   public @Nullable LocalQuickFix buildFix(PsiElement location, Object[] infos) {
-    return new DeleteBindingFix();
+    return new DeleteBindingFix(DeleteBindingFix.Mode.CHAIN_CALL);
   }
 
   private static class Visitor extends BaseUastInspectionVisitor {
@@ -83,7 +83,7 @@ public final class RedundantScopeBindingInspection extends BaseUastInspection {
       if (!AnnotationUtil.isAnnotated(boundClass, scopeAnnotations, CHECK_HIERARCHY)) {
         return true;
       }
-      registerError(expression);
+      registerError(arg);
       return true;
     }
   }

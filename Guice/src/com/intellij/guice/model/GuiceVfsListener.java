@@ -2,9 +2,18 @@
 package com.intellij.guice.model;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ProjectFileIndex;
+import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
-import com.intellij.openapi.vfs.newvfs.events.*;
+import com.intellij.openapi.vfs.newvfs.events.VFileContentChangeEvent;
+import com.intellij.openapi.vfs.newvfs.events.VFileCopyEvent;
+import com.intellij.openapi.vfs.newvfs.events.VFileCreateEvent;
+import com.intellij.openapi.vfs.newvfs.events.VFileDeleteEvent;
+import com.intellij.openapi.vfs.newvfs.events.VFileEvent;
+import com.intellij.openapi.vfs.newvfs.events.VFileMoveEvent;
+import com.intellij.openapi.vfs.newvfs.events.VFilePropertyChangeEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -13,9 +22,6 @@ import java.util.List;
  * A {@link BulkFileListener} that reacts to VFS events and marks relevant files as dirty
  * in the {@link GuiceProjectModel}, triggering incremental recomputation of Guice bindings.
  *
- * <p>Only Java and Kotlin source files are considered relevant.  Directory events and files
- * with other extensions are silently ignored.
- *
  * <h3>Registration</h3>
  * Register in {@code plugin.xml} under {@code <projectListeners>}:
  * <pre>{@code
@@ -23,15 +29,6 @@ import java.util.List;
  *             topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
  * }</pre>
  * The platform injects the {@link Project} via the constructor.
- *
- * <h3>Event handling</h3>
- * <ul>
- *   <li>{@link VFileDeleteEvent} → {@link GuiceProjectModel#removeFile(VirtualFile)}</li>
- *   <li>{@link VFileContentChangeEvent}, {@link VFileCreateEvent}, {@link VFileCopyEvent},
- *       {@link VFileMoveEvent} → {@link GuiceProjectModel#markFileDirty(VirtualFile)}</li>
- *   <li>{@link VFilePropertyChangeEvent} (name change) →
- *       {@link GuiceProjectModel#markFileDirty(VirtualFile)}</li>
- * </ul>
  *
  * @see GuiceProjectModel
  */
@@ -49,27 +46,77 @@ public final class GuiceVfsListener implements BulkFileListener {
   }
 
   @Override
-  public void after(@NotNull List<? extends VFileEvent> events) {
+  public void before(@NotNull List<? extends VFileEvent> events) {
     if (myProject.isDisposed()) return;
 
     GuiceProjectModel model = GuiceProjectModel.getInstance(myProject);
 
     for (VFileEvent event : events) {
       VirtualFile file = event.getFile();
-      if (file == null || !isRelevantFile(file)) continue;
+      if (file == null || (!file.isDirectory() && !isRelevantFile(file))) continue;
 
-      if (event instanceof VFileDeleteEvent) {
+      if (event instanceof VFileDeleteEvent || event instanceof VFileMoveEvent) {
         model.removeFile(file);
+      }
+      else if (event instanceof VFilePropertyChangeEvent propEvent
+               && VirtualFile.PROP_NAME.equals(propEvent.getPropertyName())) {
+        model.removeFile(file);
+      }
+    }
+  }
+
+  @Override
+  public void after(@NotNull List<? extends VFileEvent> events) {
+    if (myProject.isDisposed()) return;
+
+    GuiceProjectModel model = GuiceProjectModel.getInstance(myProject);
+    ProjectFileIndex fileIndex = ProjectFileIndex.getInstance(myProject);
+
+    for (VFileEvent event : events) {
+      if (event instanceof VFileDeleteEvent) {
+        VirtualFile file = event.getFile();
+        if (file != null && (file.isDirectory() || isRelevantFile(file))) {
+          model.removeFile(file);
+        }
+      } else if (event instanceof VFileCopyEvent copyEvent) {
+        VirtualFile created = copyEvent.findCreatedFile();
+        if (created != null) {
+          markDirtyRecursively(created, fileIndex, model);
+        }
       } else if (event instanceof VFileContentChangeEvent ||
                  event instanceof VFileCreateEvent ||
-                 event instanceof VFileCopyEvent ||
                  event instanceof VFileMoveEvent) {
-        model.markFileDirty(file);
-      } else if (event instanceof VFilePropertyChangeEvent propEvent) {
-        if (VirtualFile.PROP_NAME.equals(propEvent.getPropertyName())) {
-          model.markFileDirty(file);
+        VirtualFile file = event.getFile();
+        if (file != null) {
+          markDirtyRecursively(file, fileIndex, model);
+        }
+      } else if (event instanceof VFilePropertyChangeEvent propEvent
+                 && VirtualFile.PROP_NAME.equals(propEvent.getPropertyName())) {
+        VirtualFile file = event.getFile();
+        if (file != null) {
+          markDirtyRecursively(file, fileIndex, model);
         }
       }
+    }
+  }
+
+  private static void markDirtyRecursively(@NotNull VirtualFile fileOrDir,
+                                           @NotNull ProjectFileIndex fileIndex,
+                                           @NotNull GuiceProjectModel model) {
+    if (!fileOrDir.isValid() || !fileIndex.isInContent(fileOrDir)) return;
+    if (fileOrDir.isDirectory()) {
+      VfsUtilCore.visitChildrenRecursively(fileOrDir, new VirtualFileVisitor<Void>() {
+        @Override
+        public boolean visitFile(@NotNull VirtualFile child) {
+          if (!fileIndex.isInContent(child)) return false;
+          if (isRelevantFile(child)) {
+            model.markFileDirty(child);
+          }
+          return true;
+        }
+      });
+    } else if (isRelevantFile(fileOrDir)) {
+      model.markFileDirty(fileOrDir);
     }
   }
 

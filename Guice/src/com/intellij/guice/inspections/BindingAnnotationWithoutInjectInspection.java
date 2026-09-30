@@ -5,14 +5,18 @@ import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.guice.GuiceBundle;
 import com.intellij.guice.constants.GuiceAnnotations;
-import com.intellij.psi.*;
-import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.guice.model.extensions.GuiceBindingMatchStrategy;
+import com.intellij.guice.utils.AnnotationUtils;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiMethod;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.uast.UAnnotation;
+import org.jetbrains.uast.UDeclaration;
+import org.jetbrains.uast.UField;
+import org.jetbrains.uast.UMethod;
+import org.jetbrains.uast.UParameter;
+import org.jetbrains.uast.UastUtils;
 import org.jetbrains.uast.visitor.AbstractUastNonRecursiveVisitor;
-
-import java.util.Collection;
-import java.util.List;
 
 import static com.intellij.codeInsight.AnnotationUtil.CHECK_HIERARCHY;
 
@@ -38,9 +42,6 @@ import static com.intellij.codeInsight.AnnotationUtil.CHECK_HIERARCHY;
  * </pre>
  */
 public final class BindingAnnotationWithoutInjectInspection extends BaseUastInspection {
-  private static final Collection<String> INJECT_OR_PROVIDES =
-    List.of(GuiceAnnotations.INJECT, GuiceAnnotations.JAVAX_INJECT, GuiceAnnotations.JAKARTA_INJECT, GuiceAnnotations.THROWING_INJECT, GuiceAnnotations.PROVIDES, GuiceAnnotations.CHECKED_PROVIDES);
-
   public BindingAnnotationWithoutInjectInspection() {
     super(UAnnotation.class);
   }
@@ -62,50 +63,48 @@ public final class BindingAnnotationWithoutInjectInspection extends BaseUastInsp
 
     @Override
     public boolean visitAnnotation(@NotNull UAnnotation annotation) {
-      final PsiElement sourcePsi = annotation.getSourcePsi();
-      if (!(sourcePsi instanceof PsiAnnotation psiAnnotation)) {
+      if (!isBindingAnnotation(annotation)) {
         return true;
       }
-      if (!isBindingAnnotation(psiAnnotation)) {
-        return true;
-      }
-      final PsiVariable boundVariable = PsiTreeUtil.getParentOfType(psiAnnotation, PsiVariable.class);
-      if (boundVariable == null) {
-        return true;
-      }
-      if (boundVariable instanceof PsiField) {
-        if (!AnnotationUtil.isAnnotated(boundVariable, GuiceAnnotations.INJECTS, CHECK_HIERARCHY)) {
-          registerError(psiAnnotation);
+      final UDeclaration owner = AnnotationUtils.resolveAnnotatedDeclaration(annotation);
+      if (owner instanceof UField field) {
+        if (!AnnotationUtils.isAnnotated(field, GuiceAnnotations.INJECTS)) {
+          registerError(annotation);
         }
       }
-      else if (boundVariable instanceof PsiParameter) {
-        final PsiMethod containingMethod = PsiTreeUtil.getParentOfType(boundVariable, PsiMethod.class);
-        if (containingMethod == null) {
+      else if (owner instanceof UParameter parameter) {
+        final UMethod uMethod = UastUtils.getParentOfType(parameter, UMethod.class);
+        if (uMethod == null) {
           return true;
         }
-        if (!AnnotationUtil.isAnnotated(containingMethod, INJECT_OR_PROVIDES, 0) && !isAssisted(psiAnnotation, containingMethod)) {
-          registerError(psiAnnotation);
+        final PsiMethod containingMethod = uMethod.getJavaPsi();
+        if (!isInjectOrProvides(containingMethod) && !isAssisted(annotation, containingMethod)) {
+          registerError(annotation);
         }
       }
       return true;
     }
 
-    private static boolean isAssisted(@NotNull PsiAnnotation annotation, @NotNull PsiMethod method) {
-      if (!GuiceAnnotations.ASSISTED.equals(annotation.getQualifiedName())) return  false;
+    /**
+     * Tells if Guice calls the method: {@code @Inject}, or any {@code @Provides} annotation such as {@code @ProvidesIntoSet}.
+     */
+    private static boolean isInjectOrProvides(@NotNull PsiMethod method) {
+      return AnnotationUtil.isAnnotated(method, GuiceAnnotations.INJECTS, 0) ||
+             AnnotationUtil.isAnnotated(method, GuiceBindingMatchStrategy.getAllProvidesAnnotations(), 0);
+    }
+
+    private static boolean isAssisted(@NotNull UAnnotation annotation, @NotNull PsiMethod method) {
+      if (!GuiceAnnotations.ASSISTED.equals(annotation.getQualifiedName())) return false;
       if (method.isConstructor() && AnnotationUtil.isAnnotated(method, GuiceAnnotations.ASSISTED_INJECT, CHECK_HIERARCHY)) return true;
       PsiClass containingClass = method.getContainingClass();
 
-      return containingClass !=null && containingClass.isInterface();
+      return containingClass != null && containingClass.isInterface();
     }
   }
 
-  public static boolean isBindingAnnotation(PsiAnnotation annotation) {
-    final PsiJavaCodeReferenceElement referenceElement = annotation.getNameReferenceElement();
-    if (referenceElement == null) {
-      return false;
-    }
-    final PsiElement element = referenceElement.resolve();
-    if (!(element instanceof PsiClass annotationClass)) {
+  public static boolean isBindingAnnotation(@NotNull UAnnotation annotation) {
+    final PsiClass annotationClass = annotation.resolve();
+    if (annotationClass == null) {
       return false;
     }
     return AnnotationUtil.isAnnotated(annotationClass, GuiceAnnotations.BINDING_ANNOTATIONS, CHECK_HIERARCHY);

@@ -20,6 +20,7 @@ public final class GuiceAnnotations {
   public static final String CHECKED_PROVIDES_INTO_SET = "com.google.inject.multibindings.CheckedProvidesIntoSet";
   public static final String PROVIDES_INTO_MAP = "com.google.inject.multibindings.ProvidesIntoMap";
   public static final String CHECKED_PROVIDES_INTO_MAP = "com.google.inject.multibindings.CheckedProvidesIntoMap";
+  public static final String PROVIDES_INTO_OPTIONAL = "com.google.inject.multibindings.ProvidesIntoOptional";
 
   /** Base {@code @Provides} annotation (strategy EPs contribute additional variants). */
   public static final Collection<String> PROVIDES_ANNOTATIONS = List.of(PROVIDES);

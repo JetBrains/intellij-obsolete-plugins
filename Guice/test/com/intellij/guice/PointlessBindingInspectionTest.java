@@ -149,4 +149,54 @@ public class PointlessBindingInspectionTest extends GuiceTestBase {
       }
     """);
   }
+
+  public void testJavaBindThatIsNotAStatementIsNotReported() {
+    myFixture.addClass("""
+      public class Foo {
+        public Foo() {}
+      }
+    """);
+
+    myFixture.configureByText("MyModule.java", """
+      import com.google.inject.AbstractModule;
+      import com.google.inject.binder.LinkedBindingBuilder;
+      public class MyModule extends AbstractModule {
+        @Override
+        protected void configure() {
+          LinkedBindingBuilder<Foo> b = bind(Foo.class);
+          helper(bind(Foo.class));
+          <warning descr="Binding is unnecessary, and can be removed">binder().bind(Foo.class)</warning>;
+        }
+        private void helper(LinkedBindingBuilder<Foo> b) {}
+      }
+    """);
+    myFixture.testHighlighting(true, false, true);
+  }
+
+  public void testJavaPointlessBindingQuickFixWithBinderQualifier() {
+    myFixture.addClass("""
+      public class Foo {
+        public Foo() {}
+      }
+    """);
+
+    myFixture.configureByText("MyModule.java", """
+      import com.google.inject.AbstractModule;
+      public class MyModule extends AbstractModule {
+        @Override
+        protected void configure() {
+          binder().bind(Foo.cl<caret>ass);
+        }
+      }
+    """);
+    myFixture.launchAction(myFixture.findSingleIntention("Delete binding"));
+    myFixture.checkResult("""
+      import com.google.inject.AbstractModule;
+      public class MyModule extends AbstractModule {
+        @Override
+        protected void configure() {
+        }
+      }
+    """);
+  }
 }

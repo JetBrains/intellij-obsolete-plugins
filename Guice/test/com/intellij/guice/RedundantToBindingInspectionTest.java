@@ -8,32 +8,6 @@ public class RedundantToBindingInspectionTest extends GuiceTestBase {
   protected void setUp() throws Exception {
     super.setUp();
     myFixture.enableInspections(new RedundantToBindingInspection());
-    
-    // Add ImplementedBy and ProvidedBy annotations
-    myFixture.addClass("""
-      package com.google.inject;
-      import java.lang.annotation.Retention;
-      import java.lang.annotation.RetentionPolicy;
-      import java.lang.annotation.Target;
-      import java.lang.annotation.ElementType;
-      @Retention(RetentionPolicy.RUNTIME)
-      @Target(ElementType.TYPE)
-      public @interface ImplementedBy {
-        Class<?> value();
-      }
-      """);
-    myFixture.addClass("""
-      package com.google.inject;
-      import java.lang.annotation.Retention;
-      import java.lang.annotation.RetentionPolicy;
-      import java.lang.annotation.Target;
-      import java.lang.annotation.ElementType;
-      @Retention(RetentionPolicy.RUNTIME)
-      @Target(ElementType.TYPE)
-      public @interface ProvidedBy {
-        Class<? extends javax.inject.Provider<?>> value();
-      }
-      """);
   }
 
   public void testJavaRedundantToBinding() {
@@ -61,8 +35,8 @@ public class RedundantToBindingInspectionTest extends GuiceTestBase {
       public class MyModule extends AbstractModule {
         @Override
         protected void configure() {
-          <warning descr="Binding to class bind(Bar.class).to(Bar.class) is redundant">bind(Bar.class).to(Bar.class)</warning>;
-          <warning descr="Binding to class bind(Foo.class).to(FooImpl.class) is redundant">bind(Foo.class).to(FooImpl.class)</warning>;
+          bind(Bar.class).to(<warning descr="Binding to class Bar is redundant">Bar</warning>.class);
+          bind(Foo.class).to(<warning descr="Binding to class FooImpl is redundant">FooImpl</warning>.class);
           
           bind(Foo.class).to(SpecialFoo.class); // Valid and not redundant
           bind(MyService.class).to(MyServiceImpl.class); // Valid
@@ -99,8 +73,8 @@ public class RedundantToBindingInspectionTest extends GuiceTestBase {
       class MyModule : AbstractModule() {
         override fun configure() {
           // Class literal
-          bind(Bar::class.java).<warning descr="Binding to class to(Bar::class.java) is redundant">to(Bar::class.java)</warning>
-          bind(Foo::class.java).<warning descr="Binding to class to(FooImpl::class.java) is redundant">to(FooImpl::class.java)</warning>
+          bind(Bar::class.java).to(<warning descr="Binding to class Bar is redundant">Bar</warning>::class.java)
+          bind(Foo::class.java).to(<warning descr="Binding to class FooImpl is redundant">FooImpl</warning>::class.java)
 
           // Reified generics extension
           bind<Bar>().<warning descr="Binding to class to<Bar>() is redundant">to<Bar>()</warning>
@@ -126,7 +100,7 @@ import test.*;
 public class MyModule extends AbstractModule {
     @Override
     protected void configure() {
-        bind(Bar.class).t<caret>o(Bar.class);
+        bind(Bar.class).to(B<caret>ar.class);
     }
 }
 """);
@@ -160,7 +134,7 @@ inline fun <reified T> AbstractModule.bind(): LinkedBindingBuilder<T> = TODO()
 
 class MyModule : AbstractModule() {
     override fun configure() {
-        bind(Bar::class.java).t<caret>o(Bar::class.java)
+        bind(Bar::class.java).to(B<caret>ar::class.java)
     }
 }
 """);

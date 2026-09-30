@@ -10,6 +10,8 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.InheritanceUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.uast.UCallExpression;
+import org.jetbrains.uast.UExpression;
+import org.jetbrains.uast.UQualifiedReferenceExpression;
 
 import java.util.Set;
 
@@ -17,10 +19,14 @@ import java.util.Set;
  * Contributor for standard Guice bindings: {@code bind().to()}, {@code bind().toInstance()},
  * {@code bind().toProvider()}, {@code bind().toConstructor()}, and untargeted {@code bind()}.
  */
-public final class StandardBindingContributor implements GuiceBindingContributor {
+final class StandardBindingContributor implements GuiceBindingContributor {
 
   private static final Set<String> BINDING_WORDS = Set.of(
     "to", "toInstance", "toProvider", "toConstructor", "bind"
+  );
+
+  private static final Set<String> BINDING_CHAIN_HEADS = Set.of(
+    "bind", "bindConstant", "addBinding", "setDefault", "setBinding"
   );
 
   @Override
@@ -41,7 +47,9 @@ public final class StandardBindingContributor implements GuiceBindingContributor
 
     // Binding-builder tail methods: .to(), .toInstance(), .toProvider(), .toConstructor()
     if (ContributorUtil.isBindingBuilderMethod(resolvedQName, call, containingClass,
-                                                GuiceClasses.LINKED_BINDING_BUILDER)) {
+                                                GuiceClasses.LINKED_BINDING_BUILDER) ||
+        ContributorUtil.isBindingBuilderMethod(resolvedQName, call, containingClass,
+                                                GuiceClasses.CONSTANT_BINDING_BUILDER)) {
 
       PsiElement outermostSource = ContributorUtil.getOutermostSource(call);
       if (outermostSource != null) {
@@ -55,8 +63,7 @@ public final class StandardBindingContributor implements GuiceBindingContributor
          "com.google.inject.AbstractModule".equals(resolvedQName) ||
          "com.google.inject.PrivateModule".equals(resolvedQName) ||
          InheritanceUtil.isInheritor(containingClass, "com.google.inject.Binder") ||
-         InheritanceUtil.isInheritor(containingClass, "com.google.inject.AbstractModule") ||
-         ContributorUtil.isGuicePackage(resolvedQName))) {
+         InheritanceUtil.isInheritor(containingClass, "com.google.inject.AbstractModule"))) {
 
       UCallExpression outermostCall = ContributorUtil.getOutermostCall(call);
       if (GuiceUtils.isUntargetedBinding(outermostCall)) {
@@ -75,9 +82,40 @@ public final class StandardBindingContributor implements GuiceBindingContributor
   public boolean processUnresolvedCall(@NotNull UCallExpression call,
                                        @NotNull String methodName,
                                        @NotNull Set<BindDescriptor> descriptors) {
-    PsiElement outermostSource = ContributorUtil.getOutermostSource(call);
+    UCallExpression outermostCall = ContributorUtil.getOutermostCall(call);
+    if (!hasBindingChainHead(outermostCall)) {
+      return false;
+    }
+    PsiElement outermostSource = outermostCall.getSourcePsi();
     if (outermostSource != null) {
       return ContributorUtil.createBindingTailDescriptor(methodName, outermostSource, descriptors);
+    }
+    return false;
+  }
+
+  private static boolean hasBindingChainHead(@NotNull UCallExpression call) {
+    UExpression current = call;
+    while (current != null) {
+      if (current instanceof UCallExpression callExpr) {
+        String name = callExpr.getMethodName();
+        if (name != null && BINDING_CHAIN_HEADS.contains(name)) {
+          return true;
+        }
+        current = callExpr.getReceiver();
+      }
+      else if (current instanceof UQualifiedReferenceExpression qualifiedRef) {
+        UExpression selector = qualifiedRef.getSelector();
+        if (selector instanceof UCallExpression selectorCall) {
+          String name = selectorCall.getMethodName();
+          if (name != null && BINDING_CHAIN_HEADS.contains(name)) {
+            return true;
+          }
+        }
+        current = qualifiedRef.getReceiver();
+      }
+      else {
+        break;
+      }
     }
     return false;
   }
