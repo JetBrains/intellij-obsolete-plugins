@@ -1,0 +1,1 @@
+ select first_n<caret>ame from {{ ref('seed') }}

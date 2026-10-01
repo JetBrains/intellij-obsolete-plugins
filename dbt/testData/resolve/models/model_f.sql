@@ -1,0 +1,1 @@
+  select col from {{ ref('deep<caret>_model') }}

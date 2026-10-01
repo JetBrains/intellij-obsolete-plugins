@@ -55,3 +55,4 @@ This repository includes the following plugins:
   * [Hugging Face](hugging-face/) – Hugging Face models and datasets integration, auto-completion, hover documentation, and cache management for Python (compatible with IntelliJ IDEA / PyCharm).
   * [AI Playground](ai-playground/) – Interactive playground for testing and experimenting with LLMs (OpenAI, Anthropic, Gemini, Mistral, Ollama, DeepSeek, etc.; compatible with IntelliJ IDEA / PyCharm).
   * [AI Agents Debugger](aidebugger/) – Tracing, debugging, and visualization tool for AI agent workflows including LangGraph, LangChain, and Koog (compatible with IntelliJ IDEA / PyCharm).
+  * [dbt Support](dbt/) – Support for dbt (data build tool) projects, Jinja SQL templates, run/test/compile configurations, and model lineage (compatible with IntelliJ IDEA Ultimate / PyCharm Professional / DataGrip).

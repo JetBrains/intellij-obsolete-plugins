@@ -1,0 +1,17 @@
+<idea-plugin package="com.intellij.dbt.python">
+  <dependencies>
+    <plugin id="com.intellij.modules.python"/>
+    <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.ide.core"/>
+    <module name="intellij.platform.ide.impl"/>
+    <module name="intellij.platform.lang.impl"/>
+    <module name="intellij.platform.projectModel"/>
+    <!-- endregion -->
+  </dependencies>
+  <extensions defaultExtensionNs="com.intellij">
+    <directoryProjectGenerator implementation="com.intellij.dbt.python.PyV3DbtGenerator"/>
+
+    <dbt.commandLinePatcher implementation="com.intellij.dbt.python.PyDbtCommandLinePatcher"/>
+  </extensions>
+</idea-plugin>

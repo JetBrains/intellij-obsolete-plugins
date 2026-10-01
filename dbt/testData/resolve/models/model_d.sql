@@ -1,0 +1,1 @@
+  select last_n<caret>ame from {{ ref('model_e') }}

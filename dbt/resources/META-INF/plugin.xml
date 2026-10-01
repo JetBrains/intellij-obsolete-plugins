@@ -1,0 +1,117 @@
+<!--suppress PluginXmlCapitalization -->
+<idea-plugin package="com.intellij.dbt" allow-bundled-update="true">
+  <id>org.jetbrains.dbt</id>
+  <name>dbt Support</name>
+  <vendor>JetBrains</vendor>
+  <category>Database</category>
+
+  <description>
+    <![CDATA[
+      Integration with dbt CLI. Syntax highlighting and codeinsight for SQL in Jinja2 templates.
+      ]]>
+  </description>
+
+  <dependencies>
+    <plugin id="com.intellij.database"/>
+    <plugin id="com.intellij.diagram"/>
+    <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+    <module name="intellij.database.dialects.base"/>
+    <module name="intellij.database.dialects.generic"/>
+    <module name="intellij.database.impl"/>
+    <module name="intellij.jinja"/>
+    <module name="intellij.json.backend"/>
+    <module name="intellij.libraries.jackson"/>
+    <module name="intellij.libraries.jackson.databind"/>
+    <module name="intellij.libraries.jackson.module.kotlin"/>
+    <module name="intellij.platform.analysis"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.impl"/>
+    <module name="intellij.platform.core.ui"/>
+    <module name="intellij.platform.editor.ui"/>
+    <module name="intellij.platform.execution"/>
+    <module name="intellij.platform.execution.impl"/>
+    <module name="intellij.platform.ide.core"/>
+    <module name="intellij.platform.ide.impl"/>
+    <module name="intellij.platform.indexing"/>
+    <module name="intellij.platform.lang"/>
+    <module name="intellij.platform.lang.impl"/>
+    <module name="intellij.platform.projectModel"/>
+    <module name="intellij.platform.statistics"/>
+    <module name="intellij.platform.util.ui"/>
+    <module name="intellij.xml.parser"/>
+    <module name="intellij.xml.psi"/>
+    <module name="intellij.yaml"/>
+    <module name="intellij.yaml.backend"/>
+    <!-- endregion -->
+  </dependencies>
+
+  <content namespace="jetbrains">
+    <module name="intellij.dbt.python"/>
+  </content>
+
+  <resource-bundle>messages.DbtBundle</resource-bundle>
+  <extensionPoints>
+    <extensionPoint qualifiedName="com.intellij.dbt.commandLinePatcher" interface="com.intellij.dbt.run.DbtCommandLinePatcher" dynamic="true"/>
+  </extensionPoints>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <runLineMarkerContributor language="SQL"
+                              implementationClass="com.intellij.dbt.run.DbtRunLineMarkerContributor"/>
+    <runConfigurationProducer implementation="com.intellij.dbt.run.producer.DbtRunRunConfigurationProducer" order="first"/>
+    <runConfigurationProducer implementation="com.intellij.dbt.run.producer.DbtTestRunConfigurationProducer" order="first"/>
+    <runConfigurationProducer implementation="com.intellij.dbt.run.producer.DbtShowRunConfigurationProducer" order="first"/>
+    <lang.substitutor language="SQL" implementationClass="com.intellij.dbt.DbtLanguageSubstitutor" order="first"/>
+    <configurationType implementation="com.intellij.dbt.run.DbtRunConfigurationType"/>
+    <psi.referenceContributor language="Jinja2" implementation="com.intellij.dbt.codeInsight.DbtReferenceContributor"/>
+    <psi.referenceContributor language="DjangoTemplate" implementation="com.intellij.dbt.codeInsight.DbtReferenceContributor"/>
+
+    <outerLanguageRangePatcher language="SQL" implementationClass="com.intellij.dbt.DbtOuterLanguagePatcher"/>
+
+    <lang.parserDefinition language="DjangoTemplate"
+                           implementationClass="com.intellij.jinja.parsing.Jinja2ParserDefinition"/>
+    <iconProvider implementation="com.intellij.dbt.projectView.DbtIconProvider"/>
+    <postStartupActivity implementation="com.intellij.dbt.DbtProjectActivity"/>
+    <database.virtualFileDataSourceProvider implementation="com.intellij.dbt.dataSource.DbtDataSourceProvider"/>
+    <projectConfigurable groupId="language"
+                         id="com.intellij.dbt.settings.DbtProjectConfigurable"
+                         bundle="messages.DbtBundle"
+                         key="dbt.display.name"
+                         instance="com.intellij.dbt.settings.DbtProjectConfigurable"/>
+
+    <statistics.counterUsagesCollector implementationClass="com.intellij.dbt.fus.DbtRunConfigurationCounterCollector"/>
+
+    <localInspection language="SQL" shortName="DbtConfigurationInspection" bundle="messages.DbtBundle" key="dbt.configuration.inspection.name"
+                     groupKey="dbt.inspections.group.name" enabledByDefault="true" level="WARNING"
+                     implementationClass="com.intellij.dbt.codeInsight.DbtConfigurationInspection"/>
+    <sql.resolveExtension implementation="com.intellij.dbt.DbtSqlExtension" />
+    <lang.braceMatcher language="DjangoTemplate" implementationClass="com.intellij.dbt.highlighting.DbtJinjaBraceMatcher"/>
+    <typedHandler implementation="com.intellij.dbt.typing.DbtJinjaTypedHandler"/>
+    <fileType name="YAML" fileNames="dbt_project.yml"/>
+    <statistics.counterUsagesCollector implementationClass="com.intellij.dbt.fus.DbtProjectCollector"/>
+
+    <registryKey key="dbt.models.max.depth.level" defaultValue="10" description="Max depth level to scan dbt model directory"/>
+    <lang.elementManipulator forClass="com.intellij.jinja.tags.Jinja2FunctionCall" implementationClass="com.intellij.dbt.codeInsight.DbtJinja2FunctionCallManipulator"/>
+
+    <vfs.asyncListener implementation="com.intellij.dbt.DbtFileListener" />
+  </extensions>
+
+  <extensions defaultExtensionNs="JavaScript.JsonSchema">
+    <ProviderFactory implementation="com.intellij.dbt.codeInsight.DbtYmlSchemaProviderFactory"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="Pythonid">
+    <templateLanguageCoreTags language="Jinja2" implementationClass="com.intellij.dbt.codeInsight.DbtTagLibrary" order="before jinja2"/>
+  </extensions>
+
+  <actions>
+    <action id="dbtRunModelAction" class="com.intellij.dbt.run.DbtRunModelAction"/>
+    <action id="dbtTestModelAction" class="com.intellij.dbt.run.DbtTestModelAction"/>
+    <action id="dbtPreviewModelAction" class="com.intellij.dbt.run.DbtPreviewModelAction"/>
+    <action id="dbtCompileAction" class="com.intellij.dbt.run.DbtCompileAction">
+      <add-to-group group-id="EditorPopupMenu" relative-to-action="RunMenu" anchor="before" />
+    </action>
+    <action id="dbtLineage" class="com.intellij.dbt.diagram.DbtDiagramAction">
+      <add-to-group group-id="EditorPopupMenu" relative-to-action="dbtCompileAction" anchor="before" />
+    </action>
+  </actions>
+</idea-plugin>
