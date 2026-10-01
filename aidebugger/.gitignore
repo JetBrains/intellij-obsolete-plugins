@@ -1,0 +1,9 @@
+### Mac OS ###
+.DS_Store
+
+### Python ###
+.jbeval/
+.venv/
+python/.venv/
+__pycache__/
+

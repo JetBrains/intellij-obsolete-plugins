@@ -1,0 +1,79 @@
+<idea-plugin>
+
+    <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+    <dependencies>
+      <module name="intellij.libraries.compose.foundation.desktop"/>
+      <module name="intellij.libraries.gson"/>
+      <module name="intellij.libraries.kotlinx.collections.immutable"/>
+      <module name="intellij.libraries.kotlinx.serialization.core"/>
+      <module name="intellij.libraries.kotlinx.serialization.json"/>
+      <module name="intellij.platform.analysis"/>
+      <module name="intellij.platform.compose"/>
+      <module name="intellij.platform.core"/>
+      <module name="intellij.platform.core.impl"/>
+      <module name="intellij.platform.core.ui"/>
+      <module name="intellij.platform.debugger"/>
+      <module name="intellij.platform.editor.ui"/>
+      <module name="intellij.platform.execution"/>
+      <module name="intellij.platform.execution.impl"/>
+      <module name="intellij.platform.ide"/>
+      <module name="intellij.platform.ide.core"/>
+      <module name="intellij.platform.ide.impl"/>
+      <module name="intellij.platform.jewel.foundation"/>
+      <module name="intellij.platform.jewel.ideLafBridge"/>
+      <module name="intellij.platform.jewel.ui"/>
+      <module name="intellij.platform.lang"/>
+      <module name="intellij.platform.projectModel"/>
+      <module name="intellij.platform.statistics"/>
+      <module name="intellij.platform.util.ui"/>
+    </dependencies>
+    <!-- endregion -->
+
+    <resource-bundle>messages.AiDebuggerCommonBundle</resource-bundle>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <statistics.counterUsagesCollector
+                implementationClass="com.intellij.aidebugger.common.AiDebuggerCollector" />
+
+        <registryKey key="aitoolkit.aidebugger.enabled"
+                     defaultValue="true"
+                     description="AI Debugger feature state" />
+
+        <registryKey key="aitoolkit.aidebugger.debugging_functionality"
+                     defaultValue="false"
+                     description="AI Debugger internal debugging tools" />
+
+        <registryKey key="aitoolkit.aidebugger.showOnRun"
+                     defaultValue="true"
+                     description="Show AI Debugger tool window on every run" />
+
+        <registryKey key="aitoolkit.aidebugger.extraDebugButton"
+                     defaultValue="false"
+                     description="Show extra Run AI Debugger button" />
+        <projectSettings service="com.intellij.aidebugger.common.services.ProjectSettingsService"/>
+    </extensions>
+
+    <projectListeners>
+        <listener class="com.intellij.aidebugger.common.toolWindow.AiDebuggerSessionListener"
+                  topic="com.intellij.xdebugger.XDebuggerManagerListener" />
+    </projectListeners>
+
+    <extensionPoints>
+        <extensionPoint
+                qualifiedName="com.intellij.aidebugger.traceEventViewModelFactoryProvider"
+                interface="com.intellij.aidebugger.common.extensionPoints.TraceEventViewModelFactoryProvider"
+                dynamic="true" />
+        <extensionPoint
+                qualifiedName="com.intellij.aidebugger.traceEventWidgetViewModelFactoryProvider"
+                interface="com.intellij.aidebugger.common.extensionPoints.TraceEventWidgetViewModelFactoryProvider"
+                dynamic="true" />
+        <extensionPoint
+                qualifiedName="com.intellij.aidebugger.traceEventViewModelComponentSelector"
+                interface="com.intellij.aidebugger.common.extensionPoints.TraceEventViewModelComponentSelector"
+                dynamic="true" />
+        <extensionPoint
+                qualifiedName="com.intellij.aidebugger.toolWindowExtension"
+                interface="com.intellij.aidebugger.common.extensionPoints.AIDebuggerToolWindowExtension"
+                dynamic="true" />
+    </extensionPoints>
+</idea-plugin>

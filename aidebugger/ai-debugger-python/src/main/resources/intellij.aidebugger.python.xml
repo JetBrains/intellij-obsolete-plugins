@@ -1,0 +1,47 @@
+<idea-plugin>
+
+    <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+    <dependencies>
+      <module name="intellij.aidebugger.common"/>
+      <module name="intellij.libraries.compose.foundation.desktop"/>
+      <module name="intellij.libraries.gson"/>
+      <module name="intellij.libraries.kotlinx.collections.immutable"/>
+      <module name="intellij.platform.analysis"/>
+      <module name="intellij.platform.compose"/>
+      <module name="intellij.platform.core"/>
+      <module name="intellij.platform.debugger"/>
+      <module name="intellij.platform.execution"/>
+      <module name="intellij.platform.execution.impl"/>
+      <module name="intellij.platform.ide"/>
+      <module name="intellij.platform.ide.core"/>
+      <module name="intellij.platform.jewel.foundation"/>
+      <module name="intellij.platform.jewel.ideLafBridge"/>
+      <module name="intellij.platform.jewel.ui"/>
+      <module name="intellij.platform.projectModel"/>
+      <module name="intellij.platform.statistics"/>
+      <module name="intellij.python.community.execService"/>
+      <module name="intellij.python.community.impl"/>
+      <module name="intellij.python.psi"/>
+      <module name="intellij.python.sdk.backend"/>
+    </dependencies>
+    <!-- endregion -->
+
+    <resource-bundle>messages.AiDebuggerPythonBundle</resource-bundle>
+
+    <projectListeners>
+        <listener class="com.intellij.aidebugger.python.extensions.AiDebuggerExecutionListener"
+                  topic="com.intellij.execution.ExecutionListener"/>
+    </projectListeners>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <postStartupActivity implementation="com.intellij.aidebugger.python.extensions.DetectAiProject"/>
+        <programRunner implementation="com.intellij.aidebugger.python.extensions.AiDebuggerRunner" order="first" />
+        <programRunner implementation="com.intellij.aidebugger.python.extensions.AiDebuggerDebugRunner" order="first" />
+
+        <aidebugger.traceEventViewModelFactoryProvider implementation="com.intellij.aidebugger.python.extensions.LangGraphTraceEventModelFactoryProvider" />
+        <aidebugger.traceEventViewModelFactoryProvider implementation="com.intellij.aidebugger.python.extensions.LangChainTraceEventModelFactoryProvider" />
+        <aidebugger.traceEventWidgetViewModelFactoryProvider implementation="com.intellij.aidebugger.python.extensions.PythonTraceEventWidgetViewModelFactoryProvider" />
+        <aidebugger.traceEventViewModelComponentSelector implementation="com.intellij.aidebugger.python.extensions.LangChainTraceEventViewModelComponentSelector" />
+        <aidebugger.toolWindowExtension implementation="com.intellij.aidebugger.python.extensions.PythonAIDebuggerToolWindowExtension" />
+    </extensions>
+</idea-plugin>

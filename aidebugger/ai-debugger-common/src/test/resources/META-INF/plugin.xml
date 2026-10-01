@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<idea-plugin>
+    <id>org.jetbrains.aidebugger.common.test</id>
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Register the evaluation registry key for tests -->
+        <registryKey key="aitoolkit.aidebugger.evaluation.enabled"
+                     defaultValue="false"
+                     description="AI Debugger Eval feature state (test)" />
+    </extensions>
+</idea-plugin>

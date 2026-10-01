@@ -1,0 +1,36 @@
+# Ignore everything except the built distribution
+*
+
+# Include only what we need for Docker
+!build/libs/evaluation-cli.jar
+!build/python/
+!run_evaluation.sh
+!Dockerfile
+
+# Git files
+.git
+.gitignore
+
+# IDE files  
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Build files (except JAR and python)
+build/*
+!build/libs/
+!build/python/
+build/libs/*
+!build/libs/evaluation-cli.jar
+
+# Gradle files
+.gradle/
+gradle.properties
+
+# Source files (not needed in final image)
+src/
+
+# Documentation
+*.md
+LICENSE

@@ -1,0 +1,119 @@
+<idea-plugin>
+
+    <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+    <dependencies>
+      <module name="intellij.aidebugger.common"/>
+      <module name="intellij.aidebugger.python"/>
+      <module name="intellij.libraries.compose.foundation.desktop"/>
+      <module name="intellij.libraries.gson"/>
+      <module name="intellij.libraries.jackson"/>
+      <module name="intellij.libraries.jackson.annotations"/>
+      <module name="intellij.libraries.jackson.databind"/>
+      <module name="intellij.libraries.jackson.dataformat.yaml"/>
+      <module name="intellij.libraries.jackson.module.kotlin"/>
+      <module name="intellij.libraries.kotlin.reflect"/>
+      <module name="intellij.libraries.kotlinx.collections.immutable"/>
+      <module name="intellij.platform.analysis"/>
+      <module name="intellij.platform.builtInServer"/>
+      <module name="intellij.platform.compose"/>
+      <module name="intellij.platform.core"/>
+      <module name="intellij.platform.core.impl"/>
+      <module name="intellij.platform.core.ui"/>
+      <module name="intellij.platform.credentialStore"/>
+      <module name="intellij.platform.editor.ui"/>
+      <module name="intellij.platform.execution"/>
+      <module name="intellij.platform.execution.impl"/>
+      <module name="intellij.platform.ide"/>
+      <module name="intellij.platform.ide.core"/>
+      <module name="intellij.platform.ide.impl"/>
+      <module name="intellij.platform.jewel.foundation"/>
+      <module name="intellij.platform.jewel.ideLafBridge"/>
+      <module name="intellij.platform.jewel.ui"/>
+      <module name="intellij.platform.lang"/>
+      <module name="intellij.platform.projectModel"/>
+      <module name="intellij.platform.statistics"/>
+      <module name="intellij.platform.util.coroutines"/>
+      <module name="intellij.platform.util.ui"/>
+      <module name="intellij.python.community.impl"/>
+      <module name="intellij.python.psi"/>
+      <module name="intellij.python.sdk.backend"/>
+    </dependencies>
+    <!-- endregion -->
+
+    <resource-bundle>messages.EvaluationBundle</resource-bundle>
+    <resource-bundle>messages.AIToolkitUIBundle</resource-bundle>
+
+    <extensionPoints>
+        <extensionPoint qualifiedName="com.intellij.aidebugger.evaluation.onboarding.step"
+                        beanClass="com.intellij.util.KeyedLazyInstanceEP"
+                        dynamic="true">
+            <with attribute="implementationClass" implements="com.intellij.aidebugger.evaluation.onboarding.EvaluationOnboardingStep"/>
+        </extensionPoint>
+        <extensionPoint qualifiedName="com.intellij.aidebugger.evaluation.onboarding"
+                        beanClass="com.intellij.aidebugger.evaluation.onboarding.EvaluationOnboardingBean"
+                        dynamic="true">
+        </extensionPoint>
+    </extensionPoints>
+
+    <extensions defaultExtensionNs="com.intellij.aidebugger.evaluation.onboarding">
+        <step key="intro"
+              implementationClass="com.intellij.aidebugger.evaluation.onboarding.steps.IntroStep"/>
+        <step key="add.to.dataset.button"
+              implementationClass="com.intellij.aidebugger.evaluation.onboarding.steps.AddToDatasetButtonStep"/>
+        <step key="enter.dataset.name"
+              implementationClass="com.intellij.aidebugger.evaluation.onboarding.steps.EnterDatasetNameStep"/>
+        <step key="select.dataset"
+              implementationClass="com.intellij.aidebugger.evaluation.onboarding.steps.SelectDatasetStep"/>
+        <step key="add.to.dataset.dialog.inputs"
+              implementationClass="com.intellij.aidebugger.evaluation.onboarding.steps.AddToDatasetDialogInputsStep"/>
+        <step key="switch.to.datasets.folder"
+              implementationClass="com.intellij.aidebugger.evaluation.onboarding.steps.SwitchToDatasetsFolderStep"/>
+        <step key="switch.to.evaluation.folder"
+              implementationClass="com.intellij.aidebugger.evaluation.onboarding.steps.SwitchToEvaluationFolderStep"/>
+        <step key="evaluation.plus.button"
+              implementationClass="com.intellij.aidebugger.evaluation.onboarding.steps.EvaluationPlusButtonStep"/>
+        <step key="create.config.form"
+              implementationClass="com.intellij.aidebugger.evaluation.onboarding.steps.CreateConfigurationFormStep"/>
+        <step key="evaluation.run.button"
+              implementationClass="com.intellij.aidebugger.evaluation.onboarding.steps.EvaluationRunButtonStep"/>
+        <step key="evaluation.results.output"
+              implementationClass="com.intellij.aidebugger.evaluation.onboarding.steps.EvaluationResultsOutputStep"/>
+        <step key="evaluation.run.cloud.button"
+              implementationClass="com.intellij.aidebugger.evaluation.onboarding.steps.EvaluationRunCloudButtonStep"/>
+        <step key="evaluation.help.button"
+              implementationClass="com.intellij.aidebugger.evaluation.onboarding.steps.HelpButtonStep"/>
+    </extensions>
+
+    <actions resource-bundle="messages.EvaluationBundle">
+        <action id="intellij.aidebugger.evaluation.onboarding.StartOnboardingAction"
+                class="com.intellij.aidebugger.evaluation.onboarding.StartOnboardingAction"
+        />
+    </actions>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <notificationGroup id="AIAgentsDebugger.Notifications"
+                           displayType="BALLOON"
+                           isLogByDefault="false"
+                           bundle="messages.EvaluationBundle"
+                           key="notification.group.ai.agents.debugger"/>
+        <registryKey key="aitoolkit.aidebugger.evaluation.enabled"
+                     defaultValue="true"
+                     description="AI Debugger Eval feature state" />
+
+        <postStartupActivity implementation="com.intellij.aidebugger.evaluation.EvaluationStartupActivity"/>
+
+        <!-- AI Agents Debugger Settings -->
+        <applicationService serviceImplementation="com.intellij.aidebugger.evaluation.settings.AIToolkitSettingsService"/>
+        <projectConfigurable
+                parentId="tools"
+                provider="com.intellij.aidebugger.evaluation.settings.AIToolkitSettingsConfigurableProvider"
+                id="intellij.aidebugger.settings.llm"
+                bundle="messages.AIToolkitUIBundle"
+                key="configurable.ai.toolkit.display.name"/>
+
+        <statistics.counterUsagesCollector
+                implementationClass="com.intellij.aidebugger.evaluation.EvaluationCollector" />
+      <projectSettings service="com.intellij.aidebugger.evaluation.models.remote.RemoteRunStateService"/>
+      <applicationSettings service="com.intellij.aidebugger.evaluation.settings.AIToolkitSettingsService"/>
+    </extensions>
+</idea-plugin>

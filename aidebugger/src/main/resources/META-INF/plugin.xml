@@ -1,0 +1,25 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+    <id>org.jetbrains.aidebugger</id>
+    <name>AI Agents Debugger</name>
+    <vendor>JetBrains</vendor>
+    <description>The AI Agents Debugger plugin gives you instant visibility into LangGraph / LangChain / Koog agents — right inside your IDE and with zero setup.</description>
+
+    <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+    <dependencies>
+      <module name="intellij.platform.core"/>
+      <module name="intellij.platform.ide"/>
+    </dependencies>
+    <!-- endregion -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <incompatible-with>com.intellij.jetbrains.client</incompatible-with>
+
+    <content namespace="jetbrains">
+        <module name="intellij.aidebugger.common" loading="required" />
+        <module name="intellij.aidebugger.koog" />
+        <module name="intellij.aidebugger.python" />
+        <module name="intellij.aidebugger.evaluation" />
+    </content>
+
+</idea-plugin>

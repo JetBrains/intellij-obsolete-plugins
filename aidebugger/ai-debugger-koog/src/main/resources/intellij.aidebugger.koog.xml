@@ -1,0 +1,42 @@
+<idea-plugin>
+
+    <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+    <dependencies>
+      <module name="intellij.aidebugger.common"/>
+      <module name="intellij.java.execution"/>
+      <module name="intellij.java.execution.impl"/>
+      <module name="intellij.java.impl"/>
+      <module name="intellij.libraries.kotlinx.collections.immutable"/>
+      <module name="intellij.libraries.kotlinx.datetime"/>
+      <module name="intellij.libraries.kotlinx.io"/>
+      <module name="intellij.libraries.kotlinx.serialization.core"/>
+      <module name="intellij.libraries.kotlinx.serialization.json"/>
+      <module name="intellij.libraries.ktor.client"/>
+      <module name="intellij.libraries.ktor.io"/>
+      <module name="intellij.libraries.ktor.utils"/>
+      <module name="intellij.platform.core"/>
+      <module name="intellij.platform.execution"/>
+      <module name="intellij.platform.execution.impl"/>
+      <module name="intellij.platform.ide.core"/>
+      <module name="intellij.platform.lang.core"/>
+      <module name="intellij.platform.projectModel"/>
+      <module name="intellij.platform.statistics"/>
+      <module name="intellij.platform.util.coroutines"/>
+    </dependencies>
+    <!-- endregion -->
+
+    <resource-bundle>messages.AiDebuggerKoogBundle</resource-bundle>
+
+    <projectListeners>
+        <listener class="com.intellij.aidebugger.koog.listener.KoogAiDebuggerExecutionListener"
+                  topic="com.intellij.execution.ExecutionListener"/>
+    </projectListeners>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <executor implementation="com.intellij.aidebugger.koog.execution.KoogAgentExecutor"/>
+        <runConfigurationExtension implementation="com.intellij.aidebugger.koog.execution.KoogRunConfigurationExtension" />
+        <aidebugger.traceEventWidgetViewModelFactoryProvider implementation="com.intellij.aidebugger.koog.extension.KoogTraceEventWidgetViewModelFactoryProvider" />
+        <aidebugger.traceEventViewModelFactoryProvider implementation="com.intellij.aidebugger.koog.extension.KoogTraceEventModelViewFactoryProvider" />
+        <aidebugger.toolWindowExtension implementation="com.intellij.aidebugger.koog.extension.KoogAIDebuggerToolWindowExtension" />
+    </extensions>
+</idea-plugin>
