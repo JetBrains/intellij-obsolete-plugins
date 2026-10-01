@@ -1,0 +1,21 @@
+{
+  "name": "JetBrains AI Playground",
+  "fixed": false,
+  "ui": [
+    {
+      "key": "AIPlayground.Chat.UserMessage.background",
+      "description": "Background color of user messages in AI Playground",
+      "since": "[2025.2]"
+    },
+    {
+      "key": "AIPlayground.Chat.AssistantMessage.background",
+      "description": "Background color of assistant messages in AI Playground",
+      "since": "[2025.2]"
+    },
+    {
+      "key": "AIPlayground.ToolWindow.iconColor",
+      "description": "Color of icon in tool window of AI Playground",
+      "since": "[2025.2]"
+    }
+  ]
+}

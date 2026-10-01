@@ -1,0 +1,64 @@
+<idea-plugin>
+  <id>intellij.aiplayground</id>
+  <name>AI Playground</name>
+  <vendor>JetBrains</vendor>
+  <description><![CDATA[
+    <p>
+    <p>AI Playground is a built-in tool for PyCharm that lets you experiment with AI models right inside your IDE. It’s designed to make
+      prompt testing and model comparison fast, simple, and seamless - no complex setup or context switching required.</p>
+    What you can do with AI Playground:
+    <ul>
+      <li><b>Send Prompts Directly from Code:</b></li>
+      In AI projects, the Playground will automatically detect prompt-like code and display a gutter notification, letting you send it to
+      the AI Playground with one click.
+      <li><b>Use your own models</b></li>
+      Bring your own API tokens (OpenAI, Anthropic, and Mistral) or access models from the JetBrains AI subscription.
+      <li><b>Run local models with Ollama</b></li>
+      Work offline using local LLMs - ideal for private or local workflows.
+      <li><b>Compare multiple models</b></li>
+      Send the same prompt to up to five models at once and easily compare model responses.
+      <li><b>Tune your prompts</b></li>
+      Adjust settings like temperature, max tokens, and top-p. Add system prompts or use variables to experiment with different inputs.
+    </ul>
+
+    <p>AI Playground helps you test, iterate, and fine-tune AI interactions - without ever leaving PyCharm.</p>
+
+    <b>We value your feedback</b>
+    <p>You can upvote existing issues in our <a
+      href="https://youtrack.jetbrains.com/issues?q=project:%20PyCharm%20subsystem:%20%7BAI%20Playground%7D">YouTrack</a> or log in and
+      create a
+      <a href="https://youtrack.jetbrains.com/newIssue?project=PyCharm">new one</a>.</p>
+    </p>
+    ]]></description>
+
+
+  <dependencies>
+    <plugin id="com.intellij.modules.python-pro-capable"/>
+    <plugin id="com.intellij.modules.ultimate"/>
+    <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+    <module name="intellij.libraries.compose.foundation.desktop"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.ui"/>
+    <module name="intellij.platform.ide"/>
+    <module name="intellij.platform.ide.core"/>
+    <module name="intellij.platform.ide.progress"/>
+    <module name="intellij.platform.util.ui"/>
+    <!-- endregion -->
+  </dependencies>
+  <incompatible-with>com.intellij.jetbrains.client</incompatible-with>
+  <content namespace="jetbrains">
+    <module name="intellij.aiplayground.models" loading="required"/>
+    <module name="intellij.aiplayground.ui" loading="required"/>
+    <module name="intellij.aiplayground.settings" loading="required"/>
+    <module name="intellij.aiplayground.langchain"/>
+    <module name="intellij.aiplayground.anthropic"/>
+    <module name="intellij.aiplayground.openai"/>
+    <module name="intellij.aiplayground.openrouter"/>
+    <module name="intellij.aiplayground.aiassistant"/>
+    <module name="intellij.aiplayground.mistral"/>
+    <module name="intellij.aiplayground.ollama"/>
+    <module name="intellij.aiplayground.deepseek"/>
+    <module name="intellij.aiplayground.gemini"/>
+    <module name="intellij.aiplayground.python"/>
+  </content>
+</idea-plugin>

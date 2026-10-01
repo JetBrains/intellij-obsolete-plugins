@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<models>
+    <!-- OpenAI Models -->
+    <provider id="OPENAI" name="OpenAI" website="https://openai.com/api/">
+        <model id="gpt-3.5-turbo" name="GPT-3.5 Turbo" description="Most capable GPT-3.5 model optimized for chat"/>
+        <model id="gpt-3.5-turbo-16k" name="GPT-3.5 Turbo 16K" description="Same capabilities as the standard GPT-3.5 Turbo but with 4x the context length"/>
+        <model id="gpt-4" name="GPT-4" description="Latest GPT-4 model with improved instruction following and JSON mode"/>
+        <model id="gpt-4-turbo" name="GPT-4 Turbo" description="Latest GPT-4 Turbo model with improved capabilities and fresher knowledge"/>
+        <model id="gpt-4-vision" name="GPT-4 Vision" description="GPT-4 model capable of understanding images and text"/>
+    </provider>
+
+    <!-- Anthropic Models -->
+    <provider id="ANTHROPIC" name="Anthropic" website="https://www.anthropic.com/claude">
+        <model id="claude-instant-1" name="Claude Instant 1" description="Fast and cost-effective model for simple tasks"/>
+        <model id="claude-2" name="Claude 2" description="Advanced Claude model with improved reasoning"/>
+        <model id="claude-3-sonnet" name="Claude 3 Sonnet" description="Balanced Claude 3 model for most tasks"/>
+        <model id="claude-3-opus" name="Claude 3 Opus" description="Most powerful Claude model with superior analysis and reasoning"/>
+    </provider>
+
+    <!-- Mistral Models -->
+    <provider id="MISTRAL" name="Mistral" website="https://mistral.ai/">
+        <model id="mistral-tiny" name="Mistral Tiny" description="Small, fast, and cost-effective model for simple tasks"/>
+        <model id="mistral-small" name="Mistral Small" description="Balanced model suitable for most tasks"/>
+        <model id="mistral-medium" name="Mistral Medium" description="Advanced model with improved reasoning capabilities"/>
+        <model id="mistral-large" name="Mistral Large" description="Most capable Mistral model for complex reasoning tasks"/>
+    </provider>
+</models> 

@@ -1,0 +1,52 @@
+<idea-plugin>
+  <dependencies>
+    <plugin id="com.intellij.modules.python"/>
+    <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+    <module name="intellij.aiplayground.models"/>
+    <module name="intellij.aiplayground.ui"/>
+    <module name="intellij.platform.analysis"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.ui"/>
+    <module name="intellij.platform.editor.ui"/>
+    <module name="intellij.platform.ide.core"/>
+    <module name="intellij.platform.ide.impl"/>
+    <module name="intellij.platform.indexing"/>
+    <module name="intellij.platform.lang"/>
+    <module name="intellij.platform.lang.impl"/>
+    <module name="intellij.platform.projectModel"/>
+    <module name="intellij.platform.util.ui"/>
+    <!-- endregion -->
+  </dependencies>
+  <extensions defaultExtensionNs="com.intellij">
+    <fileBasedIndex implementation="com.intellij.aiplayground.python.AiPlaygroundImportNameIndexer"/>
+    <registryKey
+      key="com.intellij.aiplayground.python.experimental.detect.system.prompts"
+      description="Try to detect system prompts in Python files and mark them to be used with AI Playground"
+      defaultValue="false"
+      restartRequired="false"/>
+    <registryKey key="aiplayground.inlay.hint.for.prompts.enabled" defaultValue="true"
+                 description="Enable inlay hint for trying prompts in AI Playground"
+                 restartRequired="false"/>
+    <registryKey key="aiplayground.inlay.hint.for.prompts.highlight.variables" defaultValue="false"
+                 description="Enable highlighting of variables in detected prompt on inlay hover"
+                 restartRequired="false"/>
+    <registryKey key="aiplayground.intention.for.prompts.enabled" defaultValue="true"
+                 description="Enable intention for trying prompts in AI Playground"
+                 restartRequired="false"/>
+    <codeInsight.inlayProvider
+      language="Python"
+      implementationClass="com.intellij.aiplayground.python.AiPlaygroundInlayProvider"/>
+    <intentionAction>
+      <language>Python</language>
+      <className>com.intellij.aiplayground.python.AiPlaygroundPromptIntention</className>
+      <skipBeforeAfter>true</skipBeforeAfter>
+      <bundleName>messages.AIPlaygroundPythonBundle</bundleName>
+      <categoryKey>intention.category.name</categoryKey>
+    </intentionAction>
+
+  </extensions>
+  <projectListeners>
+    <listener class="com.intellij.aiplayground.python.AIPlaygroundSettingsListener"
+              topic="com.intellij.codeInsight.hints.InlayHintsSettings$SettingsListener"/>
+  </projectListeners>
+</idea-plugin>

@@ -1,0 +1,87 @@
+<idea-plugin>
+  <!-- Dependencies section - specify modules or plugins this module depends on -->
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <module name="intellij.aiplayground.settings"/>
+    <module name="intellij.aiplayground.models"/>
+    <module name="intellij.libraries.compose.foundation.desktop"/>
+    <module name="intellij.libraries.markdown"/>
+    <module name="intellij.platform.analysis"/>
+    <module name="intellij.platform.compose"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.ui"/>
+    <module name="intellij.platform.editor.ui"/>
+    <module name="intellij.platform.ide"/>
+    <module name="intellij.platform.ide.core"/>
+    <module name="intellij.platform.ide.impl"/>
+    <module name="intellij.platform.markdown.utils"/>
+    <module name="intellij.platform.projectModel"/>
+    <module name="intellij.platform.util.coroutines"/>
+    <module name="intellij.platform.util.ui"/>
+  </dependencies>
+  <!-- endregion -->
+
+  <extensionPoints>
+    <extensionPoint qualifiedName="com.intellij.aiplayground.llmSettingsProvider"
+                    interface="com.intellij.aiplayground.ui.settings.LlmSettingsExtensionPoint"
+                    dynamic="true"/>
+  </extensionPoints>
+
+  <!-- Extensions provided by this module -->
+  <extensions defaultExtensionNs="com.intellij">
+    <!-- Register our toolwindow -->
+    <toolWindow id="AI Playground"
+                secondary="true"
+                icon="/icons/toolWindowAIPlayground.svg"
+                anchor="left"
+                factoryClass="com.intellij.aiplayground.ui.AIPlaygroundToolWindowFactory"/>
+
+    <!-- Settings UI -->
+    <projectConfigurable
+      parentId="tools"
+      provider="com.intellij.aiplayground.ui.settings.LlmSettingsConfigurableProvider"
+      id="com.intellij.aiplayground.settings.llm"
+      bundle="messages.AIPlaygroundUIBundle"
+      key="configurable.ai.playground.display.name"/>
+
+    <projectService
+      serviceInterface="com.intellij.aiplayground.ui.chat.ChatUiProvider"
+      serviceImplementation="com.intellij.aiplayground.ui.chat.editor.EditorChatUiProvider"/>
+
+    <fileEditorProvider id="settingsWindow" implementation="com.intellij.aiplayground.ui.chat.editor.ChatFileEditorProvider"/>
+    <editorTabTitleProvider implementation="com.intellij.aiplayground.ui.chat.editor.ChatFileEditorProvider"/>
+    <aiplayground.llmSettingsProvider implementation="com.intellij.aiplayground.ui.settings.langchain.LangChainLlmSettingsExtensionPoint"/>
+    <aiplayground.llmSettingsProvider implementation="com.intellij.aiplayground.ui.settings.ollama.OllamaLlmSettingsExtensionPoint"/>
+    <aiplayground.llmSettingsProvider
+      implementation="com.intellij.aiplayground.ui.settings.aiassistant.AIAssistantLlmSettingsExtensionPoint"/>
+    <aiplayground.llmSettingsProvider
+      implementation="com.intellij.aiplayground.ui.settings.openai.OpenAILlmSettingsExtensionPoint"/>
+
+    <virtualFileSystem implementationClass="com.intellij.aiplayground.ui.chat.editor.PlaygroundFileSystem" key="ai-playground"
+                       physical="false"/>
+
+    <backgroundPostStartupActivity implementation="com.intellij.aiplayground.ui.env.AIPlaygroundEnvVariablesStartupNotification"/>
+
+    <themeMetadataProvider path="/META-INF/AIPlayground.themeMetadata.json"/>
+
+  </extensions>
+
+  <!-- Notification groups -->
+  <extensions defaultExtensionNs="com.intellij">
+    <notificationGroup id="AIPlayground.Notifications" displayType="BALLOON" bundle="messages.AIPlaygroundUIBundle" key="notification.group.name"/>
+    <statistics.notificationIdsHolder implementation="com.intellij.aiplayground.ui.statistics.AIPlaygroundNotificationsIdsHolder"/>
+  </extensions>
+
+  <!-- Actions provided by this module -->
+  <actions resource-bundle="messages.AIPlaygroundUIBundle">
+    <action
+      id="AIPlayground.ManageProviders"
+      icon="AllIcons.Actions.InlayGear"
+      class="com.intellij.aiplayground.ui.chat.actions.ManageProviders"
+    />
+  </actions>
+
+  <!-- Listeners can be registered here if needed -->
+  <!-- <applicationListeners> ... </applicationListeners> -->
+  <!-- <projectListeners> ... </projectListeners> -->
+</idea-plugin>

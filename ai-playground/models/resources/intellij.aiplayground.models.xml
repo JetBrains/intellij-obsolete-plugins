@@ -1,0 +1,28 @@
+<idea-plugin visibility="internal">
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <module name="intellij.libraries.kotlinx.serialization.core"/>
+    <module name="intellij.libraries.kotlinx.serialization.json"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.credentialStore"/>
+    <module name="intellij.platform.editor.ui"/>
+    <module name="intellij.platform.ide.progress"/>
+    <module name="intellij.platform.projectModel"/>
+    <module name="intellij.platform.statistics"/>
+    <module name="intellij.platform.util.coroutines"/>
+  </dependencies>
+  <!-- endregion -->
+  <!-- Dependencies section - specify modules or plugins this module depends on -->
+  <extensionPoints>
+    <extensionPoint qualifiedName="com.intellij.aiplayground.llmServiceProvider"
+                    interface="com.intellij.aiplayground.models.extension.LlmServiceExtension"
+                    dynamic="true"/>
+  </extensionPoints>
+  <extensions defaultExtensionNs="com.intellij">
+    <projectService serviceInterface="com.intellij.aiplayground.models.chat.ChatRepository"
+                    serviceImplementation="com.intellij.aiplayground.models.chat.ChatRepositoryService"/>
+    <statistics.counterUsagesCollector implementationClass="com.intellij.aiplayground.models.statistic.PlaygroundCollector"/>
+    <applicationSettings service="com.intellij.aiplayground.models.settings.PlaygroundSettings"/>
+    <projectSettings service="com.intellij.aiplayground.models.chat.ChatStorageService"/>
+  </extensions>
+</idea-plugin>

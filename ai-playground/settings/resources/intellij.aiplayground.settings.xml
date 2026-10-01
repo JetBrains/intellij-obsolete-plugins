@@ -1,0 +1,14 @@
+<idea-plugin>
+  <dependencies>
+    <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+    <module name="intellij.aiplayground.models"/>
+    <module name="intellij.libraries.kotlinx.coroutines.core"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.credentialStore"/>
+    <module name="intellij.platform.projectModel"/>
+    <!-- endregion -->
+  </dependencies>
+  <extensions defaultExtensionNs="com.intellij">
+    <postStartupActivity implementation="com.intellij.aiplayground.settings.SettingsStartupActivity"/>
+  </extensions>
+</idea-plugin> 

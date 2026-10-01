@@ -1,0 +1,23 @@
+---
+description: General project structure
+globs: 
+alwaysApply: false
+---
+
+# Your rule content
+
+- You working on a plugin for intellij, project is only this plugin, but you could access the whole intellij, the big project root is ../..
+- When I provide you a link to a file it's always a file from the git root, not project root. Git root in  ../..
+- src directory already has a package prefix, named: package "com.intellij.aiplayground"
+- you could find all source code files in src
+- you could find all docs in resoures
+- feel free to read files outside of the project.
+- write code consistantly and read files around in the project
+- think about how you will test the functionality
+- read about v2 modules and plugins in ../../docs/4_man/Modularization/
+- generally there are a lot of docs in ../../docs
+- you could find compose examples in ../../community/platform/jewel/foundation/src/main/kotlin/org/jetbrains/jewel/foundation
+
+
+
+
