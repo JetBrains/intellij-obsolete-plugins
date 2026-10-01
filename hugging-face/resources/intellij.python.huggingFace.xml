@@ -1,0 +1,56 @@
+<idea-plugin>
+
+  <resource-bundle>messages.HuggingFaceProBundle</resource-bundle>
+
+  <dependencies>
+    <plugin id="com.intellij.modules.python-pro-fleet-not-capable"/>
+    <module name="intellij.jupyter.psi"/>
+    <module name="intellij.jupyter.core"/>
+    <plugin id="com.intellij.modules.python"/>
+    <module name="intellij.python"/>
+    <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+    <module name="intellij.libraries.jackson"/>
+    <module name="intellij.libraries.jackson.databind"/>
+    <module name="intellij.libraries.jackson.module.kotlin"/>
+    <module name="intellij.libraries.miglayout.swing"/>
+    <module name="intellij.notebooks.ui"/>
+    <module name="intellij.platform.analysis"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.impl"/>
+    <module name="intellij.platform.core.ui"/>
+    <module name="intellij.platform.editor.ui"/>
+    <module name="intellij.platform.ide"/>
+    <module name="intellij.platform.ide.core"/>
+    <module name="intellij.platform.ide.impl"/>
+    <module name="intellij.platform.lang.impl"/>
+    <module name="intellij.platform.projectModel"/>
+    <module name="intellij.platform.statistics"/>
+    <module name="intellij.platform.util.ui"/>
+    <module name="intellij.python.community.impl.huggingFace"/>
+    <!-- endregion -->
+  </dependencies>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <toolWindow id="HfCacheToolWindow" anchor="bottom" canCloseContents="false"
+                factoryClass="com.intellij.python.huggingFace.cacheManager.HfCacheToolWindowFactory"
+                icon="com.intellij.python.community.impl.huggingFace.icons.PythonCommunityImplHuggingFaceIcons.ToolWindowHuggingFace"/>
+  </extensions>
+
+  <actions resource-bundle="messages.HuggingFaceProBundle">
+    <action id="HfOpenModelSelectionWindow"
+            class="com.intellij.python.huggingFace.modelChoice.HfOpenModelSelectionWindowAction"
+            icon="com.intellij.python.community.impl.huggingFace.icons.PythonCommunityImplHuggingFaceIcons.Logo">
+      <add-to-group group-id="CodeMenu" anchor="after" relative-to-action="SaveAsTemplate"/>
+    </action>
+
+    <group id="HfCacheManagementContextMenu">
+      <action id="HfRemoveFromCacheAction"
+              class="com.intellij.python.huggingFace.cacheManager.ui.HfRemoveFromCacheAction"
+              icon="com.intellij.icons.AllIcons.General.Delete"/>
+
+      <action id="HfCopyPathToClipboard"
+              class="com.intellij.python.huggingFace.cacheManager.ui.HfCopyPathToClipboard"
+              icon="com.intellij.icons.AllIcons.General.Copy"/>
+    </group>
+  </actions>
+</idea-plugin>

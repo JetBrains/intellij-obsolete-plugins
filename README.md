@@ -52,3 +52,4 @@ This repository includes the following plugins:
   * [Spark](https://plugins.jetbrains.com/plugin/21700-spark)
   * [Zeppelin](https://plugins.jetbrains.com/plugin/21673-zeppelin)
   * [Data Wrangler](data-wrangler/) – Data exploration, cleaning, and preparation tool for pandas/Polars and tabular data in Python and Jupyter notebooks (compatible with IntelliJ IDEA Ultimate / PyCharm Professional).
+  * [Hugging Face](hugging-face/) – Hugging Face models and datasets integration, auto-completion, hover documentation, and cache management for Python (compatible with IntelliJ IDEA / PyCharm).

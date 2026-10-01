@@ -1,0 +1,17 @@
+<idea-plugin>
+  <id>intellij.python.huggingFace</id>
+  <name>Hugging Face</name>
+  <vendor>JetBrains</vendor>
+  <description><![CDATA[
+    Hugging Face integration for PyCharm. Provides code completion, documentation, dataset and model inspection, and cache management for Hugging Face models and datasets.
+  ]]></description>
+
+  <dependencies>
+    <plugin id="com.intellij.modules.python"/>
+  </dependencies>
+
+  <content namespace="jetbrains">
+    <module name="intellij.python.community.impl.huggingFace"/>
+    <module name="intellij.python.huggingFace"/>
+  </content>
+</idea-plugin>
