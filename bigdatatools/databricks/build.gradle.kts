@@ -48,6 +48,10 @@ dependencies {
   implementation(
     "com.databricks:databricks-sdk-java:${providers.gradleProperty("databricksSdkVersion").get()}",
   )
+
+  testImplementation(kotlin("test"))
+  testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+  testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 kotlin {
@@ -59,6 +63,9 @@ sourceSets {
     java.srcDirs("src", "gen")
     resources.srcDir("resources")
   }
+  test {
+    java.srcDirs("test")
+  }
 }
 
 intellijPlatform {
@@ -67,6 +74,10 @@ intellijPlatform {
       sinceBuild = providers.gradleProperty("pluginSinceBuild")
     }
   }
+}
+
+tasks.test {
+  useJUnitPlatform()
 }
 
 tasks.withType<JavaCompile>().configureEach {

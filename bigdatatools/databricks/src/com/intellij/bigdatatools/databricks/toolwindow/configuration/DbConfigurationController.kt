@@ -269,6 +269,10 @@ internal class DbConfigurationController(val project: Project, val dataManager: 
         }
         text("").bindText(syncTask.processListener.statusMessage).component.isEditable = false
       }.noGap()
+
+      row {
+        comment(DatabricksBundle.message("sync.git.ignored.files.hint"))
+      }.noGap()
     }
   }
 

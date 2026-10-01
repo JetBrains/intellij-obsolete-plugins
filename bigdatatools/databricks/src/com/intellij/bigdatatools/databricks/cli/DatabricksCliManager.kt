@@ -90,7 +90,9 @@ object DatabricksCliManager {
     return outputDir
   }
 
-  private const val SUPPORTED_CLI_VERSION = "0.218.1"
+  // PY-85443: the version must read `.git/info/exclude` correctly (broken before CLI 0.220 due to an
+  // upstream typo) and keep the `sync SRC DST --watch --output json` contract parsed by SyncProcessListener.
+  private const val SUPPORTED_CLI_VERSION = "1.11.0"
   private const val CLI_FOLDER_NAME = "databricks_cli_${SUPPORTED_CLI_VERSION}"
 
   private fun getLastFocusedOrOpenedProject(): Project {
