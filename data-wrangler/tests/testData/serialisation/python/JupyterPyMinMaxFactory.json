@@ -1,0 +1,10 @@
+{
+  "command_factory_class" : "com.intellij.dataWrangler.jupyterPython.operations.JupyterPyMinMaxFactory",
+  "command_params" : {
+    "props" : {
+      "column" : "abc",
+      "min" : 123,
+      "max" : 123
+    }
+  }
+}

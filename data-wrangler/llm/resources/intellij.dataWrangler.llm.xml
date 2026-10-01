@@ -1,0 +1,18 @@
+<idea-plugin visibility="internal" package="com.intellij.dataWrangler.llm">
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <module name="intellij.libraries.jetbrains.annotations"/>
+    <module name="intellij.libraries.kotlinx.serialization.json"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.ui"/>
+    <module name="intellij.platform.editor.ui"/>
+    <module name="intellij.platform.ide.impl"/>
+  </dependencies>
+  <!-- endregion -->
+  <extensionPoints>
+    <extensionPoint qualifiedName="com.intellij.dataWrangler.llm.dwCommandAction"
+                    interface="com.intellij.dataWrangler.llm.DWCommandAction"
+                    dynamic="true">
+    </extensionPoint>
+  </extensionPoints>
+</idea-plugin>

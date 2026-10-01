@@ -1,0 +1,18 @@
+<idea-plugin package="com.intellij.dataWrangler" visibility="internal">
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <module name="intellij.libraries.jetbrains.annotations"/>
+    <module name="intellij.platform.analysis"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.ui"/>
+    <module name="intellij.platform.ide"/>
+  </dependencies>
+  <!-- endregion -->
+
+  <extensionPoints>
+    <extensionPoint qualifiedName="com.intellij.dataWrangler.engine"
+                    interface="com.intellij.dataWrangler.executor.DataWranglerEngine"
+                    dynamic="true">
+    </extensionPoint>
+  </extensionPoints>
+</idea-plugin>

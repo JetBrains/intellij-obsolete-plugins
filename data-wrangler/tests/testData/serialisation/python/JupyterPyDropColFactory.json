@@ -1,0 +1,8 @@
+{
+  "command_factory_class" : "com.intellij.dataWrangler.jupyterPython.operations.JupyterPyDropColFactory",
+  "command_params" : {
+    "props" : {
+      "column" : "abc"
+    }
+  }
+}

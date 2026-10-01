@@ -1,0 +1,64 @@
+<idea-plugin package="com.intellij.dataWrangler.core">
+
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <module name="intellij.grid.csv.core.impl"/>
+    <module name="intellij.charts"/>
+    <module name="intellij.dataWrangler"/>
+    <module name="intellij.dataWrangler.impl"/>
+    <module name="intellij.grid.charts.impl"/>
+    <module name="intellij.grid.core.impl"/>
+    <module name="intellij.grid.impl"/>
+    <module name="intellij.libraries.jetbrains.annotations"/>
+    <module name="intellij.libraries.kotlin.reflect"/>
+    <module name="intellij.libraries.kotlinx.datetime"/>
+    <module name="intellij.libraries.kotlinx.html"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.ui"/>
+    <module name="intellij.platform.editor.ui"/>
+    <module name="intellij.platform.ide"/>
+    <module name="intellij.platform.ide.impl"/>
+    <module name="intellij.platform.util.ui"/>
+  </dependencies>
+  <!-- endregion -->
+
+  <!--Switch on after release-->
+  <extensions defaultExtensionNs="com.intellij">
+    <dataWrangler.engine implementation="com.intellij.dataWrangler.core.engine.CoreDataWranglerEngine"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <registryKey key="tables.datawrangler.plugin.show.core.internal.action"
+                 defaultValue="false"
+                 restartRequired="false"
+                 description="Enabled and make visible DataWrangler based on kotlin data frame library"/>
+  </extensions>
+
+  <actions resource-bundle="messages.CoreDataWranglerBundle">
+    <group id="core.statistics.panel.Show" popup="true" icon="com.intellij.grid.core.impl.icons.GridCoreImplIcons.StatisticsPanel"
+           class="com.intellij.dataWrangler.core.statistics.action.CoreStatisticsDisplayActionGroup">
+      <action id="core.statistics.panel.Show.Off"
+              class="com.intellij.dataWrangler.core.statistics.action.CoreStatisticsDisplayAction$StatisticsShowOff"/>
+      <action id="core.statistics.panel.Show.Compact"
+              class="com.intellij.dataWrangler.core.statistics.action.CoreStatisticsDisplayAction$StatisticsShowCompact"/>
+      <action id="core.statistics.panel.Show.Detailed"
+              class="com.intellij.dataWrangler.core.statistics.action.CoreStatisticsDisplayAction$StatisticsShowDetailed"/>
+      <add-to-group group-id="Console.EditorTableResult.Group" anchor="last"/>
+    </group>
+  </actions>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <registryKey key="tables.static.statistics.header"
+                 defaultValue="true"
+                 restartRequired="false"
+                 description="Add statistics header to static files"/>
+
+  </extensions>
+
+  <extensionPoints>
+    <extensionPoint qualifiedName="com.intellij.dataWrangler.core.statistics.header"
+                    beanClass="com.intellij.dataWrangler.core.statistics.CoreStatisticsHeader">
+    </extensionPoint>
+  </extensionPoints>
+
+</idea-plugin>

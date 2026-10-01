@@ -1,0 +1,10 @@
+{
+  "command_factory_class" : "com.intellij.dataWrangler.jupyterPython.operations.JupyterPySplitFactory",
+  "command_params" : {
+    "props" : {
+      "column" : "abc",
+      "delimiter" : "abc",
+      "maxSplits" : 123
+    }
+  }
+}

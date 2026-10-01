@@ -1,0 +1,9 @@
+{
+  "command_factory_class" : "com.intellij.dataWrangler.jupyterPython.operations.JupyterPyDropRowsFactory",
+  "command_params" : {
+    "props" : {
+      "from" : 123,
+      "to" : 123
+    }
+  }
+}

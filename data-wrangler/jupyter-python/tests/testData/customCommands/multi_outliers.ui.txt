@@ -1,0 +1,62 @@
+Other > Drop Outliers
+--------------------
+  In columns
+  |comboBox⌄|
+      column 0
+      column 1
+      column 2
+
+  Multiplier
+  |comboBox⌄|
+      1.5
+      1.0
+      2.0
+      3.0
+
+  Outliers threshold
+  |textField(2)|
+--------------------
+
+Other > Group By
+--------------------
+  Columns
+  |comboBox⌄|
+      column 0
+      column 1
+      column 2
+
+  operation
+  |comboBox⌄|
+      mean
+      sum
+      min
+      max
+      count
+
+--------------------
+
+Other > Project
+--------------------
+  columns
+  |comboBox⌄|
+      column 0
+      column 1
+      column 2
+
+--------------------
+
+Other > Sort Values
+--------------------
+  Column
+  |comboBox⌄|
+      column 0
+      column 1
+      column 2
+
+  order
+  |comboBox⌄|
+      ascending
+      descending
+
+--------------------
+

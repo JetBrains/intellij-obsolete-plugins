@@ -1,0 +1,9 @@
+{
+  "command_factory_class" : "com.intellij.dataWrangler.jupyterPython.operations.JupyterPyHandleOutliersWithIQRFactory",
+  "command_params" : {
+    "props" : {
+      "column" : "abc",
+      "multiplier" : "ONE"
+    }
+  }
+}

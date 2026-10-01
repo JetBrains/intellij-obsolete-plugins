@@ -1,0 +1,93 @@
+<idea-plugin visibility="internal" package="com.intellij.dataWrangler.impl">
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <plugin id="com.intellij.database"/>
+    <module name="intellij.dataWrangler"/>
+    <module name="intellij.dataWrangler.llm"/>
+    <module name="intellij.database.core.impl"/>
+    <module name="intellij.database.impl"/>
+    <module name="intellij.database.util"/>
+    <module name="intellij.grid.core.impl"/>
+    <module name="intellij.grid.csv.core.impl"/>
+    <module name="intellij.grid.impl"/>
+    <module name="intellij.libraries.jetbrains.annotations"/>
+    <module name="intellij.libraries.kotlin.reflect"/>
+    <module name="intellij.platform.analysis"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.impl"/>
+    <module name="intellij.platform.core.ui"/>
+    <module name="intellij.platform.editor.ui"/>
+    <module name="intellij.platform.ide"/>
+    <module name="intellij.platform.ide.core"/>
+    <module name="intellij.platform.ide.impl"/>
+    <module name="intellij.platform.statistics"/>
+    <module name="intellij.platform.util.coroutines"/>
+    <module name="intellij.platform.util.ui"/>
+  </dependencies>
+  <!-- endregion -->
+
+  <actions resource-bundle="messages.DataWranglerBundleImpl">
+    <!--<action id="DataWranglerTablePanel.Show"-->
+    <!--        class="com.intellij.dataWrangler.impl.action.DataWranglerPanelToggleAction"-->
+    <!--        icon="com.intellij.dataWrangler.DataWranglerIcons.DataWrangler">-->
+      <!--<add-to-group group-id="Console.EditorTableResult.Group" anchor="last"/>-->
+    <!--</action>-->
+    <action id="DataWrangler.Hide.Panel"
+            class="com.intellij.dataWrangler.impl.action.DataWranglerPanelHideAction"
+            icon="AllIcons.General.HideToolWindow">
+    </action>
+
+    <action id="DataWrangler.File.Export"
+            class="com.intellij.dataWrangler.impl.action.DataWranglerDataExportAction"
+            icon="AllIcons.Actions.Download">
+    </action>
+
+    <action id="DataWrangler.Csv.File.Export"
+            class="com.intellij.dataWrangler.impl.action.DataWranglerDataExportCsvAction"
+            icon="AllIcons.Nodes.DataTables">
+    </action>
+
+    <action id="DataWrangler.Copy.Code"
+            class="com.intellij.dataWrangler.impl.action.CopyDataWranglerCodeAction"
+            icon="AllIcons.Actions.Copy">
+    </action>
+
+    <group id="DataWrangler.Export.Toolbar" popup="true" class="com.intellij.dataWrangler.impl.view.steps.AddActionGroupPopup">
+      <separator key="DataWrangler.export.panel.title"/>
+      <reference id="DataWrangler.Copy.Code"/>
+      <separator/>
+      <reference id="DataWrangler.Csv.File.Export"/>
+      <reference id="DataWrangler.File.Export"/>
+    </group>
+
+
+    <group id="DataWrangler.Steps.Export">
+      <reference ref="DataWrangler.Export.Toolbar"/>
+    </group>
+
+    <group id="DataWrangler.Operations.Toolbar"/>
+    <group id="DataWrangler.Operations.Popup"/>
+
+    <group id="DataWrangler.Transformations.Popup" popup="true">
+      <action id="DataWrangler.Revert.Steps"
+              class="com.intellij.dataWrangler.impl.action.RevertTransformationsAction"
+              icon="AllIcons.Actions.Rollback">
+      </action>
+      <action id="DataWrangler.Remove.Step"
+              class="com.intellij.dataWrangler.impl.action.RemoveTransformationAction"
+              icon="AllIcons.General.Delete">
+      </action>
+    </group>
+  </actions>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <statistics.counterUsagesCollector implementationClass="com.intellij.dataWrangler.impl.fus.DataWranglerProviderCollector"/>
+  </extensions>
+
+  <extensionPoints>
+    <extensionPoint qualifiedName="com.intellij.dataWrangler.commandAction"
+                    interface="com.intellij.dataWrangler.impl.view.transformation.CommandAction" >
+    </extensionPoint>
+  </extensionPoints>
+
+</idea-plugin>

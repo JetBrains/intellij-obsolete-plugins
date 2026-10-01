@@ -1,0 +1,270 @@
+Sort and filter > Filter
+--------------------
+  |Condition|Expression|
+  <<<<<<<<<<<<<<<<<<
+    Column
+    |comboBox⌄|
+        column 1
+        column 2
+
+    Value
+    |textField(0.0)|
+    Condition
+    |comboBox⌄|
+        less than
+        equal to
+        greater than
+        not equal to
+        greater than or equal to
+        less than or equal to
+
+  ==================
+    Expression
+    |textField()|
+  >>>>>>>>>>>>>>>>>>
+--------------------
+
+Clean and remove > Drop Column
+--------------------
+  Column
+  |comboBox⌄|
+      column 0
+      column 1
+      column 2
+
+--------------------
+
+Clean and remove > Drop Rows
+--------------------
+  From row ID
+  |textField(0)|
+  To row ID
+  |textField(0)|
+--------------------
+
+Clean and remove > Drop missing values
+--------------------
+  Column
+  |comboBox⌄|
+      column 0
+      column 1
+      column 2
+
+--------------------
+
+Clean and remove > Remove duplicates
+--------------------
+  Column
+  |comboBox⌄|
+      column 0
+      column 1
+      column 2
+
+--------------------
+
+Clean and remove > Remove rows with NaN values
+--------------------
+  ✔ At least one empty value in fields
+--------------------
+
+Find and replace > Find and replace
+--------------------
+  Column
+  |comboBox⌄|
+      column 0
+      column 1
+      column 2
+
+  Old value
+  |textField()|
+  New value
+  |textField()|
+  ✔ Match case
+  ✔ Match full string
+  ✔ Use regular expression
+--------------------
+
+Create additional column > One-hot encoding categorical variables
+--------------------
+  Column
+  |comboBox⌄|
+      column 0
+      column 1
+      column 2
+
+--------------------
+
+Create additional column > Transform column with string
+--------------------
+  Column
+  |comboBox⌄|
+      column 0
+
+  Transformation type
+  |comboBox⌄|
+      Convert to upper case
+      Convert to lower case
+      Capitalize first character
+
+  New column name
+  |textField()|
+--------------------
+
+Other > Change a type of column
+--------------------
+  Column
+  |comboBox⌄|
+      column 0
+      column 1
+      column 2
+
+  New type
+  |comboBox⌄|
+      FLOAT
+      INT
+      STRING
+      DATE
+
+--------------------
+
+Other > Fill missing
+--------------------
+  Column
+  |comboBox⌄|
+      column 0
+      column 1
+      column 2
+
+  Value
+  |textField()|
+  ✔ Empty string is a missing value
+--------------------
+
+Other > Group by
+--------------------
+  columns
+  |comboBox⌄|
+      column 0
+      column 1
+      column 2
+
+  aggregate
+  |comboBox⌄|
+      MEAN
+      SUM
+      MIN
+      MAX
+      COUNT
+
+--------------------
+
+Other > Round numerical
+--------------------
+  Column
+  |comboBox⌄|
+      column 1
+      column 2
+
+  Decimals
+  |textField(0)|
+  Round type
+  |comboBox⌄|
+      Round
+      Ceil
+      Floor
+
+--------------------
+
+Other > Split column
+--------------------
+  Column
+  |comboBox⌄|
+      column 0
+
+  Delimiter
+  |textField(,)|
+  Maximum splits
+  |textField(2)|
+--------------------
+
+Normalize and scale > Min-Max scaling
+--------------------
+  Column
+  |comboBox⌄|
+      column 1
+      column 2
+
+  Min
+  |textField(0)|
+  Max
+  |textField(1)|
+--------------------
+
+Normalize and scale > Z-Score Normalization
+--------------------
+  Column
+  |comboBox⌄|
+      column 0
+      column 1
+      column 2
+
+--------------------
+
+Handling outliers or skewed distributions > Outlier Detection with Euclidean Distance
+--------------------
+  Column
+  |comboBox⌄|
+      column 1
+      column 2
+
+  Threshold
+  |textField(1.5)|
+--------------------
+
+Handling outliers or skewed distributions > Outlier Detection with IQR
+--------------------
+  Column
+  |comboBox⌄|
+      column 1
+      column 2
+
+  Multiplier
+  |comboBox⌄|
+      1.5
+      1.0
+      2.0
+      3.0
+
+--------------------
+
+Handling outliers or skewed distributions > Outlier Detection with MAD
+--------------------
+  Column
+  |comboBox⌄|
+      column 1
+      column 2
+
+  Threshold
+  |comboBox⌄|
+      2.5
+      3.0
+      3.5
+      4.0
+      5.0
+
+--------------------
+
+Handling outliers or skewed distributions > Reduce skewness
+--------------------
+  Column
+  |comboBox⌄|
+      column 1
+      column 2
+
+  Transformation
+  |comboBox⌄|
+      Logarithmic
+      Square root
+
+--------------------
+

@@ -1,0 +1,8 @@
+{
+  "command_factory_class" : "com.intellij.dataWrangler.jupyterPython.operations.JupyterPyRemoveEmptyCommandFactory",
+  "command_params" : {
+    "props" : {
+      "emptyValueFlag" : true
+    }
+  }
+}

@@ -1,0 +1,30 @@
+<idea-plugin implementation-detail="true" package="com.intellij.dataWrangler.plugin">
+  <id>com.intellij.dataWrangler.plugin</id>
+  <name>Data Wrangler</name>
+  <vendor>JetBrains</vendor>
+  <description><![CDATA[
+  Data Wrangler.
+  According to the research data preparation, pays a major role in ML workflows and also consumes a lot of time.
+  The task may be simplified by providing graphical ways of data manipulation.
+  Having API and UI for table data manipulation are prerequisites for guided data cleaning implementation.
+]]></description>
+
+  <dependencies>
+    <plugin id="intellij.grid.plugin"/>
+    <plugin id="com.intellij.modules.ultimate"/>
+  </dependencies>
+
+  <content namespace="jetbrains">
+    <module name="intellij.dataWrangler"/>
+    <module name="intellij.dataWrangler.core"/>
+    <module name="intellij.dataWrangler.impl"/>
+    <module name="intellij.dataWrangler.llm"/>
+    <module name="intellij.dataWrangler.jupyterPython"/>
+  </content>
+  <extensions defaultExtensionNs="com.intellij">
+    <registryKey key="tables.datawrangler.plugin.show.internal.action"
+                 defaultValue="true"
+                 restartRequired="false"
+                 description="Enabled and make visible OpenDataWrangler Plugin action"/>
+  </extensions>
+</idea-plugin>

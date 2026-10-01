@@ -51,3 +51,4 @@ This repository includes the following plugins:
   * [Metastore Core](https://plugins.jetbrains.com/plugin/21712-metastore-core)
   * [Spark](https://plugins.jetbrains.com/plugin/21700-spark)
   * [Zeppelin](https://plugins.jetbrains.com/plugin/21673-zeppelin)
+  * [Data Wrangler](data-wrangler/) – Data exploration, cleaning, and preparation tool for pandas/Polars and tabular data in Python and Jupyter notebooks (compatible with IntelliJ IDEA Ultimate / PyCharm Professional).

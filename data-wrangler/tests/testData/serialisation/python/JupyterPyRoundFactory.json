@@ -1,0 +1,10 @@
+{
+  "command_factory_class" : "com.intellij.dataWrangler.jupyterPython.operations.JupyterPyRoundFactory",
+  "command_params" : {
+    "props" : {
+      "column" : "abc",
+      "decimals" : 123,
+      "roundType" : "CEIL"
+    }
+  }
+}

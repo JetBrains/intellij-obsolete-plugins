@@ -1,0 +1,9 @@
+{
+  "command_factory_class" : "com.intellij.dataWrangler.jupyterPython.operations.JupyterGroupByCommandFactory",
+  "command_params" : {
+    "props" : {
+      "columns" : [ "abc" ],
+      "aggregate" : "SUM"
+    }
+  }
+}

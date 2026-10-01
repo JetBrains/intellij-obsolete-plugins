@@ -1,0 +1,13 @@
+{
+  "command_factory_class" : "com.intellij.dataWrangler.jupyterPython.operations.JupyterPyReplaceFactory",
+  "command_params" : {
+    "props" : {
+      "column" : "abc",
+      "oldValue" : "abc",
+      "newValue" : "abc",
+      "matchCase" : true,
+      "fullMatch" : true,
+      "isRegex" : true
+    }
+  }
+}

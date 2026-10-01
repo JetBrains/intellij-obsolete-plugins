@@ -1,0 +1,11 @@
+{
+  "command_factory_class" : "com.intellij.dataWrangler.jupyterPython.operations.JupyterPyFilterFactory",
+  "command_params" : {
+    "props" : {
+      "condition#" : "Constructed",
+      "condition.column" : "abc",
+      "condition.value" : 123.0,
+      "condition.condition" : "LESS"
+    }
+  }
+}

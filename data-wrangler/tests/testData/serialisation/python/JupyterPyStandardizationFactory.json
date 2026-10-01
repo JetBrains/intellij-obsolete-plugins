@@ -1,0 +1,8 @@
+{
+  "command_factory_class" : "com.intellij.dataWrangler.jupyterPython.operations.JupyterPyStandardizationFactory",
+  "command_params" : {
+    "props" : {
+      "column" : "abc"
+    }
+  }
+}

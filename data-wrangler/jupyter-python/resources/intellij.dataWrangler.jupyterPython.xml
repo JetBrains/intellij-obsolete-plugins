@@ -1,0 +1,106 @@
+<idea-plugin visibility="internal" package="com.intellij.dataWrangler.jupyterPython">
+  <!--JuPy is only for py.tables-->
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <plugin id="com.intellij.database"/>
+    <module name="intellij.dataWrangler"/>
+    <module name="intellij.dataWrangler.impl"/>
+    <module name="intellij.dataWrangler.llm"/>
+    <module name="intellij.database"/>
+    <module name="intellij.database.core.impl"/>
+    <module name="intellij.database.util"/>
+    <module name="intellij.grid.core.impl"/>
+    <module name="intellij.grid.csv.core.impl"/>
+    <module name="intellij.grid.impl"/>
+    <module name="intellij.jupyter.core"/>
+    <module name="intellij.jupyter.psi"/>
+    <module name="intellij.jupyter.py"/>
+    <module name="intellij.jupyter.py.pro"/>
+    <module name="intellij.jupyter.tables"/>
+    <module name="intellij.libraries.jackson"/>
+    <module name="intellij.libraries.jackson.databind"/>
+    <module name="intellij.libraries.jetbrains.annotations"/>
+    <module name="intellij.libraries.kotlin.reflect"/>
+    <module name="intellij.libraries.kotlinx.serialization.json"/>
+    <module name="intellij.notebooks.jupyter.core"/>
+    <module name="intellij.notebooks.ui"/>
+    <module name="intellij.notebooks.visualization"/>
+    <module name="intellij.platform.analysis"/>
+    <module name="intellij.platform.codeStyle"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.impl"/>
+    <module name="intellij.platform.core.ui"/>
+    <module name="intellij.platform.debugger"/>
+    <module name="intellij.platform.editor.ui"/>
+    <module name="intellij.platform.execution"/>
+    <module name="intellij.platform.ide"/>
+    <module name="intellij.platform.ide.core"/>
+    <module name="intellij.platform.ide.impl"/>
+    <module name="intellij.platform.lang.impl"/>
+    <module name="intellij.platform.projectModel"/>
+    <module name="intellij.platform.statistics"/>
+    <module name="intellij.platform.util.coroutines"/>
+    <module name="intellij.platform.util.ex"/>
+    <module name="intellij.platform.util.ui"/>
+    <module name="intellij.python.scientific"/>
+    <module name="intellij.scientific.py.tables"/>
+    <module name="intellij.scientific.tables"/>
+  </dependencies>
+  <!-- endregion -->
+
+  <extensions defaultExtensionNs="com.intellij">
+    <dataWrangler.engine implementation="com.intellij.dataWrangler.jupyterPython.engine.PythonDataWranglerEngine"/>
+
+    <projectService serviceInterface="com.intellij.dataWrangler.llm.DataWranglerFacade"
+                    serviceImplementation="com.intellij.dataWrangler.jupyterPython.facade.DataWranglerFacadeImpl"/>
+
+    <registryKey key="datawrangler.plugin.custom.commands"
+                 defaultValue="false"
+                 restartRequired="false"
+                 description="Enables DataWrangle custom python operations"/>
+  </extensions>
+
+  <actions resource-bundle="messages.JupyterPyDataWranglerBundle">
+
+    <action id="DataWranglerPyTablePanel.Show"
+            class="com.intellij.dataWrangler.jupyterPython.actions.DataWranglerPyPanelToggleAction"
+            icon="com.intellij.dataWrangler.DataWranglerIcons.DataWrangler">
+      <add-to-group group-id="DataView.Table.Toolbar.Right" anchor="first"/>
+    </action>
+
+    <action id="DataWrangler.Jupyter.Show"
+            class="com.intellij.dataWrangler.jupyterPython.actions.DataWranglerOpenAction"
+            icon="com.intellij.dataWrangler.DataWranglerIcons.DataWrangler">
+      <add-to-group group-id="DS.Tables.Right.Toolbar" anchor="first"/>
+      <add-to-group group-id="PY.Tables.Right.Toolbar.MoreActionsGroup" anchor="first"/>
+    </action>
+
+    <action id="DataWrangler.TableFile.Show"
+            class="com.intellij.dataWrangler.jupyterPython.actions.DataWranglerOpenTableFileAction"
+            icon="com.intellij.dataWrangler.DataWranglerIcons.DataWrangler">
+      <add-to-group group-id="Console.EditorTableResult.Group" anchor="last"/>
+    </action>
+
+    <action id="DataWrangler.Jupyter.Cell.Export"
+            class="com.intellij.dataWrangler.jupyterPython.actions.DataWranglerJupyterCellExport"
+            icon="com.intellij.notebooks.jupyter.core.icons.JupyterCoreIcons.JupyterProject">
+      <add-to-group group-id="DataWrangler.Export.Toolbar" anchor="before" relative-to-action="DataWrangler.Copy.Code"/>
+    </action>
+
+    <action id="DataWrangler.Jupyter.Notebook.Export"
+            class="com.intellij.dataWrangler.jupyterPython.actions.DataWranglerExportNotebookAction"
+            icon="com.intellij.notebooks.jupyter.core.icons.JupyterCoreIcons.AddJupyterConnection">
+      <add-to-group group-id="DataWrangler.Export.Toolbar" anchor="before" relative-to-action="DataWrangler.Copy.Code"/>
+    </action>
+
+    <action id="DataWrangler.Jupyter.Python.Script.Export"
+            class="com.intellij.dataWrangler.jupyterPython.actions.DataWranglerExportPythonScriptAction"
+            icon="AllIcons.Language.Python">
+      <add-to-group group-id="DataWrangler.Export.Toolbar" anchor="after" relative-to-action="DataWrangler.Jupyter.Notebook.Export"/>
+    </action>
+  </actions>
+
+  <extensionPoints>
+    <extensionPoint qualifiedName="com.intellij.dataWrangler.openActionExtension" interface="com.intellij.dataWrangler.jupyterPython.actions.DataWranglerOpenActionExtension" dynamic="true"/>
+  </extensionPoints>
+</idea-plugin>

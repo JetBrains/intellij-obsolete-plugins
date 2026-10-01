@@ -1,0 +1,10 @@
+{
+  "command_factory_class" : "com.intellij.dataWrangler.jupyterPython.operations.JupyterStringTransformationCommandFactory",
+  "command_params" : {
+    "props" : {
+      "column" : "abc",
+      "condition" : "UPPER_CASE",
+      "newColumnName" : "abc"
+    }
+  }
+}

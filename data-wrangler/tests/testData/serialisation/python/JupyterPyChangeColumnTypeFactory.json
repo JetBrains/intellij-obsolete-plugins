@@ -1,0 +1,9 @@
+{
+  "command_factory_class" : "com.intellij.dataWrangler.jupyterPython.operations.JupyterPyChangeColumnTypeFactory",
+  "command_params" : {
+    "props" : {
+      "column" : "abc",
+      "newType" : "FLOAT"
+    }
+  }
+}
