@@ -4,8 +4,9 @@ package com.intellij.guice;
 import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.codeInsight.daemon.ImplicitUsageProvider;
 import com.intellij.guice.constants.GuiceAnnotations;
-import com.intellij.guice.model.extensions.GuiceBindingMatchStrategy;
+import com.intellij.guice.model.extensions.GuiceExtensionIndex;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifierListOwner;
 import org.jetbrains.annotations.NotNull;
@@ -24,8 +25,15 @@ public final class GuiceImplicitUsageProvider implements ImplicitUsageProvider {
   @Override
   public boolean isImplicitRead(@NotNull PsiElement element) {
     if (!(element instanceof PsiModifierListOwner owner)) return false;
+    GuiceExtensionIndex extensionIndex = GuiceExtensionIndex.get();
+    if (owner instanceof PsiField) {
+      return !extensionIndex.getSupportedFieldAnnotations().isEmpty()
+          && AnnotationUtil.isAnnotated(owner, extensionIndex.getSupportedFieldAnnotations(), 0);
+    }
     if (owner instanceof PsiMethod && AnnotationUtil.isAnnotated(owner, GuiceAnnotations.INJECTS, 0)) return true;
-    return AnnotationUtil.isAnnotated(owner, GuiceBindingMatchStrategy.getAllProvidesAnnotations(), 0);
+    return AnnotationUtil.isAnnotated(owner, extensionIndex.getAllProvidesAnnotations(), 0)
+        || (!extensionIndex.getMethodAnnotations().isEmpty()
+            && AnnotationUtil.isAnnotated(owner, extensionIndex.getMethodAnnotations(), 0));
   }
 
   @Override

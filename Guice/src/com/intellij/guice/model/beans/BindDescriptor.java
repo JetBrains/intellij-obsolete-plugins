@@ -8,12 +8,16 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.SmartPointerManager;
 import com.intellij.psi.SmartPsiElementPointer;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.uast.UCallExpression;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 
+@ApiStatus.Experimental
 public abstract class BindDescriptor {
   private final SmartPsiElementPointer<PsiElement> myCallExpressionPointer;
 
@@ -39,6 +43,41 @@ public abstract class BindDescriptor {
   }
 
   public abstract @Nullable PsiClass calculateBindingClass();
+
+  /**
+   * Whether this descriptor represents a special collection/optional binder (such as {@code Multibinder},
+   * {@code MapBinder}, or {@code OptionalBinder}) that produces wrapped bound types via {@link #getWrappedBoundTypes()}.
+   */
+  public boolean isSpecialBinder() {
+    return false;
+  }
+
+  /**
+   * Returns the primary wrapped type bound by this special binder descriptor, or {@code null} if not applicable.
+   */
+  public @Nullable PsiType getPrimaryWrappedType() {
+    return null;
+  }
+
+  /**
+   * Returns all wrapped key types bound by this special binder descriptor.
+   */
+  public @NotNull List<PsiType> getWrappedBoundTypes() {
+    PsiType primary = getPrimaryWrappedType();
+    return primary != null ? List.of(primary) : List.of();
+  }
+
+  /**
+   * Returns the presentation text provider for navigation popups produced by this special binder descriptor.
+   */
+  public @Nullable Function<PsiElement, String> getTextProvider() {
+    PsiType wrappedType = getPrimaryWrappedType();
+    if (wrappedType != null) {
+      String text = wrappedType.getPresentableText();
+      return _element -> text;
+    }
+    return null;
+  }
 
   /**
    * Returns the UAST call expression for querying binding structure.

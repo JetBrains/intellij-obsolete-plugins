@@ -4,7 +4,7 @@ package com.intellij.guice.model
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.guice.GuiceBundle
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.runReadActionBlocking
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.application.smartReadAction
 import com.intellij.openapi.diagnostic.ControlFlowException
 import com.intellij.openapi.diagnostic.logger
@@ -15,8 +15,6 @@ import com.intellij.platform.ide.progress.TaskCancellation
 import com.intellij.platform.ide.progress.withBackgroundProgress
 import com.intellij.platform.util.progress.RawProgressReporter
 import com.intellij.platform.util.progress.reportRawProgress
-import com.intellij.psi.PsiClassOwner
-import com.intellij.psi.PsiFile
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -124,7 +122,7 @@ class GuiceBackgroundIndexUpdater(
     fun scheduleInitialPopulation(module: Module, generation: Int) {
         if (ApplicationManager.getApplication().isUnitTestMode) {
             try {
-                runReadActionBlocking {
+                runReadAction {
                     val pathsBefore = model.getIndexedFilesSnapshot()
                     val files = model.discoverRelevantFiles(module)
                     for (vf in files) {
@@ -211,14 +209,5 @@ class GuiceBackgroundIndexUpdater(
             if (e is ControlFlowException || e is CancellationException) throw e
             LOG.warn("Cannot extract Guice entries from ${vf.path}", e)
         }
-    }
-
-    /**
-     * Re-indexes a single PSI file into the navigation index on the highlighting thread.
-     */
-    fun reindexFileInline(file: PsiFile, navigationIndex: GuiceNavigationIndex) {
-        val vf = file.virtualFile ?: return
-        val entries = if (file is PsiClassOwner) GuiceEntryProducer.extractFromFile(file) else emptySet()
-        navigationIndex.updateFile(vf.path, entries)
     }
 }

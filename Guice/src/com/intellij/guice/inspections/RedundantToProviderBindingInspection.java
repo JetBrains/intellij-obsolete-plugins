@@ -3,9 +3,9 @@ package com.intellij.guice.inspections;
 
 import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.codeInspection.LocalQuickFix;
-import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.guice.GuiceBundle;
 import com.intellij.guice.constants.GuiceAnnotations;
+import com.intellij.guice.model.extensions.GuiceCallPattern;
 import com.intellij.guice.utils.AnnotationUtils;
 import com.intellij.guice.utils.GuiceUtils;
 import com.intellij.psi.PsiClass;
@@ -13,28 +13,19 @@ import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.uast.UCallExpression;
-import org.jetbrains.uast.visitor.AbstractUastNonRecursiveVisitor;
 
 import static com.intellij.codeInsight.AnnotationUtil.CHECK_HIERARCHY;
 
 /**
  * Reports redundant {@code .toProvider()} bindings where the provider class is the same as
  * the one already declared via {@code @ProvidedBy} on the bound type.
- *
- * <p>Example:
- * <pre>
- * // Flagged: @ProvidedBy already specifies FooProvider
- * {@literal @}ProvidedBy(FooProvider.class)
- * class Foo {}
- * bind(Foo.class).toProvider(FooProvider.class);  // redundant
- *
- * // OK: different provider
- * bind(Foo.class).toProvider(SpecialFooProvider.class);
- * </pre>
  */
 public final class RedundantToProviderBindingInspection extends BaseUastInspection {
   public RedundantToProviderBindingInspection() {
-    super(UCallExpression.class);
+    extendCall(
+        GuiceCallPattern.named("toProvider").requireValueOrTypeArgument(),
+        RedundantToProviderBindingInspection::checkToProviderCall
+    );
   }
 
   @Override
@@ -43,42 +34,26 @@ public final class RedundantToProviderBindingInspection extends BaseUastInspecti
   }
 
   @Override
-  public @NotNull AbstractUastNonRecursiveVisitor buildUastVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
-    return new Visitor(this, holder, isOnTheFly);
-  }
-
-  @Override
   public @Nullable LocalQuickFix buildFix(PsiElement location, Object[] infos) {
     return new DeleteBindingFix(DeleteBindingFix.Mode.CHAIN_CALL);
   }
 
-  private static class Visitor extends BaseUastInspectionVisitor {
-    Visitor(@NotNull BaseUastInspection inspection, @NotNull ProblemsHolder holder, boolean onTheFly) {
-      super(inspection, holder, onTheFly);
+  private static void checkToProviderCall(@NotNull UCallExpression expression, @NotNull BaseUastInspectionVisitor visitor) {
+    PsiClass referentClass = GuiceUtils.resolveClassArgument(expression);
+    if (referentClass == null) {
+      return;
     }
-
-    @Override
-    public boolean visitCallExpression(@NotNull UCallExpression expression) {
-      if (!"toProvider".equals(expression.getMethodName())) {
-        return true;
-      }
-      PsiClass referentClass = GuiceUtils.resolveClassArgument(expression);
-      if (referentClass == null) {
-        return true;
-      }
-      final PsiClass boundClass = GuiceUtils.findImplementedClassForBinding(expression);
-      if (boundClass == null) {
-        return true;
-      }
-      if (!AnnotationUtil.isAnnotated(boundClass, GuiceAnnotations.PROVIDED_BY, CHECK_HIERARCHY)) {
-        return true;
-      }
-      final PsiClass providedByClass =
-        AnnotationUtils.resolveAnnotationClassValue(boundClass, GuiceAnnotations.PROVIDED_BY);
-      if (referentClass.equals(providedByClass)) {
-        registerClassArgumentError(expression);
-      }
-      return true;
+    final PsiClass boundClass = GuiceUtils.findImplementedClassForBinding(expression);
+    if (boundClass == null) {
+      return;
+    }
+    if (!AnnotationUtil.isAnnotated(boundClass, GuiceAnnotations.PROVIDED_BY, CHECK_HIERARCHY)) {
+      return;
+    }
+    final PsiClass providedByClass =
+      AnnotationUtils.resolveAnnotationClassValue(boundClass, GuiceAnnotations.PROVIDED_BY);
+    if (referentClass.equals(providedByClass)) {
+      visitor.registerClassArgumentError(expression);
     }
   }
 }

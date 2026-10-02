@@ -1,12 +1,15 @@
 // Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package com.intellij.guice.model;
 
+import org.jetbrains.annotations.ApiStatus;
+
 /**
  * The role of a {@link GuiceEntry} in the Guice binding graph.
  *
  * <p>Navigation is always between entries with <b>opposite</b> roles:
  * injection points navigate to binding sites, and vice versa.
  */
+@ApiStatus.Experimental
 public enum EntryRole {
   /**
    * An element that <b>consumes</b> a binding: {@code @Inject} fields, {@code @Inject}

@@ -1,34 +1,19 @@
 // Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package com.intellij.guice.model.extensions;
 
-import com.intellij.guice.model.beans.BindDescriptor;
 import com.intellij.guice.model.beans.MultimapBindDescriptor;
-import com.intellij.psi.PsiClass;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.uast.UCallExpression;
-
-import java.util.Set;
 
 /**
- * Contributor for Guice {@code MultimapBinder} bindings:
- * {@code MultimapBinder.newSetMultimapBinder()} and {@code multimapBinder()}.
+ * Contributor for {@code MultimapBinder.newSetMultimapBinder()} and {@code multimapBinder()}.
  */
 final class MultimapBinderContributor implements GuiceBindingContributor {
-
-  private static final Set<String> BINDING_WORDS = Set.of("newSetMultimapBinder", "multimapBinder");
-
   @Override
-  public @NotNull Set<String> getBindingWords() {
-    return BINDING_WORDS;
-  }
-
-  @Override
-  public boolean processCall(@NotNull UCallExpression call,
-                             @NotNull String methodName,
-                             @NotNull String resolvedQName,
-                             @NotNull PsiClass containingClass,
-                             @NotNull Set<BindDescriptor> descriptors) {
-    return ContributorUtil.processDualTypeBinderCall(
-        call, resolvedQName, "com.google.common.inject.MultimapBinder", descriptors, MultimapBindDescriptor::new);
+  public void register(@NotNull GuiceExtensionRegistrar registrar) {
+    registrar.registerDualTypeBinder(
+        GuiceCallPattern.named("newSetMultimapBinder", "multimapBinder")
+            .forBinder("com.google.common.inject.MultimapBinder"),
+        MultimapBindDescriptor::new
+    );
   }
 }

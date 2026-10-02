@@ -7,12 +7,9 @@ import com.intellij.guice.model.beans.BindToDescriptor;
 import com.intellij.guice.model.beans.BindToInstanceDescriptor;
 import com.intellij.guice.model.beans.BindToProviderDescriptor;
 import com.intellij.guice.utils.GuiceUtils;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiVariable;
-import com.intellij.psi.util.InheritanceUtil;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -27,7 +24,6 @@ import org.jetbrains.uast.visitor.AbstractUastVisitor;
 
 import java.util.List;
 import java.util.Set;
-import java.util.function.BiFunction;
 
 /**
  * Shared utility methods for {@link GuiceBindingContributor} implementations.
@@ -36,55 +32,23 @@ import java.util.function.BiFunction;
  * {@code com.intellij.guice.model.GuiceInjectorManager} and are extracted here
  * so that multiple contributors can share them.
  */
-@ApiStatus.Internal
+@ApiStatus.Experimental
 public final class ContributorUtil {
 
   private ContributorUtil() {
   }
 
+  @ApiStatus.Experimental
   @FunctionalInterface
-  interface DualTypeDescriptorFactory {
+  public interface DualTypeDescriptorFactory {
     @NotNull BindDescriptor create(@NotNull PsiElement source, @Nullable PsiType keyType, @Nullable PsiType valType);
-  }
-
-  static boolean processSingleTypeBinderCall(@NotNull UCallExpression call,
-                                             @NotNull String resolvedQName,
-                                             @NotNull String binderFqn,
-                                             @NotNull Set<BindDescriptor> descriptors,
-                                             @NotNull BiFunction<? super PsiElement, ? super PsiType, ? extends BindDescriptor> factory) {
-    if (!isBinderMethod(resolvedQName, call, binderFqn)) {
-      return false;
-    }
-    PsiElement outermostSource = getOutermostSource(call);
-    if (outermostSource != null) {
-      descriptors.add(factory.apply(outermostSource, extractSinglePsiType(call)));
-      return true;
-    }
-    return false;
-  }
-
-  static boolean processDualTypeBinderCall(@NotNull UCallExpression call,
-                                           @NotNull String resolvedQName,
-                                           @NotNull String binderFqn,
-                                           @NotNull Set<BindDescriptor> descriptors,
-                                           @NotNull DualTypeDescriptorFactory factory) {
-    if (!isBinderMethod(resolvedQName, call, binderFqn)) {
-      return false;
-    }
-    PsiElement outermostSource = getOutermostSource(call);
-    if (outermostSource != null) {
-      PsiType[] kv = extractDualPsiTypes(call);
-      descriptors.add(factory.create(outermostSource, kv[0], kv[1]));
-      return true;
-    }
-    return false;
   }
 
   /**
    * Checks whether a binder call chain or a local variable initialized by the binder call
    * invokes one of the given method names in the enclosing method.
    */
-  static boolean hasBinderCall(@NotNull BindDescriptor descriptor, String @NotNull ... methodNames) {
+  public static boolean hasBinderCall(@NotNull BindDescriptor descriptor, String @NotNull ... methodNames) {
     UCallExpression outermost = descriptor.getOutermostCall();
     if (outermost == null) return false;
     for (String methodName : methodNames) {
@@ -119,82 +83,6 @@ public final class ContributorUtil {
     return found[0];
   }
 
-
-  /**
-   * Checks whether the resolved method belongs to or returns the given binder class,
-   * using UAST for language-agnostic type resolution.
-   *
-   * <p>This handles two cases:
-   * <ol>
-   *   <li><b>Java / direct call</b>: {@code MapBinder.newMapBinder(...)} — the method's
-   *       containing class is the binder itself.</li>
-   *   <li><b>Kotlin extension / wrapper</b>: {@code mapBinder<K, V>()} — the containing
-   *       class is unrelated, but the call's return type is the binder class.</li>
-   * </ol>
-   *
-   * @param resolvedQName  the FQN of the method's containing class
-   * @param call           the UAST call expression
-   * @param binderFqn      the expected binder FQN (e.g., {@code "com.google.inject.multibindings.MapBinder"})
-   */
-  public static boolean isBinderMethod(@NotNull String resolvedQName,
-                                       @NotNull UCallExpression call,
-                                       @NotNull String binderFqn) {
-    // Direct match: method is declared on the binder class itself.
-    // A method of another Guice class, for example ThrowingProviderBinder, does not match.
-    if (binderFqn.equals(resolvedQName)) {
-      return true;
-    }
-
-    // UAST return type: covers Kotlin extensions, wrapper functions, etc.
-    PsiType returnType = call.getReturnType();
-    if (returnType instanceof PsiClassType ct) {
-      PsiClass returnClass = ct.resolve();
-      if (returnClass != null) {
-        String returnFqn = returnClass.getQualifiedName();
-        if (binderFqn.equals(returnFqn) || InheritanceUtil.isInheritor(returnClass, binderFqn)) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  /**
-   * Checks whether the resolved method belongs to a binding builder class hierarchy,
-   * handling Kotlin extension functions via UAST.
-   *
-   * <p>For Kotlin extensions like {@code LinkedBindingBuilder<T>.to()}, the containing
-   * class is the file-level class.  We detect these by checking the call's UAST
-   * receiver type, which resolves correctly for both Java qualified calls and Kotlin
-   * extension calls.
-   *
-   * @param resolvedQName  the FQN of the method's containing class
-   * @param call           the UAST call expression
-   * @param containingClass the resolved method's containing class
-   * @param builderFqn     the expected builder FQN (e.g., {@code "com.google.inject.binder.LinkedBindingBuilder"})
-   */
-  public static boolean isBindingBuilderMethod(@NotNull String resolvedQName,
-                                               @NotNull UCallExpression call,
-                                               @NotNull PsiClass containingClass,
-                                               @NotNull String builderFqn) {
-    // Direct match: method is declared on the builder class or its subtype.
-    if (builderFqn.equals(resolvedQName) ||
-        InheritanceUtil.isInheritor(containingClass, builderFqn)) {
-      return true;
-    }
-
-    // UAST receiver type: covers both Java qualified calls and Kotlin extension calls.
-    PsiType receiverType = call.getReceiverType();
-    if (receiverType instanceof PsiClassType ct) {
-      PsiClass receiverClass = ct.resolve();
-      if (receiverClass != null &&
-          (builderFqn.equals(receiverClass.getQualifiedName()) ||
-           InheritanceUtil.isInheritor(receiverClass, builderFqn))) {
-        return true;
-      }
-    }
-    return false;
-  }
 
   /**
    * Tries to create a binding-builder "tail" descriptor ({@code .to()}, {@code .toInstance()},
@@ -253,11 +141,6 @@ public final class ContributorUtil {
       return GuiceUtils.getBindingTypeFromExpression(args.getFirst());
     }
     return null;
-  }
-
-  public static @Nullable PsiClass extractSingleTypeArg(@NotNull UCallExpression call) {
-    PsiType type = extractSinglePsiType(call);
-    return type instanceof PsiClassType ct ? ct.resolve() : null;
   }
 
   public static PsiType @NotNull [] extractDualPsiTypes(@NotNull UCallExpression call) {

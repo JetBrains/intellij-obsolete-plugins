@@ -105,7 +105,6 @@ final class NonPersistentLineMarkerInfo<T extends PsiElement> extends RelatedIte
    * @param element the PSI element to attach the gutter icon to
    * @return a line marker info that supports multi-marker popup navigation on merged lines
    */
-  @SuppressWarnings("unchecked")
   static <T> @NotNull RelatedItemLineMarkerInfo<PsiElement> createFrom(
       @NotNull NavigationGutterIconBuilder<T> builder,
       @NotNull PsiElement element) {

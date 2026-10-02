@@ -3,16 +3,19 @@ package com.intellij.guice.model;
 
 import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.guice.constants.GuiceAnnotations;
-import com.intellij.guice.model.extensions.GuiceBindingMatchStrategy;
 import com.intellij.guice.model.beans.BindDescriptor;
 import com.intellij.guice.model.beans.BindToProviderDescriptor;
+import com.intellij.guice.model.extensions.GuiceCallContext;
+import com.intellij.guice.model.extensions.GuiceExtensionIndex;
 import com.intellij.guice.utils.GuiceUtils;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiJavaCodeReferenceElement;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifierListOwner;
 import com.intellij.psi.PsiParameter;
@@ -20,15 +23,16 @@ import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiWildcardType;
 import com.intellij.psi.presentation.java.SymbolPresentationUtil;
 import com.intellij.psi.util.InheritanceUtil;
+import com.intellij.psi.util.PsiUtil;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.uast.*;
-import org.jetbrains.uast.visitor.AbstractUastVisitor;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiConsumer;
 
 /**
  * Produces {@link GuiceEntry} instances from PSI/UAST elements.
@@ -37,19 +41,57 @@ import java.util.Set;
  * contributes to the navigation index. All type resolution (Provider unwrapping,
  * multibinder unwrapping) happens here at creation time, not during matching.
  */
+@ApiStatus.Experimental
 public final class GuiceEntryProducer {
   private GuiceEntryProducer() {}
+
+  /**
+   * Result of extracting Guice navigation entries and cross-file target dependencies from a file.
+   */
+  @ApiStatus.Internal
+  public record FileExtractionResult(
+      @NotNull Set<GuiceEntry> entries,
+      @NotNull Set<String> referencedTargetPaths,
+      @NotNull Set<String> referencedTargetClassNames,
+      @NotNull Set<VirtualFile> referencedTargetFiles
+  ) {
+    public static final FileExtractionResult EMPTY =
+        new FileExtractionResult(Set.of(), Set.of(), Set.of(), Set.of());
+
+    public FileExtractionResult(
+        @NotNull Set<GuiceEntry> entries,
+        @NotNull Set<String> referencedTargetPaths,
+        @NotNull Set<String> referencedTargetClassNames
+    ) {
+      this(entries, referencedTargetPaths, referencedTargetClassNames, Set.of());
+    }
+  }
 
   /**
    * Extracts all {@link GuiceEntry} instances from the classes of a file.
    * This includes nested, local and anonymous classes, for example {@code install(new AbstractModule() {...})}.
    */
+  @ApiStatus.Internal
   public static @NotNull Set<GuiceEntry> extractFromFile(@NotNull PsiFile file) {
+    return extractFileData(file).entries();
+  }
+
+  /**
+   * Extracts all {@link GuiceEntry} instances and cross-file target dependencies from a file.
+   */
+  @ApiStatus.Internal
+  public static @NotNull FileExtractionResult extractFileData(@NotNull PsiFile file) {
     Set<GuiceEntry> entries = new HashSet<>();
+    CallContextImpl callContext = new CallContextImpl(entries);
     for (PsiClass cls : GuiceInjectorManager.collectAllClasses(file)) {
-      entries.addAll(extractFromClass(cls));
+      extractFromClass(cls, callContext);
     }
-    return entries;
+    return new FileExtractionResult(
+        entries,
+        callContext.getReferencedTargetPaths(),
+        callContext.getReferencedTargetClassNames(),
+        callContext.getReferencedTargetFiles()
+    );
   }
 
   /**
@@ -65,15 +107,17 @@ public final class GuiceEntryProducer {
    *   <li>Binding calls in module {@code configure()} methods</li>
    * </ul>
    */
-  private static @NotNull Set<GuiceEntry> extractFromClass(@NotNull PsiClass cls) {
-    Set<GuiceEntry> entries = new HashSet<>();
+  private static void extractFromClass(@NotNull PsiClass cls, @NotNull CallContextImpl callContext) {
+    Set<GuiceEntry> entries = callContext.getEntries();
+    GuiceExtensionIndex extensionIndex = GuiceExtensionIndex.get();
 
-    // @Inject fields → INJECTION_POINT
+    // @Inject fields → INJECTION_POINT, plus any contributor-registered field annotations
     for (PsiField field : cls.getFields()) {
       if (isInjectAnnotated(field)) {
         GuiceEntry entry = createInjectionPointEntry(field, field.getType());
         entries.add(entry);
       }
+      extensionIndex.processFieldAnnotations(field, entries);
     }
 
     boolean isModule = InheritanceUtil.isInheritor(cls, "com.google.inject.Module");
@@ -84,7 +128,9 @@ public final class GuiceEntryProducer {
       if (method.isConstructor()) continue;
       boolean isInject = AnnotationUtil.isAnnotated(method, GuiceAnnotations.INJECTS, 0);
       boolean isProvides = isModule && AnnotationUtil.isAnnotated(method,
-          GuiceBindingMatchStrategy.getAllProvidesAnnotations(), 0);
+          extensionIndex.getAllProvidesAnnotations(), 0);
+      boolean isCustomAnnotated = !extensionIndex.getMethodAnnotations().isEmpty()
+          && AnnotationUtil.isAnnotated(method, extensionIndex.getMethodAnnotations(), 0);
 
       if (isInject || isProvides) {
         // Parameters → INJECTION_POINT
@@ -95,29 +141,22 @@ public final class GuiceEntryProducer {
         }
       }
 
+      if (isCustomAnnotated) {
+        extensionIndex.processMethodAnnotations(method, entries);
+      }
+
       // @Provides → BINDING_SITE for return type (only in Module classes)
       if (isProvides) {
         PsiType returnType = method.getReturnType();
         if (returnType != null) {
           PsiElement anchor = resolveDeclarationAnchor(method);
-
-          // Fast path: single check against the cached set of all @ProvidesInto* annotations.
-          // For standard @Provides methods (the common case), this avoids iterating strategies.
           boolean isKotlinMethod = method.getNavigationElement() != method;
-          if (AnnotationUtil.isAnnotated(method, GuiceBindingMatchStrategy.getProvidesIntoAnnotations(), 0)) {
-            // @ProvidesInto*: find the matching strategy and contribute the collection type.
-            for (GuiceBindingMatchStrategy strategy : GuiceBindingMatchStrategy.EP_NAME.getExtensionList()) {
-              Collection<String> strategyAnnotations = strategy.getProvidesAnnotations();
-              if (!strategyAnnotations.isEmpty()
-                  && AnnotationUtil.isAnnotated(method, strategyAnnotations, 0)) {
-                for (PsiType wrappedType : strategy.wrapProvidesTypes(method)) {
-                  PsiType keyType = isKotlinMethod ? unwrapKotlinWildcards(wrappedType) : wrappedType;
-                  entries.add(new GuiceEntry(
-                      new GuiceBindingKey(keyType, GuiceQualifiers.fromDeclaration(method)), method, anchor,
-                      EntryRole.BINDING_SITE, GuiceEntryProducer::providesMethodText));
-                }
-                break;
-              }
+          if (AnnotationUtil.isAnnotated(method, extensionIndex.getProvidesIntoAnnotations(), 0)) {
+            for (PsiType wrappedType : extensionIndex.getWrappedProvidesTypes(method)) {
+              PsiType keyType = isKotlinMethod ? unwrapKotlinWildcards(wrappedType) : wrappedType;
+              entries.add(new GuiceEntry(
+                  new GuiceBindingKey(keyType, GuiceQualifiers.fromDeclaration(method)), method, anchor,
+                  EntryRole.BINDING_SITE, GuiceEntryProducer::providesMethodText));
             }
           } else {
             // Standard @Provides: BINDING_SITE for the exact return type.
@@ -153,13 +192,109 @@ public final class GuiceEntryProducer {
     // @ImplementedBy and @ProvidedBy → BINDING_SITE for the class (a JIT binding)
     addJitAnnotationEntries(cls, GuiceAnnotations.IMPLEMENTED_BY, entries);
     addJitAnnotationEntries(cls, GuiceAnnotations.PROVIDED_BY, entries);
+    extensionIndex.processClassAnnotations(cls, entries);
 
     // Binding calls in configure() for module classes
     if (isModule) {
       extractBindingCallEntries(cls, entries);
     }
+    extensionIndex.processCallEntries(cls, isModule, callContext);
+  }
 
-    return entries;
+  private static final class CallContextImpl implements GuiceCallContext {
+    private final @NotNull Set<GuiceEntry> myEntries;
+    private final @NotNull Set<String> myReferencedTargetPaths = new HashSet<>();
+    private final @NotNull Set<String> myReferencedTargetClassNames = new HashSet<>();
+    private final @NotNull Set<VirtualFile> myReferencedTargetFiles = new HashSet<>();
+
+    CallContextImpl(@NotNull Set<GuiceEntry> entries) {
+      myEntries = entries;
+    }
+
+    @Override
+    public @NotNull Set<GuiceEntry> getEntries() {
+      return myEntries;
+    }
+
+    @Override
+    public void reportClassBindings(
+        @NotNull PsiClass targetClass,
+        @NotNull BiConsumer<? super PsiClass, ? super Set<GuiceEntry>> classExtractor
+    ) {
+      PsiElement navElement = targetClass.getNavigationElement();
+      PsiFile targetFile = navElement != null ? navElement.getContainingFile() : null;
+      if (targetFile == null) {
+        targetFile = targetClass.getContainingFile();
+      }
+      if (targetFile != null && targetFile.getVirtualFile() != null) {
+        VirtualFile targetVf = targetFile.getVirtualFile();
+        myReferencedTargetPaths.add(targetVf.getPath());
+        myReferencedTargetFiles.add(targetVf);
+      }
+      String name = targetClass.getName();
+      if (name != null && !name.isEmpty()) {
+        myReferencedTargetClassNames.add(name);
+      }
+      PsiClass topLevel = PsiUtil.getTopLevelClass(targetClass);
+      if (topLevel != null && topLevel.getName() != null && !topLevel.getName().isEmpty()) {
+        myReferencedTargetClassNames.add(topLevel.getName());
+      }
+      classExtractor.accept(targetClass, myEntries);
+    }
+
+    @Override
+    public @Nullable PsiClass reportClassArgument(
+        @Nullable UExpression classLiteralArgument,
+        @NotNull BiConsumer<? super PsiClass, ? super Set<GuiceEntry>> classExtractor
+    ) {
+      if (classLiteralArgument == null) return null;
+      PsiType type = GuiceUtils.getBindingTypeFromExpression(classLiteralArgument);
+      if (type instanceof PsiClassType classType) {
+        PsiClass resolved = classType.resolve();
+        if (resolved != null) {
+          reportClassBindings(resolved, classExtractor);
+          return resolved;
+        }
+        String className = classType.getClassName();
+        if (className != null && !className.isEmpty()) {
+          myReferencedTargetClassNames.add(className);
+        }
+      }
+      recordCandidateClassNames(classLiteralArgument);
+      return null;
+    }
+
+    private void recordCandidateClassNames(@NotNull UExpression expr) {
+      PsiElement sourcePsi = expr.getSourcePsi();
+      if (sourcePsi == null) return;
+      String text = sourcePsi.getText();
+      if (text == null || text.isEmpty()) return;
+      int classSuffix = text.lastIndexOf("::class");
+      if (classSuffix < 0) {
+        classSuffix = text.lastIndexOf(".class");
+      }
+      if (classSuffix > 0) {
+        text = text.substring(0, classSuffix);
+      }
+      for (String segment : text.split("\\.")) {
+        String trimmed = segment.trim();
+        if (!trimmed.isEmpty() && Character.isJavaIdentifierStart(trimmed.charAt(0))) {
+          myReferencedTargetClassNames.add(trimmed);
+        }
+      }
+    }
+
+    @NotNull Set<String> getReferencedTargetPaths() {
+      return myReferencedTargetPaths.isEmpty() ? Set.of() : Set.copyOf(myReferencedTargetPaths);
+    }
+
+    @NotNull Set<String> getReferencedTargetClassNames() {
+      return myReferencedTargetClassNames.isEmpty() ? Set.of() : Set.copyOf(myReferencedTargetClassNames);
+    }
+
+    @NotNull Set<VirtualFile> getReferencedTargetFiles() {
+      return myReferencedTargetFiles.isEmpty() ? Set.of() : Set.copyOf(myReferencedTargetFiles);
+    }
   }
 
 
@@ -219,7 +354,7 @@ public final class GuiceEntryProducer {
    * Creates an INJECTION_POINT entry for a field or parameter.
    * Handles Provider<T> unwrapping at creation time.
    */
-  private static @NotNull GuiceEntry createInjectionPointEntry(
+  public static @NotNull GuiceEntry createInjectionPointEntry(
       @NotNull PsiModifierListOwner element, @NotNull PsiType declaredType) {
     PsiType normalizedDeclaredType = element.getNavigationElement() != element
                                      ? unwrapKotlinWildcards(declaredType)
@@ -236,6 +371,78 @@ public final class GuiceEntryProducer {
         new GuiceBindingKey(resolvedType, qualifier),
         element, anchor, EntryRole.INJECTION_POINT,
         GuiceEntryProducer::injectionPointText);
+  }
+
+  /**
+   * Creates a BINDING_SITE entry for a field declaration (such as an {@code @FlagSpec} field)
+   * using the field's declared qualifier annotation.
+   */
+  public static @NotNull GuiceEntry createFieldBindingEntry(
+      @NotNull PsiField field, @NotNull PsiType boundType) {
+    return createFieldBindingEntry(field, boundType, GuiceQualifiers.fromDeclaration(field));
+  }
+
+  /**
+   * Creates a BINDING_SITE entry for a field declaration with an explicit {@link GuiceQualifier}.
+   */
+  public static @NotNull GuiceEntry createFieldBindingEntry(
+      @NotNull PsiField field, @NotNull PsiType boundType, @Nullable GuiceQualifier qualifier) {
+    PsiType normalizedType = field.getNavigationElement() != field
+                             ? unwrapKotlinWildcards(boundType)
+                             : boundType;
+    PsiElement anchor = resolveDeclarationAnchor(field);
+    return new GuiceEntry(
+        new GuiceBindingKey(normalizedType, qualifier),
+        field, anchor, EntryRole.BINDING_SITE,
+        GuiceEntryProducer::injectionPointText);
+  }
+
+  /**
+   * Resolves the identifier leaf anchor for a method or constructor call expression.
+   */
+  public static @Nullable PsiElement getCallAnchor(@NotNull UCallExpression call) {
+    UIdentifier identifier = call.getMethodIdentifier();
+    if (identifier != null) {
+      PsiElement psi = identifier.getSourcePsi();
+      if (psi != null) return psi;
+    }
+    UReferenceExpression classRef = call.getClassReference();
+    if (classRef != null) {
+      PsiElement sourcePsi = classRef.getSourcePsi();
+      if (sourcePsi instanceof PsiJavaCodeReferenceElement javaRef) {
+        PsiElement nameElement = javaRef.getReferenceNameElement();
+        if (nameElement != null) return nameElement;
+      }
+      return sourcePsi;
+    }
+    return null;
+  }
+
+  /**
+   * Creates a call-site {@link GuiceEntry} anchored on the call's method or constructor identifier.
+   */
+  public static @Nullable GuiceEntry createCallEntry(@NotNull UCallExpression call,
+                                                     @NotNull PsiType type,
+                                                     @Nullable GuiceQualifier qualifier,
+                                                     @NotNull EntryRole role) {
+    PsiElement anchor = getCallAnchor(call);
+    PsiElement target = call.getSourcePsi();
+    if (anchor == null || target == null) return null;
+    return new GuiceEntry(new GuiceBindingKey(type, qualifier), target, anchor, role, PsiElement::getText);
+  }
+
+  /**
+   * Creates an implementation-reference {@link GuiceEntry} for a class referenced by a binder call
+   * (so the class-level gutter on {@code referencedClass} navigates to {@code call}).
+   */
+  @ApiStatus.Experimental
+  public static @Nullable GuiceEntry createCallImplementationReferenceEntry(@NotNull UCallExpression call,
+                                                                            @NotNull PsiClass referencedClass) {
+    PsiElement anchor = getCallAnchor(call);
+    PsiElement target = call.getSourcePsi();
+    if (anchor == null || target == null) return null;
+    return GuiceEntry.implementationReference(
+        GuiceBindingKey.forClass(referencedClass), target, anchor, PsiElement::getText);
   }
 
   /**
@@ -299,32 +506,22 @@ public final class GuiceEntryProducer {
     Set<BindDescriptor> descriptors =
         GuiceInjectorManager.getBindingDescriptors(moduleClass);
 
-    List<GuiceBindingMatchStrategy> strategies =
-        GuiceBindingMatchStrategy.EP_NAME.getExtensionList();
-
     for (BindDescriptor bd : descriptors) {
       PsiElement bindExpr = bd.getBindExpression();
       if (bindExpr == null) continue;
 
       PsiElement anchor = getBindingAnchor(bindExpr);
 
-      // Try each strategy — if one handles this descriptor, use its wrapTypes
-      boolean handled = false;
-      for (GuiceBindingMatchStrategy strategy : strategies) {
-        Class<? extends BindDescriptor> descriptorClass = strategy.getDescriptorClass();
-        if (descriptorClass != null && descriptorClass.isInstance(bd)) {
-          UCallExpression outermostCall = bd.getOutermostCall();
-          GuiceQualifier qualifier = outermostCall != null ? GuiceQualifiers.fromBinderCall(outermostCall) : null;
-          for (PsiType wrappedType : strategy.wrapTypes(bd)) {
-            entries.add(new GuiceEntry(
-                new GuiceBindingKey(wrappedType, qualifier), bindExpr, anchor, EntryRole.BINDING_SITE,
-                strategy.getTextProvider(bd)));
-          }
-          handled = true;
-          break;
+      if (bd.isSpecialBinder()) {
+        UCallExpression outermostCall = bd.getOutermostCall();
+        GuiceQualifier qualifier = outermostCall != null ? GuiceQualifiers.fromBinderCall(outermostCall) : null;
+        for (PsiType wrappedType : bd.getWrappedBoundTypes()) {
+          entries.add(new GuiceEntry(
+              new GuiceBindingKey(wrappedType, qualifier), bindExpr, anchor, EntryRole.BINDING_SITE,
+              bd.getTextProvider()));
         }
+        continue;
       }
-      if (handled) continue;
 
       // ---- Standard descriptors (bind().to(), untargeted, etc.) ----
 
@@ -358,62 +555,26 @@ public final class GuiceEntryProducer {
             GuiceEntryProducer::standardBindText));
       }
     }
-
-    extractGetProviderEntries(moduleClass, entries);
   }
-
-  /** Classes that declare {@code getProvider(Class)} and {@code getProvider(Key)} for use inside a module. */
-  private static final Set<String> GET_PROVIDER_OWNERS = Set.of(
-      "com.google.inject.Binder",
-      "com.google.inject.PrivateBinder",
-      "com.google.inject.AbstractModule",
-      "com.google.inject.PrivateModule");
 
   /**
-   * Adds an INJECTION_POINT entry for each {@code getProvider(Foo.class)} or {@code getProvider(Key.get(...))}
-   * call in the methods of the module class. The gutter anchor is the {@code getProvider} identifier.
+   * Adds an INJECTION_POINT entry for a {@code getProvider(Foo.class)} or {@code getProvider(Key.get(...))}
+   * call inside a module class.
    */
-  private static void extractGetProviderEntries(@NotNull PsiClass moduleClass, @NotNull Set<GuiceEntry> entries) {
-    for (PsiMethod method : moduleClass.getMethods()) {
-      UMethod uMethod = UastContextKt.toUElement(method, UMethod.class);
-      if (uMethod == null) continue;
-      uMethod.accept(new AbstractUastVisitor() {
-        @Override
-        public boolean visitClass(@NotNull UClass node) {
-          // The recursion over the classes of the module handles a nested class.
-          return true;
-        }
-
-        @Override
-        public boolean visitCallExpression(@NotNull UCallExpression node) {
-          GuiceEntry entry = createGetProviderEntry(node);
-          if (entry != null) entries.add(entry);
-          return super.visitCallExpression(node);
-        }
-      });
-    }
-  }
-
-  private static @Nullable GuiceEntry createGetProviderEntry(@NotNull UCallExpression call) {
-    if (!"getProvider".equals(call.getMethodName()) || call.getValueArgumentCount() != 1) return null;
-    PsiMethod resolved = call.resolve();
-    PsiClass owner = resolved != null ? resolved.getContainingClass() : null;
-    if (owner == null || !GET_PROVIDER_OWNERS.contains(owner.getQualifiedName())) return null;
-
-    UExpression argument = call.getValueArguments().getFirst();
+  public static void addGetProviderEntry(@NotNull UCallExpression call, @NotNull Set<GuiceEntry> entries) {
+    List<UExpression> valueArgs = call.getValueArguments();
+    if (valueArgs.isEmpty()) return;
+    UExpression argument = valueArgs.getFirst();
     PsiType type = GuiceUtils.getBindingTypeFromExpression(argument);
-    if (type == null) return null;
+    if (type == null) return;
     UCallExpression keyGet = GuiceQualifiers.asKeyGet(argument);
     GuiceQualifier qualifier = keyGet != null && keyGet.getValueArgumentCount() > 1
                                ? GuiceQualifiers.fromExpression(keyGet.getValueArguments().get(1))
                                : null;
-
-    UIdentifier identifier = call.getMethodIdentifier();
-    PsiElement anchor = identifier != null ? identifier.getSourcePsi() : null;
-    PsiElement target = call.getSourcePsi();
-    if (anchor == null || target == null) return null;
-    return new GuiceEntry(new GuiceBindingKey(type, qualifier), target, anchor, EntryRole.INJECTION_POINT,
-                          PsiElement::getText);
+    GuiceEntry entry = createCallEntry(call, type, qualifier, EntryRole.INJECTION_POINT);
+    if (entry != null) {
+      entries.add(entry);
+    }
   }
 
   private static final List<String> BINDER_ELEMENT_CALLS = List.of("addBinding", "setDefault", "setBinding");
@@ -468,9 +629,8 @@ public final class GuiceEntryProducer {
    *       → "bind(Foo.class).annotatedWith(Named.class).toProvider(FooProvider.class)"</li>
    * </ul>
    *
-   * <p>Only standard {@code bind()} chains are handled. For strategy-handled
-   * bindings (MapBinder, SetBinder, AssistedInject), see
-   * {@link GuiceBindingMatchStrategy#getTextProvider}.
+   * <p>Only standard {@code bind()} chains are handled. For special binders
+   * (MapBinder, SetBinder, OptionalBinder), see {@link BindDescriptor#getTextProvider()}.
    */
   static @NotNull String standardBindText(@NotNull PsiElement element) {
     UElement uElement = UastContextKt.toUElement(element);

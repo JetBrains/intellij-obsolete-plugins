@@ -4,18 +4,21 @@ package com.intellij.guice.utils;
 import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.guice.constants.GuiceAnnotations;
 import com.intellij.guice.constants.GuiceClasses;
+import com.intellij.guice.model.extensions.GuiceExtensionIndex;
 import com.intellij.psi.*;
 import com.intellij.psi.util.InheritanceUtil;
 import com.intellij.psi.util.TypeConversionUtil;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.uast.*;
 
 import static com.intellij.codeInsight.AnnotationUtil.CHECK_HIERARCHY;
 
+@ApiStatus.Experimental
 public final class GuiceUtils {
   private GuiceUtils() { }
 
@@ -237,11 +240,13 @@ public final class GuiceUtils {
    * false positives between different parameterizations of the same raw type.
    */
   public static @Nullable PsiType findImplementedTypeForBinding(UCallExpression call) {
+    GuiceExtensionIndex extensionIndex = GuiceExtensionIndex.get();
+    Set<String> singleTypeMethods = extensionIndex.getSingleTypeBinderMethodNames();
+    Set<String> dualTypeMethods = extensionIndex.getDualTypeBinderMethodNames();
     UCallExpression current = call;
     while (current != null) {
       final String name = current.getMethodName();
-      if ("bind".equals(name) || "build".equals(name) || "newOptionalBinder".equals(name) || "optionalBinder".equals(name) ||
-          "newSetBinder".equals(name) || "setBinder".equals(name)) {
+      if ("bind".equals(name) || "build".equals(name) || (name != null && singleTypeMethods.contains(name))) {
         final List<PsiType> typeArgs = current.getTypeArguments();
         if (!typeArgs.isEmpty()) {
           return typeArgs.getFirst();
@@ -259,7 +264,7 @@ public final class GuiceUtils {
         UExpression toArg = getArgumentOfCallInChain(call, "to");
         return toArg != null ? toArg.getExpressionType() : null;
       }
-      if ("newMapBinder".equals(name) || "mapBinder".equals(name)) {
+      if (name != null && dualTypeMethods.contains(name)) {
         final List<PsiType> typeArgs = current.getTypeArguments();
         if (typeArgs.size() > 1) {
           return typeArgs.get(1);
@@ -273,26 +278,15 @@ public final class GuiceUtils {
       }
       UCallExpression next = getReceiverCall(current);
       if (next == null) {
-        return getBoundTypeFromReceiverVariable(current);
+        return getBoundTypeFromReceiverVariable(current, extensionIndex);
       }
       current = next;
     }
     return null;
   }
 
-  private static final Set<String> SINGLE_TYPE_BINDERS = Set.of(
-      "com.google.inject.multibindings.Multibinder",
-      "com.google.inject.multibindings.OptionalBinder",
-      GuiceClasses.LINKED_BINDING_BUILDER,
-      "com.google.inject.binder.AnnotatedBindingBuilder"
-  );
-
-  private static final Set<String> DUAL_TYPE_BINDERS = Set.of(
-      "com.google.inject.multibindings.MapBinder",
-      "com.google.common.inject.MultimapBinder"
-  );
-
-  private static @Nullable PsiType getBoundTypeFromReceiverVariable(@NotNull UCallExpression call) {
+  private static @Nullable PsiType getBoundTypeFromReceiverVariable(@NotNull UCallExpression call,
+                                                                    @NotNull GuiceExtensionIndex extensionIndex) {
     UExpression receiver = skipParenthesesAndCasts(getEffectiveReceiver(call));
     if (receiver == null || !(receiver.getExpressionType() instanceof PsiClassType classType)) {
       return null;
@@ -303,10 +297,10 @@ public final class GuiceUtils {
     if (receiverClass == null) return null;
     String fqn = receiverClass.getQualifiedName();
     if (fqn == null) return null;
-    if (typeArgs.length == 1 && SINGLE_TYPE_BINDERS.contains(fqn)) {
+    if (typeArgs.length == 1 && extensionIndex.getSingleTypeBinderClassFqns().contains(fqn)) {
       return typeArgs[0];
     }
-    if (typeArgs.length == 2 && DUAL_TYPE_BINDERS.contains(fqn)) {
+    if (typeArgs.length == 2 && extensionIndex.getDualTypeBinderClassFqns().contains(fqn)) {
       return typeArgs[1];
     }
     return null;

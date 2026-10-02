@@ -1,34 +1,30 @@
 // Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package com.intellij.guice.model.extensions;
 
-import com.intellij.guice.model.beans.BindDescriptor;
+import com.intellij.guice.constants.GuiceAnnotations;
 import com.intellij.guice.model.beans.OptionalBindDescriptor;
-import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiType;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.uast.UCallExpression;
 
-import java.util.Set;
+import java.util.List;
 
 /**
- * Contributor for Guice {@code OptionalBinder} bindings:
- * {@code OptionalBinder.newOptionalBinder()} and {@code optionalBinder()}.
+ * Contributor for Guice {@code OptionalBinder} calls and {@code @ProvidesIntoOptional} methods.
  */
 final class OptionalBinderContributor implements GuiceBindingContributor {
-
-  private static final Set<String> BINDING_WORDS = Set.of("newOptionalBinder", "optionalBinder");
-
   @Override
-  public @NotNull Set<String> getBindingWords() {
-    return BINDING_WORDS;
-  }
-
-  @Override
-  public boolean processCall(@NotNull UCallExpression call,
-                             @NotNull String methodName,
-                             @NotNull String resolvedQName,
-                             @NotNull PsiClass containingClass,
-                             @NotNull Set<BindDescriptor> descriptors) {
-    return ContributorUtil.processSingleTypeBinderCall(
-        call, resolvedQName, "com.google.inject.multibindings.OptionalBinder", descriptors, OptionalBindDescriptor::new);
+  public void register(@NotNull GuiceExtensionRegistrar registrar) {
+    registrar.registerSingleTypeBinder(
+        GuiceCallPattern.named("newOptionalBinder", "optionalBinder")
+            .forBinder("com.google.inject.multibindings.OptionalBinder"),
+        OptionalBindDescriptor::new
+    );
+    registrar.registerProvidesAnnotation(
+        List.of(GuiceAnnotations.PROVIDES_INTO_OPTIONAL),
+        method -> {
+          PsiType returnType = method.getReturnType();
+          return returnType != null ? GuiceKeyForms.optionalForms(method, returnType, true) : List.of();
+        }
+    );
   }
 }

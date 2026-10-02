@@ -3,39 +3,31 @@ package com.intellij.guice.inspections;
 
 import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.codeInspection.LocalQuickFix;
-import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.guice.GuiceBundle;
 import com.intellij.guice.constants.GuiceAnnotations;
+import com.intellij.guice.model.extensions.GuiceCallPattern;
 import com.intellij.guice.utils.GuiceUtils;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiClassType;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiField;
+import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiModifier;
+import com.intellij.psi.PsiType;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.uast.UCallExpression;
 import org.jetbrains.uast.UExpression;
-import org.jetbrains.uast.visitor.AbstractUastNonRecursiveVisitor;
-
-import java.util.List;
 
 /**
  * Reports {@code requestStaticInjection()} calls for classes that have no static
- * {@code @Inject}-annotated fields or methods. Without any static injection points,
- * the call is unnecessary and can be removed.
- *
- * <p>Example:
- * <pre>
- * // Flagged: Foo has no static @Inject members
- * requestStaticInjection(Foo.class);
- *
- * // OK: Foo has a static @Inject field
- * class Foo {
- *     {@literal @}Inject static Logger logger;
- * }
- * requestStaticInjection(Foo.class);
- * </pre>
+ * {@code @Inject}-annotated fields or methods.
  */
 public final class UnnecessaryStaticInjectionInspection extends BaseUastInspection {
   public UnnecessaryStaticInjectionInspection() {
-    super(UCallExpression.class);
+    extendCall(
+        GuiceCallPattern.named("requestStaticInjection").minArguments(1),
+        UnnecessaryStaticInjectionInspection::checkRequestStaticInjection
+    );
   }
 
   @Override
@@ -44,60 +36,40 @@ public final class UnnecessaryStaticInjectionInspection extends BaseUastInspecti
   }
 
   @Override
-  public @NotNull AbstractUastNonRecursiveVisitor buildUastVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
-    return new Visitor(this, holder, isOnTheFly);
-  }
-
-  @Override
   public LocalQuickFix buildFix(PsiElement location, Object[] infos) {
     return new DeleteBindingFix(DeleteBindingFix.Mode.ARGUMENT);
   }
 
-  private static class Visitor extends BaseUastInspectionVisitor {
-    Visitor(@NotNull BaseUastInspection inspection, @NotNull ProblemsHolder holder, boolean onTheFly) {
-      super(inspection, holder, onTheFly);
+  private static void checkRequestStaticInjection(@NotNull UCallExpression expression,
+                                                  @NotNull BaseUastInspectionVisitor visitor) {
+    for (UExpression arg : expression.getValueArguments()) {
+      final PsiType classType = GuiceUtils.getBindingTypeFromExpression(arg);
+      if (!(classType instanceof PsiClassType psiClassType)) {
+        continue;
+      }
+      final PsiClass classToBindStatically = psiClassType.resolve();
+      if (classToBindStatically == null) {
+        continue;
+      }
+      if (!classHasStaticInjects(classToBindStatically)) {
+        visitor.registerClassLiteralError(arg);
+      }
     }
+  }
 
-    @Override
-    public boolean visitCallExpression(@NotNull UCallExpression expression) {
-      final String methodName = expression.getMethodName();
-      if (!"requestStaticInjection".equals(methodName)) {
+  private static boolean classHasStaticInjects(PsiClass aClass) {
+    for (PsiMethod method : aClass.getMethods()) {
+      if (method.hasModifierProperty(PsiModifier.STATIC) &&
+          AnnotationUtil.isAnnotated(method, GuiceAnnotations.INJECTS, AnnotationUtil.CHECK_HIERARCHY)) {
         return true;
       }
-      final List<UExpression> args = expression.getValueArguments();
-      for (UExpression arg : args) {
-        // Java A.class, Kotlin A::class.java
-        final PsiType classType = GuiceUtils.getBindingTypeFromExpression(arg);
-        if (!(classType instanceof PsiClassType)) {
-          continue;
-        }
-        final PsiClass classToBindStatically = ((PsiClassType)classType).resolve();
-        if (classToBindStatically == null) {
-          continue;
-        }
-        if (!classHasStaticInjects(classToBindStatically)) {
-          registerClassLiteralError(arg);
-        }
-      }
-      return true;
     }
-
-    private static boolean classHasStaticInjects(PsiClass aClass) {
-      final PsiMethod[] methods = aClass.getMethods();
-      for (PsiMethod method : methods) {
-        if (method.hasModifierProperty(PsiModifier.STATIC) &&
-            AnnotationUtil.isAnnotated(method, GuiceAnnotations.INJECTS, AnnotationUtil.CHECK_HIERARCHY)) {
-          return true;
-        }
+    for (PsiField field : aClass.getFields()) {
+      if (field.hasModifierProperty(PsiModifier.STATIC) &&
+          AnnotationUtil.isAnnotated(field, GuiceAnnotations.INJECTS, AnnotationUtil.CHECK_HIERARCHY)) {
+        return true;
       }
-      final PsiField[] fields = aClass.getFields();
-      for (PsiField field : fields) {
-        if (field.hasModifierProperty(PsiModifier.STATIC) &&
-            AnnotationUtil.isAnnotated(field, GuiceAnnotations.INJECTS, AnnotationUtil.CHECK_HIERARCHY)) {
-          return true;
-        }
-      }
-      return false;
     }
+    return false;
   }
 }

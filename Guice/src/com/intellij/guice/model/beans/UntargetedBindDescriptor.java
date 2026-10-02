@@ -3,9 +3,11 @@ package com.intellij.guice.model.beans;
 
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@ApiStatus.Experimental
 public class UntargetedBindDescriptor extends BindDescriptor {
 
   public UntargetedBindDescriptor(@NotNull PsiElement callExpression) {

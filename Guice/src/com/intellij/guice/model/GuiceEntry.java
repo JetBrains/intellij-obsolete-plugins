@@ -5,6 +5,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.SmartPointerManager;
 import com.intellij.psi.SmartPsiElementPointer;
 import com.intellij.psi.presentation.java.SymbolPresentationUtil;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,6 +35,7 @@ import java.util.function.Function;
  *
  * @see GuiceNavigationIndex#findCounterparts
  */
+@ApiStatus.Experimental
 public final class GuiceEntry {
   private final @NotNull GuiceBindingKey myKey;
   private final @NotNull SmartPsiElementPointer<PsiElement> myNavigationTarget;

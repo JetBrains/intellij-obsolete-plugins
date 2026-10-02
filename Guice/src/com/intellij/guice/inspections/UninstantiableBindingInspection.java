@@ -1,36 +1,30 @@
 // Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package com.intellij.guice.inspections;
 
-import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.guice.GuiceBundle;
+import com.intellij.guice.constants.GuiceClasses;
+import com.intellij.guice.model.extensions.GuiceCallPattern;
 import com.intellij.guice.utils.GuiceUtils;
-import com.intellij.psi.*;
-import com.intellij.psi.util.InheritanceUtil;
+import com.intellij.psi.PsiClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.uast.UCallExpression;
 import org.jetbrains.uast.UClass;
 import org.jetbrains.uast.UastUtils;
-import org.jetbrains.uast.visitor.AbstractUastNonRecursiveVisitor;
 
 /**
  * Reports {@code .to()} bindings that target a class Guice cannot instantiate
  * (e.g., an abstract class or interface with no {@code @Inject} constructor),
  * unless a {@code @Provides} method supplies it.
- *
- * <p>Example:
- * <pre>
- * // Flagged: AbstractService cannot be instantiated
- * bind(Service.class).to(AbstractService.class);
- *
- * // OK: ConcreteService has an @Inject constructor
- * bind(Service.class).to(ConcreteService.class);
- * </pre>
  */
 public final class UninstantiableBindingInspection extends BaseUastInspection {
-  private static final String LINKED_BINDING_BUILDER = "com.google.inject.binder.LinkedBindingBuilder";
-
   public UninstantiableBindingInspection() {
-    super(UCallExpression.class);
+    extendCall(
+        GuiceCallPattern.named("to")
+            .requireValueOrTypeArgument()
+            .withOwnerClass(GuiceClasses.LINKED_BINDING_BUILDER)
+            .withReceiverInheritor(GuiceClasses.LINKED_BINDING_BUILDER),
+        UninstantiableBindingInspection::checkToCall
+    );
   }
 
   @Override
@@ -38,46 +32,16 @@ public final class UninstantiableBindingInspection extends BaseUastInspection {
     return GuiceBundle.message("uninstantiable.binding.problem.descriptor");
   }
 
-  @Override
-  public @NotNull AbstractUastNonRecursiveVisitor buildUastVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
-    return new Visitor(this, holder, isOnTheFly);
-  }
-
-  private static class Visitor extends BaseUastInspectionVisitor {
-    Visitor(@NotNull BaseUastInspection inspection, @NotNull ProblemsHolder holder, boolean onTheFly) {
-      super(inspection, holder, onTheFly);
+  private static void checkToCall(@NotNull UCallExpression expression, @NotNull BaseUastInspectionVisitor visitor) {
+    PsiClass referentClass = GuiceUtils.resolveClassArgument(expression);
+    if (referentClass == null || GuiceUtils.isInstantiable(referentClass)) {
+      return;
     }
-
-    @Override
-    public boolean visitCallExpression(@NotNull UCallExpression expression) {
-      if (!"to".equals(expression.getMethodName())) {
-        return true;
-      }
-      PsiClass referentClass = GuiceUtils.resolveClassArgument(expression);
-      if (referentClass == null) {
-        return true;
-      }
-      if (GuiceUtils.isInstantiable(referentClass)) {
-        return true;
-      }
-      final PsiMethod method = expression.resolve();
-      if (method == null) {
-        return true;
-      }
-      final PsiClass containingClass = method.getContainingClass();
-      boolean isBuilderMethod = containingClass != null && LINKED_BINDING_BUILDER.equals(containingClass.getQualifiedName());
-      // A Kotlin extension such as `LinkedBindingBuilder<in T>.to<T>()` lives in a file facade class.
-      // Its receiver type still identifies it as a binding builder call.
-      if (!isBuilderMethod && !InheritanceUtil.isInheritor(expression.getReceiverType(), LINKED_BINDING_BUILDER)) {
-        return true;
-      }
-      UClass moduleUClass = UastUtils.getParentOfType(expression, UClass.class);
-      PsiClass moduleClass = moduleUClass != null ? moduleUClass.getJavaPsi() : null;
-      if (moduleClass != null && GuiceUtils.provides(moduleClass, referentClass)) {
-        return true;
-      }
-      registerClassArgumentError(expression);
-      return true;
+    UClass moduleUClass = UastUtils.getParentOfType(expression, UClass.class);
+    PsiClass moduleClass = moduleUClass != null ? moduleUClass.getJavaPsi() : null;
+    if (moduleClass != null && GuiceUtils.provides(moduleClass, referentClass)) {
+      return;
     }
+    visitor.registerClassArgumentError(expression);
   }
 }

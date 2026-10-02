@@ -1,6 +1,7 @@
 // Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package com.intellij.guice.model;
 
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -10,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
  * <p>Guice treats {@code com.google.inject.name.Named}, {@code javax.inject.Named} and
  * {@code jakarta.inject.Named} as the same annotation, so all three become {@link Named}.
  */
+@ApiStatus.Experimental
 public sealed interface GuiceQualifier {
 
   /**

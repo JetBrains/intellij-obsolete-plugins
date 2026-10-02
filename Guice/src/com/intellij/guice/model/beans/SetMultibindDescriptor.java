@@ -1,6 +1,7 @@
 // Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package com.intellij.guice.model.beans;
 
+import com.intellij.guice.model.extensions.GuiceKeyForms;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
@@ -10,9 +11,13 @@ import com.intellij.psi.SmartPointerManager;
 import com.intellij.psi.SmartPsiElementPointer;
 import com.intellij.psi.SmartTypePointer;
 import com.intellij.psi.SmartTypePointerManager;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
+@ApiStatus.Experimental
 public class SetMultibindDescriptor extends BindDescriptor {
   private final @Nullable SmartPsiElementPointer<PsiClass> myElementType;
   private final @Nullable SmartTypePointer myElementPsiType;
@@ -41,5 +46,26 @@ public class SetMultibindDescriptor extends BindDescriptor {
   @Override
   public @Nullable PsiClass calculateBindingClass() {
     return null;
+  }
+
+  @Override
+  public boolean isSpecialBinder() {
+    return true;
+  }
+
+  @Override
+  public @Nullable PsiType getPrimaryWrappedType() {
+    PsiElement bindExpr = getBindExpression();
+    PsiType elementType = getElementPsiType();
+    if (bindExpr == null || elementType == null) return null;
+    return GuiceKeyForms.createParameterizedType(bindExpr, "java.util.Set", elementType);
+  }
+
+  @Override
+  public @NotNull List<PsiType> getWrappedBoundTypes() {
+    PsiElement bindExpr = getBindExpression();
+    PsiType elementType = getElementPsiType();
+    if (bindExpr == null || elementType == null) return List.of();
+    return GuiceKeyForms.setForms(bindExpr, elementType);
   }
 }

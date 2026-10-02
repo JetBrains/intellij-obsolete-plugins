@@ -5,7 +5,9 @@ import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiPrimitiveType;
 import com.intellij.psi.PsiType;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,7 +20,8 @@ import java.util.List;
  * <p>A key form is used only if its classes resolve from the binding site.
  * For example, the Guava {@code Optional} forms appear only when Guava is on the classpath.
  */
-final class GuiceKeyForms {
+@ApiStatus.Experimental
+public final class GuiceKeyForms {
   private static final List<String> PROVIDERS = List.of(
     "com.google.inject.Provider",
     "javax.inject.Provider",
@@ -32,7 +35,7 @@ final class GuiceKeyForms {
   }
 
   /** {@code Multibinder<T>} binds {@code Set<T>} and {@code Collection<Provider<T>>}. */
-  static @NotNull List<PsiType> setForms(@NotNull PsiElement context, @NotNull PsiType element) {
+  public static @NotNull List<PsiType> setForms(@NotNull PsiElement context, @NotNull PsiType element) {
     List<PsiType> result = new ArrayList<>();
     addIfResolved(result, parameterized(context, "java.util.Set", element));
     for (PsiType provider : providers(context, element)) {
@@ -46,10 +49,10 @@ final class GuiceKeyForms {
    * After {@code permitDuplicates()}, it also binds {@code Map<K, Set<V>>},
    * {@code Map<K, Set<Provider<V>>>}, and {@code Map<K, Collection<Provider<V>>>}.
    */
-  static @NotNull List<PsiType> mapForms(@NotNull PsiElement context,
-                                         @NotNull PsiType key,
-                                         @NotNull PsiType value,
-                                         boolean permitsDuplicates) {
+  public static @NotNull List<PsiType> mapForms(@NotNull PsiElement context,
+                                                @NotNull PsiType key,
+                                                @NotNull PsiType value,
+                                                boolean permitsDuplicates) {
     List<PsiType> result = new ArrayList<>();
     addIfResolved(result, parameterized(context, "java.util.Map", key, value));
     List<PsiType> providerTypes = providers(context, value);
@@ -75,7 +78,7 @@ final class GuiceKeyForms {
     return result;
   }
 
-  static @NotNull List<PsiType> mapForms(@NotNull PsiElement context, @NotNull PsiType key, @NotNull PsiType value) {
+  public static @NotNull List<PsiType> mapForms(@NotNull PsiElement context, @NotNull PsiType key, @NotNull PsiType value) {
     return mapForms(context, key, value, false);
   }
 
@@ -83,7 +86,7 @@ final class GuiceKeyForms {
    * {@code OptionalBinder<T>} binds {@code Optional<T>} and {@code Optional<Provider<T>>}.
    * It binds {@code T} too when a default value or a binding is set.
    */
-  static @NotNull List<PsiType> optionalForms(@NotNull PsiElement context, @NotNull PsiType element, boolean bindsElement) {
+  public static @NotNull List<PsiType> optionalForms(@NotNull PsiElement context, @NotNull PsiType element, boolean bindsElement) {
     List<PsiType> result = new ArrayList<>();
     for (String optional : OPTIONALS) {
       addIfResolved(result, parameterized(context, optional, element));
@@ -95,6 +98,22 @@ final class GuiceKeyForms {
       result.add(element);
     }
     return result;
+  }
+
+  public static @Nullable PsiType createParameterizedType(@NotNull PsiElement context,
+                                                          @NotNull String classFqn,
+                                                          PsiType @NotNull ... arguments) {
+    PsiType[] boxedArgs = new PsiType[arguments.length];
+    for (int i = 0; i < arguments.length; i++) {
+      PsiType arg = arguments[i];
+      if (arg == null) return null;
+      if (arg instanceof PsiPrimitiveType pt) {
+        arg = pt.getBoxedType(context);
+        if (arg == null) return null;
+      }
+      boxedArgs[i] = arg;
+    }
+    return parameterized(context, classFqn, boxedArgs);
   }
 
   private static @NotNull List<PsiType> providers(@NotNull PsiElement context, @NotNull PsiType element) {

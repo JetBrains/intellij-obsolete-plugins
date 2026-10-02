@@ -1,6 +1,7 @@
 // Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package com.intellij.guice.model.beans;
 
+import com.intellij.guice.model.extensions.GuiceKeyForms;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
@@ -71,5 +72,19 @@ public class MultimapBindDescriptor extends BindDescriptor {
   @Override
   public @Nullable PsiClass calculateBindingClass() {
     return null;
+  }
+
+  @Override
+  public boolean isSpecialBinder() {
+    return true;
+  }
+
+  @Override
+  public @Nullable PsiType getPrimaryWrappedType() {
+    PsiElement bindExpr = getBindExpression();
+    PsiType keyType = getKeyPsiType();
+    PsiType valueType = getValuePsiType();
+    if (bindExpr == null || keyType == null || valueType == null) return null;
+    return GuiceKeyForms.createParameterizedType(bindExpr, "com.google.common.collect.Multimap", keyType, valueType);
   }
 }

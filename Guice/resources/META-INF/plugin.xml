@@ -28,9 +28,6 @@
     <extensionPoint name="bindingContributor"
                     interface="com.intellij.guice.model.extensions.GuiceBindingContributor"
                     dynamic="true"/>
-    <extensionPoint name="bindingMatchStrategy"
-                    interface="com.intellij.guice.model.extensions.GuiceBindingMatchStrategy"
-                    dynamic="true"/>
   </extensionPoints>
 
   <actions>
@@ -45,7 +42,7 @@
     </group>
   </actions>
 
-  <!-- Built-in binding contributors and match strategies -->
+  <!-- Built-in binding contributors -->
   <extensions defaultExtensionNs="com.intellij.guice">
     <bindingContributor id="standard" order="last" implementation="com.intellij.guice.model.extensions.StandardBindingContributor"/>
     <bindingContributor id="optionalBinder" order="last" implementation="com.intellij.guice.model.extensions.OptionalBinderContributor"/>
@@ -53,12 +50,8 @@
     <bindingContributor id="mapBinder" order="last" implementation="com.intellij.guice.model.extensions.MapBinderContributor"/>
     <bindingContributor id="multimapBinder" order="last" implementation="com.intellij.guice.model.extensions.MultimapBinderContributor"/>
     <bindingContributor id="assistedInject" order="last" implementation="com.intellij.guice.model.extensions.AssistedInjectContributor"/>
-
-    <bindingMatchStrategy id="optionalBinder" implementation="com.intellij.guice.model.extensions.OptionalBindMatchStrategy"/>
-    <bindingMatchStrategy id="setMultibinder" implementation="com.intellij.guice.model.extensions.SetMultibindMatchStrategy"/>
-    <bindingMatchStrategy id="mapBinder" implementation="com.intellij.guice.model.extensions.MapMultibindMatchStrategy"/>
-    <bindingMatchStrategy id="multimapBinder" implementation="com.intellij.guice.model.extensions.MultimapBindMatchStrategy"/>
-    <bindingMatchStrategy id="throwingProvider" implementation="com.intellij.guice.model.extensions.ThrowingProviderMatchStrategy"/>
+    <bindingContributor id="throwingProvider" order="last" implementation="com.intellij.guice.model.extensions.ThrowingProviderContributor"/>
+    <bindingContributor id="flagBinder" order="last" implementation="com.intellij.guice.model.extensions.FlagBinderContributor"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">

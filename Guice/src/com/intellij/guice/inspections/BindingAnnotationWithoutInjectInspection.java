@@ -5,7 +5,7 @@ import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.guice.GuiceBundle;
 import com.intellij.guice.constants.GuiceAnnotations;
-import com.intellij.guice.model.extensions.GuiceBindingMatchStrategy;
+import com.intellij.guice.model.extensions.GuiceExtensionIndex;
 import com.intellij.guice.utils.AnnotationUtils;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiMethod;
@@ -68,7 +68,8 @@ public final class BindingAnnotationWithoutInjectInspection extends BaseUastInsp
       }
       final UDeclaration owner = AnnotationUtils.resolveAnnotatedDeclaration(annotation);
       if (owner instanceof UField field) {
-        if (!AnnotationUtils.isAnnotated(field, GuiceAnnotations.INJECTS)) {
+        if (!AnnotationUtils.isAnnotated(field, GuiceAnnotations.INJECTS)
+            && !AnnotationUtils.isAnnotated(field, GuiceExtensionIndex.get().getSupportedFieldAnnotations())) {
           registerError(annotation);
         }
       }
@@ -89,8 +90,11 @@ public final class BindingAnnotationWithoutInjectInspection extends BaseUastInsp
      * Tells if Guice calls the method: {@code @Inject}, or any {@code @Provides} annotation such as {@code @ProvidesIntoSet}.
      */
     private static boolean isInjectOrProvides(@NotNull PsiMethod method) {
+      GuiceExtensionIndex extensionIndex = GuiceExtensionIndex.get();
       return AnnotationUtil.isAnnotated(method, GuiceAnnotations.INJECTS, 0) ||
-             AnnotationUtil.isAnnotated(method, GuiceBindingMatchStrategy.getAllProvidesAnnotations(), 0);
+             AnnotationUtil.isAnnotated(method, extensionIndex.getAllProvidesAnnotations(), 0) ||
+             (!extensionIndex.getMethodAnnotations().isEmpty() &&
+              AnnotationUtil.isAnnotated(method, extensionIndex.getMethodAnnotations(), 0));
     }
 
     private static boolean isAssisted(@NotNull UAnnotation annotation, @NotNull PsiMethod method) {

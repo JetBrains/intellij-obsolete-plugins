@@ -33,16 +33,24 @@ public final class GuiceNavigationIndex {
    *  (equals compares by element class + file + text range). */
   private final Map<SmartPsiElementPointer<PsiElement>, Set<GuiceEntry>> entriesByAnchor = new HashMap<>();
 
-  /** Per-file tracking: which entries came from which file. */
+  /** Per-file tracking: which entries and cross-file target dependencies came from which file. */
   private final Map<String, FileEntries> entriesByFile = new HashMap<>();
 
+  /** Reverse dependency index: target file path → set of registrar file paths that extract bindings from it. */
+  private final Map<String, Set<String>> registrarsByTargetPath = new HashMap<>();
+
+  /** Reverse dependency index: target class short name → set of registrar file paths that reference it. */
+  private final Map<String, Set<String>> registrarsByTargetClassName = new HashMap<>();
+
   /**
-   * Tracks the entries and their index keys for a single file,
+   * Tracks the entries, their index keys, and cross-file target dependencies for a single file,
    * enabling efficient removal when the file is re-indexed.
    */
   private record FileEntries(
       @NotNull Set<GuiceEntry> entries,
-      @NotNull Map<String, Set<GuiceEntry>> keyToEntries
+      @NotNull Map<String, Set<GuiceEntry>> keyToEntries,
+      @NotNull Set<String> referencedTargetPaths,
+      @NotNull Set<String> referencedTargetClassNames
   ) {}
 
   // -----------------------------------------------------------------------
@@ -50,17 +58,13 @@ public final class GuiceNavigationIndex {
   // -----------------------------------------------------------------------
 
   /**
-   * Updates the index with entries from a single file.
-   * Removes any previously tracked entries for that file, then adds the new ones.
-   *
-   * @param filePath the virtual file path (used as the tracking key)
-   * @param entries  the complete set of entries contributed by the file
+   * Updates the index with entries and cross-file target dependencies from a single file.
    */
-  public void updateFile(@NotNull String filePath, @NotNull Set<GuiceEntry> entries) {
+  public void updateFile(@NotNull String filePath, @NotNull GuiceEntryProducer.FileExtractionResult extractionResult) {
     lock.writeLock().lock();
     try {
       removeFileEntries(filePath);
-      addFileEntries(filePath, entries);
+      addFileEntries(filePath, extractionResult);
     }
     finally {
       lock.writeLock().unlock();
@@ -89,6 +93,8 @@ public final class GuiceNavigationIndex {
       entriesByTypeFqn.clear();
       entriesByAnchor.clear();
       entriesByFile.clear();
+      registrarsByTargetPath.clear();
+      registrarsByTargetClassName.clear();
     }
     finally {
       lock.writeLock().unlock();
@@ -102,6 +108,74 @@ public final class GuiceNavigationIndex {
     lock.readLock().lock();
     try {
       return new HashSet<>(entriesByFile.keySet());
+    }
+    finally {
+      lock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Returns the paths of all registrar files that extract cross-class bindings from {@code targetFilePath}.
+   */
+  public @NotNull Set<String> getDependentRegistrarFiles(@NotNull String targetFilePath) {
+    lock.readLock().lock();
+    try {
+      Set<String> registrars = registrarsByTargetPath.get(targetFilePath);
+      return registrars != null ? Set.copyOf(registrars) : Set.of();
+    }
+    finally {
+      lock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Returns the paths of all registrar files that extract cross-class bindings from {@code path}
+   * or (when {@code isDirectory} is {@code true}) any child path under {@code path}.
+   */
+  public @NotNull Set<String> getDependentRegistrarFilesForPathOrPrefix(@NotNull String path, boolean isDirectory) {
+    lock.readLock().lock();
+    try {
+      Set<String> result = new HashSet<>();
+      Set<String> exact = registrarsByTargetPath.get(path);
+      if (exact != null) {
+        result.addAll(exact);
+      }
+      if (isDirectory) {
+        String prefix = path + "/";
+        for (Map.Entry<String, Set<String>> entry : registrarsByTargetPath.entrySet()) {
+          if (entry.getKey().startsWith(prefix)) {
+            result.addAll(entry.getValue());
+          }
+        }
+      }
+      return result.isEmpty() ? Set.of() : Set.copyOf(result);
+    }
+    finally {
+      lock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Returns the paths of all registrar files that reference a target class with the given short name.
+   */
+  public @NotNull Set<String> getDependentRegistrarFilesByClassName(@NotNull String className) {
+    lock.readLock().lock();
+    try {
+      Set<String> registrars = registrarsByTargetClassName.get(className);
+      return registrars != null ? Set.copyOf(registrars) : Set.of();
+    }
+    finally {
+      lock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Returns a snapshot of all target file paths currently referenced by registrar files.
+   */
+  public @NotNull Set<String> getTrackedTargetPaths() {
+    lock.readLock().lock();
+    try {
+      return registrarsByTargetPath.isEmpty() ? Set.of() : Set.copyOf(registrarsByTargetPath.keySet());
     }
     finally {
       lock.readLock().unlock();
@@ -257,10 +331,34 @@ public final class GuiceNavigationIndex {
         if (anchorSet.isEmpty()) entriesByAnchor.remove(anchorPtr);
       }
     }
+
+    // Remove from cross-file dependency indices
+    for (String targetPath : old.referencedTargetPaths()) {
+      Set<String> registrars = registrarsByTargetPath.get(targetPath);
+      if (registrars != null) {
+        registrars.remove(filePath);
+        if (registrars.isEmpty()) {
+          registrarsByTargetPath.remove(targetPath);
+        }
+      }
+    }
+    for (String className : old.referencedTargetClassNames()) {
+      Set<String> registrars = registrarsByTargetClassName.get(className);
+      if (registrars != null) {
+        registrars.remove(filePath);
+        if (registrars.isEmpty()) {
+          registrarsByTargetClassName.remove(className);
+        }
+      }
+    }
   }
 
-  private void addFileEntries(@NotNull String filePath, @NotNull Set<GuiceEntry> entries) {
-    if (entries.isEmpty()) return;
+  private void addFileEntries(@NotNull String filePath,
+                              @NotNull GuiceEntryProducer.FileExtractionResult extractionResult) {
+    Set<GuiceEntry> entries = extractionResult.entries();
+    Set<String> targetPaths = extractionResult.referencedTargetPaths();
+    Set<String> targetClassNames = extractionResult.referencedTargetClassNames();
+    if (entries.isEmpty() && targetPaths.isEmpty() && targetClassNames.isEmpty()) return;
 
     Map<String, Set<GuiceEntry>> keyToEntries = new HashMap<>();
 
@@ -275,7 +373,13 @@ public final class GuiceNavigationIndex {
       entriesByAnchor.computeIfAbsent(entry.getGutterAnchorPointer(), k -> new HashSet<>()).add(entry);
     }
 
-    entriesByFile.put(filePath, new FileEntries(entries, keyToEntries));
-  }
+    for (String targetPath : targetPaths) {
+      registrarsByTargetPath.computeIfAbsent(targetPath, k -> new HashSet<>()).add(filePath);
+    }
+    for (String className : targetClassNames) {
+      registrarsByTargetClassName.computeIfAbsent(className, k -> new HashSet<>()).add(filePath);
+    }
 
+    entriesByFile.put(filePath, new FileEntries(entries, keyToEntries, targetPaths, targetClassNames));
+  }
 }

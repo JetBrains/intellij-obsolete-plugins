@@ -6,6 +6,7 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiPrimitiveType;
 import com.intellij.psi.PsiType;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,6 +32,7 @@ import java.util.Objects;
  *   <li>{@code @Inject Map<K,V> m}             → key {@code (Map<K,V>, null)}</li>
  * </ul>
  */
+@ApiStatus.Experimental
 public final class GuiceBindingKey {
   private final @NotNull String myTypeText;
   private final @Nullable String myTypeFqn;
@@ -43,10 +45,6 @@ public final class GuiceBindingKey {
 
   public GuiceBindingKey(@NotNull PsiType type, @Nullable GuiceQualifier qualifier) {
     this(type, qualifier, false);
-  }
-
-  public GuiceBindingKey(@NotNull PsiType type) {
-    this(type, null, false);
   }
 
   private GuiceBindingKey(@NotNull PsiType type, @Nullable GuiceQualifier qualifier, boolean anyParameterization) {

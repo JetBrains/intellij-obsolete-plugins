@@ -5,10 +5,12 @@ import com.intellij.guice.model.GuiceInjectionUtil;
 import com.intellij.guice.utils.GuiceUtils;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.uast.UCallExpression;
 
+@ApiStatus.Experimental
 public class BindToProviderDescriptor extends BindDescriptor {
   public BindToProviderDescriptor(@NotNull PsiElement callExpression) {
     super(callExpression);

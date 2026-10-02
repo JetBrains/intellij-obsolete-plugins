@@ -3,27 +3,27 @@ package com.intellij.guice.model;
 
 import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.guice.constants.GuiceAnnotations;
+import com.intellij.guice.model.extensions.GuiceExtensionIndex;
 import com.intellij.guice.utils.GuiceUtils;
 import com.intellij.psi.*;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.uast.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeMap;
 
 /**
  * Builds {@link GuiceQualifier} values from declarations (fields, parameters, {@code @Provides} methods)
  * and from binder expressions ({@code annotatedWith(...)}, {@code Key.get(type, ...)}).
  */
-final class GuiceQualifiers {
+@ApiStatus.Experimental
+public final class GuiceQualifiers {
   private static final String NAMES_CLASS = "com.google.inject.name.Names";
   private static final String KEY_CLASS = "com.google.inject.Key";
-  private static final List<String> SINGLE_TYPE_BINDERS =
-      List.of("newSetBinder", "setBinder", "newOptionalBinder", "optionalBinder");
-  private static final List<String> DUAL_TYPE_BINDERS =
-      List.of("newMapBinder", "mapBinder", "newSetMultimapBinder", "multimapBinder");
 
   private GuiceQualifiers() {}
 
@@ -36,14 +36,23 @@ final class GuiceQualifiers {
    * An annotation that does not resolve gives {@link GuiceQualifier.Unknown},
    * unless its name is in a package that never holds qualifiers.
    */
-  static @Nullable GuiceQualifier fromDeclaration(@NotNull PsiModifierListOwner element) {
+  public static @Nullable GuiceQualifier fromDeclaration(@NotNull PsiModifierListOwner element) {
+    return fromDeclaration(element, Set.of());
+  }
+
+  /**
+   * Returns the qualifier of a declaration, ignoring any annotation whose qualified name is in
+   * {@code ignoredAnnotations}.
+   */
+  public static @Nullable GuiceQualifier fromDeclaration(@NotNull PsiModifierListOwner element,
+                                                         @NotNull Set<String> ignoredAnnotations) {
     PsiModifierList modifierList = element.getModifierList();
     GuiceQualifier unknown = null;
 
     if (modifierList != null) {
       for (PsiAnnotation annotation : modifierList.getAnnotations()) {
         String fqn = annotation.getQualifiedName();
-        if (isKnownNonQualifier(fqn)) continue;
+        if (isKnownNonQualifier(fqn) || (fqn != null && ignoredAnnotations.contains(fqn))) continue;
 
         PsiClass annotationClass = annotation.resolveAnnotationType();
         if (annotationClass == null) {
@@ -54,7 +63,7 @@ final class GuiceQualifiers {
           continue;
         }
         String resolvedFqn = annotationClass.getQualifiedName();
-        if (resolvedFqn == null) continue;
+        if (resolvedFqn == null || ignoredAnnotations.contains(resolvedFqn)) continue;
         if (GuiceAnnotations.NAMEDS.contains(resolvedFqn)) {
           return new GuiceQualifier.Named(AnnotationUtil.getStringAttributeValue(annotation, "value"));
         }
@@ -69,7 +78,7 @@ final class GuiceQualifiers {
     if (unknown == null && element instanceof PsiField && element.getNavigationElement() != element) {
       for (UAnnotation uAnno : getDeclarationUAnnotations(element.getNavigationElement())) {
         String fqn = uAnno.getQualifiedName();
-        if (isKnownNonQualifier(fqn)) continue;
+        if (isKnownNonQualifier(fqn) || (fqn != null && ignoredAnnotations.contains(fqn))) continue;
 
         PsiClass annotationClass = uAnno.resolve();
         if (annotationClass == null) {
@@ -80,7 +89,7 @@ final class GuiceQualifiers {
           continue;
         }
         String resolvedFqn = annotationClass.getQualifiedName();
-        if (resolvedFqn == null) continue;
+        if (resolvedFqn == null || ignoredAnnotations.contains(resolvedFqn)) continue;
         if (GuiceAnnotations.NAMEDS.contains(resolvedFqn)) {
           UExpression valExpr = uAnno.findAttributeValue("value");
           return new GuiceQualifier.Named(valExpr != null ? UastUtils.evaluateString(valExpr) : null);
@@ -222,7 +231,8 @@ final class GuiceQualifiers {
    * or {@code OptionalBinder.newOptionalBinder(binder(), Key.get(Foo.class, Names.named("a")))}.
    */
   static @Nullable GuiceQualifier fromBinderCall(@NotNull UCallExpression outermostCall) {
-    for (String name : SINGLE_TYPE_BINDERS) {
+    GuiceExtensionIndex extensionIndex = GuiceExtensionIndex.get();
+    for (String name : extensionIndex.getSingleTypeBinderMethodNames()) {
       UCallExpression call = GuiceUtils.findCallInChain(outermostCall, name);
       if (call != null) {
         List<UExpression> args = call.getValueArguments();
@@ -238,7 +248,7 @@ final class GuiceQualifiers {
         return null;
       }
     }
-    for (String name : DUAL_TYPE_BINDERS) {
+    for (String name : extensionIndex.getDualTypeBinderMethodNames()) {
       UCallExpression call = GuiceUtils.findCallInChain(outermostCall, name);
       if (call != null) {
         List<UExpression> args = call.getValueArguments();
@@ -293,15 +303,78 @@ final class GuiceQualifiers {
       }
     }
 
-    // Any other annotation instance: compare by annotation type only.
+    // Any other annotation instance or @AutoAnnotation factory call.
     PsiType type = expression.getExpressionType();
     if (type instanceof PsiClassType classType) {
       PsiClass annotationClass = classType.resolve();
       if (annotationClass != null && annotationClass.isAnnotationType()) {
+        if (e instanceof UCallExpression call) {
+          GuiceQualifier instance = fromAnnotationFactoryCall(call, annotationClass);
+          if (instance != null) return instance;
+        }
         return fromAnnotationType(classType, expression);
       }
     }
     return unknown(expression);
+  }
+
+  private static @Nullable GuiceQualifier fromAnnotationFactoryCall(@NotNull UCallExpression call,
+                                                                    @NotNull PsiClass annotationClass) {
+    String fqn = annotationClass.getQualifiedName();
+    if (fqn == null || GuiceAnnotations.NAMEDS.contains(fqn)) return null;
+
+    List<PsiAnnotationMethod> attrMethods = new ArrayList<>();
+    for (PsiMethod method : annotationClass.getMethods()) {
+      if (method instanceof PsiAnnotationMethod attrMethod) {
+        attrMethods.add(attrMethod);
+      }
+    }
+    if (attrMethods.isEmpty()) return null;
+
+    List<UExpression> args = call.getValueArguments();
+    if (args.isEmpty()) return null;
+
+    PsiMethod resolvedFactory = call.resolve();
+    PsiParameter[] params = resolvedFactory != null ? resolvedFactory.getParameterList().getParameters() : PsiParameter.EMPTY_ARRAY;
+
+    TreeMap<String, String> values = new TreeMap<>();
+    for (PsiAnnotationMethod attrMethod : attrMethods) {
+      String attrName = attrMethod.getName();
+      int argIndex = -1;
+      for (int i = 0; i < params.length && i < args.size(); i++) {
+        if (attrName.equals(params[i].getName())) {
+          argIndex = i;
+          break;
+        }
+      }
+      if (argIndex < 0 && attrMethods.size() == 1 && args.size() == 1) {
+        argIndex = 0;
+      }
+      if (argIndex >= 0) {
+        String evaluated = evaluateArgumentValue(args.get(argIndex));
+        if (evaluated == null) return null;
+        values.put(attrName, evaluated);
+      }
+      else {
+        PsiAnnotationMemberValue defaultValue = attrMethod.getDefaultValue();
+        values.put(attrName, defaultValue != null ? valueText(defaultValue) : "");
+      }
+    }
+
+    StringBuilder sb = new StringBuilder();
+    values.forEach((k, v) -> sb.append(k).append('=').append(v).append(';'));
+    return new GuiceQualifier.Instance(fqn, sb.toString());
+  }
+
+  private static @Nullable String evaluateArgumentValue(@NotNull UExpression arg) {
+    String strVal = UastUtils.evaluateString(arg);
+    if (strVal != null) return strVal;
+    PsiElement sourcePsi = arg.getSourcePsi();
+    if (sourcePsi instanceof PsiAnnotationMemberValue memberValue) {
+      return valueText(memberValue);
+    }
+    Object evaluated = arg.evaluate();
+    return evaluated != null ? String.valueOf(evaluated) : null;
   }
 
   private static @NotNull GuiceQualifier fromAnnotationType(@NotNull PsiType type, @NotNull UElement context) {

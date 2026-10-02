@@ -13,7 +13,9 @@ import com.intellij.guice.model.GuiceInjectorManager;
 import com.intellij.guice.model.GuiceProjectModel;
 import com.intellij.guice.model.beans.BindDescriptor;
 import com.intellij.guice.model.extensions.GuiceBindingContributor;
-import com.intellij.guice.model.extensions.GuiceBindingMatchStrategy;
+import com.intellij.guice.model.extensions.GuiceCallPattern;
+import com.intellij.guice.model.extensions.GuiceExtensionRegistrar;
+import com.intellij.guice.utils.GuiceUtils;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.util.Disposer;
@@ -1222,7 +1224,7 @@ public class GuiceInjectionTest extends GuiceTestBase {
 
   public void testTargetRendererDoesNotRetainPsiOrLoseTextAfterReparse() throws Exception {
     assertThat(java.util.Arrays.stream(GuiceEntry.class.getDeclaredFields())
-                   .anyMatch(f -> f.getType() == GuiceBindingMatchStrategy.class))
+                   .anyMatch(f -> f.getType() == GuiceBindingContributor.class))
         .isFalse();
 
     var clientFile = myFixture.addFileToProject("Client.java", """
@@ -1652,5 +1654,584 @@ public class GuiceInjectionTest extends GuiceTestBase {
     assertTrue(new com.intellij.guice.intentions.MoveProviderBindingToClassPredicate().satisfiedBy(secondStmtExpr));
     assertFalse(new com.intellij.guice.intentions.MoveBindingScopeToClassPredicate().satisfiedBy(secondStmtExpr));
   }
+
+  public void testDeclarativeFlagSpecAndCustomInjectionPointContributor() {
+    myFixture.addClass("""
+      package com.google.common.flags;
+      import java.lang.annotation.Retention;
+      import java.lang.annotation.RetentionPolicy;
+      @Retention(RetentionPolicy.RUNTIME)
+      public @interface FlagSpec {
+        String name();
+        String help() default "";
+      }
+      """);
+    myFixture.addClass("""
+      package com.google.common.flags;
+      public final class Flag<T> {
+        public static <T> Flag<T> value(T defaultValue) { return new Flag<>(); }
+      }
+      """);
+    myFixture.addClass("""
+      package com.google.common.flags.ext.guice;
+      import com.google.inject.Module;
+      public final class FlagBinder {
+        public static Module createModule(Class<?>... flagContainers) { return null; }
+      }
+      """);
+    myFixture.addClass("""
+      import com.google.inject.BindingAnnotation;
+      import java.lang.annotation.Retention;
+      import java.lang.annotation.RetentionPolicy;
+      @Retention(RetentionPolicy.RUNTIME)
+      @BindingAnnotation
+      public @interface GmailifyOpenAuthRedirectUrl {}
+      """);
+    myFixture.addClass("""
+      public final class CustomInjector {
+        public <T> T lookup(Class<T> type) { return null; }
+      }
+      """);
+
+    GuiceBindingContributor flagAndCustomLookupContributor = new GuiceBindingContributor() {
+      @Override
+      public void register(@NotNull GuiceExtensionRegistrar registrar) {
+        registrar.registerFieldAnnotation(
+            List.of("com.google.common.flags.FlagSpec"),
+            (field, entries) -> {
+              if (field.getType() instanceof com.intellij.psi.PsiClassType classType) {
+                var params = classType.getParameters();
+                if (params.length == 1) {
+                  entries.add(GuiceEntryProducer.createFieldBindingEntry(field, params[0]));
+                }
+              }
+            }
+        );
+        registrar.registerModuleCallEntry(
+            GuiceCallPattern.named("createModule")
+                .withOwnerClass("com.google.common.flags.ext.guice.FlagBinder")
+                .minArguments(1),
+            (call, entries) -> {
+              var argType = GuiceUtils.getBindingTypeFromExpression(call.getValueArguments().getFirst());
+              if (argType != null) {
+                var entry = GuiceEntryProducer.createCallEntry(call, argType, null, EntryRole.INJECTION_POINT);
+                if (entry != null) entries.add(entry);
+              }
+            }
+        );
+        registrar.registerCallEntry(
+            GuiceCallPattern.named("lookup")
+                .withOwnerClass("CustomInjector")
+                .argumentCount(1),
+            (call, entries) -> {
+              var argType = GuiceUtils.getBindingTypeFromExpression(call.getValueArguments().getFirst());
+              if (argType != null) {
+                var entry = GuiceEntryProducer.createCallEntry(call, argType, null, EntryRole.INJECTION_POINT);
+                if (entry != null) entries.add(entry);
+              }
+            }
+        );
+      }
+    };
+    GuiceBindingContributor.EP_NAME.getPoint().registerExtension(
+        flagAndCustomLookupContributor, getTestRootDisposable());
+
+    var flagsFile = myFixture.addFileToProject("GmailifyFlags.java", """
+      import com.google.common.flags.Flag;
+      import com.google.common.flags.FlagSpec;
+      public class GmailifyFlags {
+        @FlagSpec(
+            help = "Redirect URL that should be used for Gmailify when interacting with OpenAuth",
+            name = "gmailify_open_auth_redirect_url")
+        @GmailifyOpenAuthRedirectUrl
+        private static final Flag<String> gmailifyOpenAuthRedirectUrl =
+            Flag.value("https://mail.google.com/mail/gmat/");
+      }
+      """);
+    myFixture.addFileToProject("FlagsModule.java", """
+      import com.google.common.flags.ext.guice.FlagBinder;
+      import com.google.inject.AbstractModule;
+      public class FlagsModule extends AbstractModule {
+        @Override
+        protected void configure() {
+          install(FlagBinder.createModule(GmailifyFlags.class));
+          bind(MyService.class).to(MyServiceImpl.class);
+        }
+      }
+      """);
+
+    myFixture.enableInspections(new com.intellij.guice.inspections.BindingAnnotationWithoutInjectInspection());
+    myFixture.configureFromExistingVirtualFile(flagsFile.getVirtualFile());
+    assertThat(myFixture.doHighlighting(com.intellij.lang.annotation.HighlightSeverity.WARNING)).isEmpty();
+    assertThat(gutterAnchors(TO_INJECTION_POINTS_TOOLTIP)).isEmpty();
+
+    myFixture.configureByText("Client.java", """
+      import com.google.inject.Inject;
+      public class Client {
+        @Inject @GmailifyOpenAuthRedirectUrl
+        String redirectUrl;
+
+        void useCustomLookup(CustomInjector injector) {
+          injector.lookup(MyService.class);
+        }
+      }
+      """);
+    assertThat(gutterAnchors(TO_BINDINGS_TOOLTIP)).containsExactly("lookup", "redirectUrl");
+
+    myFixture.configureFromExistingVirtualFile(flagsFile.getVirtualFile());
+    assertThat(gutterAnchors(TO_INJECTION_POINTS_TOOLTIP)).containsExactly("gmailifyOpenAuthRedirectUrl");
+  }
+
+  public void testFlagBinderBuiltInContributor() {
+    myFixture.addClass("""
+      package com.google.common.flags;
+      import java.lang.annotation.Retention;
+      import java.lang.annotation.RetentionPolicy;
+      @Retention(RetentionPolicy.RUNTIME)
+      public @interface FlagSpec {
+        String name();
+        String altName() default "";
+        String help() default "";
+      }
+      """);
+    myFixture.addClass("""
+      package com.google.common.flags;
+      public class Flag<T> {
+        public static <T> Flag<T> value(T defaultValue) { return new Flag<>(); }
+      }
+      """);
+    myFixture.addClass("""
+      package com.google.common.flags;
+      public final class StringFlag extends Flag<String> {}
+      """);
+    myFixture.addClass("""
+      package com.google.common.inject;
+      import com.google.inject.Binder;
+      import com.google.inject.Module;
+      public final class FlagBinder {
+        public FlagBinder(Binder binder) {}
+        public static Module createModule(Class<?>... classes) { return null; }
+        public static Module legacyCreateModuleForBindingAnnotationsOrNameAndAltName(Class<?>... classes) { return null; }
+        public FlagBinder legacyForBindingAnnotationsOrNameAndAltName() { return this; }
+        public FlagBinder legacyForBindingAnnotationsOrName() { return this; }
+        public FlagBinder legacyForBindingAnnotationsOrAltName() { return this; }
+        public FlagBinder bind(Class<?>... classes) { return this; }
+      }
+      """);
+    myFixture.addClass("""
+      import com.google.inject.BindingAnnotation;
+      import java.lang.annotation.Retention;
+      import java.lang.annotation.RetentionPolicy;
+      @Retention(RetentionPolicy.RUNTIME)
+      @BindingAnnotation
+      public @interface GmailifyOpenAuthRedirectUrl {}
+      """);
+
+    var flagsFile = myFixture.addFileToProject("GmailifyFlags.java", """
+      import com.google.common.flags.Flag;
+      import com.google.common.flags.FlagSpec;
+      import com.google.common.flags.StringFlag;
+      public class GmailifyFlags {
+        @FlagSpec(
+            help = "Redirect URL that should be used for Gmailify when interacting with OpenAuth",
+            name = "gmailify_open_auth_redirect_url")
+        @GmailifyOpenAuthRedirectUrl
+        private static final Flag<String> gmailifyOpenAuthRedirectUrl =
+            Flag.value("https://mail.google.com/mail/gmat/");
+
+        @FlagSpec(name = "timeout_seconds", altName = "legacy_timeout_seconds", help = "Timeout")
+        private static final Flag<Integer> timeoutSeconds = Flag.value(30);
+
+        @FlagSpec(name = "server_host", help = "Host")
+        private static final StringFlag serverHost = new StringFlag();
+      }
+      """);
+    var flagsModuleFile = myFixture.addFileToProject("FlagsModule.java", """
+      import com.google.common.inject.FlagBinder;
+      import com.google.inject.AbstractModule;
+      public class FlagsModule extends AbstractModule {
+        @Override
+        protected void configure() {
+          install(FlagBinder.createModule(GmailifyFlags.class));
+          new FlagBinder(binder()).legacyForBindingAnnotationsOrAltName().bind(GmailifyFlags.class);
+        }
+      }
+      """);
+
+    myFixture.configureByText("Client.java", """
+      import com.google.inject.Inject;
+      import com.google.inject.name.Named;
+      public class Client {
+        @Inject @GmailifyOpenAuthRedirectUrl
+        String redirectUrl;
+
+        @Inject @Named("timeout_seconds")
+        Integer timeoutByPrimaryName;
+
+        @Inject @Named("legacy_timeout_seconds")
+        int timeoutByAltName;
+
+        @Inject @Named("server_host")
+        String host;
+
+        @Inject @Named("non_existent_flag")
+        String missingFlag;
+      }
+      """);
+
+    // Under createModule (NONE) + legacyForBindingAnnotationsOrAltName (ALT),
+    // timeoutSeconds (which has altName = "legacy_timeout_seconds") is bound ONLY by its altName,
+    // while serverHost (no altName) is bound by its primary name.
+    assertThat(gutterAnchors(TO_BINDINGS_TOOLTIP))
+        .containsExactly("host", "redirectUrl", "timeoutByAltName");
+
+    myFixture.configureFromExistingVirtualFile(flagsFile.getVirtualFile());
+    assertThat(gutterAnchors(TO_INJECTION_POINTS_TOOLTIP))
+        .containsExactly("gmailifyOpenAuthRedirectUrl", "serverHost", "timeoutSeconds");
+    assertThat(gutterAnchors(TO_BINDINGS_TOOLTIP))
+        .containsExactly("GmailifyFlags");
+
+    myFixture.configureFromExistingVirtualFile(flagsModuleFile.getVirtualFile());
+    assertThat(gutterAnchors(TO_INJECTION_POINTS_TOOLTIP)).isEmpty();
+  }
+
+  public void testFlagBinderCrossFileEditsMovesAndDeletions() {
+    myFixture.addClass("""
+      package com.google.common.flags;
+      import java.lang.annotation.Retention;
+      import java.lang.annotation.RetentionPolicy;
+      @Retention(RetentionPolicy.RUNTIME)
+      public @interface FlagSpec {
+        String name();
+        String altName() default "";
+        String help() default "";
+      }
+      """);
+    myFixture.addClass("""
+      package com.google.common.flags;
+      public class Flag<T> {
+        public static <T> Flag<T> value(T defaultValue) { return new Flag<>(); }
+      }
+      """);
+    myFixture.addClass("""
+      package com.google.common.inject;
+      import com.google.inject.Binder;
+      import com.google.inject.Module;
+      public final class FlagBinder {
+        public FlagBinder(Binder binder) {}
+        public static Module createModule(Class<?>... classes) { return null; }
+        public static Module legacyCreateModuleForBindingAnnotationsOrNameAndAltName(Class<?>... classes) { return null; }
+        public FlagBinder legacyForBindingAnnotationsOrNameAndAltName() { return this; }
+        public FlagBinder bind(Class<?>... classes) { return this; }
+      }
+      """);
+
+    // 1. An unbound @FlagSpec class should not contribute any Guice bindings on its own.
+    myFixture.addFileToProject("UnboundFlags.java", """
+      import com.google.common.flags.Flag;
+      import com.google.common.flags.FlagSpec;
+      public class UnboundFlags {
+        @FlagSpec(name = "unbound_flag", help = "Unbound")
+        private static final Flag<String> unboundFlag = Flag.value("x");
+      }
+      """);
+
+    var flagsFile = myFixture.addFileToProject("EditableFlags.java", """
+      import com.google.common.flags.Flag;
+      import com.google.common.flags.FlagSpec;
+      public class EditableFlags {
+        @FlagSpec(name = "endpoint_url", altName = "legacy_endpoint_url", help = "Endpoint")
+        private static final Flag<String> endpointUrl = Flag.value("https://example.com");
+      }
+      """);
+    myFixture.addFileToProject("FlagsModule.java", """
+      import com.google.common.inject.FlagBinder;
+      import com.google.inject.AbstractModule;
+      public class FlagsModule extends AbstractModule {
+        @Override
+        protected void configure() {
+          install(FlagBinder.legacyCreateModuleForBindingAnnotationsOrNameAndAltName(EditableFlags.class));
+        }
+      }
+      """);
+
+    var clientFile = myFixture.configureByText("Client.java", """
+      import com.google.inject.Inject;
+      import com.google.inject.name.Named;
+      public class Client {
+        @Inject @Named("unbound_flag")
+        String unbound;
+
+        @Inject @Named("endpoint_url")
+        String primaryEndpoint;
+
+        @Inject @Named("legacy_endpoint_url")
+        String altEndpoint;
+
+        @Inject @Named("renamed_endpoint_url")
+        String renamedEndpoint;
+      }
+      """);
+
+    assertThat(gutterAnchors(TO_BINDINGS_TOOLTIP))
+        .containsExactly("altEndpoint", "primaryEndpoint");
+
+    // 2. Edit the flag file in-place: change the flag name from "endpoint_url" to "renamed_endpoint_url".
+    com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(getProject(), () -> {
+      var document = com.intellij.psi.PsiDocumentManager.getInstance(getProject()).getDocument(flagsFile);
+      assertNotNull(document);
+      String updated = document.getText().replace("\"endpoint_url\"", "\"renamed_endpoint_url\"");
+      document.setText(updated);
+      com.intellij.psi.PsiDocumentManager.getInstance(getProject()).commitAllDocuments();
+    });
+
+    myFixture.configureFromExistingVirtualFile(clientFile.getVirtualFile());
+    assertThat(gutterAnchors(TO_BINDINGS_TOOLTIP))
+        .containsExactly("altEndpoint", "renamedEndpoint");
+
+    // 3. Delete the flag file: dependent module bindings should be invalidated immediately.
+    com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(getProject(), () -> {
+      try {
+        flagsFile.getVirtualFile().delete(this);
+      }
+      catch (java.io.IOException e) {
+        throw new RuntimeException(e);
+      }
+    });
+
+    myFixture.configureFromExistingVirtualFile(clientFile.getVirtualFile());
+    assertThat(gutterAnchors(TO_BINDINGS_TOOLTIP)).isEmpty();
+
+    // 4. Re-create the flag file (simulating a move/restore): dependent module should re-bind automatically.
+    myFixture.addFileToProject("EditableFlags.java", """
+      import com.google.common.flags.Flag;
+      import com.google.common.flags.FlagSpec;
+      public class EditableFlags {
+        @FlagSpec(name = "endpoint_url", help = "Restored endpoint")
+        private static final Flag<String> endpointUrl = Flag.value("https://example.com");
+      }
+      """);
+
+    myFixture.configureFromExistingVirtualFile(clientFile.getVirtualFile());
+    assertThat(gutterAnchors(TO_BINDINGS_TOOLTIP))
+        .containsExactly("primaryEndpoint");
+  }
+
+  public void testDynamicFlagBinderBuiltInContributor() {
+    myFixture.addClass("""
+      package com.google.common.flags;
+      import java.lang.annotation.Retention;
+      import java.lang.annotation.RetentionPolicy;
+      @Retention(RetentionPolicy.RUNTIME)
+      public @interface FlagSpec {
+        String name();
+        String altName() default "";
+        String help() default "";
+      }
+      """);
+    myFixture.addClass("""
+      package com.google.common.flags;
+      public class Flag<T> {
+        public static <T> Flag<T> value(T defaultValue) { return new Flag<>(); }
+      }
+      """);
+    myFixture.addClass("""
+      package com.google.api.server.core;
+      import java.lang.annotation.Retention;
+      import java.lang.annotation.RetentionPolicy;
+      @Retention(RetentionPolicy.RUNTIME)
+      public @interface DynamicFlag {}
+      """);
+    myFixture.addClass("""
+      package com.google.api.server.core;
+      public final class DynamicFlagManager {
+        public static class DynamicFlag<T> {}
+      }
+      """);
+    myFixture.addClass("""
+      package com.google.api.server.core;
+      import com.google.inject.Binder;
+      import com.google.inject.Module;
+      public final class DynamicFlagBinder {
+        public static Module dynamicFlagsModule(Class<?>... classes) { return null; }
+        public static void bind(Binder binder, Class<?>... classes) {}
+      }
+      """);
+    myFixture.addClass("""
+      import com.google.inject.BindingAnnotation;
+      import java.lang.annotation.Retention;
+      import java.lang.annotation.RetentionPolicy;
+      @Retention(RetentionPolicy.RUNTIME)
+      @BindingAnnotation
+      public @interface MaxQpsFlag {}
+      """);
+
+    var flagsFile = myFixture.addFileToProject("ServerDynamicFlags.java", """
+      import com.google.api.server.core.DynamicFlag;
+      import com.google.common.flags.Flag;
+      import com.google.common.flags.FlagSpec;
+      public class ServerDynamicFlags {
+        @DynamicFlag
+        @FlagSpec(name = "max_qps", altName = "old_max_qps", help = "Max QPS")
+        @MaxQpsFlag
+        public static final Flag<Integer> maxQps = Flag.value(100);
+      }
+      """);
+    myFixture.addFileToProject("DynamicFlagsModule.java", """
+      import com.google.api.server.core.DynamicFlagBinder;
+      import com.google.inject.AbstractModule;
+      public class DynamicFlagsModule extends AbstractModule {
+        @Override
+        protected void configure() {
+          install(DynamicFlagBinder.dynamicFlagsModule(ServerDynamicFlags.class));
+        }
+      }
+      """);
+
+    myFixture.configureByText("Client.java", """
+      import com.google.api.server.core.DynamicFlagManager;
+      import com.google.inject.Inject;
+      import com.google.inject.Provider;
+      import com.google.inject.name.Named;
+      public class Client {
+        @Inject @Named("max_qps")
+        Provider<Integer> byName;
+
+        @Inject @Named("old_max_qps")
+        Integer byAltName;
+
+        @Inject @MaxQpsFlag
+        Integer byAnnotation;
+
+        @Inject @Named("max_qps")
+        DynamicFlagManager.DynamicFlag<Integer> dynamicHandle;
+      }
+      """);
+
+    assertThat(gutterAnchors(TO_BINDINGS_TOOLTIP))
+        .containsExactly("byAltName", "byAnnotation", "byName", "dynamicHandle");
+
+    myFixture.configureFromExistingVirtualFile(flagsFile.getVirtualFile());
+    assertThat(gutterAnchors(TO_INJECTION_POINTS_TOOLTIP)).containsExactly("maxQps");
+    assertThat(gutterAnchors(TO_BINDINGS_TOOLTIP)).containsExactly("ServerDynamicFlags");
+  }
+
+  public void testExperimentFlagModuleAndExperimentValuesBuiltInContributor() {
+    myFixture.addClass("""
+      package com.google.experiments.framework;
+      import java.lang.annotation.Retention;
+      import java.lang.annotation.RetentionPolicy;
+      @Retention(RetentionPolicy.RUNTIME)
+      public @interface ExperimentFlagSpec {
+        String name();
+      }
+      """);
+    myFixture.addClass("""
+      package com.google.experiments.framework;
+      public interface ExperimentFlag<T> {}
+      """);
+    myFixture.addClass("""
+      package com.google.apps.framework.annotations;
+      import com.google.inject.BindingAnnotation;
+      import java.lang.annotation.Retention;
+      import java.lang.annotation.RetentionPolicy;
+      @Retention(RetentionPolicy.RUNTIME)
+      @BindingAnnotation
+      public @interface ExperimentValue {
+        String name();
+      }
+      """);
+    myFixture.addClass("""
+      package com.google.apps.framework.annotations;
+      public final class ExperimentValues {
+        public static ExperimentValue value(String name) { return null; }
+      }
+      """);
+    myFixture.addClass("""
+      package com.google.apps.framework.annotations;
+      import com.google.inject.BindingAnnotation;
+      import java.lang.annotation.Retention;
+      import java.lang.annotation.RetentionPolicy;
+      @Retention(RetentionPolicy.RUNTIME)
+      @BindingAnnotation
+      public @interface JsExperiment {}
+      """);
+    myFixture.addClass("""
+      package com.google.apps.framework.experiments;
+      import com.google.inject.AbstractModule;
+      public final class ExperimentFlagModule extends AbstractModule {
+        public ExperimentFlagModule(Class<?> flagContainer) {}
+        public static Builder builder() { return new Builder(); }
+        @Override protected void configure() {}
+        public static final class Builder {
+          public Builder setFlagContainer(Class<?> flagContainer) { return this; }
+          public ExperimentFlagModule build() { return null; }
+        }
+      }
+      """);
+    myFixture.addClass("""
+      import com.google.inject.BindingAnnotation;
+      import java.lang.annotation.Retention;
+      import java.lang.annotation.RetentionPolicy;
+      @Retention(RetentionPolicy.RUNTIME)
+      @BindingAnnotation
+      public @interface EnableDarkTheme {}
+      """);
+
+    var expFlagsFile = myFixture.addFileToProject("UiExperiments.java", """
+      import com.google.apps.framework.annotations.JsExperiment;
+      import com.google.experiments.framework.ExperimentFlag;
+      import com.google.experiments.framework.ExperimentFlagSpec;
+      public class UiExperiments {
+        @JsExperiment
+        @ExperimentFlagSpec(name = "enable_new_sidebar")
+        public static final ExperimentFlag<Boolean> enableNewSidebar = null;
+
+        @EnableDarkTheme
+        @ExperimentFlagSpec(name = "enable_dark_theme")
+        public static final ExperimentFlag<Boolean> enableDarkTheme = null;
+      }
+      """);
+    myFixture.addFileToProject("ExperimentsModule.java", """
+      import com.google.apps.framework.annotations.ExperimentValues;
+      import com.google.apps.framework.experiments.ExperimentFlagModule;
+      import com.google.inject.AbstractModule;
+      public class ExperimentsModule extends AbstractModule {
+        @Override
+        protected void configure() {
+          install(ExperimentFlagModule.builder().setFlagContainer(UiExperiments.class).build());
+          bind(String.class).annotatedWith(ExperimentValues.value("manual_exp")).toInstance("v1");
+        }
+      }
+      """);
+
+    myFixture.configureByText("Client.java", """
+      import com.google.apps.framework.annotations.ExperimentValue;
+      import com.google.inject.Inject;
+      public class Client {
+        @Inject @ExperimentValue(name = "enable_new_sidebar")
+        Boolean newSidebar;
+
+        @Inject @ExperimentValue(name = "other_experiment")
+        Boolean otherExperiment;
+
+        @Inject @EnableDarkTheme
+        boolean darkTheme;
+
+        @Inject @ExperimentValue(name = "manual_exp")
+        String manualExperiment;
+      }
+      """);
+
+    assertThat(gutterAnchors(TO_BINDINGS_TOOLTIP))
+        .containsExactly("darkTheme", "manualExperiment", "newSidebar");
+
+    myFixture.configureFromExistingVirtualFile(expFlagsFile.getVirtualFile());
+    assertThat(gutterAnchors(TO_INJECTION_POINTS_TOOLTIP))
+        .containsExactly("enableDarkTheme", "enableNewSidebar");
+    assertThat(gutterAnchors(TO_BINDINGS_TOOLTIP))
+        .containsExactly("UiExperiments");
+  }
 }
+
 

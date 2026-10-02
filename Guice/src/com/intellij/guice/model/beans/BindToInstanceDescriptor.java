@@ -4,10 +4,12 @@ package com.intellij.guice.model.beans;
 import com.intellij.guice.model.GuiceInjectionUtil;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.uast.UCallExpression;
 
+@ApiStatus.Experimental
 public class BindToInstanceDescriptor extends BindDescriptor {
 
   public BindToInstanceDescriptor(@NotNull PsiElement callExpression) {

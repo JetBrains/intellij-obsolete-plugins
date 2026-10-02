@@ -5,13 +5,16 @@ import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.guice.GuiceBundle;
 import com.intellij.guice.model.extensions.GuiceBindingContributor;
+import com.intellij.guice.model.extensions.GuiceExtensionIndex;
 import com.intellij.guice.model.renderers.GuiceEntryTargetRenderer;
 import com.intellij.java.ultimate.icons.JavaUltimateIcons;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiJavaCodeReferenceElement;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiNameIdentifierOwner;
+import com.intellij.psi.PsiNewExpression;
 import com.intellij.psi.PsiReferenceExpression;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -22,7 +25,7 @@ import org.jetbrains.uast.UastContextKt;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -45,17 +48,9 @@ public final class GuiceInjectionsClassAnnotator extends GuiceLineMarkerProvider
 
   /**
    * Method names that represent Guice call-site identifiers in the source.
-   * Cached on {@link GuiceBindingContributor#EP_NAME} and invalidated automatically when the EP changes.
    */
   private static @NotNull Set<String> getGuiceCallNames() {
-    return GuiceBindingContributor.EP_NAME.computeIfAbsent(GuiceInjectionsClassAnnotator.class, () -> {
-      Set<String> names = new HashSet<>();
-      names.add("getProvider"); // not a binding word, but a call we want gutters on
-      for (GuiceBindingContributor c : GuiceBindingContributor.EP_NAME.getExtensionList()) {
-        names.addAll(c.getBindingWords());
-      }
-      return Set.copyOf(names);
-    });
+    return GuiceExtensionIndex.get().getAllCallNames();
   }
 
   // -----------------------------------------------------------------------
@@ -82,6 +77,10 @@ public final class GuiceInjectionsClassAnnotator extends GuiceLineMarkerProvider
     boolean isDeclaration = (owner == psiElement.getParent());
     PsiElement anchor = isDeclaration ? owner : psiElement;
     Set<GuiceEntry> entries = navIndex.findEntriesByAnchor(anchor);
+    if (entries.isEmpty()) return;
+
+    Set<GuiceEntry> injectionPointCounterparts = new LinkedHashSet<>();
+    Set<GuiceEntry> bindingSiteCounterparts = new LinkedHashSet<>();
 
     for (GuiceEntry entry : entries) {
       Set<GuiceEntry> counterparts = navIndex.findCounterparts(entry);
@@ -92,14 +91,20 @@ public final class GuiceInjectionsClassAnnotator extends GuiceLineMarkerProvider
       }
       if (counterparts.isEmpty()) continue;
 
-      // Filter to valid entries with resolvable navigation targets.
-      List<GuiceEntry> validCounterparts = new ArrayList<>();
+      Set<GuiceEntry> targetSet =
+          entry.getRole() == EntryRole.INJECTION_POINT ? injectionPointCounterparts : bindingSiteCounterparts;
       for (GuiceEntry cp : counterparts) {
-        if (cp.getNavigationTarget() != null) validCounterparts.add(cp);
+        if (cp.getNavigationTarget() != null) {
+          targetSet.add(cp);
+        }
       }
-      if (validCounterparts.isEmpty()) continue;
+    }
 
-      addGutterIcon(result, validCounterparts, entry.getRole(), psiElement);
+    if (!injectionPointCounterparts.isEmpty()) {
+      addGutterIcon(result, new ArrayList<>(injectionPointCounterparts), EntryRole.INJECTION_POINT, psiElement);
+    }
+    if (!bindingSiteCounterparts.isEmpty()) {
+      addGutterIcon(result, new ArrayList<>(bindingSiteCounterparts), EntryRole.BINDING_SITE, psiElement);
     }
   }
 
@@ -153,7 +158,7 @@ public final class GuiceInjectionsClassAnnotator extends GuiceLineMarkerProvider
 
   /**
    * Resolves the owning call expression for a method-call identifier like {@code to} in
-   * {@code bind(Foo.class).to(Bar.class)}.
+   * {@code bind(Foo.class).to(Bar.class)} or a constructor call like {@code new ExperimentFlagModule(...)}.
    */
   private static @Nullable PsiElement resolveCallOwner(@NotNull PsiElement leafElement,
                                                        @NotNull PsiElement parent) {
@@ -162,6 +167,13 @@ public final class GuiceInjectionsClassAnnotator extends GuiceLineMarkerProvider
         && refExpr.getParent() instanceof PsiMethodCallExpression methodCall
         && leafElement.equals(refExpr.getReferenceNameElement())) {
       return methodCall;
+    }
+
+    // Java constructor call: PsiIdentifier → PsiJavaCodeReferenceElement → PsiNewExpression
+    if (parent instanceof PsiJavaCodeReferenceElement classRef
+        && classRef.getParent() instanceof PsiNewExpression newExpr
+        && leafElement.equals(classRef.getReferenceNameElement())) {
+      return newExpr;
     }
 
     // Kotlin/other: KtIdentifier → KtNameReferenceExpression → KtCallExpression

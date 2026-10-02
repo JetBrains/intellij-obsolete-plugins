@@ -2,7 +2,18 @@
 package com.intellij.guice.model.beans;
 
 import com.intellij.guice.utils.GuiceUtils;
-import com.intellij.psi.*;
+import com.intellij.psi.JavaPsiFacade;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiClassType;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiModifier;
+import com.intellij.psi.PsiType;
+import com.intellij.psi.SmartPointerManager;
+import com.intellij.psi.SmartPsiElementPointer;
+import com.intellij.psi.SmartTypePointer;
+import com.intellij.psi.SmartTypePointerManager;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.uast.UCallExpression;
@@ -10,6 +21,7 @@ import org.jetbrains.uast.UExpression;
 
 import java.util.List;
 
+@ApiStatus.Experimental
 public class AssistedFactoryBindDescriptor extends BindDescriptor {
   private final @Nullable SmartPsiElementPointer<PsiClass> myFactoryClass;
   private final @Nullable SmartTypePointer myFactoryPsiType;
@@ -21,12 +33,6 @@ public class AssistedFactoryBindDescriptor extends BindDescriptor {
     myFactoryPsiType = factoryPsiType != null
                        ? SmartTypePointerManager.getInstance(callExpression.getProject()).createSmartTypePointer(factoryPsiType)
                        : null;
-  }
-
-  public AssistedFactoryBindDescriptor(@NotNull PsiElement callExpression, @Nullable PsiClass factoryClass) {
-    super(callExpression);
-    myFactoryClass = factoryClass != null ? SmartPointerManager.createPointer(factoryClass) : null;
-    myFactoryPsiType = null;
   }
 
   public @Nullable PsiClass getFactoryClass() {
