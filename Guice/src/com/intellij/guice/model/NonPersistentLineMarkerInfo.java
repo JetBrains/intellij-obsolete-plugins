@@ -2,31 +2,19 @@
 package com.intellij.guice.model;
 
 import com.intellij.codeInsight.daemon.GutterIconNavigationHandler;
-import com.intellij.codeInsight.daemon.MergeableLineMarkerInfo;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.codeInsight.navigation.NavigationGutterIconRenderer;
 import com.intellij.navigation.GotoRelatedItem;
-import com.intellij.openapi.actionSystem.ActionUpdateThread;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.markup.GutterIconRenderer;
-import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.util.NotNullFactory;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
-import com.intellij.ui.awt.RelativePoint;
 import com.intellij.util.Function;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.Icon;
-import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
-import java.awt.Point;
-import java.awt.event.MouseEvent;
 import java.util.Collection;
 
 /**
@@ -43,58 +31,6 @@ final class NonPersistentLineMarkerInfo<T extends PsiElement> extends RelatedIte
                                       @NotNull GutterIconRenderer.Alignment alignment,
                                       @NotNull NotNullFactory<? extends Collection<? extends GotoRelatedItem>> targets) {
     super(element, range, icon, tooltipProvider, navHandler, alignment, targets);
-  }
-
-  /**
-   * Returns the item for this marker in the popup of a merged gutter icon.
-   * Two Guice markers on one line, for example two constructor parameters, merge into one icon.
-   *
-   * <p>The platform action passes the mouse event of the merged popup to the navigation handler.
-   * The action runs after that popup closes, so the event component is not showing.
-   * A popup for several targets cannot show relative to that component, and the click does nothing.
-   * This action moves the event to the editor at the same screen point.
-   *
-   * <p>Remove this once IJPL-257312 is fixed.
-   *
-   * @see MergeableLineMarkerInfo#getNavigateAction()
-   */
-  @Override
-  protected @NotNull AnAction getNavigateAction() {
-    AnAction platformAction = super.getNavigateAction();
-    return new AnAction() {
-      @Override
-      public void update(@NotNull AnActionEvent e) {
-        platformAction.update(e);
-      }
-
-      @Override
-      public @NotNull ActionUpdateThread getActionUpdateThread() {
-        return platformAction.getActionUpdateThread();
-      }
-
-      @Override
-      public void actionPerformed(@NotNull AnActionEvent e) {
-        GutterIconNavigationHandler<T> handler = getNavigationHandler();
-        if (handler != null) {
-          handler.navigate(toShowingMouseEvent(e), getElement());
-        }
-      }
-    };
-  }
-
-  private static @NotNull MouseEvent toShowingMouseEvent(@NotNull AnActionEvent e) {
-    if (e.getInputEvent() instanceof MouseEvent mouseEvent) {
-      if (mouseEvent.getComponent() != null && mouseEvent.getComponent().isShowing()) return mouseEvent;
-      Editor editor = e.getData(CommonDataKeys.EDITOR);
-      if (editor != null && editor.getContentComponent().isShowing()) {
-        JComponent component = editor.getContentComponent();
-        // The event computed the screen point when its component was showing.
-        Point point = mouseEvent.getLocationOnScreen();
-        SwingUtilities.convertPointFromScreen(point, component);
-        return new RelativePoint(component, point).toMouseEvent();
-      }
-    }
-    return JBPopupFactory.getInstance().guessBestPopupLocation(e.getDataContext()).toMouseEvent();
   }
 
   /**
