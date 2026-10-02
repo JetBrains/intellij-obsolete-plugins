@@ -2,20 +2,49 @@
 package com.intellij.guice.inspections;
 
 import com.intellij.codeInsight.AnnotationUtil;
+import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.guice.GuiceBundle;
 import com.intellij.guice.constants.GuiceAnnotations;
-import com.intellij.psi.*;
-import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.guice.model.extensions.GuiceExtensionIndex;
+import com.intellij.guice.utils.AnnotationUtils;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiMethod;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.Collection;
-import java.util.List;
+import org.jetbrains.uast.UAnnotation;
+import org.jetbrains.uast.UDeclaration;
+import org.jetbrains.uast.UField;
+import org.jetbrains.uast.UMethod;
+import org.jetbrains.uast.UParameter;
+import org.jetbrains.uast.UastUtils;
+import org.jetbrains.uast.visitor.AbstractUastNonRecursiveVisitor;
 
 import static com.intellij.codeInsight.AnnotationUtil.CHECK_HIERARCHY;
 
-public final class BindingAnnotationWithoutInjectInspection extends BaseInspection {
-  private static final Collection<String> INJECT_OR_PROVIDES =
-    List.of(GuiceAnnotations.INJECT, GuiceAnnotations.JAVAX_INJECT, GuiceAnnotations.JAKARTA_INJECT, GuiceAnnotations.PROVIDES);
+/**
+ * Reports binding annotations (e.g., {@code @Named}, {@code @Qualifier}-annotated annotations)
+ * used on fields or method parameters that are not themselves annotated with {@code @Inject}
+ * (or {@code @Provides} / {@code @CheckedProvides} for method parameters). Without
+ * {@code @Inject}, Guice ignores the binding annotation entirely.
+ *
+ * <p>Example:
+ * <pre>
+ * // Flagged: @Named is useless without @Inject on the field
+ * {@literal @}Named("db") Connection connection;
+ *
+ * // OK: field is injected
+ * {@literal @}Inject {@literal @}Named("db") Connection connection;
+ *
+ * // Flagged: parameter qualifier without @Inject on method
+ * void configure({@literal @}Named("port") int port) {}
+ *
+ * // OK: method is annotated with @Provides
+ * {@literal @}Provides Widget provide({@literal @}Named("port") int port) { ... }
+ * </pre>
+ */
+public final class BindingAnnotationWithoutInjectInspection extends BaseUastInspection {
+  public BindingAnnotationWithoutInjectInspection() {
+    super(UAnnotation.class);
+  }
 
   @Override
   protected @NotNull String buildErrorString(Object... infos) {
@@ -23,55 +52,65 @@ public final class BindingAnnotationWithoutInjectInspection extends BaseInspecti
   }
 
   @Override
-  public BaseInspectionVisitor buildVisitor() {
-    return new Visitor();
+  public @NotNull AbstractUastNonRecursiveVisitor buildUastVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
+    return new Visitor(this, holder, isOnTheFly);
   }
 
-  private static class Visitor extends BaseInspectionVisitor {
-    @Override
-    public void visitAnnotation(@NotNull PsiAnnotation annotation) {
-      super.visitAnnotation(annotation);
-      if (!isBindingAnnotation(annotation)) {
-        return;
-      }
-      final PsiVariable boundVariable = PsiTreeUtil.getParentOfType(annotation, PsiVariable.class);
-      if (boundVariable == null) {
-        return;
-      }
-      if (boundVariable instanceof PsiField) {
-        if (!AnnotationUtil.isAnnotated(boundVariable, GuiceAnnotations.INJECTS, CHECK_HIERARCHY)) {
-          registerError(annotation);
-        }
-      }
-      else if (boundVariable instanceof PsiParameter) {
-        final PsiMethod containingMethod = PsiTreeUtil.getParentOfType(boundVariable, PsiMethod.class);
-        if (containingMethod == null) {
-          return;
-        }
-        if (!AnnotationUtil.isAnnotated(containingMethod, INJECT_OR_PROVIDES, 0) && !isAssisted(annotation, containingMethod)) {
-          registerError(annotation);
-        }
-      }
+  private static class Visitor extends BaseUastInspectionVisitor {
+    Visitor(@NotNull BaseUastInspection inspection, @NotNull ProblemsHolder holder, boolean onTheFly) {
+      super(inspection, holder, onTheFly);
     }
 
-    private static boolean isAssisted(@NotNull PsiAnnotation annotation, @NotNull PsiMethod method) {
-      if (!GuiceAnnotations.ASSISTED.equals(annotation.getQualifiedName())) return  false;
+    @Override
+    public boolean visitAnnotation(@NotNull UAnnotation annotation) {
+      if (!isBindingAnnotation(annotation)) {
+        return true;
+      }
+      final UDeclaration owner = AnnotationUtils.resolveAnnotatedDeclaration(annotation);
+      if (owner instanceof UField field) {
+        if (!AnnotationUtils.isAnnotated(field, GuiceAnnotations.INJECTS)
+            && !AnnotationUtils.isAnnotated(field, GuiceExtensionIndex.get().getSupportedFieldAnnotations())) {
+          registerError(annotation);
+        }
+      }
+      else if (owner instanceof UParameter parameter) {
+        final UMethod uMethod = UastUtils.getParentOfType(parameter, UMethod.class);
+        if (uMethod == null) {
+          return true;
+        }
+        final PsiMethod containingMethod = uMethod.getJavaPsi();
+        if (!isInjectOrProvides(containingMethod) && !isAssisted(annotation, containingMethod)) {
+          registerError(annotation);
+        }
+      }
+      return true;
+    }
+
+    /**
+     * Tells if Guice calls the method: {@code @Inject}, or any {@code @Provides} annotation such as {@code @ProvidesIntoSet}.
+     */
+    private static boolean isInjectOrProvides(@NotNull PsiMethod method) {
+      GuiceExtensionIndex extensionIndex = GuiceExtensionIndex.get();
+      return AnnotationUtil.isAnnotated(method, GuiceAnnotations.INJECTS, 0) ||
+             AnnotationUtil.isAnnotated(method, extensionIndex.getAllProvidesAnnotations(), 0) ||
+             (!extensionIndex.getMethodAnnotations().isEmpty() &&
+              AnnotationUtil.isAnnotated(method, extensionIndex.getMethodAnnotations(), 0));
+    }
+
+    private static boolean isAssisted(@NotNull UAnnotation annotation, @NotNull PsiMethod method) {
+      if (!GuiceAnnotations.ASSISTED.equals(annotation.getQualifiedName())) return false;
       if (method.isConstructor() && AnnotationUtil.isAnnotated(method, GuiceAnnotations.ASSISTED_INJECT, CHECK_HIERARCHY)) return true;
       PsiClass containingClass = method.getContainingClass();
 
-      return containingClass !=null && containingClass.isInterface();
+      return containingClass != null && containingClass.isInterface();
     }
   }
 
-  public static boolean isBindingAnnotation(PsiAnnotation annotation) {
-    final PsiJavaCodeReferenceElement referenceElement = annotation.getNameReferenceElement();
-    if (referenceElement == null) {
+  public static boolean isBindingAnnotation(@NotNull UAnnotation annotation) {
+    final PsiClass annotationClass = annotation.resolve();
+    if (annotationClass == null) {
       return false;
     }
-    final PsiElement element = referenceElement.resolve();
-    if (!(element instanceof PsiClass annotationClass)) {
-      return false;
-    }
-    return AnnotationUtil.isAnnotated(annotationClass, GuiceAnnotations.BINDING_ANNOTATION, CHECK_HIERARCHY);
+    return AnnotationUtil.isAnnotated(annotationClass, GuiceAnnotations.BINDING_ANNOTATIONS, CHECK_HIERARCHY);
   }
 }

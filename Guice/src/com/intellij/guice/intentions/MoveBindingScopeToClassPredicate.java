@@ -2,38 +2,44 @@
 package com.intellij.guice.intentions;
 
 import com.intellij.codeInsight.AnnotationUtil;
+import com.intellij.guice.constants.GuiceAnnotations;
+import com.intellij.guice.model.GuiceInjectionUtil;
 import com.intellij.guice.utils.GuiceUtils;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiExpression;
-import com.intellij.psi.PsiMethodCallExpression;
+import com.intellij.psi.*;
+import org.jetbrains.uast.UCallExpression;
+import org.jetbrains.uast.UExpression;
 
 import static com.intellij.codeInsight.AnnotationUtil.CHECK_HIERARCHY;
+
+import java.util.Collection;
 
 public class MoveBindingScopeToClassPredicate implements PsiElementPredicate {
   @Override
   public boolean satisfiedBy(PsiElement element) {
-    if (!GuiceUtils.isBinding(element)) {
+    final UCallExpression uCall = GuiceUtils.resolveOutermostBindingCall(element);
+    if (uCall == null) return false;
+
+    final UCallExpression scopeCall = GuiceUtils.findCallInChain(uCall, "in");
+    if (scopeCall == null) {
       return false;
     }
-    final PsiMethodCallExpression call = (PsiMethodCallExpression)element;
-    if (GuiceUtils.findScopeForBinding(call) == null) {
+    final PsiElement scopeCallPsi = scopeCall.getSourcePsi();
+    if (!(scopeCallPsi instanceof PsiMethodCallExpression psiScopeCall)) {
       return false;
     }
-    final PsiMethodCallExpression scopeCall = GuiceUtils.findScopeCallForBinding(call);
-    final PsiExpression arg = scopeCall.getArgumentList().getExpressions()[0];
+    final PsiExpression arg = psiScopeCall.getArgumentList().getExpressions()[0];
     final String scopeAnnotation = GuiceUtils.getScopeAnnotationForScopeExpression(arg);
     if (scopeAnnotation == null) {
       return false;
     }
-    final PsiClass implementingClass = GuiceUtils.findImplementingClassForBinding(call);
+    final PsiClass implementingClass = GuiceInjectionUtil.getCallExpressionType(uCall, "to");
     if (implementingClass == null) {
       return false;
     }
-    if (AnnotationUtil.isAnnotated(implementingClass, "com.google.inject.Singleton", CHECK_HIERARCHY) ||
-        AnnotationUtil.isAnnotated(implementingClass, "com.google.inject.servlet.RequestScoped", 0) ||
-        AnnotationUtil.isAnnotated(implementingClass, "com.google.inject.servlet.SessionScoped", 0)) {
-      return false;
+    for (Collection<String> scopeGroup : GuiceAnnotations.SCOPE_GROUPS) {
+      if (AnnotationUtil.isAnnotated(implementingClass, scopeGroup, CHECK_HIERARCHY)) {
+        return false;
+      }
     }
     return true;
   }

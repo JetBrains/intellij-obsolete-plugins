@@ -3,19 +3,33 @@ package com.intellij.guice.inspections;
 
 import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.codeInspection.LocalQuickFix;
-import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.guice.GuiceBundle;
 import com.intellij.guice.constants.GuiceAnnotations;
-import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.project.Project;
-import com.intellij.psi.*;
-import com.intellij.psi.util.PsiUtil;
-import com.intellij.util.IncorrectOperationException;
+import com.intellij.guice.model.extensions.GuiceCallPattern;
+import com.intellij.guice.utils.GuiceUtils;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiField;
+import com.intellij.psi.PsiMethod;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.uast.UCallExpression;
 
-public final class PointlessBindingInspection extends BaseInspection {
-  private static final Logger LOGGER = Logger.getInstance("PointlessBindingInspection");
+/**
+ * Reports pointless untargeted {@code bind()} calls where the bound class has no
+ * {@code @Inject}-annotated constructors, fields, or methods, making the binding useless.
+ */
+public final class PointlessBindingInspection extends BaseUastInspection {
+  public PointlessBindingInspection() {
+    extendCall(
+        GuiceCallPattern.named("bind")
+            .requireValueOrTypeArgument()
+            .statementOnly()
+            .inGuicePackage()
+            .withReceiverInheritor("com.google.inject.Module", "com.google.inject.Binder"),
+        PointlessBindingInspection::checkBindCall
+    );
+  }
 
   @Override
   protected @NotNull String buildErrorString(Object... infos) {
@@ -23,83 +37,29 @@ public final class PointlessBindingInspection extends BaseInspection {
   }
 
   @Override
-  public BaseInspectionVisitor buildVisitor() {
-    return new Visitor();
-  }
-
-  @Override
   public @Nullable LocalQuickFix buildFix(PsiElement location, Object[] infos) {
-    return new DeleteBindingFix();
+    return new DeleteBindingFix(DeleteBindingFix.Mode.STATEMENT);
   }
 
-  private static class DeleteBindingFix implements LocalQuickFix {
-    @Override
-    public @NotNull String getName() {
-      return GuiceBundle.message("delete.binding");
+  private static void checkBindCall(@NotNull UCallExpression expression, @NotNull BaseUastInspectionVisitor visitor) {
+    PsiClass psiClass = GuiceUtils.resolveClassArgument(expression);
+    if (psiClass == null || usesInject(psiClass)) {
+      return;
     }
-
-    @Override
-    public @NotNull String getFamilyName() {
-      return "";
-    }
-
-    @Override
-    public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
-      final PsiMethodCallExpression element = (PsiMethodCallExpression)descriptor.getPsiElement();
-      try {
-        element.getParent().delete();
-      }
-      catch (IncorrectOperationException e) {
-        LOGGER.error(e);
-      }
-    }
+    visitor.registerError(expression);
   }
 
-  private static class Visitor extends BaseInspectionVisitor {
-    @Override
-    public void visitMethodCallExpression(@NotNull PsiMethodCallExpression expression) {
-      super.visitMethodCallExpression(expression);
-      final PsiReferenceExpression methodExpression = expression.getMethodExpression();
-      final String methodName = methodExpression.getReferenceName();
-      if (!"bind".equals(methodName)) {
-        return;
+  private static boolean usesInject(PsiClass aClass) {
+    for (PsiMethod method : aClass.getAllMethods()) {
+      if (AnnotationUtil.isAnnotated(method, GuiceAnnotations.INJECTS, AnnotationUtil.CHECK_HIERARCHY)) {
+        return true;
       }
-      final PsiExpression[] args = expression.getArgumentList().getExpressions();
-      if (args.length != 1) {
-        return;
-      }
-      final PsiExpression arg = PsiUtil.skipParenthesizedExprDown(args[0]);
-      if (!(arg instanceof PsiClassObjectAccessExpression)) {
-        return;
-      }
-      final PsiTypeElement classTypeElement = ((PsiClassObjectAccessExpression)arg).getOperand();
-      final PsiType classType = classTypeElement.getType();
-      if (!(classType instanceof PsiClassType)) {
-        return;
-      }
-      final PsiElement parent = expression.getParent();
-      if (!(parent instanceof PsiExpressionStatement)) {
-        return;
-      }
-      final PsiClass psiClass = ((PsiClassType)classType).resolve();
-      if (psiClass != null && usesInject(psiClass)) {
-        return;
-      }
-      registerError(expression);
     }
-
-    private static boolean usesInject(PsiClass aClass) {
-      for (PsiMethod method: aClass.getAllMethods()) {
-        if (AnnotationUtil.isAnnotated(method, GuiceAnnotations.INJECTS, AnnotationUtil.CHECK_HIERARCHY)) {
-          return true;
-        }
+    for (PsiField field : aClass.getAllFields()) {
+      if (AnnotationUtil.isAnnotated(field, GuiceAnnotations.INJECTS, AnnotationUtil.CHECK_HIERARCHY)) {
+        return true;
       }
-      for (PsiField field: aClass.getAllFields()) {
-        if (AnnotationUtil.isAnnotated(field, GuiceAnnotations.INJECTS, AnnotationUtil.CHECK_HIERARCHY)) {
-          return true;
-        }
-      }
-      return false;
     }
+    return false;
   }
 }

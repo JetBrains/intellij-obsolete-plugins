@@ -4,31 +4,40 @@ package com.intellij.guice;
 import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.codeInsight.daemon.ImplicitUsageProvider;
 import com.intellij.guice.constants.GuiceAnnotations;
+import com.intellij.guice.model.extensions.GuiceExtensionIndex;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifierListOwner;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-import java.util.Collection;
-
 
 public final class GuiceImplicitUsageProvider implements ImplicitUsageProvider {
-  private static final Collection<String> GUICE_INJECTION_POINT = Arrays.asList(GuiceAnnotations.INJECT, GuiceAnnotations.JAVAX_INJECT, GuiceAnnotations.JAKARTA_INJECT);
-
   @Override
   public boolean isImplicitUsage(@NotNull PsiElement element) {
     return isImplicitRead(element);
   }
 
+  /**
+   * Guice calls an {@code @Inject} method or constructor and a {@code @Provides} method, so these count as read.
+   * Guice only writes an {@code @Inject} field. The code must still read the field, else the field is unused.
+   */
   @Override
   public boolean isImplicitRead(@NotNull PsiElement element) {
-    return element instanceof PsiMethod && AnnotationUtil.isAnnotated((PsiModifierListOwner)element, GUICE_INJECTION_POINT, 0) ||
-           element instanceof PsiModifierListOwner && AnnotationUtil.isAnnotated((PsiModifierListOwner)element, GuiceAnnotations.PROVIDES, 0);
+    if (!(element instanceof PsiModifierListOwner owner)) return false;
+    GuiceExtensionIndex extensionIndex = GuiceExtensionIndex.get();
+    if (owner instanceof PsiField) {
+      return !extensionIndex.getSupportedFieldAnnotations().isEmpty()
+          && AnnotationUtil.isAnnotated(owner, extensionIndex.getSupportedFieldAnnotations(), 0);
+    }
+    if (owner instanceof PsiMethod && AnnotationUtil.isAnnotated(owner, GuiceAnnotations.INJECTS, 0)) return true;
+    return AnnotationUtil.isAnnotated(owner, extensionIndex.getAllProvidesAnnotations(), 0)
+        || (!extensionIndex.getMethodAnnotations().isEmpty()
+            && AnnotationUtil.isAnnotated(owner, extensionIndex.getMethodAnnotations(), 0));
   }
 
   @Override
   public boolean isImplicitWrite(@NotNull PsiElement element) {
-    return element instanceof PsiModifierListOwner && AnnotationUtil.isAnnotated((PsiModifierListOwner)element, GUICE_INJECTION_POINT, 0);
+    return element instanceof PsiModifierListOwner && AnnotationUtil.isAnnotated((PsiModifierListOwner)element, GuiceAnnotations.INJECTS, 0);
   }
 }

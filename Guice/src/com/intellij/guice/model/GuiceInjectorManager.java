@@ -1,195 +1,233 @@
 // Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package com.intellij.guice.model;
 
-import com.intellij.codeInsight.AnnotationUtil;
-import com.intellij.codeInsight.MetaAnnotationUtil;
-import com.intellij.codeInspection.dataFlow.StringExpressionHelper;
-import com.intellij.concurrency.ConcurrentCollectionFactory;
-import com.intellij.guice.constants.GuiceAnnotations;
-import com.intellij.guice.constants.GuiceClasses;
 import com.intellij.guice.model.beans.BindDescriptor;
-import com.intellij.guice.model.beans.BindToDescriptor;
-import com.intellij.guice.model.jam.GuiceProvides;
+import com.intellij.guice.model.extensions.GuiceExtensionIndex;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.*;
+import com.intellij.psi.JavaPsiFacade;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiClassOwner;
+import com.intellij.psi.PsiCompiledElement;
+import com.intellij.psi.PsiCompiledFile;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiJavaFile;
+import com.intellij.psi.PsiTypeParameter;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.LocalSearchScope;
+import com.intellij.psi.search.PsiSearchHelper;
 import com.intellij.psi.search.SearchScope;
 import com.intellij.psi.search.searches.ClassInheritorsSearch;
-import com.intellij.psi.util.CachedValueProvider;
-import com.intellij.psi.util.CachedValuesManager;
-import com.intellij.psi.util.PsiModificationTracker;
-import com.intellij.util.containers.ContainerUtil;
+import com.intellij.psi.util.InheritanceUtil;
+import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.Unmodifiable;
+import org.jetbrains.uast.UCallExpression;
+import org.jetbrains.uast.UClass;
+import org.jetbrains.uast.UElement;
+import org.jetbrains.uast.UField;
+import org.jetbrains.uast.UFile;
+import org.jetbrains.uast.UastContextKt;
+import org.jetbrains.uast.visitor.AbstractUastVisitor;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public final class GuiceInjectorManager {
 
-  public static @NotNull Set<BindDescriptor> getInjectBindingDescriptors(@NotNull InjectionPointDescriptor ip,
-                                                                         @NotNull Set<? extends BindDescriptor> allDescriptors) {
-    Set<BindDescriptor> descriptors = new HashSet<>();
-    final PsiType type = ip.getType();
-    if (type instanceof PsiClassType) {
-      final PsiClass psiClass = ((PsiClassType)type).resolve();
-      if (psiClass != null) {
-        for (BindDescriptor descriptor : allDescriptors) {
-          if (psiClass.equals(descriptor.getBoundClass()) && GuiceInjectionUtil.checkBindingAnnotations(ip, descriptor)) {
-            descriptors.add(descriptor);
-          }
-        }
-      }
-    }
-
-    return descriptors;
-  }
-
-  public static @NotNull Set<GuiceProvides<?>> getInjectProvidesDescriptors(@NotNull InjectionPointDescriptor ip,
-                                                                            @NotNull List<? extends GuiceProvides> allDescriptors) {
-    Set<GuiceProvides<?>> set = new HashSet<>();
-    final PsiType type = ip.getType();
-    if (type != null) {
-      for (GuiceProvides<?> descriptor : allDescriptors) {
-        final PsiType productType = descriptor.getProductType();
-        if (productType != null) {
-          final Set<PsiAnnotation> bindingAnnotations = descriptor.getBindingAnnotations();
-          if (type.isAssignableFrom(productType) &&
-              GuiceInjectionUtil.checkBindingAnnotations(ip.getBindingAnnotations(), bindingAnnotations)) {
-            set.add(descriptor);
-          }
-        }
-      }
-    }
-
-    return set;
-  }
-
-  public static @NotNull Set<BindDescriptor> getBindingDescriptors(final @Nullable Module module) {
-    if (module == null) return Collections.emptySet();
-
-    Set<VirtualFile> files = new HashSet<>();
-    for (PsiClass aClass : getGuiceModuleClasses(module)) {
-      final PsiFile file = aClass.getContainingFile();
-      if (file != null) {
-        final VirtualFile virtualFile = file.getVirtualFile();
-        if (virtualFile != null) {
-          files.add(virtualFile);
-        }
-      }
-    }
-
-    if (files.isEmpty()) return Collections.emptySet();
-    final GlobalSearchScope fileScope = GlobalSearchScope.filesScope(module.getProject(), files);
-
-    return CachedValuesManager.getManager(module.getProject()).getCachedValue(module,
-                                                                              () -> CachedValueProvider.Result
-                                                                                .create(
-                                                                                  getBindingDescriptors(module.getProject(), fileScope),
-                                                                                  getModificationsTrackers(module)));
-  }
-
   public static @NotNull Set<BindDescriptor> getBindingDescriptors(final @NotNull PsiElement scope) {
-    return CachedValuesManager.getCachedValue(scope, () -> CachedValueProvider.Result
-      .create(getBindingDescriptors(scope.getProject(), new LocalSearchScope(scope)), scope));
+    if (scope instanceof PsiClass scopeClass) {
+      if (scopeClass instanceof PsiCompiledElement) {
+        PsiElement navElement = scopeClass.getNavigationElement();
+        if (!(navElement instanceof PsiClass sourceClass) || sourceClass == scopeClass) {
+          return Set.of();
+        }
+        scopeClass = sourceClass;
+      }
+      if (!InheritanceUtil.isInheritor(scopeClass, "com.google.inject.Module")) {
+        return Set.of();
+      }
+      return extractDescriptorsFromModuleClass(scopeClass, GuiceExtensionIndex.get());
+    }
+    Set<BindDescriptor> all = getBindingDescriptors(scope.getProject(), new LocalSearchScope(scope));
+    Set<BindDescriptor> filtered = new HashSet<>();
+    for (BindDescriptor bd : all) {
+      PsiElement expr = bd.getBindExpression();
+      if (expr != null && PsiTreeUtil.isContextAncestor(scope, expr, false)) {
+        filtered.add(bd);
+      }
+    }
+    return filtered;
   }
 
   public static @NotNull Set<BindDescriptor> getBindingDescriptors(@NotNull Project project, @NotNull SearchScope scope) {
-    Set<BindDescriptor> descriptors = ConcurrentCollectionFactory.createConcurrentSet();
-
-    descriptors.addAll(getToBindingDescriptors(project, scope));
-    descriptors.addAll(getToInstanceBindingDescriptors(project, scope));
-    descriptors.addAll(getToProviderBindingDescriptors(project, scope));
-    descriptors.addAll(getToConstructorBindingDescriptors(project, scope));
-
+    GuiceExtensionIndex index = GuiceExtensionIndex.get();
+    Set<BindDescriptor> descriptors = new HashSet<>();
+    final Set<PsiFile> files = getFilesToProcess(project, scope, index);
+    for (PsiFile file : files) {
+      descriptors.addAll(getBindingsInFile(file));
+    }
     return descriptors;
   }
 
-  public static @NotNull Set<BindDescriptor> getToBindingDescriptors(@NotNull Project project, @NotNull SearchScope scope) {
-    return getDescriptors(project, scope, "to");
-  }
-
-  private static @Unmodifiable Set<BindDescriptor> getDescriptors(@NotNull Project project, @NotNull SearchScope scope, @NotNull String name) {
-    final Set<PsiMethodCallExpression> expressions = getLinkedBindingBuilderExpressions(project, scope, name);
-    return ContainerUtil.map2Set(expressions, expression -> new BindToDescriptor(expression));
-  }
-
-  public static @NotNull Set<BindDescriptor> getToInstanceBindingDescriptors(@NotNull Project project, @NotNull SearchScope scope) {
-    return getDescriptors(project, scope, "toInstance");
-  }
-
-  public static @NotNull Set<BindDescriptor> getToProviderBindingDescriptors(@NotNull Project project, @NotNull SearchScope scope) {
-    return getDescriptors(project, scope, "toProvider");
-  }
-
-  public static @NotNull Set<BindDescriptor> getToConstructorBindingDescriptors(@NotNull Project project, @NotNull SearchScope scope) {
-    return getDescriptors(project, scope, "toConstructor");
-  }
-
-  public static PsiClass @NotNull [] getGuiceModuleClasses(final @NotNull Module module) {
-    final GlobalSearchScope scope = GlobalSearchScope.moduleWithDependenciesScope(module);
-
-    return CachedValuesManager.getManager(module.getProject()).getCachedValue(module, () -> {
-      Set<PsiClass> psiClasses = new HashSet<>() {
-
-      };
-
-      final PsiClass abstractModuleClass = JavaPsiFacade.getInstance(module.getProject()).findClass(GuiceClasses.ABSTRACT_MODULE, scope);
-      if (abstractModuleClass != null) {
-        psiClasses.addAll(ClassInheritorsSearch.search(abstractModuleClass, scope, true).findAll());
+  private static @NotNull Set<PsiFile> getFilesToProcess(@NotNull Project project,
+                                                         @NotNull SearchScope scope,
+                                                         @NotNull GuiceExtensionIndex index) {
+    final Set<PsiFile> files = new HashSet<>();
+    if (scope instanceof GlobalSearchScope) {
+      final PsiSearchHelper helper = PsiSearchHelper.getInstance(project);
+      for (String word : index.getDescriptorCallNames()) {
+        helper.processAllFilesWithWord(word, (GlobalSearchScope)scope, file -> {
+          files.add(file);
+          return true;
+        }, true);
       }
-      final PsiClass[] classes = psiClasses.toArray(PsiClass.EMPTY_ARRAY);
-      return CachedValueProvider.Result.createSingleDependency(classes, PsiModificationTracker.MODIFICATION_COUNT);
+    }
+    else if (scope instanceof LocalSearchScope) {
+      for (PsiElement element : ((LocalSearchScope)scope).getScope()) {
+        final PsiFile file = element.getContainingFile();
+        if (file != null) {
+          files.add(file);
+        }
+      }
+    }
+    return files;
+  }
+
+  /**
+   * Extracts binding descriptors from a single file.
+   */
+  public static @NotNull Set<BindDescriptor> getBindingsInFile(@NotNull PsiFile file) {
+    if (file instanceof PsiCompiledFile clsFile) {
+      PsiElement sourceElement = clsFile.getNavigationElement();
+      if (!(sourceElement instanceof PsiFile sourceFile) || sourceFile == clsFile) {
+        return Set.of();
+      }
+      file = sourceFile;
+    }
+    List<PsiClass> guiceModules = collectGuiceModuleClasses(file);
+    if (guiceModules.isEmpty()) {
+      return Set.of();
+    }
+    GuiceExtensionIndex currentIndex = GuiceExtensionIndex.get();
+    Set<BindDescriptor> descriptors = new HashSet<>();
+    for (PsiClass moduleClass : guiceModules) {
+      descriptors.addAll(extractDescriptorsFromModuleClass(moduleClass, currentIndex));
+    }
+    return descriptors;
+  }
+
+  private static @NotNull Set<BindDescriptor> extractDescriptorsFromModuleClass(@NotNull PsiClass moduleClass,
+                                                                                @NotNull GuiceExtensionIndex currentIndex) {
+    UClass uClass = UastContextKt.toUElement(moduleClass, UClass.class);
+    if (uClass == null) {
+      return Set.of();
+    }
+    final Set<BindDescriptor> descriptors = new HashSet<>();
+    AbstractUastVisitor visitor = new AbstractUastVisitor() {
+      @Override
+      public boolean visitClass(@NotNull UClass node) {
+        return true;
+      }
+
+      @Override
+      public boolean visitField(@NotNull UField node) {
+        return true;
+      }
+
+      @Override
+      public boolean visitCallExpression(@NotNull UCallExpression call) {
+        currentIndex.processDescriptorCall(call, descriptors);
+        return false;
+      }
+    };
+    for (UElement declaration : uClass.getUastDeclarations()) {
+      declaration.accept(visitor);
+    }
+    return descriptors.isEmpty() ? Set.of() : descriptors;
+  }
+
+  /**
+   * Collects <em>all</em> Guice module classes in the file, including nested, local and anonymous ones.
+   * Each module class is traversed separately with inner-class skipping in the visitor,
+   * so there is no double-walking.
+   *
+   * <p>Works for both Java ({@link PsiClass}) and Kotlin ({@code KtLightClass}) since
+   * {@link PsiClassOwner#getClasses()} returns light classes for Kotlin files, and
+   * {@link InheritanceUtil#isInheritor(PsiClass, String)} handles both.
+   */
+  static @NotNull List<PsiClass> collectGuiceModuleClasses(@NotNull PsiFile file) {
+    if (!(file instanceof PsiClassOwner classOwner)) return List.of();
+
+    final PsiClass moduleClass =
+        JavaPsiFacade.getInstance(file.getProject()).findClass("com.google.inject.Module", file.getResolveScope());
+    if (moduleClass == null) {
+      return List.of();
+    }
+    List<PsiClass> result = new ArrayList<>();
+    for (PsiClass aClass : collectAllClasses(classOwner)) {
+      if (aClass.isInheritor(moduleClass, true)) {
+        result.add(aClass);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Returns all classes of the file: top-level, nested, local and anonymous classes,
+   * for example {@code new AbstractModule() {...}} or a Kotlin {@code object : AbstractModule()}.
+   * For a Kotlin file the result contains the light classes.
+   */
+  static @NotNull List<PsiClass> collectAllClasses(@NotNull PsiFile file) {
+    List<PsiClass> result = new ArrayList<>();
+    if (file instanceof PsiCompiledElement && file instanceof PsiClassOwner classOwner) {
+      // A walk over compiled PSI is slow, and compiled code has no local or anonymous classes in the PSI.
+      for (PsiClass aClass : classOwner.getClasses()) {
+        collectNestedClasses(aClass, result);
+      }
+      return result;
+    }
+    if (file instanceof PsiJavaFile) {
+      // PSI is faster than UAST here. A type parameter is also a PsiClass, so skip it.
+      PsiTreeUtil.processElements(file, PsiClass.class, aClass -> {
+        if (!(aClass instanceof PsiTypeParameter)) result.add(aClass);
+        return true;
+      });
+      return result;
+    }
+    UFile uFile = UastContextKt.toUElement(file, UFile.class);
+    if (uFile == null) {
+      if (file instanceof PsiClassOwner classOwner) {
+        for (PsiClass aClass : classOwner.getClasses()) {
+          collectNestedClasses(aClass, result);
+        }
+      }
+      return result;
+    }
+    uFile.accept(new AbstractUastVisitor() {
+      @Override
+      public boolean visitClass(@NotNull UClass node) {
+        result.add(node.getJavaPsi());
+        return false;
+      }
     });
+    return result;
   }
 
-  private static Collection<?> getModificationsTrackers(@NotNull Module module) {
-    final Set<Object> deps = ContainerUtil.newHashSet(getGuiceModuleClasses(module));
-    deps.add(PsiModificationTracker.MODIFICATION_COUNT);
-
-    return deps;
-  }
-
-  private static @NotNull Set<PsiMethodCallExpression> getLinkedBindingBuilderExpressions(@NotNull Project project,
-                                                                                          @NotNull SearchScope scope,
-                                                                                          @NotNull String methodName) {
-    Set<PsiMethodCallExpression> expressions = ConcurrentCollectionFactory.createConcurrentSet();
-    final PsiClass
-      moduleClass = JavaPsiFacade.getInstance(project).findClass(GuiceClasses.LINKED_BINDING_BUILDER, GlobalSearchScope.allScope(project));
-    if (moduleClass != null) {
-      final PsiMethod[] binds = moduleClass.findMethodsByName(methodName, false);
-      for (PsiMethod bind : binds) {
-        Set<PsiCall> calls = StringExpressionHelper.searchMethodCalls(bind, scope);
-        for (PsiCall call : calls) {
-          if (call instanceof PsiMethodCallExpression) expressions.add((PsiMethodCallExpression)call);
-        }
-      }
+  private static void collectNestedClasses(@NotNull PsiClass aClass, @NotNull List<PsiClass> result) {
+    result.add(aClass);
+    for (PsiClass inner : aClass.getInnerClasses()) {
+      collectNestedClasses(inner, result);
     }
-    return expressions;
   }
 
-  public static @NotNull Collection<PsiClass> getBindingAnnotations(@Nullable Module module) {
-    return module == null
-           ? Collections.emptySet()
-           : MetaAnnotationUtil.getAnnotationTypesWithChildren(module, GuiceAnnotations.BINDING_ANNOTATION, false);
-  }
-
-  public static @NotNull Set<PsiAnnotation> getBindingAnnotations(@NotNull PsiModifierListOwner owner) {
-    Set<PsiAnnotation> annotations = ConcurrentCollectionFactory.createConcurrentSet();
-
-    for (PsiClass psiClass : getBindingAnnotations(ModuleUtilCore.findModuleForPsiElement(owner))) {
-      final String fqn = psiClass.getQualifiedName();
-      if (fqn != null) {
-        final PsiAnnotation annotation = AnnotationUtil.findAnnotation(owner, fqn);
-        if (annotation != null) {
-          annotations.add(annotation);
-        }
-      }
+  public static PsiClass @NotNull [] getGuiceModuleClasses(final @NotNull Module module, @NotNull GlobalSearchScope scope) {
+    final PsiClass moduleInterface = JavaPsiFacade.getInstance(module.getProject()).findClass("com.google.inject.Module", scope);
+    if (moduleInterface == null) {
+      return PsiClass.EMPTY_ARRAY;
     }
-    return annotations;
+    return ClassInheritorsSearch.search(moduleInterface, scope, true).findAll().toArray(PsiClass.EMPTY_ARRAY);
   }
 }

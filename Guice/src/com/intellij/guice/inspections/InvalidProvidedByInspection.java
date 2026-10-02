@@ -3,58 +3,38 @@ package com.intellij.guice.inspections;
 
 import com.intellij.guice.GuiceBundle;
 import com.intellij.guice.constants.GuiceAnnotations;
-import com.intellij.guice.utils.AnnotationUtils;
 import com.intellij.guice.utils.GuiceUtils;
-import com.intellij.psi.*;
-import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.PsiClass;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public final class InvalidProvidedByInspection extends BaseInspection{
+/**
+ * Reports {@code @ProvidedBy} annotations whose referenced class does not implement
+ * {@code Provider} for the annotated type.
+ *
+ * <p>Example:
+ * <pre>
+ * // Flagged: WrongProvider provides Bar, not Foo
+ * {@literal @}ProvidedBy(WrongProvider.class)
+ * interface Foo {}
+ *
+ * // OK: FooProvider implements Provider&lt;Foo&gt;
+ * {@literal @}ProvidedBy(FooProvider.class)
+ * interface Foo {}
+ * </pre>
+ */
+public final class InvalidProvidedByInspection extends ClassReferenceAnnotationInspectionBase {
+  public InvalidProvidedByInspection() {
+    super(GuiceAnnotations.PROVIDED_BY);
+  }
 
-    @Override
-    protected @NotNull String buildErrorString(Object... infos){
-        return GuiceBundle.message("invalid.provided.by.problem.descriptor");
-    }
+  @Override
+  protected @NotNull String buildErrorString(Object... infos) {
+    return GuiceBundle.message("invalid.provided.by.problem.descriptor");
+  }
 
-    @Override
-    public BaseInspectionVisitor buildVisitor(){
-        return new Visitor();
-    }
-
-    private static class Visitor extends BaseInspectionVisitor{
-        @Override
-        public void visitAnnotation(@NotNull PsiAnnotation annotation){
-            super.visitAnnotation(annotation);
-            final String qualifiedName = annotation.getQualifiedName();
-            if(!GuiceAnnotations.PROVIDED_BY.equals(qualifiedName)){
-                return;
-            }
-            final PsiClass containingClass = PsiTreeUtil.getParentOfType(annotation, PsiClass.class);
-            if(containingClass == null){
-                return;
-            }
-            final PsiElement defaultValue = AnnotationUtils.findDefaultValue(annotation);
-            if(defaultValue == null){
-                return;
-            }
-            if(!(defaultValue instanceof PsiClassObjectAccessExpression)){
-                return;
-            }
-            final PsiTypeElement classTypeElement = ((PsiClassObjectAccessExpression) defaultValue).getOperand();
-            final PsiType classType = classTypeElement.getType();
-            if(!(classType instanceof PsiClassType)){
-                return;
-            }
-            final PsiClass referentClass = ((PsiClassType) classType).resolve();
-            if(referentClass == null){
-                return;
-            }
-            if(GuiceUtils.provides(referentClass, containingClass))
-            {
-                return;
-            }
-            registerError(classTypeElement);
-        }
-    }
-
+  @Override
+  protected boolean isValidReferent(@NotNull PsiClass referentClass, @Nullable PsiClass annotatedClass) {
+    return annotatedClass == null || GuiceUtils.provides(referentClass, annotatedClass);
+  }
 }
