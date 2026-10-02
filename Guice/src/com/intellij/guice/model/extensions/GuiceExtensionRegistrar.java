@@ -36,8 +36,7 @@ public interface GuiceExtensionRegistrar {
                                 @NotNull BiFunction<? super PsiElement, ? super PsiType, ? extends BindDescriptor> factory);
 
   /**
-   * Registers a dual-type binder factory call such as {@code MapBinder.newMapBinder}
-   * or {@code MultimapBinder.newSetMultimapBinder}.
+   * Registers a dual-type binder factory call such as {@code MapBinder.newMapBinder}.
    */
   void registerDualTypeBinder(@NotNull GuiceCallPattern pattern,
                               @NotNull ContributorUtil.DualTypeDescriptorFactory factory);

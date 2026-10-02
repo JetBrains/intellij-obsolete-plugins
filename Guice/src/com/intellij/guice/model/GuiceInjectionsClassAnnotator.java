@@ -158,7 +158,7 @@ public final class GuiceInjectionsClassAnnotator extends GuiceLineMarkerProvider
 
   /**
    * Resolves the owning call expression for a method-call identifier like {@code to} in
-   * {@code bind(Foo.class).to(Bar.class)} or a constructor call like {@code new ExperimentFlagModule(...)}.
+   * {@code bind(Foo.class).to(Bar.class)} or a constructor call like {@code new CustomModule(...)}.
    */
   private static @Nullable PsiElement resolveCallOwner(@NotNull PsiElement leafElement,
                                                        @NotNull PsiElement parent) {

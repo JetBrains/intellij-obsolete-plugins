@@ -129,7 +129,7 @@ public final class GuiceProjectModel implements Disposable {
   private final ConcurrentHashMap<String, Long> myInlineStamps = new ConcurrentHashMap<>();
 
   /**
-   * The PSI modification stamp of each external target file (such as a {@code @FlagSpec} class file)
+   * The PSI modification stamp of each external target file
    * at the last time its dependent registrar files were indexed.
    */
   private final ConcurrentHashMap<String, Long> myTargetStamps = new ConcurrentHashMap<>();
@@ -512,7 +512,7 @@ public final class GuiceProjectModel implements Disposable {
       }
     }
 
-    // Files with contributor-registered field annotations (such as @FlagSpec)
+    // Files with contributor-registered field annotations
     for (String fieldAnno : extensionIndex.getFieldAnnotations()) {
       PsiClass annoClass = facade.findClass(fieldAnno, GlobalSearchScope.allScope(myProject));
       if (annoClass == null) continue;
@@ -558,7 +558,7 @@ public final class GuiceProjectModel implements Disposable {
       addFileOf(cls, files);
     }
 
-    // Files calling contributor-registered global binder helpers (such as FlagBinder) outside Module classes
+    // Files calling contributor-registered global binder helpers outside Module classes
     for (String ownerFqn : extensionIndex.getGlobalCallOwnerClasses()) {
       PsiClass ownerClass = facade.findClass(ownerFqn, GlobalSearchScope.allScope(myProject));
       if (ownerClass == null) continue;

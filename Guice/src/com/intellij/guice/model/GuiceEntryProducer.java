@@ -374,8 +374,7 @@ public final class GuiceEntryProducer {
   }
 
   /**
-   * Creates a BINDING_SITE entry for a field declaration (such as an {@code @FlagSpec} field)
-   * using the field's declared qualifier annotation.
+   * Creates a BINDING_SITE entry for a field declaration using the field's declared qualifier annotation.
    */
   public static @NotNull GuiceEntry createFieldBindingEntry(
       @NotNull PsiField field, @NotNull PsiType boundType) {

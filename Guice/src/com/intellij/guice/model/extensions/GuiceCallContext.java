@@ -15,7 +15,7 @@ import java.util.function.BiConsumer;
  * Callback context passed to {@link GuiceExtensionRegistrar} call-entry handlers.
  *
  * <p>Allows a call handler to emit {@link GuiceEntry} items directly and to extract bindings
- * from external classes referenced by the call (such as {@code FlagBinder.createModule(SomeFlags.class)})
+ * from external classes referenced by the call (such as {@code ConfigBinder.createModule(AppConfig.class)})
  * while recording cross-file dependencies in {@link com.intellij.guice.model.GuiceNavigationIndex}.
  */
 @ApiStatus.Experimental
@@ -39,7 +39,7 @@ public interface GuiceCallContext {
   );
 
   /**
-   * Resolves a class-literal argument expression (such as {@code SomeFlags.class}), extracts
+   * Resolves a class-literal argument expression (such as {@code AppConfig.class}), extracts
    * bindings when resolved, and records a class-name dependency even when the class is unresolved
    * so that creating or moving the target class file triggers re-indexing of the call site.
    *

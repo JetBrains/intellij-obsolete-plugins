@@ -48,10 +48,8 @@
     <bindingContributor id="optionalBinder" order="last" implementation="com.intellij.guice.model.extensions.OptionalBinderContributor"/>
     <bindingContributor id="setMultibinder" order="last" implementation="com.intellij.guice.model.extensions.SetMultibinderContributor"/>
     <bindingContributor id="mapBinder" order="last" implementation="com.intellij.guice.model.extensions.MapBinderContributor"/>
-    <bindingContributor id="multimapBinder" order="last" implementation="com.intellij.guice.model.extensions.MultimapBinderContributor"/>
     <bindingContributor id="assistedInject" order="last" implementation="com.intellij.guice.model.extensions.AssistedInjectContributor"/>
     <bindingContributor id="throwingProvider" order="last" implementation="com.intellij.guice.model.extensions.ThrowingProviderContributor"/>
-    <bindingContributor id="flagBinder" order="last" implementation="com.intellij.guice.model.extensions.FlagBinderContributor"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
