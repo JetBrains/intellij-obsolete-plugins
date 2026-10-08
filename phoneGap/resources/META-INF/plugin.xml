@@ -1,5 +1,3 @@
-<!-- BUILD_USING_BAZEL_MARKER: this plugin is also packaged by the `ij_plugin` Bazel rule, and IjPluginDistributionEquivalenceTest
-     checks that the result matches the distribution produced by the build scripts. See IJPL-251444. -->
 <idea-plugin>
   <id>com.github.masahirosuzuka.PhoneGapIntelliJPlugin</id>
   <name>Cordova</name>
@@ -17,8 +15,10 @@ Adds Cordova support to IntelliJ-based IDEs. Here's what's included in this supp
 <p>For more information, check out our <a href="https://www.jetbrains.com/help/webstorm/using-phonegap-cordova.html">documentation</a>.
     ]]></description>
 
+  <depends>com.intellij.modules.platform</depends>
+
   <content namespace="jetbrains">
-    <module name="intellij.phoneGap.core" loading="required"/>
+    <module name="intellij.phoneGap.core" loading="embedded"/>
     <module name="intellij.phoneGap.javascript" loading="optional"/>
   </content>
 </idea-plugin>
