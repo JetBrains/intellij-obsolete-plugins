@@ -1,6 +1,7 @@
 // Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 
 plugins {
     id("java")
@@ -26,6 +27,7 @@ dependencies {
     intellijPlatform {
         create(IntelliJPlatformType.IntellijIdeaUltimate, providers.gradleProperty("platformVersion"))
         bundledPlugin("JavaScript")
+        bundledPlugin("com.intellij.xml")
         bundledModule("intellij.regexp")
         bundledModule("intellij.libraries.gson")
         testFramework(TestFrameworkType.Platform)
@@ -54,6 +56,18 @@ intellijPlatform {
             untilBuild = provider { null }
         }
         changeNotes = ""
+    }
+
+    pluginVerification {
+        ides {
+            create(IntelliJPlatformType.IntellijIdeaUltimate, providers.gradleProperty("platformVersion"))
+            create(IntelliJPlatformType.WebStorm, providers.gradleProperty("webStormVersion"))
+        }
+        failureLevel = listOf(
+            VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
+            VerifyPluginTask.FailureLevel.INVALID_PLUGIN,
+            VerifyPluginTask.FailureLevel.MISSING_DEPENDENCIES,
+        )
     }
 }
 

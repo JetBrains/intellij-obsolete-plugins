@@ -16,6 +16,7 @@ Adds Cordova support to IntelliJ-based IDEs. Here's what's included in this supp
     ]]></description>
 
   <depends>com.intellij.modules.platform</depends>
+  <depends>com.intellij.xml</depends>
 
   <content namespace="jetbrains">
     <module name="intellij.phoneGap.core" loading="embedded"/>
