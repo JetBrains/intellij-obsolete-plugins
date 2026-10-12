@@ -10,6 +10,7 @@
   <vendor>JetBrains</vendor>
 
   <depends>com.intellij.properties</depends>
+  <depends>intellij.structureView.plugin</depends>
   <extensions defaultExtensionNs="com.intellij">
 
     <renameHandler implementation="com.intellij.lang.properties.refactoring.rename.ResourceBundleFromEditorRenameHandler"/>

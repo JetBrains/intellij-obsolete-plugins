@@ -23,6 +23,11 @@ dependencies {
       useInstaller = false
     }
     bundledPlugin("com.intellij.properties")
+    bundledPlugin("intellij.structureView.plugin")
+    // the plugins below are not used directly, they are required by the Properties plugin at runtime
+    bundledPlugin("intellij.structuralSearch.plugin")
+    bundledPlugin("com.intellij.copyright")
+    bundledPlugin("intellij.libraries.misc.plugin")
 
     testFramework(TestFrameworkType.Platform)
   }

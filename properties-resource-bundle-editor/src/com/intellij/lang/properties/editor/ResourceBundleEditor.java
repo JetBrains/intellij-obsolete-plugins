@@ -33,6 +33,8 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.*;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
+import com.intellij.openapi.editor.event.DocumentEvent;
+import com.intellij.openapi.editor.event.DocumentListener;
 import com.intellij.openapi.editor.event.EditorMouseEvent;
 import com.intellij.openapi.editor.ex.EditorEx;
 import com.intellij.openapi.editor.ex.FocusChangeListener;
@@ -43,6 +45,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.UserDataHolderBase;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.ReadonlyStatusHandler;
@@ -67,6 +70,7 @@ import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
+import org.jetbrains.annotations.VisibleForTesting;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -107,7 +111,13 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
   private volatile boolean    myDisposed;
   private final ResourceBundleEditorFileListener myVfsListener;
   private Editor              mySelectedEditor;
-  private String              myFocusedPropertyName;
+  // editors the user typed into, mapped to the property and value they were showing; written back on selection change, editor switch and dispose
+  private final Map<Editor, EditBase> myModifiedEditors = new HashMap<>();
+  // edits whose property is no longer shown after the editors were recreated, so the user can't see them anymore; written as soon as possible
+  private final List<Pair<VirtualFile, PendingEdit>> myDetachedEdits = new ArrayList<>();
+  // the property whose values the editors show, can differ from the selected one, e.g. while nothing is selected in the tree
+  private @Nullable String    myShownPropertyName;
+  private boolean             myUpdatingEditors;
   private String              myPropertyToSelectWhenVisible;
   private final ResourceBundleEditorHighlighter myHighlighter;
 
@@ -143,7 +153,8 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
         // filter out temp unselect/select events
         if (getSelectedElementIfOnlyOne() instanceof ResourceBundleFileStructureViewElement) {
           ((CardLayout)myValuesPanel.getLayout()).show(myValuesPanel, NO_PROPERTY_SELECTED);
-          writePreviouslySelectedPropertyValue(e);
+          writeModifiedEditors();
+          myShownPropertyName = null;
           selectedPropertiesFile = null;
           selectedProperty = null;
           return;
@@ -152,23 +163,10 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
         if (Comparing.equal(e.getNewLeadSelectionPath(), e.getOldLeadSelectionPath()) || getSelectedProperty() == null) return;
         if (!arePropertiesEquivalent(selectedProperty, getSelectedProperty()) ||
             !Comparing.equal(selectedPropertiesFile, getSelectedPropertiesFile())) {
-          writePreviouslySelectedPropertyValue(e);
+          writeModifiedEditors();
           selectedProperty = getSelectedProperty();
           selectedPropertiesFile = getSelectedPropertiesFile();
           selectionChanged();
-        }
-      }
-
-      private void writePreviouslySelectedPropertyValue(TreeSelectionEvent e) {
-        if (selectedProperty == null || e.getOldLeadSelectionPath() == null || mySelectedEditor == null) return;
-        for (Map.Entry<VirtualFile, EditorEx> entry : myEditors.entrySet()) {
-          if (entry.getValue() == mySelectedEditor) {
-            String oldPropertyName = selectedProperty.getName();
-            if (oldPropertyName != null) {
-              writeEditorPropertyValue(oldPropertyName, mySelectedEditor, entry.getKey());
-            }
-            break;
-          }
         }
       }
 
@@ -230,7 +228,8 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
     return myPropertiesInsertDeleteManager;
   }
 
-  private void onSelectionChanged(@NotNull FileEditorManagerEvent event) {
+  @VisibleForTesting
+  void onSelectionChanged(@NotNull FileEditorManagerEvent event) {
     if (!myResourceBundle.isValid()) return;
     // Ignore events which don't target current editor.
     FileEditor oldEditor = event.getOldEditor();
@@ -241,7 +240,7 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
 
     // Switching away from this editor — persist any pending edits before losing context.
     if (oldEditor == this) {
-      saveCurrentlyFocusedEditor();
+      saveModifiedEditors();
     }
 
     // We want to sync selected property key on selection change.
@@ -260,16 +259,107 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
     }
   }
 
-  private void saveCurrentlyFocusedEditor() {
-    if (mySelectedEditor == null || myFocusedPropertyName == null) return;
-    for (Map.Entry<VirtualFile, EditorEx> entry : myEditors.entrySet()) {
-      if (entry.getValue() == mySelectedEditor) {
-        writeEditorPropertyValue(myFocusedPropertyName, mySelectedEditor, entry.getKey());
-        myVfsListener.flush();
+  private void saveModifiedEditors() {
+    if (myModifiedEditors.isEmpty() && myDetachedEdits.isEmpty()) return;
+    writeModifiedEditors();
+    myVfsListener.flush();
+  }
+
+  private void writeModifiedEditors() {
+    final Map<VirtualFile, PendingEdit> edits = takeModifiedEditors();
+    writeDetachedEdits();
+    for (Map.Entry<VirtualFile, PendingEdit> entry : edits.entrySet()) {
+      writePendingEdit(entry.getKey(), entry.getValue());
+    }
+  }
+
+  private void writeDetachedEdits() {
+    if (myDetachedEdits.isEmpty()) return;
+    final List<Pair<VirtualFile, PendingEdit>> edits = new ArrayList<>(myDetachedEdits);
+    myDetachedEdits.clear();
+    for (Pair<VirtualFile, PendingEdit> edit : edits) {
+      writePendingEdit(edit.first, edit.second);
+    }
+  }
+
+  private void writePendingEdit(@NotNull VirtualFile file, @NotNull PendingEdit edit) {
+    // the user reverted the edit, writing it would still reformat the property or insert a missing one
+    if (edit.value().equals(edit.base().value())) return;
+    String propertyName = edit.base().currentPropertyName();
+    if (edit.base().isPropertyRemoved() && !isPropertyInBundle(propertyName)) {
+      // the property was deleted, writing the edit would recreate it
+      notifyEditDiscarded(propertyName);
+      return;
+    }
+    PropertiesFile propertiesFile = PropertiesImplUtil.getPropertiesFile(file, myProject);
+    IProperty property = propertiesFile == null ? null : findPropertyInFileWithoutIndex(propertiesFile, propertyName);
+    if (property != null) {
+      String currentValue = getPropertyEditorValue(property);
+      if (!edit.base().value().equals(currentValue)) {
+        // the property was changed elsewhere since the user started editing; deliberately, that change wins, as on a refresh from PSI
+        // (see ResourceBundleEditorSaveTest.testSavedEditDoesNotOverwriteExternalChange)
+        if (edit.base().isLostWhenReplaced(edit.value(), currentValue)) {
+          notifyEditDiscarded(propertyName);
+        }
         return;
       }
     }
+    if (!writeEditorPropertyValue(propertyName, edit.value(), file)) {
+      StatusBar.Info.set(ResourceBundleEditorBundle.message("status.bar.edit.not.saved.message", propertyName, file.getName()), myProject);
+    }
   }
+
+  private boolean isPropertyInBundle(@NotNull String propertyName) {
+    for (PropertiesFile file : myResourceBundle.getPropertiesFiles()) {
+      if (findPropertyInFileWithoutIndex(file, propertyName) != null) return true;
+    }
+    return false;
+  }
+
+  /**
+   * Captures the text of all modified editors before anything is written, since writing one value may cause the other editors
+   * to be refreshed from PSI.
+   */
+  private @NotNull Map<VirtualFile, PendingEdit> takeModifiedEditors() {
+    if (myModifiedEditors.isEmpty()) return Collections.emptyMap();
+    Map<VirtualFile, PendingEdit> result = new HashMap<>();
+    for (Map.Entry<VirtualFile, EditorEx> entry : myEditors.entrySet()) {
+      EditBase base = myModifiedEditors.get(entry.getValue());
+      if (base != null) {
+        result.put(entry.getKey(), new PendingEdit(base, entry.getValue().getDocument().getText()));
+      }
+    }
+    myModifiedEditors.clear();
+    return result;
+  }
+
+  /**
+   * The property an editor was showing when the user started typing into it, and the value the property had at that moment.
+   * The value is taken from PSI rather than from the editor, since the editor may not have been filled yet, e.g. during an undo.
+   * A refresh from PSI keeps the user's text only while the property still has that value, so changes made elsewhere win.
+   * The property is tracked by a pointer, so that an edit follows a rename of the property.
+   */
+  private record EditBase(@NotNull String propertyName, @NotNull String value, @Nullable SmartPsiElementPointer<PsiElement> property) {
+    @NotNull String currentPropertyName() {
+      final PsiElement element = property == null ? null : property.getElement();
+      final String name = element instanceof IProperty p ? p.getName() : null;
+      // the property was removed, the edit still belongs to its key
+      return name == null ? propertyName : name;
+    }
+
+    boolean isPropertyRemoved() {
+      return property != null && property.getElement() == null;
+    }
+
+    /**
+     * Whether replacing the edited text with {@code newValue} loses something the user typed.
+     */
+    boolean isLostWhenReplaced(@NotNull String editedText, @Nullable String newValue) {
+      return !editedText.equals(value) && !editedText.equals(newValue);
+    }
+  }
+
+  private record PendingEdit(@NotNull EditBase base, @NotNull String value) {}
 
   private void setStructureViewSelectionFromPropertiesFile(@NotNull Editor propertiesFileEditor) {
     int line = propertiesFileEditor.getCaretModel().getLogicalPosition().line;
@@ -373,12 +463,14 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
     }
   }
 
-  private void writeEditorPropertyValue(final @NotNull String propertyName,
-                                        final @NotNull Editor editor,
-                                        final @NotNull VirtualFile file) {
-    final String currentValue = editor.getDocument().getText();
+  /**
+   * @return false if the file can't be made writable
+   */
+  private boolean writeEditorPropertyValue(final @NotNull String propertyName,
+                                           final @NotNull String currentValue,
+                                           final @NotNull VirtualFile file) {
     if (!FileModificationService.getInstance().prepareVirtualFilesForWrite(myProject, Collections.singleton(file))) {
-      return;
+      return false;
     }
     WriteAction.run(() -> WriteCommandAction.runWriteCommandAction(myProject, ResourceBundleEditorBundle.message(
       "resource.bundle.update.property.value"), null, () -> {
@@ -410,6 +502,7 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
         myPropertiesInsertDeleteManager.insertOrUpdateTranslation(propertyName, currentValue, propertiesFile);
       }
     }));
+    return true;
   }
 
   void recreateEditorsPanel() {
@@ -432,6 +525,8 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
 
     GridBagConstraints gc = new GridBagConstraints(0, 0, 0, 0, 0, 0, GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH,
                                                    JBUI.insets(5), 0, 0);
+    // the panel is also recreated from PSI events, where the edits can't be written yet
+    final Map<VirtualFile, PendingEdit> pendingEdits = takeModifiedEditors();
     releaseAllEditors();
     myTitledPanels.clear();
     int y = 0;
@@ -467,13 +562,22 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
         @Override
         public void focusGained(final @NotNull Editor editor) {
           mySelectedEditor = editor;
-          myFocusedPropertyName = getSelectedPropertyName();
         }
 
         // Intentionally no focusLost handler: writing inside focusLost was racing with the
         // tree selection update and could leave the right-hand editors out of sync.
-        // Saves happen on tree selection change (writePreviouslySelectedPropertyValue),
+        // Saves happen on tree selection change (writeModifiedEditors),
         // when switching file editors (onSelectionChanged), and on dispose.
+      });
+      editor.getDocument().addDocumentListener(new DocumentListener() {
+        @Override
+        public void beforeDocumentChange(@NotNull DocumentEvent event) {
+          if (myUpdatingEditors || myModifiedEditors.containsKey(editor)) return;
+          if (myShownPropertyName != null) {
+            String value = getPropertyEditorValue(findPropertyInFileWithoutIndex(propertiesFile, myShownPropertyName));
+            myModifiedEditors.put(editor, new EditBase(myShownPropertyName, value, createPropertyPointer(propertiesFile, myShownPropertyName)));
+          }
+        }
       });
       gc.gridx = 0;
       gc.gridy = y++;
@@ -513,6 +617,66 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
     selectionChanged();
     myValuesPanel.repaint();
     updateEditorsFromProperties(true);
+    restorePendingEdits(pendingEdits);
+  }
+
+  /**
+   * Points to the property in the given locale, or in another locale when it is missing there, since a rename changes all of them.
+   */
+  private @Nullable SmartPsiElementPointer<PsiElement> createPropertyPointer(@NotNull PropertiesFile file, @NotNull String propertyName) {
+    IProperty property = findPropertyInFileWithoutIndex(file, propertyName);
+    for (Iterator<PropertiesFile> it = myResourceBundle.getPropertiesFiles().iterator(); property == null && it.hasNext(); ) {
+      property = findPropertyInFileWithoutIndex(it.next(), propertyName);
+    }
+    return property == null ? null : SmartPointerManager.createPointer(property.getPsiElement());
+  }
+
+  /**
+   * Puts the unsaved edits back into the recreated editors. An edit is dropped when its locale is no longer part of the bundle,
+   * or when the property value was changed elsewhere in the meantime. An edit whose property is no longer shown is written
+   * later, since the panel is also recreated from PSI events, where it can't be written yet.
+   * The value is taken from PSI, since the editors aren't filled while an undo is in progress.
+   */
+  private void restorePendingEdits(@NotNull Map<VirtualFile, PendingEdit> pendingEdits) {
+    final UndoManager undoManager = UndoManager.getInstance(myProject);
+    for (Map.Entry<VirtualFile, PendingEdit> entry : pendingEdits.entrySet()) {
+      EditorEx editor = myEditors.get(entry.getKey());
+      PendingEdit edit = entry.getValue();
+      String propertyName = edit.base().currentPropertyName();
+      if (editor != null && !propertyName.equals(myShownPropertyName)) {
+        myDetachedEdits.add(Pair.create(entry.getKey(), edit));
+        continue;
+      }
+      Document document = editor == null ? null : editor.getDocument();
+      PropertiesFile propertiesFile = PropertiesImplUtil.getPropertiesFile(entry.getKey(), myProject);
+      String currentValue = propertiesFile == null || editor == null
+                            ? null
+                            : getPropertyEditorValue(findPropertyInFileWithoutIndex(propertiesFile, propertyName));
+      if (document == null || !edit.base().value().equals(currentValue)) {
+        if (edit.base().isLostWhenReplaced(edit.value(), currentValue)) {
+          notifyEditDiscarded(propertyName);
+        }
+        continue;
+      }
+      if (undoManager.isUndoOrRedoInProgress()) {
+        // documents can't be changed undoably during undo
+        WriteAction.run(() -> updateDocumentFromPropertyValue(edit.value(), document));
+      }
+      else {
+        // undoable, so that the user can still revert the edit after its undo history was lost together with the old editor;
+        // no group id, so that the restored edits of different locales aren't merged into a single undo step
+        CommandProcessor.getInstance().executeCommand(myProject, () -> WriteAction.run(
+          () -> runUpdatingEditors(() -> document.replaceString(0, document.getTextLength(), edit.value()))), "", null);
+      }
+      myModifiedEditors.put(editor, edit.base());
+    }
+    if (!myDetachedEdits.isEmpty()) {
+      ApplicationManager.getApplication().invokeLater(this::writeDetachedEdits, __ -> myDisposed);
+    }
+  }
+
+  private void notifyEditDiscarded(@NotNull String propertyName) {
+    StatusBar.Info.set(ResourceBundleEditorBundle.message("status.bar.edit.discarded.message", propertyName), myProject);
   }
 
   public static @NotNull String getPropertyEditorValue(final @Nullable IProperty property) {
@@ -532,6 +696,7 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
     final EditorsSnapshot snapshot = WriteIntentReadAction.compute(this::snapshotEditorsState);
 
     ((CardLayout)myValuesPanel.getLayout()).show(myValuesPanel, snapshot.propertyName == null ? NO_PROPERTY_SELECTED : VALUES);
+    myShownPropertyName = snapshot.propertyName;
     if (snapshot.propertyName == null) return;
 
     // Phase 2 (write): apply the snapshot to each editor's document.
@@ -542,6 +707,14 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
       final Document document = editor.getDocument();
       CommandProcessor.getInstance().executeCommand(null, () -> WriteAction.run(() -> {
         if (!checkIsUnderUndoRedoAction || !undoManager.isActive() || !undoManager.isUndoOrRedoInProgress()) {
+          EditBase base = myModifiedEditors.get(editor);
+          if (base != null && base.currentPropertyName().equals(snapshot.propertyName) && base.value().equals(entry.value)) {
+            // the property wasn't changed since the user started editing, keep the unsaved text
+            return;
+          }
+          if (myModifiedEditors.remove(editor) != null && base.isLostWhenReplaced(document.getText(), entry.value)) {
+            notifyEditDiscarded(base.currentPropertyName());
+          }
           updateDocumentFromPropertyValue(entry.value, document);
         }
       }), "", this);
@@ -653,8 +826,22 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
     });
   }
 
-  private static void updateDocumentFromPropertyValue(final String value, final Document document) {
-    UndoUtil.disableUndoIn(document, () -> document.replaceString(0, document.getTextLength(), value));
+  private void updateDocumentFromPropertyValue(final String value, final Document document) {
+    runUpdatingEditors(() -> UndoUtil.disableUndoIn(document, () -> document.replaceString(0, document.getTextLength(), value)));
+  }
+
+  /**
+   * Runs a change of the editors that doesn't come from the user, so it doesn't mark them as modified.
+   */
+  private void runUpdatingEditors(@NotNull Runnable runnable) {
+    final boolean wasUpdating = myUpdatingEditors;
+    myUpdatingEditors = true;
+    try {
+      runnable.run();
+    }
+    finally {
+      myUpdatingEditors = wasUpdating;
+    }
   }
 
   private @NotNull JBIterable<Object> getSelectedNodes() {
@@ -815,19 +1002,14 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
 
   @Override
   public void dispose() {
-    if (mySelectedEditor != null && myFocusedPropertyName != null) {
-      for (final Map.Entry<VirtualFile, EditorEx> entry : myEditors.entrySet()) {
-        if (mySelectedEditor.equals(entry.getValue())) {
-          writeEditorPropertyValue(myFocusedPropertyName, mySelectedEditor, entry.getKey());
-        }
-      }
-    }
+    writeModifiedEditors();
     myDisposed = true;
     Disposer.dispose(myStructureViewComponent);
     releaseAllEditors();
   }
 
   private void releaseAllEditors() {
+    myModifiedEditors.clear();
     for (final Editor editor : myEditors.values()) {
       if (!editor.isDisposed()) {
         EditorFactory.getInstance().releaseEditor(editor);
@@ -899,34 +1081,41 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
         group.add(new AnAction(ResourceBundleEditorBundle.messagePointer("action.PropagateValue.text")) {
           @Override
           public void actionPerformed(@NotNull AnActionEvent e) {
-            final String valueToPropagate = editor.getDocument().getText();
-            final String currentSelectedProperty = getSelectedPropertyName();
-            if (currentSelectedProperty == null) {
-              return;
-            }
-            ApplicationManager.getApplication().runWriteAction(() -> WriteCommandAction.runWriteCommandAction(myProject, ResourceBundleEditorBundle.message("action.PropagateValue.text"), null, () -> {
-              try {
-                final PropertiesFile[] propertiesFiles = myResourceBundle.getPropertiesFiles().stream().filter(f -> {
-                  final IProperty property = f.findPropertyByKey(currentSelectedProperty);
-                  return property == null || !valueToPropagate.equals(property.getValue());
-                }).toArray(PropertiesFile[]::new);
-                final PsiFile[] filesToPrepare = Arrays.stream(propertiesFiles).map(PropertiesFile::getContainingFile).toArray(PsiFile[]::new);
-                if (FileModificationService.getInstance().preparePsiElementsForWrite(filesToPrepare)) {
-                  for (PropertiesFile file : propertiesFiles) {
-                    myPropertiesInsertDeleteManager.insertOrUpdateTranslation(currentSelectedProperty, valueToPropagate, file);
-                  }
-                  recreateEditorsPanel();
-                }
-              }
-              catch (final IncorrectOperationException e1) {
-                LOG.error(e1);
-              }
-            }));
+            propagateValue(editor);
           }
         });
         return group;
       }
     });
+  }
+
+  @VisibleForTesting
+  void propagateValue(@NotNull Editor editor) {
+    final String valueToPropagate = editor.getDocument().getText();
+    final String currentSelectedProperty = getSelectedPropertyName();
+    if (currentSelectedProperty == null) {
+      return;
+    }
+    ApplicationManager.getApplication().runWriteAction(() -> WriteCommandAction.runWriteCommandAction(myProject, ResourceBundleEditorBundle.message("action.PropagateValue.text"), null, () -> {
+      try {
+        final PropertiesFile[] propertiesFiles = myResourceBundle.getPropertiesFiles().stream().filter(f -> {
+          final IProperty property = f.findPropertyByKey(currentSelectedProperty);
+          return property == null || !valueToPropagate.equals(property.getValue());
+        }).toArray(PropertiesFile[]::new);
+        final PsiFile[] filesToPrepare = Arrays.stream(propertiesFiles).map(PropertiesFile::getContainingFile).toArray(PsiFile[]::new);
+        if (FileModificationService.getInstance().preparePsiElementsForWrite(filesToPrepare)) {
+          for (PropertiesFile file : propertiesFiles) {
+            myPropertiesInsertDeleteManager.insertOrUpdateTranslation(currentSelectedProperty, valueToPropagate, file);
+          }
+          // the propagated value replaces whatever was typed into the other editors; cleared only now, so the edits are kept if propagation fails
+          myModifiedEditors.clear();
+          recreateEditorsPanel();
+        }
+      }
+      catch (final IncorrectOperationException e1) {
+        LOG.error(e1);
+      }
+    }));
   }
 
   private final class DataProviderPanel extends JPanel implements UiDataProvider {
