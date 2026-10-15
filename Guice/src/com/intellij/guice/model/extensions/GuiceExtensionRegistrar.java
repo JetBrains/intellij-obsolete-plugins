@@ -3,9 +3,7 @@ package com.intellij.guice.model.extensions;
 
 import com.intellij.guice.model.GuiceEntry;
 import com.intellij.guice.model.beans.BindDescriptor;
-import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiType;
 import org.jetbrains.annotations.ApiStatus;
@@ -50,26 +48,8 @@ public interface GuiceExtensionRegistrar {
   /**
    * Registers a call pattern inside Guice module classes that directly produces {@link GuiceEntry} items.
    */
-  default void registerModuleCallEntry(@NotNull GuiceCallPattern pattern,
-                                       @NotNull BiConsumer<? super UCallExpression, ? super Set<GuiceEntry>> producer) {
-    registerModuleCallWithContext(pattern, (call, context) -> producer.accept(call, context.getEntries()));
-  }
-
-  /**
-   * Registers a call pattern inside Guice module classes that produces {@link GuiceEntry} items
-   * or reports cross-class bindings via {@link GuiceCallContext}.
-   */
-  void registerModuleCallWithContext(@NotNull GuiceCallPattern pattern,
-                                     @NotNull BiConsumer<? super UCallExpression, ? super GuiceCallContext> producer);
-
-  /**
-   * Registers a call pattern in any class that directly produces {@link GuiceEntry} items,
-   * such as custom call-site injection points.
-   */
-  default void registerCallEntry(@NotNull GuiceCallPattern pattern,
-                                 @NotNull BiConsumer<? super UCallExpression, ? super Set<GuiceEntry>> producer) {
-    registerCallWithContext(pattern, (call, context) -> producer.accept(call, context.getEntries()));
-  }
+  void registerModuleCallEntry(@NotNull GuiceCallPattern pattern,
+                               @NotNull BiConsumer<? super UCallExpression, ? super Set<GuiceEntry>> producer);
 
   /**
    * Registers a call pattern in any class that produces {@link GuiceEntry} items
@@ -89,31 +69,4 @@ public interface GuiceExtensionRegistrar {
    * implicitly read when bound via {@link GuiceCallContext}, without scanning all annotated fields globally.
    */
   void registerBindingFieldAnnotations(@NotNull Collection<String> annotationFqns);
-
-  /**
-   * Registers field annotations that produce {@link GuiceEntry} items (binding sites or injection points)
-   * on fields in any class.
-   */
-  void registerFieldAnnotation(@NotNull Collection<String> annotationFqns,
-                               @NotNull BiConsumer<? super PsiField, ? super Set<GuiceEntry>> producer);
-
-  /**
-   * Registers method annotations that produce {@link GuiceEntry} items on methods in any class.
-   */
-  void registerMethodAnnotation(@NotNull Collection<String> annotationFqns,
-                                @NotNull BiConsumer<? super PsiMethod, ? super Set<GuiceEntry>> producer);
-
-  /**
-   * Registers class annotations that produce {@link GuiceEntry} items on classes.
-   */
-  void registerClassAnnotation(@NotNull Collection<String> annotationFqns,
-                               @NotNull BiConsumer<? super PsiClass, ? super Set<GuiceEntry>> producer);
-
-  /**
-   * Bridges a legacy contributor that overrides {@link GuiceBindingContributor#getBindingWords()}
-   * and {@link GuiceBindingContributor#processCall}.
-   */
-  @ApiStatus.Internal
-  void registerLegacyContributor(@NotNull Set<String> bindingWords,
-                                 @NotNull GuiceBindingContributor contributor);
 }

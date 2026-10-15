@@ -401,28 +401,17 @@ public final class GuiceProjectModel implements Disposable {
       steps.add(() -> discoverFieldsAndMethodsByAnnotation(injectAnno, scope));
     }
 
-    // 2. Files with contributor-registered field annotations (such as @FlagSpec)
-    for (String fieldAnno : extensionIndex.getFieldAnnotations()) {
-      steps.add(() -> discoverFieldsByAnnotation(fieldAnno, scope));
-    }
-
-    // 3. Files with @Provides and contributor-registered method annotations
+    // 2. Files with @Provides* method annotations
     for (String providesAnno : extensionIndex.getAllProvidesAnnotations()) {
       steps.add(() -> discoverMethodsByAnnotation(providesAnno, scope));
     }
-    for (String methodAnno : extensionIndex.getMethodAnnotations()) {
-      steps.add(() -> discoverMethodsByAnnotation(methodAnno, scope));
-    }
 
-    // 4. Classes with @ImplementedBy, @ProvidedBy, or contributor-registered class annotations
+    // 3. Classes with @ImplementedBy or @ProvidedBy
     for (String jitAnno : List.of(GuiceAnnotations.IMPLEMENTED_BY, GuiceAnnotations.PROVIDED_BY)) {
       steps.add(() -> discoverClassesByAnnotation(jitAnno, scope));
     }
-    for (String classAnno : extensionIndex.getClassAnnotations()) {
-      steps.add(() -> discoverClassesByAnnotation(classAnno, scope));
-    }
 
-    // 5. Guice module files (for bindings defined in configure())
+    // 4. Guice module files (for bindings defined in configure())
     steps.add(() -> {
       Set<VirtualFile> files = new LinkedHashSet<>();
       for (PsiClass cls : GuiceInjectorManager.getGuiceModuleClasses(module, scope)) {
@@ -432,7 +421,7 @@ public final class GuiceProjectModel implements Disposable {
       return files;
     });
 
-    // 6. Files calling contributor-registered global binder helpers (such as FlagBinder) outside Module classes
+    // 5. Files calling contributor-registered global binder helpers outside Module classes
     for (String ownerFqn : extensionIndex.getGlobalCallOwnerClasses()) {
       steps.add(() -> discoverClassReferences(ownerFqn, scope));
     }
@@ -450,18 +439,6 @@ public final class GuiceProjectModel implements Disposable {
     }
     for (PsiMethod method : AnnotatedElementsSearch.searchPsiMethods(annoClass, scope).findAll()) {
       addFileOf(method, files);
-    }
-    recordDiscoveredFiles(files);
-    return files;
-  }
-
-  private @NotNull Set<VirtualFile> discoverFieldsByAnnotation(@NotNull String annoFqn,
-                                                               @NotNull GlobalSearchScope scope) {
-    PsiClass annoClass = JavaPsiFacade.getInstance(myProject).findClass(annoFqn, GlobalSearchScope.allScope(myProject));
-    if (annoClass == null) return Set.of();
-    Set<VirtualFile> files = new LinkedHashSet<>();
-    for (PsiField field : AnnotatedElementsSearch.searchPsiFields(annoClass, scope).findAll()) {
-      addFileOf(field, files);
     }
     recordDiscoveredFiles(files);
     return files;

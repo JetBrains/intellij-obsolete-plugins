@@ -10,7 +10,6 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiJavaCodeReferenceElement;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiType;
@@ -18,11 +17,8 @@ import com.intellij.psi.impl.light.LightElement;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.uast.UAnnotated;
-import org.jetbrains.uast.UAnnotation;
 import org.jetbrains.uast.UCallExpression;
 import org.jetbrains.uast.UClass;
-import org.jetbrains.uast.UElement;
 import org.jetbrains.uast.UMethod;
 import org.jetbrains.uast.UastContextKt;
 import org.jetbrains.uast.visitor.AbstractUastVisitor;
@@ -81,13 +77,7 @@ public final class GuiceExtensionIndex {
   private final @NotNull Set<String> myProvidesIntoAnnotations;
   private final @NotNull Set<String> mySupportedFieldAnnotations;
   private final @NotNull Map<String, List<Function<? super PsiMethod, ? extends List<PsiType>>>> myProvidesByAnnotation;
-  private final @NotNull Map<String, List<BiConsumer<? super PsiField, ? super Set<GuiceEntry>>>> myFieldsByAnnotation;
-  private final @NotNull Map<String, List<BiConsumer<? super PsiMethod, ? super Set<GuiceEntry>>>> myMethodsByAnnotation;
-  private final @NotNull Map<String, List<BiConsumer<? super PsiClass, ? super Set<GuiceEntry>>>> myClassesByAnnotation;
   private final @NotNull Set<String> myProvidesShortNames;
-  private final @NotNull Set<String> myFieldShortNames;
-  private final @NotNull Set<String> myMethodShortNames;
-  private final @NotNull Set<String> myClassShortNames;
 
   private GuiceExtensionIndex(@NotNull GuiceCallMatcher<DescriptorCallHandler> descriptorCallMatcher,
                               @NotNull GuiceCallMatcher<BiConsumer<? super UCallExpression, ? super GuiceCallContext>> callEntryMatcher,
@@ -100,10 +90,7 @@ public final class GuiceExtensionIndex {
                               @NotNull Set<String> allProvidesAnnotations,
                               @NotNull Set<String> providesIntoAnnotations,
                               @NotNull Set<String> supportedFieldAnnotations,
-                              @NotNull Map<String, List<Function<? super PsiMethod, ? extends List<PsiType>>>> providesByAnnotation,
-                              @NotNull Map<String, List<BiConsumer<? super PsiField, ? super Set<GuiceEntry>>>> fieldsByAnnotation,
-                              @NotNull Map<String, List<BiConsumer<? super PsiMethod, ? super Set<GuiceEntry>>>> methodsByAnnotation,
-                              @NotNull Map<String, List<BiConsumer<? super PsiClass, ? super Set<GuiceEntry>>>> classesByAnnotation) {
+                              @NotNull Map<String, List<Function<? super PsiMethod, ? extends List<PsiType>>>> providesByAnnotation) {
     myDescriptorCallMatcher = descriptorCallMatcher;
     myCallEntryMatcher = callEntryMatcher;
     myAllCallNames = allCallNames;
@@ -116,13 +103,7 @@ public final class GuiceExtensionIndex {
     myProvidesIntoAnnotations = providesIntoAnnotations;
     mySupportedFieldAnnotations = supportedFieldAnnotations;
     myProvidesByAnnotation = providesByAnnotation;
-    myFieldsByAnnotation = fieldsByAnnotation;
-    myMethodsByAnnotation = methodsByAnnotation;
-    myClassesByAnnotation = classesByAnnotation;
     myProvidesShortNames = extractShortNames(providesByAnnotation.keySet());
-    myFieldShortNames = extractShortNames(fieldsByAnnotation.keySet());
-    myMethodShortNames = extractShortNames(methodsByAnnotation.keySet());
-    myClassShortNames = extractShortNames(classesByAnnotation.keySet());
   }
 
   private static @NotNull Set<String> extractShortNames(@NotNull Collection<String> fqns) {
@@ -189,20 +170,8 @@ public final class GuiceExtensionIndex {
     return myProvidesIntoAnnotations;
   }
 
-  public @NotNull Set<String> getFieldAnnotations() {
-    return myFieldsByAnnotation.keySet();
-  }
-
   public @NotNull Set<String> getSupportedFieldAnnotations() {
     return mySupportedFieldAnnotations;
-  }
-
-  public @NotNull Set<String> getMethodAnnotations() {
-    return myMethodsByAnnotation.keySet();
-  }
-
-  public @NotNull Set<String> getClassAnnotations() {
-    return myClassesByAnnotation.keySet();
   }
 
   /**
@@ -280,92 +249,6 @@ public final class GuiceExtensionIndex {
     return List.of();
   }
 
-  /**
-   * Evaluates registered field-annotation rules in a single pass over the field's annotations.
-   */
-  public void processFieldAnnotations(@NotNull PsiField field, @NotNull Set<GuiceEntry> entries) {
-    if (myFieldsByAnnotation.isEmpty()) {
-      return;
-    }
-    boolean matched = false;
-    for (PsiAnnotation annotation : field.getAnnotations()) {
-      if (!matchesAnnotationShortName(annotation, myFieldShortNames)) continue;
-      String fqn = annotation.getQualifiedName();
-      if (fqn == null) continue;
-      List<BiConsumer<? super PsiField, ? super Set<GuiceEntry>>> producers = myFieldsByAnnotation.get(fqn);
-      if (producers != null) {
-        matched = true;
-        invokeProducers(producers, field, entries);
-      }
-    }
-    if (!matched) {
-      PsiElement navElem = field.getNavigationElement();
-      if (navElem != null && navElem != field) {
-        UElement uElement = UastContextKt.toUElement(navElem);
-        if (uElement instanceof UAnnotated annotated) {
-          for (UAnnotation uAnnotation : annotated.getUAnnotations()) {
-            String fqn = uAnnotation.getQualifiedName();
-            if (fqn == null) continue;
-            List<BiConsumer<? super PsiField, ? super Set<GuiceEntry>>> producers = myFieldsByAnnotation.get(fqn);
-            if (producers != null) {
-              invokeProducers(producers, field, entries);
-            }
-          }
-        }
-      }
-    }
-  }
-
-  /**
-   * Evaluates registered method-annotation rules in a single pass over the method's annotations.
-   */
-  public void processMethodAnnotations(@NotNull PsiMethod method, @NotNull Set<GuiceEntry> entries) {
-    if (myMethodsByAnnotation.isEmpty()) {
-      return;
-    }
-    for (PsiAnnotation annotation : method.getAnnotations()) {
-      if (!matchesAnnotationShortName(annotation, myMethodShortNames)) continue;
-      String fqn = annotation.getQualifiedName();
-      if (fqn == null) continue;
-      List<BiConsumer<? super PsiMethod, ? super Set<GuiceEntry>>> producers = myMethodsByAnnotation.get(fqn);
-      if (producers != null) {
-        invokeProducers(producers, method, entries);
-      }
-    }
-  }
-
-  /**
-   * Evaluates registered class-annotation rules in a single pass over the class's annotations.
-   */
-  public void processClassAnnotations(@NotNull PsiClass psiClass, @NotNull Set<GuiceEntry> entries) {
-    if (myClassesByAnnotation.isEmpty()) {
-      return;
-    }
-    for (PsiAnnotation annotation : psiClass.getAnnotations()) {
-      if (!matchesAnnotationShortName(annotation, myClassShortNames)) continue;
-      String fqn = annotation.getQualifiedName();
-      if (fqn == null) continue;
-      List<BiConsumer<? super PsiClass, ? super Set<GuiceEntry>>> producers = myClassesByAnnotation.get(fqn);
-      if (producers != null) {
-        invokeProducers(producers, psiClass, entries);
-      }
-    }
-  }
-
-  private static <T> void invokeProducers(@NotNull List<BiConsumer<? super T, ? super Set<GuiceEntry>>> producers,
-                                          @NotNull T element,
-                                          @NotNull Set<GuiceEntry> entries) {
-    for (BiConsumer<? super T, ? super Set<GuiceEntry>> producer : producers) {
-      try {
-        producer.accept(element, entries);
-      }
-      catch (Exception e) {
-        rethrowIfControlFlow(e);
-        LOG.warn("Guice annotation contributor failed on " + element, e);
-      }
-    }
-  }
-
   private static @NotNull GuiceExtensionIndex build() {
     RegistrarImpl registrar = new RegistrarImpl();
     for (GuiceBindingContributor contributor : GuiceBindingContributor.EP_NAME.getExtensionList()) {
@@ -397,9 +280,6 @@ public final class GuiceExtensionIndex {
     private final Set<String> myBindingFieldAnnotations = new LinkedHashSet<>();
 
     private final Map<String, List<Function<? super PsiMethod, ? extends List<PsiType>>>> myProvidesByAnno = new HashMap<>();
-    private final Map<String, List<BiConsumer<? super PsiField, ? super Set<GuiceEntry>>>> myFieldsByAnno = new HashMap<>();
-    private final Map<String, List<BiConsumer<? super PsiMethod, ? super Set<GuiceEntry>>>> myMethodsByAnno = new HashMap<>();
-    private final Map<String, List<BiConsumer<? super PsiClass, ? super Set<GuiceEntry>>>> myClassesByAnno = new HashMap<>();
 
     @Override
     public void registerSingleTypeBinder(@NotNull GuiceCallPattern pattern,
@@ -454,9 +334,9 @@ public final class GuiceExtensionIndex {
     }
 
     @Override
-    public void registerModuleCallWithContext(@NotNull GuiceCallPattern pattern,
-                                              @NotNull BiConsumer<? super UCallExpression, ? super GuiceCallContext> producer) {
-      myCallEntries.add(pattern, producer, true);
+    public void registerModuleCallEntry(@NotNull GuiceCallPattern pattern,
+                                        @NotNull BiConsumer<? super UCallExpression, ? super Set<GuiceEntry>> producer) {
+      myCallEntries.add(pattern, (call, context) -> producer.accept(call, context.getEntries()), true);
     }
 
     @Override
@@ -479,47 +359,6 @@ public final class GuiceExtensionIndex {
       myBindingFieldAnnotations.addAll(annotationFqns);
     }
 
-    @Override
-    public void registerFieldAnnotation(@NotNull Collection<String> annotationFqns,
-                                        @NotNull BiConsumer<? super PsiField, ? super Set<GuiceEntry>> producer) {
-      myBindingFieldAnnotations.addAll(annotationFqns);
-      for (String fqn : annotationFqns) {
-        myFieldsByAnno.computeIfAbsent(fqn, _k -> new ArrayList<>()).add(producer);
-      }
-    }
-
-    @Override
-    public void registerMethodAnnotation(@NotNull Collection<String> annotationFqns,
-                                         @NotNull BiConsumer<? super PsiMethod, ? super Set<GuiceEntry>> producer) {
-      for (String fqn : annotationFqns) {
-        myMethodsByAnno.computeIfAbsent(fqn, _k -> new ArrayList<>()).add(producer);
-      }
-    }
-
-    @Override
-    public void registerClassAnnotation(@NotNull Collection<String> annotationFqns,
-                                        @NotNull BiConsumer<? super PsiClass, ? super Set<GuiceEntry>> producer) {
-      for (String fqn : annotationFqns) {
-        myClassesByAnno.computeIfAbsent(fqn, _k -> new ArrayList<>()).add(producer);
-      }
-    }
-
-    @Override
-    public void registerLegacyContributor(@NotNull Set<String> bindingWords,
-                                          @NotNull GuiceBindingContributor contributor) {
-      GuiceCallPattern pattern = GuiceCallPattern.named(bindingWords)
-          .matchAnyResolvedOwner()
-          .allowUnresolved();
-      myDescriptorCalls.add(pattern, (call, resolvedOwnerQName, containingClass, descriptors) -> {
-        String methodName = call.getMethodName();
-        if (methodName == null) return false;
-        if (containingClass != null && resolvedOwnerQName != null) {
-          return contributor.processCall(call, methodName, resolvedOwnerQName, containingClass, descriptors);
-        }
-        return contributor.processUnresolvedCall(call, methodName, descriptors);
-      });
-    }
-
     @NotNull GuiceExtensionIndex compile() {
       GuiceCallMatcher<DescriptorCallHandler> descriptorMatcher = myDescriptorCalls.build();
       GuiceCallMatcher<BiConsumer<? super UCallExpression, ? super GuiceCallContext>> callEntryMatcher = myCallEntries.build();
@@ -532,9 +371,6 @@ public final class GuiceExtensionIndex {
       Set<String> allProvides = new LinkedHashSet<>(GuiceAnnotations.PROVIDES_ANNOTATIONS);
       allProvides.addAll(providesInto);
 
-      Set<String> supportedFieldAnnotations = new LinkedHashSet<>(myBindingFieldAnnotations);
-      supportedFieldAnnotations.addAll(myFieldsByAnno.keySet());
-
       return new GuiceExtensionIndex(
           descriptorMatcher,
           callEntryMatcher,
@@ -546,11 +382,8 @@ public final class GuiceExtensionIndex {
           Set.copyOf(myDualTypeBinderClasses),
           Set.copyOf(allProvides),
           providesInto,
-          Set.copyOf(supportedFieldAnnotations),
-          immutableListMap(myProvidesByAnno),
-          immutableListMap(myFieldsByAnno),
-          immutableListMap(myMethodsByAnno),
-          immutableListMap(myClassesByAnno)
+          Set.copyOf(myBindingFieldAnnotations),
+          immutableListMap(myProvidesByAnno)
       );
     }
 

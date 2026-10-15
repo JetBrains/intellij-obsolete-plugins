@@ -98,7 +98,7 @@ public class GuiceInjectionTest extends GuiceTestBase {
       """);
 
     assertThat(gutterTargets(TO_BINDINGS_TOOLTIP))
-      .containsExactly("bind(MyService.class).toProvider(MyServiceProvider.class)");
+        .containsExactly("bind(MyService.class).toProvider(MyServiceProvider.class)");
   }
 
   public void testJavaInjectConstructorParameter() {
@@ -247,7 +247,7 @@ public class GuiceInjectionTest extends GuiceTestBase {
       """);
 
     assertThat(gutterTargets(TO_BINDINGS_TOOLTIP))
-      .containsExactly("bind(MyService.class).annotatedWith(Names.named(\"db\")).to(MyServiceImpl.class)");
+        .containsExactly("bind(MyService.class).annotatedWith(Names.named(\"db\")).to(MyServiceImpl.class)");
   }
 
   public void testUnqualifiedFieldDoesNotLinkToNamedBinding() {
@@ -273,7 +273,7 @@ public class GuiceInjectionTest extends GuiceTestBase {
       """);
 
     assertThat(gutterTargets(TO_BINDINGS_TOOLTIP))
-      .containsExactly("bind(MyService.class).annotatedWith(Names.named(\"db\")).to(MyServiceImpl.class)");
+        .containsExactly("bind(MyService.class).annotatedWith(Names.named(\"db\")).to(MyServiceImpl.class)");
   }
 
   public void testNamedFieldWithOtherNameHasNoGutter() {
@@ -365,7 +365,7 @@ public class GuiceInjectionTest extends GuiceTestBase {
       """);
 
     assertThat(gutterTargets(TO_BINDINGS_TOOLTIP))
-      .containsExactly("bind(MyService.class).annotatedWith(Db.class).to(MyServiceImpl.class)");
+        .containsExactly("bind(MyService.class).annotatedWith(Db.class).to(MyServiceImpl.class)");
   }
 
   public void testAssistedParameterIsNotAnInjectionPoint() {
@@ -429,8 +429,8 @@ public class GuiceInjectionTest extends GuiceTestBase {
 
     assertThat(gutterAnchors(TO_BINDINGS_TOOLTIP)).containsExactly("db", "plain");
     assertThat(gutterTargets(TO_BINDINGS_TOOLTIP)).containsExactly(
-      "bind(MyService.class).annotatedWith(Names.named(\"db\")).to(MyServiceImpl.class)",
-      "bind(MyService.class).to(MyServiceImpl.class)");
+        "bind(MyService.class).annotatedWith(Names.named(\"db\")).to(MyServiceImpl.class)",
+        "bind(MyService.class).to(MyServiceImpl.class)");
   }
   public void testInterfaceFieldDoesNotLinkToImplementationConstructor() {
     myFixture.addClass("""
@@ -1110,24 +1110,13 @@ public class GuiceInjectionTest extends GuiceTestBase {
     var disposable = Disposer.newDisposable();
     try {
       GuiceBindingContributor.EP_NAME.getPoint().registerExtension(
-          new GuiceBindingContributor() {
-            @Override
-            public @NotNull java.util.Set<String> getBindingWords() {
-              if (throwOnce.compareAndSet(true, false)) {
-                throw new ProcessCanceledException();
-              }
-              return Set.of();
-            }
-
-            @Override
-            public boolean processCall(@NotNull UCallExpression call,
-                                       @NotNull String callName,
-                                       @NotNull String containingClassFqn,
-                                       @NotNull PsiClass containingClass,
-                                       @NotNull Set<BindDescriptor> result) {
-              return false;
-            }
-          },
+          registrar -> registrar.registerModuleCallEntry(
+              GuiceCallPattern.named("to").withOwnerClass("com.google.inject.binder.LinkedBindingBuilder"),
+              (call, entries) -> {
+                if (throwOnce.compareAndSet(true, false)) {
+                  throw new ProcessCanceledException();
+                }
+              }),
           disposable);
 
       myFixture.addClass("""
@@ -1163,6 +1152,82 @@ public class GuiceInjectionTest extends GuiceTestBase {
       catch (ProcessCanceledException ignored) {
       }
       assertThat(gutterAnchors(TO_INJECTION_POINTS_TOOLTIP)).containsExactly("bind");
+    }
+    finally {
+      Disposer.dispose(disposable);
+    }
+  }
+
+  public void testCancellationDuringDependentRegistrarUpdateDoesNotCorruptIndex() {
+    var throwOnce = new AtomicBoolean(false);
+    var disposable = Disposer.newDisposable();
+    try {
+      GuiceBindingContributor.EP_NAME.getPoint().registerExtension(
+          registrar -> registrar.registerCallWithContext(
+              GuiceCallPattern.named("bindFlags").withOwnerClass("pkg.FlagBinder"),
+              (call, context) -> {
+                for (var arg : call.getValueArguments()) {
+                  context.reportClassArgument(arg, (targetClass, entries) -> {
+                    if (throwOnce.compareAndSet(true, false)) {
+                      throw new ProcessCanceledException();
+                    }
+                    for (var field : targetClass.getFields()) {
+                      entries.add(GuiceEntryProducer.createFieldBindingEntry(field, field.getType()));
+                    }
+                  });
+                }
+              }),
+          disposable);
+
+      myFixture.addClass("""
+        package pkg;
+        public class FlagBinder {
+          public void bindFlags(Class<?>... classes) {}
+        }
+        """);
+      myFixture.addClass("""
+        package pkg;
+        public class MyFlagValue {}
+        """);
+      myFixture.addClass("""
+        package pkg;
+        import com.google.inject.Inject;
+        public class FlagClient {
+          @Inject MyFlagValue flag;
+        }
+        """);
+      myFixture.addClass("""
+        package pkg;
+        public class Bootstrap {
+          public void init(FlagBinder binder) {
+            binder.bindFlags(MyFlags.class);
+          }
+        }
+        """);
+      var flagsFile = myFixture.addFileToProject("pkg/MyFlags.java", """
+        package pkg;
+        public class MyFlags {
+          <caret>
+        }
+        """);
+      myFixture.configureFromExistingVirtualFile(flagsFile.getVirtualFile());
+      assertThat(gutterAnchors(TO_INJECTION_POINTS_TOOLTIP)).isEmpty();
+
+      WriteCommandAction.runWriteCommandAction(getProject(), () -> {
+        myFixture.getEditor().getDocument().insertString(
+            myFixture.getCaretOffset(),
+            "public static MyFlagValue FLAG;");
+      });
+      PsiDocumentManager.getInstance(getProject()).commitAllDocuments();
+
+      var model = GuiceProjectModel.getInstance(getProject());
+      throwOnce.set(true);
+      try {
+        model.getNavigationIndex(myFixture.getModule());
+      }
+      catch (ProcessCanceledException ignored) {
+      }
+      assertThat(gutterAnchors(TO_INJECTION_POINTS_TOOLTIP)).containsExactly("FLAG");
     }
     finally {
       Disposer.dispose(disposable);
@@ -1224,7 +1289,7 @@ public class GuiceInjectionTest extends GuiceTestBase {
 
   public void testTargetRendererDoesNotRetainPsiOrLoseTextAfterReparse() throws Exception {
     assertThat(java.util.Arrays.stream(GuiceEntry.class.getDeclaredFields())
-                   .anyMatch(f -> f.getType() == GuiceBindingContributor.class))
+        .anyMatch(f -> f.getType() == GuiceBindingContributor.class))
         .isFalse();
 
     var clientFile = myFixture.addFileToProject("Client.java", """
@@ -1642,45 +1707,46 @@ public class GuiceInjectionTest extends GuiceTestBase {
       }
       """);
 
-    GuiceBindingContributor customContributor = new GuiceBindingContributor() {
-      @Override
-      public void register(@NotNull GuiceExtensionRegistrar registrar) {
-        registrar.registerFieldAnnotation(
-            List.of("ConfigProperty"),
-            (field, entries) -> {
-              if (field.getType() instanceof com.intellij.psi.PsiClassType classType) {
-                var params = classType.getParameters();
-                if (params.length == 1) {
-                  entries.add(GuiceEntryProducer.createFieldBindingEntry(field, params[0]));
+    GuiceBindingContributor customContributor = registrar -> {
+      registrar.registerBindingFieldAnnotations(
+          List.of("ConfigProperty")
+      );
+      registrar.registerCallWithContext(
+          GuiceCallPattern.named("createModule")
+              .withOwnerClass("ConfigBinder")
+              .minArguments(1),
+          (call, context) -> {
+            var firstArg = call.getValueArguments().getFirst();
+            var argType = GuiceUtils.getBindingTypeFromExpression(firstArg);
+            if (argType != null) {
+              var entry = GuiceEntryProducer.createCallEntry(call, argType, null, EntryRole.INJECTION_POINT);
+              if (entry != null) context.getEntries().add(entry);
+            }
+            context.reportClassArgument(firstArg, (targetClass, entries) -> {
+              for (var field : targetClass.getFields()) {
+                if (com.intellij.codeInsight.AnnotationUtil.isAnnotated(field, "ConfigProperty", 0)
+                    && field.getType() instanceof com.intellij.psi.PsiClassType classType) {
+                  var params = classType.getParameters();
+                  if (params.length == 1) {
+                    entries.add(GuiceEntryProducer.createFieldBindingEntry(field, params[0]));
+                  }
                 }
               }
+            });
+          }
+      );
+      registrar.registerCallWithContext(
+          GuiceCallPattern.named("lookup")
+              .withOwnerClass("CustomInjector")
+              .argumentCount(1),
+          (call, context) -> {
+            var argType = GuiceUtils.getBindingTypeFromExpression(call.getValueArguments().getFirst());
+            if (argType != null) {
+              var entry = GuiceEntryProducer.createCallEntry(call, argType, null, EntryRole.INJECTION_POINT);
+              if (entry != null) context.getEntries().add(entry);
             }
-        );
-        registrar.registerModuleCallEntry(
-            GuiceCallPattern.named("createModule")
-                .withOwnerClass("ConfigBinder")
-                .minArguments(1),
-            (call, entries) -> {
-              var argType = GuiceUtils.getBindingTypeFromExpression(call.getValueArguments().getFirst());
-              if (argType != null) {
-                var entry = GuiceEntryProducer.createCallEntry(call, argType, null, EntryRole.INJECTION_POINT);
-                if (entry != null) entries.add(entry);
-              }
-            }
-        );
-        registrar.registerCallEntry(
-            GuiceCallPattern.named("lookup")
-                .withOwnerClass("CustomInjector")
-                .argumentCount(1),
-            (call, entries) -> {
-              var argType = GuiceUtils.getBindingTypeFromExpression(call.getValueArguments().getFirst());
-              if (argType != null) {
-                var entry = GuiceEntryProducer.createCallEntry(call, argType, null, EntryRole.INJECTION_POINT);
-                if (entry != null) entries.add(entry);
-              }
-            }
-        );
-      }
+          }
+      );
     };
     GuiceBindingContributor.EP_NAME.getPoint().registerExtension(
         customContributor, getTestRootDisposable());
@@ -1763,40 +1829,37 @@ public class GuiceInjectionTest extends GuiceTestBase {
       }
       """);
 
-    GuiceBindingContributor contextContributor = new GuiceBindingContributor() {
-      @Override
-      public void register(@NotNull GuiceExtensionRegistrar registrar) {
-        registrar.registerBindingFieldAnnotations(List.of("ConfigSpec"));
-        registrar.registerModuleCallWithContext(
-            GuiceCallPattern.named("createModule")
-                .withOwnerClass("ConfigBinder")
-                .minArguments(1),
-            (call, context) -> {
-              for (var arg : call.getValueArguments()) {
-                context.reportClassArgument(arg, (psiClass, entries) -> {
-                  for (var field : psiClass.getAllFields()) {
-                    var specAnn = field.getAnnotation("ConfigSpec");
-                    if (specAnn == null) continue;
-                    if (!(field.getType() instanceof com.intellij.psi.PsiClassType fieldClassType)) continue;
-                    var params = fieldClassType.getParameters();
-                    if (params.length != 1) continue;
-                    var valueType = params[0];
-                    var primaryName = com.intellij.codeInsight.AnnotationUtil.getDeclaredStringAttributeValue(specAnn, "name");
-                    if (primaryName != null && !primaryName.isEmpty()) {
-                      entries.add(GuiceEntryProducer.createFieldBindingEntry(
-                          field, valueType, new com.intellij.guice.model.GuiceQualifier.Named(primaryName)));
-                    }
-                    var altName = com.intellij.codeInsight.AnnotationUtil.getDeclaredStringAttributeValue(specAnn, "altName");
-                    if (altName != null && !altName.isEmpty()) {
-                      entries.add(GuiceEntryProducer.createFieldBindingEntry(
-                          field, valueType, new com.intellij.guice.model.GuiceQualifier.Named(altName)));
-                    }
+    GuiceBindingContributor contextContributor = registrar -> {
+      registrar.registerBindingFieldAnnotations(List.of("ConfigSpec"));
+      registrar.registerCallWithContext(
+          GuiceCallPattern.named("createModule")
+              .withOwnerClass("ConfigBinder")
+              .minArguments(1),
+          (call, context) -> {
+            for (var arg : call.getValueArguments()) {
+              context.reportClassArgument(arg, (psiClass, entries) -> {
+                for (var field : psiClass.getAllFields()) {
+                  var specAnn = field.getAnnotation("ConfigSpec");
+                  if (specAnn == null) continue;
+                  if (!(field.getType() instanceof com.intellij.psi.PsiClassType fieldClassType)) continue;
+                  var params = fieldClassType.getParameters();
+                  if (params.length != 1) continue;
+                  var valueType = params[0];
+                  var primaryName = com.intellij.codeInsight.AnnotationUtil.getDeclaredStringAttributeValue(specAnn, "name");
+                  if (primaryName != null && !primaryName.isEmpty()) {
+                    entries.add(GuiceEntryProducer.createFieldBindingEntry(
+                        field, valueType, new com.intellij.guice.model.GuiceQualifier.Named(primaryName)));
                   }
-                });
-              }
+                  var altName = com.intellij.codeInsight.AnnotationUtil.getDeclaredStringAttributeValue(specAnn, "altName");
+                  if (altName != null && !altName.isEmpty()) {
+                    entries.add(GuiceEntryProducer.createFieldBindingEntry(
+                        field, valueType, new com.intellij.guice.model.GuiceQualifier.Named(altName)));
+                  }
+                }
+              });
             }
-        );
-      }
+          }
+      );
     };
     GuiceBindingContributor.EP_NAME.getPoint().registerExtension(
         contextContributor, getTestRootDisposable());
@@ -1888,6 +1951,93 @@ public class GuiceInjectionTest extends GuiceTestBase {
     assertThat(gutterAnchors(TO_BINDINGS_TOOLTIP))
         .containsExactly("manualFeature", "primaryEndpoint");
   }
+
+  public void testFailingContributorsDoNotBreakGuiceFeatures() {
+    var disposable = Disposer.newDisposable();
+    try {
+      // 1. Contributor that throws during register(...)
+      GuiceBindingContributor.EP_NAME.getPoint().registerExtension(
+          registrar -> {
+            throw new IllegalStateException("Simulated failure in register()");
+          },
+          disposable);
+
+      // 2. Contributor whose callbacks, descriptors, and text providers throw runtime exceptions
+      GuiceBindingContributor.EP_NAME.getPoint().registerExtension(
+          registrar -> {
+            registrar.registerCallDescriptor(
+                GuiceCallPattern.named("brokenBind"),
+                (call, descriptors) -> {
+                  if (call.getSourcePsi() != null) {
+                    descriptors.add(new BindDescriptor(call.getSourcePsi()) {
+                      @Override
+                      public PsiClass calculateBindingClass() {
+                        throw new RuntimeException("Simulated failure in calculateBindingClass()");
+                      }
+                    });
+                  }
+                  throw new RuntimeException("Simulated failure in call-descriptor handler");
+                });
+            registrar.registerModuleCallEntry(
+                GuiceCallPattern.named("to").withOwnerClass("com.google.inject.binder.LinkedBindingBuilder"),
+                (call, entries) -> {
+                  throw new RuntimeException("Simulated failure in module call-entry producer");
+                });
+            registrar.registerCallWithContext(
+                GuiceCallPattern.named("bindBrokenFlags").withOwnerClass("MyModule"),
+                (call, context) -> {
+                  for (var arg : call.getValueArguments()) {
+                    context.reportClassArgument(arg, (targetClass, entries) -> {
+                      throw new RuntimeException("Simulated failure in classExtractor");
+                    });
+                  }
+                });
+            registrar.registerProvidesAnnotation(
+                List.of("com.google.inject.Provides"),
+                method -> {
+                  throw new RuntimeException("Simulated failure in provides annotation provider");
+                });
+          },
+          disposable);
+
+      myFixture.addFileToProject("MyModule.java", """
+        import com.google.inject.AbstractModule;
+        public class MyModule extends AbstractModule {
+          void brokenBind(Class<?> cls) {}
+          void bindBrokenFlags(Class<?> cls) {}
+          @Override
+          protected void configure() {
+            brokenBind(MyService.class);
+            bindBrokenFlags(MyServiceImpl.class);
+            bind(MyService.class).to(MyServiceImpl.class);
+          }
+        }
+        """);
+
+      myFixture.configureByText("Client.java", """
+        import com.google.inject.Inject;
+        public class Client {
+          @Inject
+          MyService service;
+        }
+        """);
+
+      assertThat(gutterAnchors(TO_BINDINGS_TOOLTIP)).containsExactly("service");
+      assertThat(gutterTargets(TO_BINDINGS_TOOLTIP)).containsExactly("bind(MyService.class).to(MyServiceImpl.class)");
+
+      var clientClass = myFixture.findClass("Client");
+      var brokenTextEntry = new GuiceEntry(
+          com.intellij.guice.model.GuiceBindingKey.forClass(clientClass),
+          clientClass,
+          clientClass,
+          EntryRole.BINDING_SITE,
+          _el -> {
+            throw new RuntimeException("Simulated failure in textProvider");
+          });
+      assertThat(brokenTextEntry.getPresentableText()).isEqualTo("Client");
+    }
+    finally {
+      Disposer.dispose(disposable);
+    }
+  }
 }
-
-

@@ -10,14 +10,13 @@ import com.intellij.guice.model.beans.MapMultibindDescriptor;
 import com.intellij.guice.model.beans.OptionalBindDescriptor;
 import com.intellij.guice.model.beans.UntargetedBindDescriptor;
 import com.intellij.guice.model.extensions.GuiceBindingContributor;
+import com.intellij.guice.model.extensions.GuiceCallPattern;
 import com.intellij.openapi.util.NullableLazyValue;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Set;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.uast.UCallExpression;
 
 public class GuiceBinderTest extends GuiceTestBase {
 
@@ -317,30 +316,23 @@ public class GuiceBinderTest extends GuiceTestBase {
 
     assertThat(GuiceInjectorManager.getBindingsInFile(file)).isEmpty();
 
-    GuiceBindingContributor customContributor = new GuiceBindingContributor() {
-      @Override
-      public @NotNull Set<String> getBindingWords() {
-        return Set.of("customBind");
-      }
-
-      @Override
-      public boolean processCall(@NotNull UCallExpression call,
-                                 @NotNull String methodName,
-                                 @NotNull String resolvedQName,
-                                 @NotNull PsiClass containingClass,
-                                 @NotNull Set<BindDescriptor> descriptors) {
-        if (call.getSourcePsi() != null) {
-          descriptors.add(new BindDescriptor(call.getSourcePsi()) {
-            @Override
-            public PsiClass calculateBindingClass() {
-              return containingClass;
-            }
-          });
-          return true;
+    GuiceBindingContributor customContributor = registrar -> registrar.registerCallDescriptor(
+        GuiceCallPattern.named("customBind").withOwnerClass("MyModule").argumentCount(1),
+        (call, descriptors) -> {
+          var method = call.resolve();
+          var containingClass = method != null ? method.getContainingClass() : null;
+          if (call.getSourcePsi() != null && containingClass != null) {
+            descriptors.add(new BindDescriptor(call.getSourcePsi()) {
+              @Override
+              public PsiClass calculateBindingClass() {
+                return containingClass;
+              }
+            });
+            return true;
+          }
+          return false;
         }
-        return false;
-      }
-    };
+    );
 
     GuiceBindingContributor.EP_NAME.getPoint().registerExtension(customContributor, getTestRootDisposable());
 

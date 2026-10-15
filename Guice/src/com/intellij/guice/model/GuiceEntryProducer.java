@@ -115,13 +115,12 @@ public final class GuiceEntryProducer {
     Set<GuiceEntry> entries = callContext.getEntries();
     GuiceExtensionIndex extensionIndex = GuiceExtensionIndex.get();
 
-    // @Inject fields → INJECTION_POINT, plus any contributor-registered field annotations
+    // @Inject fields → INJECTION_POINT
     for (PsiField field : cls.getFields()) {
       if (isInjectAnnotated(field)) {
         GuiceEntry entry = createInjectionPointEntry(field, field.getType());
         entries.add(entry);
       }
-      extensionIndex.processFieldAnnotations(field, entries);
     }
 
     boolean isModule = InheritanceUtil.isInheritor(cls, "com.google.inject.Module");
@@ -133,8 +132,6 @@ public final class GuiceEntryProducer {
       boolean isInject = AnnotationUtil.isAnnotated(method, GuiceAnnotations.INJECTS, 0);
       boolean isProvides = isModule && AnnotationUtil.isAnnotated(method,
           extensionIndex.getAllProvidesAnnotations(), 0);
-      boolean isCustomAnnotated = !extensionIndex.getMethodAnnotations().isEmpty()
-          && AnnotationUtil.isAnnotated(method, extensionIndex.getMethodAnnotations(), 0);
 
       if (isInject || isProvides) {
         // Parameters → INJECTION_POINT
@@ -143,10 +140,6 @@ public final class GuiceEntryProducer {
           GuiceEntry entry = createInjectionPointEntry(param, param.getType());
           entries.add(entry);
         }
-      }
-
-      if (isCustomAnnotated) {
-        extensionIndex.processMethodAnnotations(method, entries);
       }
 
       // @Provides → BINDING_SITE for return type (only in Module classes)
@@ -197,7 +190,6 @@ public final class GuiceEntryProducer {
     // @ImplementedBy and @ProvidedBy → BINDING_SITE for the class (a JIT binding)
     addJitAnnotationEntries(cls, GuiceAnnotations.IMPLEMENTED_BY, entries);
     addJitAnnotationEntries(cls, GuiceAnnotations.PROVIDED_BY, entries);
-    extensionIndex.processClassAnnotations(cls, entries);
 
     // Binding calls in configure() for module classes
     if (isModule) {

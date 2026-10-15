@@ -37,7 +37,6 @@ public final class GuiceCallPattern {
   private final @NotNull Set<String> myReceiverInheritors;
   private final @NotNull Set<String> myReturnInheritors;
   private final boolean myAllowGuicePackageOwner;
-  private final boolean myMatchAnyResolvedOwner;
   private final boolean myAllowUnresolved;
   private final @NotNull Set<String> myUnresolvedChainHeads;
 
@@ -51,7 +50,6 @@ public final class GuiceCallPattern {
                            @NotNull Set<String> receiverInheritors,
                            @NotNull Set<String> returnInheritors,
                            boolean allowGuicePackageOwner,
-                           boolean matchAnyResolvedOwner,
                            boolean allowUnresolved,
                            @NotNull Set<String> unresolvedChainHeads) {
     myMethodNames = methodNames;
@@ -64,7 +62,6 @@ public final class GuiceCallPattern {
     myReceiverInheritors = receiverInheritors;
     myReturnInheritors = returnInheritors;
     myAllowGuicePackageOwner = allowGuicePackageOwner;
-    myMatchAnyResolvedOwner = matchAnyResolvedOwner;
     myAllowUnresolved = allowUnresolved;
     myUnresolvedChainHeads = unresolvedChainHeads;
   }
@@ -83,7 +80,6 @@ public final class GuiceCallPattern {
         Set.of(),
         Set.of(),
         Set.of(),
-        false,
         false,
         false,
         Set.of()
@@ -106,7 +102,6 @@ public final class GuiceCallPattern {
         Set.of(),
         false,
         false,
-        false,
         Set.of()
     );
   }
@@ -115,21 +110,21 @@ public final class GuiceCallPattern {
     return new GuiceCallPattern(
         myMethodNames, minValueArguments, myMaxValueArguments, myRequireValueOrTypeArgument,
         myStatementOnly, myExactOwnerClasses, myOwnerInheritors, myReceiverInheritors,
-        myReturnInheritors, myAllowGuicePackageOwner, myMatchAnyResolvedOwner, myAllowUnresolved, myUnresolvedChainHeads);
+        myReturnInheritors, myAllowGuicePackageOwner, myAllowUnresolved, myUnresolvedChainHeads);
   }
 
   public @NotNull GuiceCallPattern maxArguments(int maxValueArguments) {
     return new GuiceCallPattern(
         myMethodNames, myMinValueArguments, maxValueArguments, myRequireValueOrTypeArgument,
         myStatementOnly, myExactOwnerClasses, myOwnerInheritors, myReceiverInheritors,
-        myReturnInheritors, myAllowGuicePackageOwner, myMatchAnyResolvedOwner, myAllowUnresolved, myUnresolvedChainHeads);
+        myReturnInheritors, myAllowGuicePackageOwner, myAllowUnresolved, myUnresolvedChainHeads);
   }
 
   public @NotNull GuiceCallPattern argumentCount(int count) {
     return new GuiceCallPattern(
         myMethodNames, count, count, myRequireValueOrTypeArgument,
         myStatementOnly, myExactOwnerClasses, myOwnerInheritors, myReceiverInheritors,
-        myReturnInheritors, myAllowGuicePackageOwner, myMatchAnyResolvedOwner, myAllowUnresolved, myUnresolvedChainHeads);
+        myReturnInheritors, myAllowGuicePackageOwner, myAllowUnresolved, myUnresolvedChainHeads);
   }
 
   /**
@@ -139,7 +134,7 @@ public final class GuiceCallPattern {
     return new GuiceCallPattern(
         myMethodNames, myMinValueArguments, myMaxValueArguments, true,
         myStatementOnly, myExactOwnerClasses, myOwnerInheritors, myReceiverInheritors,
-        myReturnInheritors, myAllowGuicePackageOwner, myMatchAnyResolvedOwner, myAllowUnresolved, myUnresolvedChainHeads);
+        myReturnInheritors, myAllowGuicePackageOwner, myAllowUnresolved, myUnresolvedChainHeads);
   }
 
   /**
@@ -149,7 +144,7 @@ public final class GuiceCallPattern {
     return new GuiceCallPattern(
         myMethodNames, myMinValueArguments, myMaxValueArguments, myRequireValueOrTypeArgument,
         true, myExactOwnerClasses, myOwnerInheritors, myReceiverInheritors,
-        myReturnInheritors, myAllowGuicePackageOwner, myMatchAnyResolvedOwner, myAllowUnresolved, myUnresolvedChainHeads);
+        myReturnInheritors, myAllowGuicePackageOwner, myAllowUnresolved, myUnresolvedChainHeads);
   }
 
   /**
@@ -159,7 +154,7 @@ public final class GuiceCallPattern {
     return new GuiceCallPattern(
         myMethodNames, myMinValueArguments, myMaxValueArguments, myRequireValueOrTypeArgument,
         myStatementOnly, union(myExactOwnerClasses, ownerClassFqns), myOwnerInheritors, myReceiverInheritors,
-        myReturnInheritors, myAllowGuicePackageOwner, myMatchAnyResolvedOwner, myAllowUnresolved, myUnresolvedChainHeads);
+        myReturnInheritors, myAllowGuicePackageOwner, myAllowUnresolved, myUnresolvedChainHeads);
   }
 
   /**
@@ -169,7 +164,7 @@ public final class GuiceCallPattern {
     return new GuiceCallPattern(
         myMethodNames, myMinValueArguments, myMaxValueArguments, myRequireValueOrTypeArgument,
         myStatementOnly, myExactOwnerClasses, union(myOwnerInheritors, ownerClassFqns), myReceiverInheritors,
-        myReturnInheritors, myAllowGuicePackageOwner, myMatchAnyResolvedOwner, myAllowUnresolved, myUnresolvedChainHeads);
+        myReturnInheritors, myAllowGuicePackageOwner, myAllowUnresolved, myUnresolvedChainHeads);
   }
 
   /**
@@ -179,7 +174,7 @@ public final class GuiceCallPattern {
     return new GuiceCallPattern(
         myMethodNames, myMinValueArguments, myMaxValueArguments, myRequireValueOrTypeArgument,
         myStatementOnly, myExactOwnerClasses, myOwnerInheritors, union(myReceiverInheritors, receiverClassFqns),
-        myReturnInheritors, myAllowGuicePackageOwner, myMatchAnyResolvedOwner, myAllowUnresolved, myUnresolvedChainHeads);
+        myReturnInheritors, myAllowGuicePackageOwner, myAllowUnresolved, myUnresolvedChainHeads);
   }
 
   /**
@@ -189,7 +184,7 @@ public final class GuiceCallPattern {
     return new GuiceCallPattern(
         myMethodNames, myMinValueArguments, myMaxValueArguments, myRequireValueOrTypeArgument,
         myStatementOnly, myExactOwnerClasses, myOwnerInheritors, myReceiverInheritors,
-        union(myReturnInheritors, returnClassFqns), myAllowGuicePackageOwner, myMatchAnyResolvedOwner, myAllowUnresolved, myUnresolvedChainHeads);
+        union(myReturnInheritors, returnClassFqns), myAllowGuicePackageOwner, myAllowUnresolved, myUnresolvedChainHeads);
   }
 
   /**
@@ -213,17 +208,7 @@ public final class GuiceCallPattern {
     return new GuiceCallPattern(
         myMethodNames, myMinValueArguments, myMaxValueArguments, myRequireValueOrTypeArgument,
         myStatementOnly, myExactOwnerClasses, myOwnerInheritors, myReceiverInheritors,
-        myReturnInheritors, true, myMatchAnyResolvedOwner, myAllowUnresolved, myUnresolvedChainHeads);
-  }
-
-  /**
-   * Matches any resolved method regardless of declaring class.
-   */
-  @NotNull GuiceCallPattern matchAnyResolvedOwner() {
-    return new GuiceCallPattern(
-        myMethodNames, myMinValueArguments, myMaxValueArguments, myRequireValueOrTypeArgument,
-        myStatementOnly, myExactOwnerClasses, myOwnerInheritors, myReceiverInheritors,
-        myReturnInheritors, myAllowGuicePackageOwner, true, myAllowUnresolved, myUnresolvedChainHeads);
+        myReturnInheritors, true, myAllowUnresolved, myUnresolvedChainHeads);
   }
 
   /**
@@ -233,7 +218,7 @@ public final class GuiceCallPattern {
     return new GuiceCallPattern(
         myMethodNames, myMinValueArguments, myMaxValueArguments, myRequireValueOrTypeArgument,
         myStatementOnly, myExactOwnerClasses, myOwnerInheritors, myReceiverInheritors,
-        myReturnInheritors, myAllowGuicePackageOwner, myMatchAnyResolvedOwner, true, union(myUnresolvedChainHeads, requiredChainHeads));
+        myReturnInheritors, myAllowGuicePackageOwner, true, union(myUnresolvedChainHeads, requiredChainHeads));
   }
 
   public @NotNull Set<String> getMethodNames() {
@@ -264,8 +249,7 @@ public final class GuiceCallPattern {
         || !myOwnerInheritors.isEmpty()
         || !myReceiverInheritors.isEmpty()
         || !myReturnInheritors.isEmpty()
-        || myAllowGuicePackageOwner
-        || myMatchAnyResolvedOwner;
+        || myAllowGuicePackageOwner;
   }
 
   /**
@@ -276,8 +260,7 @@ public final class GuiceCallPattern {
         && myOwnerInheritors.isEmpty()
         && myReceiverInheritors.isEmpty()
         && myReturnInheritors.isEmpty()
-        && !myAllowGuicePackageOwner
-        && !myMatchAnyResolvedOwner;
+        && !myAllowGuicePackageOwner;
   }
 
   /**
@@ -305,7 +288,7 @@ public final class GuiceCallPattern {
                                  @NotNull Map<String, Boolean> ownerInheritorCache,
                                  @NotNull Map<String, Boolean> receiverInheritorCache,
                                  @NotNull Map<String, Boolean> returnInheritorCache) {
-    if (!requiresResolution() || myMatchAnyResolvedOwner) {
+    if (!requiresResolution()) {
       return true;
     }
     if (myExactOwnerClasses.contains(resolvedOwnerQName)) {
