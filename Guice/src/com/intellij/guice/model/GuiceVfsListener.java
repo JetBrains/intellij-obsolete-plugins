@@ -77,7 +77,7 @@ public final class GuiceVfsListener implements BulkFileListener {
     for (VFileEvent event : events) {
       if (event instanceof VFileDeleteEvent) {
         VirtualFile file = event.getFile();
-        if (file != null && (file.isDirectory() || isRelevantFile(file))) {
+        if (file.isDirectory() || isRelevantFile(file)) {
           model.removeFile(file);
         }
       } else if (event instanceof VFileCopyEvent copyEvent) {
@@ -95,9 +95,7 @@ public final class GuiceVfsListener implements BulkFileListener {
       } else if (event instanceof VFilePropertyChangeEvent propEvent
                  && VirtualFile.PROP_NAME.equals(propEvent.getPropertyName())) {
         VirtualFile file = event.getFile();
-        if (file != null) {
-          markDirtyRecursively(file, fileIndex, model);
-        }
+        markDirtyRecursively(file, fileIndex, model);
       }
     }
   }
