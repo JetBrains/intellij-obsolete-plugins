@@ -47,9 +47,10 @@ public final class GuiceVfsListener implements BulkFileListener {
 
   @Override
   public void before(@NotNull List<? extends VFileEvent> events) {
-    if (myProject.isDisposed()) return;
+    if (myProject.isDisposed() || !myProject.isInitialized()) return;
 
-    GuiceProjectModel model = GuiceProjectModel.getInstance(myProject);
+    GuiceProjectModel model = myProject.getServiceIfCreated(GuiceProjectModel.class);
+    if (model == null || !model.isIndexActive()) return;
 
     for (VFileEvent event : events) {
       VirtualFile file = event.getFile();
@@ -67,15 +68,16 @@ public final class GuiceVfsListener implements BulkFileListener {
 
   @Override
   public void after(@NotNull List<? extends VFileEvent> events) {
-    if (myProject.isDisposed()) return;
+    if (myProject.isDisposed() || !myProject.isInitialized()) return;
 
-    GuiceProjectModel model = GuiceProjectModel.getInstance(myProject);
+    GuiceProjectModel model = myProject.getServiceIfCreated(GuiceProjectModel.class);
+    if (model == null || !model.isIndexActive()) return;
     ProjectFileIndex fileIndex = ProjectFileIndex.getInstance(myProject);
 
     for (VFileEvent event : events) {
       if (event instanceof VFileDeleteEvent) {
         VirtualFile file = event.getFile();
-        if (file.isDirectory() || isRelevantFile(file)) {
+        if (file != null && (file.isDirectory() || isRelevantFile(file))) {
           model.removeFile(file);
         }
       } else if (event instanceof VFileCopyEvent copyEvent) {
@@ -93,7 +95,9 @@ public final class GuiceVfsListener implements BulkFileListener {
       } else if (event instanceof VFilePropertyChangeEvent propEvent
                  && VirtualFile.PROP_NAME.equals(propEvent.getPropertyName())) {
         VirtualFile file = event.getFile();
-        markDirtyRecursively(file, fileIndex, model);
+        if (file != null) {
+          markDirtyRecursively(file, fileIndex, model);
+        }
       }
     }
   }
@@ -101,7 +105,8 @@ public final class GuiceVfsListener implements BulkFileListener {
   private static void markDirtyRecursively(@NotNull VirtualFile fileOrDir,
                                            @NotNull ProjectFileIndex fileIndex,
                                            @NotNull GuiceProjectModel model) {
-    if (!fileOrDir.isValid() || !fileIndex.isInContent(fileOrDir)) return;
+    if (!fileOrDir.isValid() || (!fileOrDir.isDirectory() && !isRelevantFile(fileOrDir))) return;
+    if (!fileIndex.isInContent(fileOrDir)) return;
     if (fileOrDir.isDirectory()) {
       VfsUtilCore.visitChildrenRecursively(fileOrDir, new VirtualFileVisitor<Void>() {
         @Override
@@ -113,7 +118,7 @@ public final class GuiceVfsListener implements BulkFileListener {
           return true;
         }
       });
-    } else if (isRelevantFile(fileOrDir)) {
+    } else {
       model.markFileDirty(fileOrDir);
     }
   }

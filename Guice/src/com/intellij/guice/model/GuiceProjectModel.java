@@ -169,6 +169,15 @@ public final class GuiceProjectModel implements Disposable {
     return myBackgroundUpdater;
   }
 
+  /**
+   * Returns {@code true} once initial population has been scheduled or completed.
+   * Before the index is first requested for a Guice-enabled module, VFS and PSI
+   * listeners can ignore events because initial population will discover all files.
+   */
+  boolean isIndexActive() {
+    return myInitialized || myPopulationScheduled.get();
+  }
+
   // -----------------------------------------------------------------------
   // Main query API
   // -----------------------------------------------------------------------
@@ -655,7 +664,7 @@ public final class GuiceProjectModel implements Disposable {
     }
 
     private void onPsiChange(@NotNull PsiTreeChangeEvent event) {
-      if (myProject.isDisposed()) return;
+      if (myProject.isDisposed() || !myProject.isInitialized() || !isIndexActive()) return;
       PsiFile psiFile = event.getFile();
       if (psiFile == null && event.getChild() instanceof PsiFile childFile) {
         psiFile = childFile;
