@@ -4,58 +4,54 @@ package com.intellij.guice.inspections;
 import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.codeInspection.LocalQuickFix;
 import com.intellij.guice.GuiceBundle;
+import com.intellij.guice.model.extensions.GuiceCallPattern;
 import com.intellij.guice.utils.GuiceUtils;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.uast.UCallExpression;
+import org.jetbrains.uast.UExpression;
+
+import java.util.Collection;
 
 import static com.intellij.codeInsight.AnnotationUtil.CHECK_HIERARCHY;
 
-public final class RedundantScopeBindingInspection extends BaseInspection {
+/**
+ * Reports redundant {@code .in()} scope bindings where the bound class already declares
+ * the same scope via an annotation (e.g., {@code @Singleton}, {@code @RequestScoped}).
+ */
+public final class RedundantScopeBindingInspection extends BaseUastInspection {
+  public RedundantScopeBindingInspection() {
+    extendCall(
+        GuiceCallPattern.named("in").argumentCount(1),
+        RedundantScopeBindingInspection::checkInCall
+    );
+  }
+
   @Override
   protected @NotNull String buildErrorString(Object... infos) {
     return GuiceBundle.message("redundant.scope.binding.problem.descriptor");
   }
 
   @Override
-  public BaseInspectionVisitor buildVisitor() {
-    return new Visitor();
-  }
-
-  @Override
   public @Nullable LocalQuickFix buildFix(PsiElement location, Object[] infos) {
-    return new DeleteBindingFix();
+    return new DeleteBindingFix(DeleteBindingFix.Mode.CHAIN_CALL);
   }
 
-  private static class Visitor extends BaseInspectionVisitor {
-    @Override
-    public void visitMethodCallExpression(@NotNull PsiMethodCallExpression expression) {
-      super.visitMethodCallExpression(expression);
-      final PsiReferenceExpression methodExpression = expression.getMethodExpression();
-      final String methodName = methodExpression.getReferenceName();
-      if (!"in".equals(methodName)) {
-        return;
-      }
-      final PsiExpression[] args = expression.getArgumentList().getExpressions();
-      if (args.length != 1) {
-        return;
-      }
-      final PsiExpression arg = args[0];
-      if (!(arg instanceof PsiReferenceExpression)) {
-        return;
-      }
-      final String annotation = GuiceUtils.getScopeAnnotationForScopeExpression(arg);
-      if (annotation == null) {
-        return;
-      }
-      final PsiClass boundClass = GuiceUtils.findImplementedClassForBinding(expression);
-      if (boundClass == null) {
-        return;
-      }
-      if (!AnnotationUtil.isAnnotated(boundClass, annotation, CHECK_HIERARCHY)) {
-        return;
-      }
-      registerError(arg);
+  private static void checkInCall(@NotNull UCallExpression expression, @NotNull BaseUastInspectionVisitor visitor) {
+    final UExpression arg = expression.getValueArguments().getFirst();
+    final Collection<String> scopeAnnotations = GuiceUtils.getScopeAnnotationsForScopeExpression(arg);
+    if (scopeAnnotations == null || scopeAnnotations.isEmpty()) {
+      return;
     }
+    final PsiClass boundClass = GuiceUtils.findImplementedClassForBinding(expression);
+    if (boundClass == null) {
+      return;
+    }
+    if (!AnnotationUtil.isAnnotated(boundClass, scopeAnnotations, CHECK_HIERARCHY)) {
+      return;
+    }
+    visitor.registerError(arg);
   }
 }

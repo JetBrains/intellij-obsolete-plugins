@@ -3,58 +3,38 @@ package com.intellij.guice.inspections;
 
 import com.intellij.guice.GuiceBundle;
 import com.intellij.guice.constants.GuiceAnnotations;
-import com.intellij.guice.utils.AnnotationUtils;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.util.InheritanceUtil;
-import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public final class InvalidImplementedByInspection extends BaseInspection{
+/**
+ * Reports {@code @ImplementedBy} annotations whose referenced class does not actually
+ * implement or extend the annotated type.
+ *
+ * <p>Example:
+ * <pre>
+ * // Flagged: Unrelated does not implement Service
+ * {@literal @}ImplementedBy(Unrelated.class)
+ * interface Service {}
+ *
+ * // OK: ServiceImpl implements Service
+ * {@literal @}ImplementedBy(ServiceImpl.class)
+ * interface Service {}
+ * </pre>
+ */
+public final class InvalidImplementedByInspection extends ClassReferenceAnnotationInspectionBase {
+  public InvalidImplementedByInspection() {
+    super(GuiceAnnotations.IMPLEMENTED_BY);
+  }
 
-    @Override
-    protected @NotNull String buildErrorString(Object... infos){
-        return GuiceBundle.message("invalid.implemented.by.problem.descriptor");
-    }
+  @Override
+  protected @NotNull String buildErrorString(Object... infos) {
+    return GuiceBundle.message("invalid.implemented.by.problem.descriptor");
+  }
 
-    @Override
-    public BaseInspectionVisitor buildVisitor(){
-        return new Visitor();
-    }
-
-    private static class Visitor extends BaseInspectionVisitor{
-        @Override
-        public void visitAnnotation(@NotNull PsiAnnotation annotation){
-            super.visitAnnotation(annotation);
-            final String qualifiedName = annotation.getQualifiedName();
-            if(!GuiceAnnotations.IMPLEMENTED_BY.equals(qualifiedName)){
-                return;
-            }
-            final PsiClass containingClass = PsiTreeUtil.getParentOfType(annotation, PsiClass.class);
-            if(containingClass == null){
-                return;
-            }
-            final PsiElement defaultValue = AnnotationUtils.findDefaultValue(annotation);
-            if(defaultValue == null){
-                return;
-            }
-            if(!(defaultValue instanceof PsiClassObjectAccessExpression)){
-                return;
-            }
-            final PsiTypeElement classTypeElement = ((PsiClassObjectAccessExpression) defaultValue).getOperand();
-            final PsiType classType = classTypeElement.getType();
-            if(!(classType instanceof PsiClassType)){
-                return;
-            }
-            final PsiClass referentClass = ((PsiClassType) classType).resolve();
-            if(referentClass == null){
-                return;
-            }
-            if(InheritanceUtil.isInheritorOrSelf(referentClass, containingClass, true))
-            {
-                return;
-            }
-            registerError(classTypeElement);
-        }
-    }
-
+  @Override
+  protected boolean isValidReferent(@NotNull PsiClass referentClass, @Nullable PsiClass annotatedClass) {
+    return annotatedClass == null || InheritanceUtil.isInheritorOrSelf(referentClass, annotatedClass, true);
+  }
 }

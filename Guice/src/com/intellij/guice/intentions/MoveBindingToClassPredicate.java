@@ -3,25 +3,24 @@ package com.intellij.guice.intentions;
 
 import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.guice.constants.GuiceAnnotations;
+import com.intellij.guice.model.GuiceInjectionUtil;
 import com.intellij.guice.utils.GuiceUtils;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiMethodCallExpression;
+import org.jetbrains.uast.UCallExpression;
 
 import static com.intellij.codeInsight.AnnotationUtil.CHECK_HIERARCHY;
 
 public class MoveBindingToClassPredicate implements PsiElementPredicate {
   @Override
   public boolean satisfiedBy(PsiElement element) {
-    if (!GuiceUtils.isBinding(element)) {
-      return false;
-    }
-    final PsiMethodCallExpression call = (PsiMethodCallExpression)element;
+    final UCallExpression uCall = GuiceUtils.resolveOutermostBindingCall(element);
+    if (uCall == null) return false;
 
-    if (GuiceUtils.findImplementingClassForBinding(call) == null) {
+    if (GuiceInjectionUtil.getCallExpressionType(uCall, "to") == null) {
       return false;
     }
-    final PsiClass implementedClass = GuiceUtils.findImplementedClassForBinding(call);
+    final PsiClass implementedClass = GuiceUtils.findImplementedClassForBinding(uCall);
     if (implementedClass == null) {
       return false;
     }

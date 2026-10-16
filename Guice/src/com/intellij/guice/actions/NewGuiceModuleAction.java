@@ -6,6 +6,7 @@ import com.intellij.ide.actions.CreateFileFromTemplateDialog;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.ui.IconManager;
+import com.intellij.ui.PlatformIcons;
 import org.jetbrains.annotations.NotNull;
 
 public class NewGuiceModuleAction extends AbstractNewGuiceClassAction {
@@ -21,7 +22,7 @@ public class NewGuiceModuleAction extends AbstractNewGuiceClassAction {
        builder
           .setTitle(GuiceBundle.message("new.guice.module.action.name"))
           .addKind(GuiceBundle.message("new.guice.module.action.name"),
-                   IconManager.getInstance().getPlatformIcon(com.intellij.ui.PlatformIcons.Class), "GuiceNewModule.java");
+                   IconManager.getInstance().getPlatformIcon(PlatformIcons.Class), "GuiceNewModule.java");
     }
 
     @Override
