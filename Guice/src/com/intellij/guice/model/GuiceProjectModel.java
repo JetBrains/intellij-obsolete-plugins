@@ -28,6 +28,8 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiReference;
+import com.intellij.psi.PsiTreeChangeAdapter;
+import com.intellij.psi.PsiTreeChangeEvent;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.AnnotatedElementsSearch;
 import com.intellij.psi.search.searches.ReferencesSearch;
@@ -55,24 +57,19 @@ import org.jetbrains.annotations.Nullable;
  *
  * <h3>Design — asynchronous incremental updates</h3>
  * <ul>
- *   <li><b>Single index</b>: A {@link GuiceNavigationIndex} is created once and never rebuilt
- *       from scratch (unless project structure changes).  Each file's {@link GuiceEntry} set is
- *       extracted independently by {@link GuiceEntryProducer} and stored per-file.</li>
- *   <li><b>Background dirty processing</b>: When a file changes (notified by {@link GuiceVfsListener}),
- *       it is added to a dirty set.  A debounced background task processes dirty files
- *       asynchronously using {@code ReadAction.nonBlocking}, then triggers re-highlighting
- *       via {@code DaemonCodeAnalyzer.restart()}.</li>
- *   <li><b>Inline current-file re-indexing</b>: During highlighting, the annotator re-indexes
- *       the current file inline (cancellable) for immediate feedback, without waiting for
- *       the background debounced processing.</li>
+ *   <li><b>Single index</b>: A {@link GuiceNavigationIndex} is created once and updated
+ *       in place per file. Each file's {@link GuiceEntry} set is extracted independently
+ *       by {@link GuiceEntryProducer} and committed atomically once extraction completes.</li>
+ *   <li><b>Background dirty processing</b>: When a file changes (notified by {@link GuiceVfsListener}
+ *       for VFS events or {@link GuicePsiTreeChangeListener} for in-memory PSI edits),
+ *       it is added to a dirty set. A debounced background task processes dirty files
+ *       one file per read action, then triggers re-highlighting via {@code DaemonCodeAnalyzer.restart()}.</li>
  *   <li><b>Initial population</b>: On first access (or after a structure change), background
- *       population is scheduled.  The annotator receives a (possibly empty) index and gutter
- *       icons appear once population completes and re-highlighting is triggered.</li>
- *   <li><b>Modification stamps</b>: Per-file VFS modification stamps are tracked to skip
- *       spurious VFS events where the file content hasn't actually changed.</li>
- *   <li><b>Thread safety</b>: The dirty set uses {@link ConcurrentHashMap#newKeySet()}.
- *       {@link GuiceNavigationIndex} is thread-safe.
- *       Concurrent writes from the highlighting thread and background thread are safe.</li>
+ *       population runs fine-grained discovery steps and per-file extraction, skipping files
+ *       whose modification stamps and structure generation are already up to date.</li>
+ *   <li><b>Atomic per-file commits</b>: All cancellable PSI and UAST reads happen before
+ *       mutating {@link GuiceNavigationIndex} or stamp maps, so a read-action cancellation
+ *       never leaves the index partially updated.</li>
  * </ul>
  *
  * @see GuiceNavigationIndex
@@ -80,6 +77,13 @@ import org.jetbrains.annotations.Nullable;
  */
 @Service(Service.Level.PROJECT)
 public final class GuiceProjectModel implements Disposable {
+
+  @FunctionalInterface
+  interface DiscoveryStep {
+    @NotNull Set<VirtualFile> discover();
+  }
+
+  private record FileStamp(long vfsStamp, long psiStamp, int generation) {}
 
   private final Project myProject;
 
@@ -91,15 +95,14 @@ public final class GuiceProjectModel implements Disposable {
   private final GuiceNavigationIndex myNavigationIndex = new GuiceNavigationIndex();
 
   /**
-   * Files marked dirty by {@link GuiceVfsListener}.  Processed asynchronously
-   * on a background thread via {@link #myBackgroundUpdater}.
-   * Uses a concurrent set for thread safety since VFS events may fire on any thread.
+   * Files marked dirty by {@link GuiceVfsListener} or {@link GuicePsiTreeChangeListener}.
+   * Processed asynchronously on a background thread via {@link #myBackgroundUpdater}.
    */
   private final Set<VirtualFile> myDirtyFiles = ConcurrentHashMap.newKeySet();
 
   /**
    * Set to {@code true} when the project structure changes (modules, libraries,
-   * or content/source roots added or removed). This triggers a full re-population
+   * or content/source roots added or removed). This triggers a re-population
    * scheduled via {@link #myBackgroundUpdater}.
    */
   private volatile boolean myStructureChanged = true;
@@ -111,8 +114,8 @@ public final class GuiceProjectModel implements Disposable {
   private final AtomicInteger myStructureGeneration = new AtomicInteger();
 
   /**
-   * Whether the initial population has been performed.  Set to {@code true} after
-   * {@link #markPopulationComplete(int)} is called by the background updater.
+   * Whether the initial population has been performed. Set to {@code true} after
+   * {@link #completePopulationIfCurrent} succeeds.
    */
   private volatile boolean myInitialized = false;
 
@@ -123,28 +126,16 @@ public final class GuiceProjectModel implements Disposable {
   private final AtomicBoolean myPopulationScheduled = new AtomicBoolean();
 
   /**
-   * The PSI modification stamp of each file at its last inline re-index.
-   * The line marker pass asks for the same file more than once per pass. The stamp lets it skip the repeated work.
-   */
-  private final ConcurrentHashMap<String, Long> myInlineStamps = new ConcurrentHashMap<>();
-
-  /**
-   * The PSI modification stamp of each external target file
-   * at the last time its dependent registrar files were indexed.
-   */
-  private final ConcurrentHashMap<String, Long> myTargetStamps = new ConcurrentHashMap<>();
-
-  /**
    * Maps file paths to their {@link VirtualFile} instances for fast lookup of dependent registrar
    * and target files across both local and in-memory file systems.
    */
   private final ConcurrentHashMap<String, VirtualFile> myFilesByPath = new ConcurrentHashMap<>();
 
   /**
-   * Per-file VFS modification stamps.  Used to detect whether a file in the dirty
-   * set has actually changed (VFS may fire spurious events).
+   * Per-file VFS, PSI, and structure-generation stamps keyed by file path.
+   * Updated atomically when a file's extraction result is committed to {@link #myNavigationIndex}.
    */
-  private final ConcurrentHashMap<VirtualFile, Long> myFileStamps = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<String, FileStamp> myFileStamps = new ConcurrentHashMap<>();
 
   /**
    * Handles debounced background processing of dirty files and initial population.
@@ -159,6 +150,7 @@ public final class GuiceProjectModel implements Disposable {
   public GuiceProjectModel(@NotNull Project project, @NotNull CoroutineScope coroutineScope) {
     myProject = project;
     myBackgroundUpdater = new GuiceBackgroundIndexUpdater(project, this, coroutineScope);
+    PsiManager.getInstance(myProject).addPsiTreeChangeListener(new GuicePsiTreeChangeListener(), this);
     // Entries hold objects of dynamic extensions. Rebuild the index when a plugin adds or removes one.
     GuiceBindingContributor.EP_NAME.addChangeListener(coroutineScope, this::markStructureChanged);
   }
@@ -182,7 +174,7 @@ public final class GuiceProjectModel implements Disposable {
   // -----------------------------------------------------------------------
 
   /**
-   * Returns the unified navigation index.  This method <b>never blocks</b>.
+   * Returns the unified navigation index. This method <b>never blocks</b> in production mode.
    *
    * <p>If the index is not yet populated (first access or structure change),
    * it schedules background population and returns the (possibly empty) index.
@@ -192,105 +184,13 @@ public final class GuiceProjectModel implements Disposable {
    * @return the navigation index (may be empty if population is in progress)
    */
   public @NotNull GuiceNavigationIndex getNavigationIndex(@NotNull Module module) {
-    if ((!myInitialized || myStructureChanged) && myPopulationScheduled.compareAndSet(false, true)) {
-      myBackgroundUpdater.scheduleInitialPopulation(module, myStructureGeneration.get());
+    if (isPopulationNeeded() && myPopulationScheduled.compareAndSet(false, true)) {
+      myBackgroundUpdater.scheduleInitialPopulation(module);
     }
     if (ApplicationManager.getApplication().isUnitTestMode()) {
       myBackgroundUpdater.processDirtyFilesNow();
     }
     return myNavigationIndex;
-  }
-
-  /**
-   * Re-indexes a single file inline during the highlighting pass.
-   *
-   * <p>This is <b>cancellable</b> — if the highlighting thread is cancelled
-   * (e.g., user types), a {@link com.intellij.openapi.progress.ProcessCanceledException}
-   * will be thrown and the update is abandoned. The next highlighting pass will retry.
-   *
-   * <p>This gives immediate feedback for the file the user is editing,
-   * without waiting for the background debounced processing.
-   *
-   * @param file the PSI file currently being highlighted
-   */
-  public void reindexCurrentFile(@NotNull PsiFile file) {
-    refreshTrackedTargetsInline();
-    if (!isIndexableEditorFile(file)) return;
-    VirtualFile vf = file.getVirtualFile();
-    String path = vf.getPath();
-    myFilesByPath.put(path, vf);
-    long stamp = file.getModificationStamp();
-    Long previous = myInlineStamps.get(path);
-    if (previous != null && previous == stamp) return;
-
-    GuiceEntryProducer.FileExtractionResult result = GuiceEntryProducer.extractFileData(file);
-    myNavigationIndex.updateFile(path, result);
-    recordReferencedTargets(result);
-    myInlineStamps.put(path, stamp);
-    myTargetStamps.put(path, stamp);
-
-    Set<String> dependentRegistrars = new LinkedHashSet<>(myNavigationIndex.getDependentRegistrarFiles(path));
-    dependentRegistrars.addAll(myNavigationIndex.getDependentRegistrarFilesByClassName(vf.getNameWithoutExtension()));
-    dependentRegistrars.remove(path);
-    reindexRegistrarFilesInline(dependentRegistrars);
-  }
-
-  private void refreshTrackedTargetsInline() {
-    Set<String> trackedTargets = myNavigationIndex.getTrackedTargetPaths();
-    if (trackedTargets.isEmpty()) return;
-
-    Set<String> registrarsToReindex = new LinkedHashSet<>();
-    PsiManager psiManager = PsiManager.getInstance(myProject);
-    for (String targetPath : trackedTargets) {
-      VirtualFile targetVf = resolveVirtualFile(targetPath);
-      if (targetVf == null || !targetVf.isValid()) {
-        myTargetStamps.remove(targetPath);
-        registrarsToReindex.addAll(myNavigationIndex.getDependentRegistrarFiles(targetPath));
-        continue;
-      }
-      PsiFile targetPsi = psiManager.findFile(targetVf);
-      if (targetPsi == null) {
-        myTargetStamps.remove(targetPath);
-        registrarsToReindex.addAll(myNavigationIndex.getDependentRegistrarFiles(targetPath));
-        continue;
-      }
-      long currentStamp = targetPsi.getModificationStamp();
-      Long recordedStamp = myTargetStamps.get(targetPath);
-      if (recordedStamp == null || recordedStamp != currentStamp) {
-        myTargetStamps.put(targetPath, currentStamp);
-        registrarsToReindex.addAll(myNavigationIndex.getDependentRegistrarFiles(targetPath));
-      }
-    }
-    if (!registrarsToReindex.isEmpty()) {
-      reindexRegistrarFilesInline(registrarsToReindex);
-    }
-  }
-
-  private void reindexRegistrarFilesInline(@NotNull Set<String> registrarPaths) {
-    if (registrarPaths.isEmpty()) return;
-    PsiManager psiManager = PsiManager.getInstance(myProject);
-    for (String registrarPath : registrarPaths) {
-      VirtualFile registrarVf = resolveVirtualFile(registrarPath);
-      if (registrarVf == null || !registrarVf.isValid()) continue;
-      PsiFile registrarPsi = psiManager.findFile(registrarVf);
-      if (registrarPsi == null) continue;
-      GuiceEntryProducer.FileExtractionResult result = GuiceEntryProducer.extractFileData(registrarPsi);
-      myNavigationIndex.updateFile(registrarPath, result);
-      recordReferencedTargets(result);
-      myInlineStamps.put(registrarPath, registrarPsi.getModificationStamp());
-    }
-  }
-
-  private void recordReferencedTargets(@NotNull GuiceEntryProducer.FileExtractionResult result) {
-    PsiManager psiManager = PsiManager.getInstance(myProject);
-    for (VirtualFile targetVf : result.referencedTargetFiles()) {
-      String targetPath = targetVf.getPath();
-      myFilesByPath.put(targetPath, targetVf);
-      PsiFile targetPsi = psiManager.findFile(targetVf);
-      if (targetPsi != null) {
-        myTargetStamps.put(targetPath, targetPsi.getModificationStamp());
-      }
-    }
   }
 
   private @Nullable VirtualFile resolveVirtualFile(@NotNull String path) {
@@ -300,17 +200,17 @@ public final class GuiceProjectModel implements Disposable {
   }
 
   /**
-   * Tells if the inline re-index may write the entries of the file into the index.
-   * A diff or merge copy, a quick-fix preview, or a light file would overwrite the entries of the real file,
-   * because the index uses the file path as the key.
+   * Checks whether a modified {@link PsiFile} is a physical, in-content project source file
+   * whose changes should update the Guice navigation index.
    */
-  private boolean isIndexableEditorFile(@NotNull PsiFile file) {
+  private boolean isIndexableProjectFile(@NotNull PsiFile file) {
+    if (!file.isPhysical() || !file.getViewProvider().isEventSystemEnabled() || file.getOriginalFile() != file) {
+      return false;
+    }
     VirtualFile vf = file.getVirtualFile();
     return vf != null &&
            !(vf instanceof LightVirtualFile) &&
-           file.isPhysical() &&
-           file.getViewProvider().isEventSystemEnabled() &&
-           file.getOriginalFile() == file &&
+           GuiceVfsListener.isRelevantFile(vf) &&
            ProjectFileIndex.getInstance(myProject).isInContent(vf);
   }
 
@@ -326,7 +226,7 @@ public final class GuiceProjectModel implements Disposable {
   }
 
   // -----------------------------------------------------------------------
-  // Event API — called by GuiceVfsListener
+  // Event API — called by GuiceVfsListener and GuicePsiTreeChangeListener
   // -----------------------------------------------------------------------
 
   /**
@@ -358,10 +258,8 @@ public final class GuiceProjectModel implements Disposable {
         myNavigationIndex.getDependentRegistrarFilesForPathOrPrefix(path, file.isDirectory());
 
     myNavigationIndex.removeFile(path);
-    myInlineStamps.remove(path);
-    myTargetStamps.remove(path);
     myFilesByPath.remove(path);
-    myFileStamps.remove(file);
+    myFileStamps.remove(path);
     myDirtyFiles.remove(file);
 
     if (file.isDirectory()) {
@@ -369,12 +267,10 @@ public final class GuiceProjectModel implements Disposable {
       for (String indexedPath : myNavigationIndex.getIndexedFiles()) {
         if (indexedPath.startsWith(prefix)) {
           myNavigationIndex.removeFile(indexedPath);
-          myInlineStamps.remove(indexedPath);
         }
       }
-      myTargetStamps.keySet().removeIf(p -> p.startsWith(prefix));
       myFilesByPath.keySet().removeIf(p -> p.startsWith(prefix));
-      myFileStamps.keySet().removeIf(vf -> vf.getPath().startsWith(prefix));
+      myFileStamps.keySet().removeIf(p -> p.startsWith(prefix));
       myDirtyFiles.removeIf(vf -> vf.getPath().startsWith(prefix));
     }
 
@@ -382,10 +278,9 @@ public final class GuiceProjectModel implements Disposable {
       if (registrarPath.equals(path) || (file.isDirectory() && registrarPath.startsWith(path + "/"))) {
         continue;
       }
-      myInlineStamps.remove(registrarPath);
+      myFileStamps.remove(registrarPath);
       VirtualFile registrarVf = resolveVirtualFile(registrarPath);
       if (registrarVf != null && registrarVf.isValid()) {
-        myFileStamps.remove(registrarVf);
         markFileDirty(registrarVf);
       }
     }
@@ -393,18 +288,17 @@ public final class GuiceProjectModel implements Disposable {
 
   /**
    * Signals that the project structure has changed (e.g., libraries or modules
-   * were added/removed).  The next {@link #getNavigationIndex(Module)} call will
-   * schedule a full re-population of the index in the background.
+   * were added/removed). The next {@link #getNavigationIndex(Module)} call will
+   * schedule a re-population of the index in the background.
    *
    * <p>Called by {@link GuiceWorkspaceModelListener} when the workspace model
-   * reports changes to {@code LibraryEntity} or {@code ModuleEntity}.
+   * reports changes to {@code LibraryEntity}, {@code ModuleEntity}, {@code ContentRootEntity},
+   * or {@code SourceRootEntity}.
    */
   void markStructureChanged() {
     myStructureGeneration.incrementAndGet();
     myStructureChanged = true;
-    myInlineStamps.clear();
-    myTargetStamps.clear();
-    myPopulationScheduled.set(false);  // Allow re-scheduling of background population.
+    myPopulationScheduled.set(false);
     if (!ApplicationManager.getApplication().isUnitTestMode() && !myProject.isDisposed()) {
       DaemonCodeAnalyzer.getInstance(myProject).restart("Guice project structure changed");
     }
@@ -419,8 +313,6 @@ public final class GuiceProjectModel implements Disposable {
     myNavigationIndex.clear();
     myFileStamps.clear();
     myDirtyFiles.clear();
-    myInlineStamps.clear();
-    myTargetStamps.clear();
     myFilesByPath.clear();
     myInitialized = false;
     myPopulationScheduled.set(false);
@@ -430,18 +322,33 @@ public final class GuiceProjectModel implements Disposable {
   // Internal: helpers for GuiceBackgroundIndexUpdater
   // -----------------------------------------------------------------------
 
+  int getStructureGeneration() {
+    return myStructureGeneration.get();
+  }
+
+  boolean isPopulationNeeded() {
+    return !myInitialized || myStructureChanged;
+  }
+
+  boolean hasDirtyFiles() {
+    return !myDirtyFiles.isEmpty();
+  }
+
   @NotNull Set<String> getIndexedFilesSnapshot() {
     return myNavigationIndex.getIndexedFiles();
   }
 
   /**
-   * Removes the entries of files from {@code pathsBeforePopulation} that the last population did not find.
-   * Files added concurrently while the population ran are not in {@code pathsBeforePopulation} and are kept.
-   *
-   * @param pathsBeforePopulation the file paths present in the index when the population started
-   * @param processedFiles        the files that the population processed
+   * Finishes a population pass if no newer structure change occurred while it ran.
+   * Prunes files from {@code pathsBeforePopulation} that were not discovered in {@code processedFiles},
+   * and marks population complete for {@code generation}.
    */
-  void pruneFilesExcept(@NotNull Set<String> pathsBeforePopulation, @NotNull Set<VirtualFile> processedFiles) {
+  boolean completePopulationIfCurrent(int generation,
+                                      @NotNull Set<String> pathsBeforePopulation,
+                                      @NotNull Set<VirtualFile> processedFiles) {
+    if (generation != myStructureGeneration.get()) {
+      return false;
+    }
     Set<String> keep = new HashSet<>();
     for (VirtualFile file : processedFiles) {
       keep.add(file.getPath());
@@ -449,24 +356,15 @@ public final class GuiceProjectModel implements Disposable {
     for (String path : pathsBeforePopulation) {
       if (!keep.contains(path)) {
         myNavigationIndex.removeFile(path);
-        myInlineStamps.remove(path);
+        myFileStamps.remove(path);
       }
     }
-    myFileStamps.keySet().removeIf(file -> pathsBeforePopulation.contains(file.getPath()) && !keep.contains(file.getPath()));
-  }
-
-  /**
-   * Marks the index as fully populated.
-   * Clears the structure-changed flag only if no structure change came while the population ran.
-   * Called by the background updater after all files have been processed.
-   *
-   * @param generation the value of the structure generation when the population started
-   */
-  void markPopulationComplete(int generation) {
     if (generation == myStructureGeneration.get()) {
       myStructureChanged = false;
+      myInitialized = true;
+      return true;
     }
-    myInitialized = true;
+    return false;
   }
 
   /**
@@ -478,14 +376,11 @@ public final class GuiceProjectModel implements Disposable {
   }
 
   /**
-   * Discovers all files across all Guice-enabled project modules that contain
-   * Guice-relevant annotations or Guice module classes.
-   *
-   * @param module the IntelliJ module that triggered population
-   * @return a set of virtual files that should be processed for Guice data
+   * Builds a list of fine-grained discovery steps across all Guice-enabled project modules.
+   * Each step executes a single index search inside its own read action so write actions
+   * can interleave without restarting completed searches from the beginning.
    */
-  @NotNull Set<VirtualFile> discoverRelevantFiles(@NotNull Module module) {
-    Set<VirtualFile> files = new HashSet<>();
+  @NotNull List<DiscoveryStep> createDiscoverySteps(@NotNull Module module) {
     Set<Module> guiceModules = new HashSet<>();
     guiceModules.add(module);
     for (Module m : ModuleManager.getInstance(myProject).getModules()) {
@@ -493,110 +388,140 @@ public final class GuiceProjectModel implements Disposable {
         guiceModules.add(m);
       }
     }
-    GlobalSearchScope scope = GlobalSearchScope.EMPTY_SCOPE;
+    GlobalSearchScope unionScope = GlobalSearchScope.EMPTY_SCOPE;
     for (Module m : guiceModules) {
-      scope = scope.union(GlobalSearchScope.moduleWithDependenciesAndLibrariesScope(m));
+      unionScope = unionScope.union(GlobalSearchScope.moduleWithDependenciesAndLibrariesScope(m));
     }
-    JavaPsiFacade facade = JavaPsiFacade.getInstance(myProject);
+    final GlobalSearchScope scope = unionScope;
     GuiceExtensionIndex extensionIndex = GuiceExtensionIndex.get();
+    List<DiscoveryStep> steps = new ArrayList<>();
 
-    // Files with @Inject fields/methods
+    // 1. Files with @Inject fields/methods (one step per annotation FQN)
     for (String injectAnno : GuiceAnnotations.INJECTS) {
-      PsiClass annoClass = facade.findClass(injectAnno, GlobalSearchScope.allScope(myProject));
-      if (annoClass == null) continue;
-      for (PsiField field : AnnotatedElementsSearch.searchPsiFields(annoClass, scope).findAll()) {
-        addFileOf(field, files);
-      }
-      for (PsiMethod method : AnnotatedElementsSearch.searchPsiMethods(annoClass, scope).findAll()) {
-        addFileOf(method, files);
-      }
+      steps.add(() -> discoverFieldsAndMethodsByAnnotation(injectAnno, scope));
     }
 
-    // Files with contributor-registered field annotations
+    // 2. Files with contributor-registered field annotations (such as @FlagSpec)
     for (String fieldAnno : extensionIndex.getFieldAnnotations()) {
-      PsiClass annoClass = facade.findClass(fieldAnno, GlobalSearchScope.allScope(myProject));
-      if (annoClass == null) continue;
-      for (PsiField field : AnnotatedElementsSearch.searchPsiFields(annoClass, scope).findAll()) {
-        addFileOf(field, files);
-      }
+      steps.add(() -> discoverFieldsByAnnotation(fieldAnno, scope));
     }
 
-    // Files with @Provides and contributor-registered method annotations
+    // 3. Files with @Provides and contributor-registered method annotations
     for (String providesAnno : extensionIndex.getAllProvidesAnnotations()) {
-      PsiClass annoClass = facade.findClass(providesAnno, GlobalSearchScope.allScope(myProject));
-      if (annoClass == null) continue;
-      for (PsiMethod method : AnnotatedElementsSearch.searchPsiMethods(annoClass, scope).findAll()) {
-        addFileOf(method, files);
-      }
+      steps.add(() -> discoverMethodsByAnnotation(providesAnno, scope));
     }
     for (String methodAnno : extensionIndex.getMethodAnnotations()) {
-      PsiClass annoClass = facade.findClass(methodAnno, GlobalSearchScope.allScope(myProject));
-      if (annoClass == null) continue;
-      for (PsiMethod method : AnnotatedElementsSearch.searchPsiMethods(annoClass, scope).findAll()) {
-        addFileOf(method, files);
-      }
+      steps.add(() -> discoverMethodsByAnnotation(methodAnno, scope));
     }
 
-    // Classes with @ImplementedBy, @ProvidedBy, or contributor-registered class annotations
+    // 4. Classes with @ImplementedBy, @ProvidedBy, or contributor-registered class annotations
     for (String jitAnno : List.of(GuiceAnnotations.IMPLEMENTED_BY, GuiceAnnotations.PROVIDED_BY)) {
-      PsiClass annoClass = facade.findClass(jitAnno, GlobalSearchScope.allScope(myProject));
-      if (annoClass == null) continue;
-      for (PsiClass cls : AnnotatedElementsSearch.searchPsiClasses(annoClass, scope).findAll()) {
-        addFileOf(cls, files);
-      }
+      steps.add(() -> discoverClassesByAnnotation(jitAnno, scope));
     }
     for (String classAnno : extensionIndex.getClassAnnotations()) {
-      PsiClass annoClass = facade.findClass(classAnno, GlobalSearchScope.allScope(myProject));
-      if (annoClass == null) continue;
-      for (PsiClass cls : AnnotatedElementsSearch.searchPsiClasses(annoClass, scope).findAll()) {
+      steps.add(() -> discoverClassesByAnnotation(classAnno, scope));
+    }
+
+    // 5. Guice module files (for bindings defined in configure())
+    steps.add(() -> {
+      Set<VirtualFile> files = new LinkedHashSet<>();
+      for (PsiClass cls : GuiceInjectorManager.getGuiceModuleClasses(module, scope)) {
         addFileOf(cls, files);
       }
-    }
+      recordDiscoveredFiles(files);
+      return files;
+    });
 
-    // Guice module files (for bindings defined in configure())
-    for (PsiClass cls : GuiceInjectorManager.getGuiceModuleClasses(module, scope)) {
-      addFileOf(cls, files);
-    }
-
-    // Files calling contributor-registered global binder helpers outside Module classes
+    // 6. Files calling contributor-registered global binder helpers (such as FlagBinder) outside Module classes
     for (String ownerFqn : extensionIndex.getGlobalCallOwnerClasses()) {
-      PsiClass ownerClass = facade.findClass(ownerFqn, GlobalSearchScope.allScope(myProject));
-      if (ownerClass == null) continue;
-      for (PsiReference ref : ReferencesSearch.search(ownerClass, scope).findAll()) {
-        addFileOf(ref.getElement(), files);
-      }
+      steps.add(() -> discoverClassReferences(ownerFqn, scope));
     }
 
+    return steps;
+  }
+
+  private @NotNull Set<VirtualFile> discoverFieldsAndMethodsByAnnotation(@NotNull String annoFqn,
+                                                                         @NotNull GlobalSearchScope scope) {
+    PsiClass annoClass = JavaPsiFacade.getInstance(myProject).findClass(annoFqn, GlobalSearchScope.allScope(myProject));
+    if (annoClass == null) return Set.of();
+    Set<VirtualFile> files = new LinkedHashSet<>();
+    for (PsiField field : AnnotatedElementsSearch.searchPsiFields(annoClass, scope).findAll()) {
+      addFileOf(field, files);
+    }
+    for (PsiMethod method : AnnotatedElementsSearch.searchPsiMethods(annoClass, scope).findAll()) {
+      addFileOf(method, files);
+    }
+    recordDiscoveredFiles(files);
     return files;
   }
 
+  private @NotNull Set<VirtualFile> discoverFieldsByAnnotation(@NotNull String annoFqn,
+                                                               @NotNull GlobalSearchScope scope) {
+    PsiClass annoClass = JavaPsiFacade.getInstance(myProject).findClass(annoFqn, GlobalSearchScope.allScope(myProject));
+    if (annoClass == null) return Set.of();
+    Set<VirtualFile> files = new LinkedHashSet<>();
+    for (PsiField field : AnnotatedElementsSearch.searchPsiFields(annoClass, scope).findAll()) {
+      addFileOf(field, files);
+    }
+    recordDiscoveredFiles(files);
+    return files;
+  }
+
+  private @NotNull Set<VirtualFile> discoverMethodsByAnnotation(@NotNull String annoFqn,
+                                                                @NotNull GlobalSearchScope scope) {
+    PsiClass annoClass = JavaPsiFacade.getInstance(myProject).findClass(annoFqn, GlobalSearchScope.allScope(myProject));
+    if (annoClass == null) return Set.of();
+    Set<VirtualFile> files = new LinkedHashSet<>();
+    for (PsiMethod method : AnnotatedElementsSearch.searchPsiMethods(annoClass, scope).findAll()) {
+      addFileOf(method, files);
+    }
+    recordDiscoveredFiles(files);
+    return files;
+  }
+
+  private @NotNull Set<VirtualFile> discoverClassesByAnnotation(@NotNull String annoFqn,
+                                                                @NotNull GlobalSearchScope scope) {
+    PsiClass annoClass = JavaPsiFacade.getInstance(myProject).findClass(annoFqn, GlobalSearchScope.allScope(myProject));
+    if (annoClass == null) return Set.of();
+    Set<VirtualFile> files = new LinkedHashSet<>();
+    for (PsiClass cls : AnnotatedElementsSearch.searchPsiClasses(annoClass, scope).findAll()) {
+      addFileOf(cls, files);
+    }
+    recordDiscoveredFiles(files);
+    return files;
+  }
+
+  private @NotNull Set<VirtualFile> discoverClassReferences(@NotNull String ownerFqn,
+                                                            @NotNull GlobalSearchScope scope) {
+    PsiClass ownerClass = JavaPsiFacade.getInstance(myProject).findClass(ownerFqn, GlobalSearchScope.allScope(myProject));
+    if (ownerClass == null) return Set.of();
+    Set<VirtualFile> files = new LinkedHashSet<>();
+    for (PsiReference ref : ReferencesSearch.search(ownerClass, scope).findAll()) {
+      addFileOf(ref.getElement(), files);
+    }
+    recordDiscoveredFiles(files);
+    return files;
+  }
+
+  private void recordDiscoveredFiles(@NotNull Set<VirtualFile> files) {
+    for (VirtualFile vf : files) {
+      myFilesByPath.put(vf.getPath(), vf);
+    }
+  }
+
   /**
-   * Adds the containing virtual file of a PSI element to the file set.
-   *
-   * <p>For elements from compiled {@code .class} files, attempts to resolve the
-   * corresponding source file via {@link PsiElement#getNavigationElement()}.  If a
-   * source file is available (e.g., from an attached source JAR), the <em>source</em>
-   * VirtualFile is added instead — this ensures {@link #processFile(VirtualFile)}
-   * receives a file with full method bodies, enabling binding extraction.
-   *
-   * <p>If no source is available, the {@code .class} VirtualFile is added as-is;
-   * {@link #processFile(VirtualFile)} will still extract {@code @Inject} IPs and
-   * {@code @Provides} from bytecode annotations, but skip bindings.
-   *
-   * @param element the PSI element whose file should be added
-   * @param files   the set to add the file to
+   * Adds the containing virtual file of a PSI element to {@code files} without mutating model state.
+   * For compiled {@code .class} files, prefers the attached source file when available.
    */
-  private void addFileOf(@NotNull PsiElement element, @NotNull Set<VirtualFile> files) {
+  private static void addFileOf(@NotNull PsiElement element, @NotNull Set<VirtualFile> files) {
     PsiFile file = element.getContainingFile();
     if (file == null) return;
 
-    // For compiled classes, prefer the source file if available.
     if (file instanceof PsiCompiledFile clsFile) {
       PsiElement sourceNav = clsFile.getNavigationElement();
-      if (sourceNav instanceof PsiFile sourceFile && sourceFile != clsFile) {
+      if (sourceNav instanceof PsiFile sourceFile && sourceNav != clsFile) {
         VirtualFile sourceVf = sourceFile.getVirtualFile();
         if (sourceVf != null) {
-          myFilesByPath.put(sourceVf.getPath(), sourceVf);
           files.add(sourceVf);
           return;
         }
@@ -605,88 +530,23 @@ public final class GuiceProjectModel implements Disposable {
 
     VirtualFile vf = file.getVirtualFile();
     if (vf != null) {
-      myFilesByPath.put(vf.getPath(), vf);
       files.add(vf);
     }
   }
 
   // -----------------------------------------------------------------------
-  // Internal: per-file processing
+  // Internal: atomic per-file processing
   // -----------------------------------------------------------------------
 
   /**
-   * Extracts all Guice data (bindings, injection points, {@code @Provides} methods)
-   * from a single file and updates the live index surgically.
-   *
-   * @param vf the virtual file to process
+   * Extracts Guice entries for a discovered file if its stamp or structure generation changed.
    */
-  void processFile(@NotNull VirtualFile vf) {
-    extractAndStoreFile(vf);
-
-    String path = vf.getPath();
-    Set<String> dependentRegistrars = new LinkedHashSet<>(myNavigationIndex.getDependentRegistrarFiles(path));
-    dependentRegistrars.addAll(myNavigationIndex.getDependentRegistrarFilesByClassName(vf.getNameWithoutExtension()));
-    dependentRegistrars.remove(path);
-    for (String registrarPath : dependentRegistrars) {
-      VirtualFile registrarVf = resolveVirtualFile(registrarPath);
-      if (registrarVf != null && registrarVf.isValid()) {
-        extractAndStoreFile(registrarVf);
-      }
-    }
-  }
-
-  private void extractAndStoreFile(@NotNull VirtualFile vf) {
-    String path = vf.getPath();
-    myFilesByPath.put(path, vf);
-    PsiFile psiFile = PsiManager.getInstance(myProject).findFile(vf);
-    if (psiFile == null) {
-      myNavigationIndex.removeFile(path);
-      myInlineStamps.remove(path);
-      myTargetStamps.remove(path);
-      myFileStamps.remove(vf);
-      return;
-    }
-
-    // For compiled class files, try to resolve to source for full extraction.
-    // Java and Kotlin library classes both have the JAVA_CLASS file type, whichever decompiler builds the PSI.
-    PsiFile fileForExtraction = psiFile;
-    boolean isCompiled = psiFile instanceof PsiCompiledElement
-                         || FileTypeRegistry.getInstance().isFileOfType(vf, JavaClassFileType.INSTANCE);
-    if (isCompiled) {
-      PsiElement sourceNav = psiFile.getNavigationElement();
-      if (sourceNav instanceof PsiFile sourceFile && sourceFile != psiFile) {
-        fileForExtraction = sourceFile;
-      } else {
-        if (!ProjectFileIndex.getInstance(myProject).isInProject(vf)) {
-          // This is compiled class that is not directly owned by our project. Skip!
-          myNavigationIndex.removeFile(path);
-          myInlineStamps.remove(path);
-          myTargetStamps.remove(path);
-          myFileStamps.remove(vf);
-          return;
-        }
-      }
-    }
-
-    // Extract navigation entries and cross-file target dependencies.
-    GuiceEntryProducer.FileExtractionResult result =
-        fileForExtraction instanceof PsiClassOwner
-        ? GuiceEntryProducer.extractFileData(fileForExtraction)
-        : GuiceEntryProducer.FileExtractionResult.EMPTY;
-    myNavigationIndex.updateFile(path, result);
-    recordReferencedTargets(result);
-
-    myFileStamps.put(vf, vf.getModificationStamp());
-    myTargetStamps.put(path, fileForExtraction.getModificationStamp());
+  boolean processDiscoveredFile(@NotNull VirtualFile vf, int generation) {
+    return processFileAtomically(vf, generation, false);
   }
 
   /**
    * Returns a snapshot of the current dirty files without mutating state.
-   *
-   * <p>Validity and modification-stamp checks happen inside {@link #processSingleDirtyFile}
-   * so that a cancelled read action does not drop dirty files before they are processed.
-   *
-   * @return the list of dirty files to inspect, never {@code null}
    */
   @NotNull List<VirtualFile> collectDirtyFiles() {
     if (myDirtyFiles.isEmpty()) return List.of();
@@ -694,24 +554,144 @@ public final class GuiceProjectModel implements Disposable {
   }
 
   /**
-   * Processes a single dirty file and removes it from the dirty set once extraction completes.
+   * Processes a single dirty file atomically and removes it from the dirty set once extraction completes.
+   * Any dependent registrar files are invalidated and queued into {@link #myDirtyFiles}.
    *
    * <p>Must be called under a read action.
    *
    * @param file the file to process
+   * @return {@code true} if the index was updated or the file was removed, {@code false} if the file stamp was unchanged
    */
-  void processSingleDirtyFile(@NotNull VirtualFile file) {
-    if (!file.isValid()) {
-      removeFile(file);
-      return;
+  boolean processSingleDirtyFile(@NotNull VirtualFile file) {
+    return processFileAtomically(file, myStructureGeneration.get(), true);
+  }
+
+  /**
+   * Performs a two-phase atomic update for a single file:
+   * <ol>
+   *   <li><b>Phase 1 (Read-only, cancellable)</b>: Resolves the PSI file, checks the {@link FileStamp},
+   *       and extracts {@link GuiceEntryProducer.FileExtractionResult} into local variables without mutating state.</li>
+   *   <li><b>Phase 2 (In-memory commit, non-cancellable)</b>: Updates {@link #myNavigationIndex},
+   *       {@link #myFileStamps}, and {@link #myDirtyFiles} together, and queues any dependent registrars.</li>
+   * </ol>
+   */
+  private boolean processFileAtomically(@NotNull VirtualFile vf, int generation, boolean fromDirtySet) {
+    // Phase 1: Pure read-only checks and PSI/UAST extraction (cancellable)
+    if (!vf.isValid()) {
+      removeFile(vf);
+      return true;
     }
-    Long oldStamp = myFileStamps.get(file);
-    long currentStamp = file.getModificationStamp();
-    if (oldStamp != null && oldStamp == currentStamp) {
-      myDirtyFiles.remove(file);
-      return;
+    String path = vf.getPath();
+    PsiFile psiFile = PsiManager.getInstance(myProject).findFile(vf);
+    if (psiFile == null) {
+      removeFile(vf);
+      return true;
     }
-    processFile(file);
-    myDirtyFiles.remove(file);
+
+    PsiFile fileForExtraction = psiFile;
+    boolean isCompiled = psiFile instanceof PsiCompiledElement
+                         || FileTypeRegistry.getInstance().isFileOfType(vf, JavaClassFileType.INSTANCE);
+    if (isCompiled) {
+      PsiElement sourceNav = psiFile.getNavigationElement();
+      if (sourceNav instanceof PsiFile sourceFile && sourceFile != psiFile) {
+        fileForExtraction = sourceFile;
+      }
+      else if (!ProjectFileIndex.getInstance(myProject).isInProject(vf)) {
+        removeFile(vf);
+        return true;
+      }
+    }
+
+    FileStamp currentStamp = new FileStamp(
+        vf.getModificationStamp(),
+        fileForExtraction.getModificationStamp(),
+        generation
+    );
+    FileStamp recordedStamp = myFileStamps.get(path);
+    if (currentStamp.equals(recordedStamp)) {
+      if (fromDirtySet) {
+        myDirtyFiles.remove(vf);
+      }
+      return false;
+    }
+
+    GuiceEntryProducer.FileExtractionResult result =
+        fileForExtraction instanceof PsiClassOwner
+        ? GuiceEntryProducer.extractFileData(fileForExtraction)
+        : GuiceEntryProducer.FileExtractionResult.EMPTY;
+
+    // Phase 2: Atomic in-memory commit (zero PSI access, zero cancellation points)
+    myFilesByPath.put(path, vf);
+    for (VirtualFile targetVf : result.referencedTargetFiles()) {
+      myFilesByPath.put(targetVf.getPath(), targetVf);
+    }
+    myNavigationIndex.updateFile(path, result);
+    myFileStamps.put(path, currentStamp);
+    if (fromDirtySet) {
+      myDirtyFiles.remove(vf);
+    }
+
+    if (fromDirtySet || recordedStamp != null) {
+      Set<String> dependentRegistrars = new LinkedHashSet<>(myNavigationIndex.getDependentRegistrarFiles(path));
+      dependentRegistrars.addAll(myNavigationIndex.getDependentRegistrarFilesByClassName(vf.getNameWithoutExtension()));
+      dependentRegistrars.remove(path);
+      for (String registrarPath : dependentRegistrars) {
+        myFileStamps.remove(registrarPath);
+        VirtualFile registrarVf = myFilesByPath.get(registrarPath);
+        if (registrarVf != null) {
+          myDirtyFiles.add(registrarVf);
+        }
+      }
+    }
+    return true;
+  }
+
+  private final class GuicePsiTreeChangeListener extends PsiTreeChangeAdapter {
+    @Override
+    public void childAdded(@NotNull PsiTreeChangeEvent event) {
+      onPsiChange(event);
+    }
+
+    @Override
+    public void childRemoved(@NotNull PsiTreeChangeEvent event) {
+      onPsiChange(event);
+    }
+
+    @Override
+    public void childReplaced(@NotNull PsiTreeChangeEvent event) {
+      onPsiChange(event);
+    }
+
+    @Override
+    public void childrenChanged(@NotNull PsiTreeChangeEvent event) {
+      onPsiChange(event);
+    }
+
+    @Override
+    public void childMoved(@NotNull PsiTreeChangeEvent event) {
+      onPsiChange(event);
+    }
+
+    @Override
+    public void propertyChanged(@NotNull PsiTreeChangeEvent event) {
+      onPsiChange(event);
+    }
+
+    private void onPsiChange(@NotNull PsiTreeChangeEvent event) {
+      if (myProject.isDisposed()) return;
+      PsiFile psiFile = event.getFile();
+      if (psiFile == null && event.getChild() instanceof PsiFile childFile) {
+        psiFile = childFile;
+      }
+      if (psiFile == null && event.getElement() instanceof PsiFile elementFile) {
+        psiFile = elementFile;
+      }
+      if (psiFile != null && isIndexableProjectFile(psiFile)) {
+        VirtualFile vf = psiFile.getVirtualFile();
+        if (vf != null) {
+          markFileDirty(vf);
+        }
+      }
+    }
   }
 }

@@ -169,19 +169,6 @@ public final class GuiceNavigationIndex {
     }
   }
 
-  /**
-   * Returns a snapshot of all target file paths currently referenced by registrar files.
-   */
-  public @NotNull Set<String> getTrackedTargetPaths() {
-    lock.readLock().lock();
-    try {
-      return registrarsByTargetPath.isEmpty() ? Set.of() : Set.copyOf(registrarsByTargetPath.keySet());
-    }
-    finally {
-      lock.readLock().unlock();
-    }
-  }
-
   // -----------------------------------------------------------------------
   // The SINGLE matching method — guarantees symmetric navigation
   // -----------------------------------------------------------------------

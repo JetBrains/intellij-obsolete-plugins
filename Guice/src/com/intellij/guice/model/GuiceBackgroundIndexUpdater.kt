@@ -13,7 +13,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.ide.progress.TaskCancellation
 import com.intellij.platform.ide.progress.withBackgroundProgress
-import com.intellij.platform.util.progress.RawProgressReporter
 import com.intellij.platform.util.progress.reportRawProgress
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -25,13 +24,9 @@ import kotlinx.coroutines.launch
  * Schedules background processing of Guice files and triggers
  * re-highlighting when the index is updated.
  *
- * Uses [withBackgroundProgress] with [TaskCancellation.nonCancellable]
- * so that index population is never interrupted by highlighting cancellation.
- * Each file is processed inside its own [smartReadAction] so we release
- * the read lock between files, allowing write actions to proceed,
- * and wait for smart mode (index ready) before PSI access.
- *
- * Debouncing of dirty-file processing is done via coroutine [delay].
+ * Discovery and file extraction are broken into small, independent [smartReadAction] steps
+ * so write actions can interleave without restarting completed steps from the beginning,
+ * and each file's state is committed atomically only after extraction completes.
  */
 class GuiceBackgroundIndexUpdater(
     private val project: Project,
@@ -47,17 +42,21 @@ class GuiceBackgroundIndexUpdater(
         private const val DEBOUNCE_MS = 300L
     }
 
-    /** Current debounced dirty-processing job. Cancelled and replaced on each new event. */
+    /** Timestamp (in System.nanoTime) of the most recent dirty-file notification. */
+    @Volatile
+    private var lastDirtyRequestNano: Long = 0L
+
+    /** Current dirty-processing job. Drains dirty files in a loop without mid-update cancellation. */
     @Volatile
     private var dirtyJob: Job? = null
 
-    /** Current population job. Only one runs at a time; duplicates are ignored. */
+    /** Current population job. Loops until the latest structure generation is populated. */
     @Volatile
     private var populationJob: Job? = null
 
     /**
      * Schedules background processing of dirty files after a debounce delay.
-     * Multiple rapid calls are coalesced — only the last one triggers processing.
+     * Rapid events extend the debounce window without cancelling an already-running update pass.
      */
     fun scheduleDirtyProcessing() {
         if (ApplicationManager.getApplication().isUnitTestMode) {
@@ -65,71 +64,103 @@ class GuiceBackgroundIndexUpdater(
             // Processing here runs inside the VFS event, and can see a file before its content is written.
             return
         }
-        dirtyJob?.cancel()
-        dirtyJob = cs.launch {
-            delay(DEBOUNCE_MS)
+        lastDirtyRequestNano = System.nanoTime()
+        synchronized(this) {
+            if (dirtyJob?.isActive == true) {
+                return
+            }
+            dirtyJob = cs.launch {
+                try {
+                    runDirtyProcessingLoop()
+                }
+                finally {
+                    synchronized(this@GuiceBackgroundIndexUpdater) {
+                        dirtyJob = null
+                    }
+                }
+            }
+        }
+    }
+
+    private suspend fun runDirtyProcessingLoop() {
+        while (true) {
+            while (true) {
+                val elapsedMs = (System.nanoTime() - lastDirtyRequestNano) / 1_000_000
+                val remainingMs = DEBOUNCE_MS - elapsedMs
+                if (remainingMs <= 0) break
+                delay(remainingMs)
+            }
+
+            if (!model.hasDirtyFiles()) {
+                synchronized(this) {
+                    if (!model.hasDirtyFiles()) return
+                }
+                continue
+            }
+
             val anyProcessed = withBackgroundProgress(
                 project,
                 GuiceBundle.message("progress.updating.guice.model"),
                 TaskCancellation.nonCancellable(),
             ) {
                 // reportRawProgress MUST be the first thing inside withBackgroundProgress
-                // to take ownership of the progress step. If smartReadAction or anything
-                // else runs first, it consumes the step and reportRawProgress falls back
-                // to EmptyRawProgressReporter.
+                // to take ownership of the progress step.
                 reportRawProgress { reporter ->
-                    val files = model.collectDirtyFiles()
-                    if (files.isEmpty()) return@reportRawProgress false
-
-                    processFiles(reporter, files) { vf ->
-                        model.processSingleDirtyFile(vf)
+                    var updated = false
+                    while (true) {
+                        val files = model.collectDirtyFiles()
+                        if (files.isEmpty()) break
+                        val total = files.size
+                        for ((index, vf) in files.withIndex()) {
+                            reporter.fraction(index.toDouble() / total)
+                            reporter.details(vf.name)
+                            val changed = smartReadAction(project) {
+                                processSafely(vf) { model.processSingleDirtyFile(vf) }
+                            }
+                            if (changed) updated = true
+                        }
                     }
-                    true
+                    reporter.fraction(1.0)
+                    updated
                 }
             }
 
             if (anyProcessed) {
                 DaemonCodeAnalyzer.getInstance(project).restart("Guice model was updated")
             }
+
+            synchronized(this) {
+                if (!model.hasDirtyFiles()) return
+            }
         }
     }
 
     /**
-     * Processes the dirty files synchronously. Only tests use it, through [GuiceProjectModel.getNavigationIndex].
+     * Processes all pending dirty files (and any dependent registrars they enqueue) synchronously.
+     * Only tests use it, through [GuiceProjectModel.getNavigationIndex].
      * Must be called under a read action.
      */
     fun processDirtyFilesNow() {
-        val files = model.collectDirtyFiles()
-        if (files.isEmpty()) return
-        for (vf in files) {
-            processSafely(vf) { model.processSingleDirtyFile(vf) }
+        while (true) {
+            val files = model.collectDirtyFiles()
+            if (files.isEmpty()) break
+            for (vf in files) {
+                processSafely(vf) { model.processSingleDirtyFile(vf) }
+            }
         }
     }
 
     /**
-     * Schedules initial population of the index in the background.
-     * Shows a progress bar in the status bar with per-file fraction and file name.
+     * Schedules initial population (or structure-change re-population) of the index in the background.
      *
-     * Each file is processed inside its own [smartReadAction] so we release
-     * the read lock between files, allowing write actions to proceed.
-     *
-     * The population updates the index in place and prunes stale files at the end,
-     * so the existing gutter icons stay visible while it runs.
-     *
-     * @param module the module whose scope defines what files to include
-     * @param generation the structure generation when the population was requested
+     * Discovery and per-file extraction run in separate [smartReadAction] steps so write actions
+     * can interleave without restarting completed work from the beginning.
      */
-    fun scheduleInitialPopulation(module: Module, generation: Int) {
+    fun scheduleInitialPopulation(module: Module) {
         if (ApplicationManager.getApplication().isUnitTestMode) {
             try {
                 runReadAction {
-                    val pathsBefore = model.getIndexedFilesSnapshot()
-                    val files = model.discoverRelevantFiles(module)
-                    for (vf in files) {
-                        processSafely(vf) { model.processFile(vf) }
-                    }
-                    model.pruneFilesExcept(pathsBefore, files)
-                    model.markPopulationComplete(generation)
+                    populateSynchronously(module)
                 }
             }
             finally {
@@ -137,77 +168,110 @@ class GuiceBackgroundIndexUpdater(
             }
             return
         }
-        if (populationJob?.isActive == true) {
-            model.onPopulationFinished()
-            return
-        }
-        populationJob = cs.launch {
-            try {
-                withBackgroundProgress(
-                    project,
-                    GuiceBundle.message("progress.building.guice.model"),
-                    TaskCancellation.nonCancellable(),
-                ) {
-                    // reportRawProgress MUST be first to take ownership of the progress step.
-                    reportRawProgress { reporter ->
-                        val pathsBefore = model.getIndexedFilesSnapshot()
-                        val files = smartReadAction(project) { model.discoverRelevantFiles(module) }
-
-                        processFiles(reporter, files) { vf ->
-                            model.processFile(vf)
-                        }
-
-                        model.pruneFilesExcept(pathsBefore, files)
-                        model.markPopulationComplete(generation)
+        synchronized(this) {
+            if (populationJob?.isActive == true) {
+                model.onPopulationFinished()
+                return
+            }
+            populationJob = cs.launch {
+                try {
+                    runPopulationLoop(module)
+                }
+                finally {
+                    synchronized(this@GuiceBackgroundIndexUpdater) {
+                        populationJob = null
                     }
+                    model.onPopulationFinished()
                 }
             }
-            finally {
-                model.onPopulationFinished()
-            }
-
-            DaemonCodeAnalyzer.getInstance(project).restart("Guice modules were refreshed")
         }
     }
 
-    /**
-     * Shared per-file processing loop with progress reporting.
-     *
-     * Reports per-file fraction and file name details via the [reporter].
-     * Each file is processed inside its own [smartReadAction] so write actions
-     * can interleave between files.
-     *
-     * @param reporter    the raw progress reporter (from [reportRawProgress])
-     * @param files       the files to process
-     * @param processOne  the action to perform on each file (called under smart read action)
-     */
-    private suspend fun processFiles(
-        reporter: RawProgressReporter,
-        files: Collection<VirtualFile>,
-        processOne: (VirtualFile) -> Unit,
-    ) {
-        val fileList = ArrayList(files)
-        val total = fileList.size
-
-        for ((index, vf) in fileList.withIndex()) {
-            reporter.fraction(index.toDouble() / total)
-            reporter.details(vf.name)
-            smartReadAction(project) { processSafely(vf) { processOne(vf) } }
+    private fun populateSynchronously(module: Module) {
+        val generation = model.structureGeneration
+        val pathsBefore = model.indexedFilesSnapshot
+        val discoveredFiles = LinkedHashSet<VirtualFile>()
+        for (step in model.createDiscoverySteps(module)) {
+            discoveredFiles.addAll(step.discover())
         }
-        reporter.fraction(1.0)
+        for (vf in discoveredFiles) {
+            processSafely(vf) { model.processDiscoveredFile(vf, generation) }
+        }
+        processDirtyFilesNow()
+        model.completePopulationIfCurrent(generation, pathsBefore, discoveredFiles)
+    }
+
+    private suspend fun runPopulationLoop(module: Module) {
+        var anyCompleted = false
+        while (model.isPopulationNeeded()) {
+            val generation = model.structureGeneration
+            val pathsBefore = model.indexedFilesSnapshot
+
+            val completed = withBackgroundProgress(
+                project,
+                GuiceBundle.message("progress.building.guice.model"),
+                TaskCancellation.nonCancellable(),
+            ) {
+                // reportRawProgress MUST be first to take ownership of the progress step.
+                reportRawProgress { reporter ->
+                    val steps = smartReadAction(project) { model.createDiscoverySteps(module) }
+                    val discoveredFiles = LinkedHashSet<VirtualFile>()
+                    for (step in steps) {
+                        if (generation != model.structureGeneration) return@reportRawProgress false
+                        val stepFiles = smartReadAction(project) { step.discover() }
+                        discoveredFiles.addAll(stepFiles)
+                    }
+
+                    val fileList = ArrayList(discoveredFiles)
+                    val total = fileList.size
+                    for ((index, vf) in fileList.withIndex()) {
+                        if (generation != model.structureGeneration) return@reportRawProgress false
+                        reporter.fraction(index.toDouble() / total)
+                        reporter.details(vf.name)
+                        smartReadAction(project) {
+                            processSafely(vf) { model.processDiscoveredFile(vf, generation) }
+                        }
+                    }
+
+                    while (true) {
+                        if (generation != model.structureGeneration) return@reportRawProgress false
+                        val dirtyBatch = model.collectDirtyFiles()
+                        if (dirtyBatch.isEmpty()) break
+                        for (vf in dirtyBatch) {
+                            if (generation != model.structureGeneration) return@reportRawProgress false
+                            smartReadAction(project) {
+                                processSafely(vf) { model.processSingleDirtyFile(vf) }
+                            }
+                        }
+                    }
+
+                    reporter.fraction(1.0)
+                    model.completePopulationIfCurrent(generation, pathsBefore, discoveredFiles)
+                }
+            }
+
+            if (completed) {
+                anyCompleted = true
+            }
+        }
+
+        if (anyCompleted) {
+            DaemonCodeAnalyzer.getInstance(project).restart("Guice modules were refreshed")
+        }
     }
 
     /**
      * Runs the action for one file. An exception in one file must not stop the processing of the other files.
      * Control-flow exceptions, such as cancellation, still go up.
      */
-    private inline fun processSafely(vf: VirtualFile, action: () -> Unit) {
+    private inline fun processSafely(vf: VirtualFile, action: () -> Boolean): Boolean {
         try {
-            action()
+            return action()
         }
         catch (e: Exception) {
             if (e is ControlFlowException || e is CancellationException) throw e
             LOG.warn("Cannot extract Guice entries from ${vf.path}", e)
+            return false
         }
     }
 }

@@ -125,7 +125,7 @@ public final class GuiceVfsListener implements BulkFileListener {
    * @param file the file to check
    * @return {@code true} if the file should be tracked for Guice binding changes
    */
-  private static boolean isRelevantFile(@NotNull VirtualFile file) {
+  static boolean isRelevantFile(@NotNull VirtualFile file) {
     if (file.isDirectory()) return false;
     String ext = file.getExtension();
     return "java".equals(ext) || "kt".equals(ext);

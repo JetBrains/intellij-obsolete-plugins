@@ -1158,7 +1158,7 @@ public class GuiceInjectionTest extends GuiceTestBase {
       var model = GuiceProjectModel.getInstance(getProject());
       throwOnce.set(true);
       try {
-        model.reindexCurrentFile(myFixture.getFile());
+        model.getNavigationIndex(myFixture.getModule());
       }
       catch (ProcessCanceledException ignored) {
       }

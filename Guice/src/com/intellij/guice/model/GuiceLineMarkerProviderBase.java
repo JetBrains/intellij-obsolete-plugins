@@ -6,7 +6,6 @@ import com.intellij.codeInsight.daemon.RelatedItemLineMarkerProvider;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -14,7 +13,7 @@ import java.util.List;
 
 /**
  * Shared base for Guice line marker providers that checks module availability
- * and re-indexes the current file inline before collecting markers.
+ * before collecting navigation markers.
  */
 abstract class GuiceLineMarkerProviderBase extends RelatedItemLineMarkerProvider {
 
@@ -27,14 +26,6 @@ abstract class GuiceLineMarkerProviderBase extends RelatedItemLineMarkerProvider
     if (module == null) return;
     GuiceProjectModel model = GuiceProjectModel.getInstance(module.getProject());
     if (!model.isGuiceAvailable(module)) return;
-
-    // Re-index the current file inline (cancellable) for immediate feedback.
-    // This ensures the file the user is editing has fresh entries in the
-    // navigation index, without waiting for the background debounced processing.
-    PsiFile psiFile = elements.getFirst().getContainingFile();
-    if (psiFile != null) {
-      model.reindexCurrentFile(psiFile);
-    }
 
     super.collectNavigationMarkers(elements, result, forNavigation);
   }
