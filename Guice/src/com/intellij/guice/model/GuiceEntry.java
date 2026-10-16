@@ -1,6 +1,8 @@
 // Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package com.intellij.guice.model;
 
+import com.intellij.guice.model.extensions.GuiceExtensionIndex;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.SmartPointerManager;
 import com.intellij.psi.SmartPsiElementPointer;
@@ -37,6 +39,8 @@ import java.util.function.Function;
  */
 @ApiStatus.Experimental
 public final class GuiceEntry {
+  private static final Logger LOG = Logger.getInstance(GuiceEntry.class);
+
   private final @NotNull GuiceBindingKey myKey;
   private final @NotNull SmartPsiElementPointer<PsiElement> myNavigationTarget;
   private final @NotNull SmartPsiElementPointer<PsiElement> myGutterAnchor;
@@ -154,7 +158,14 @@ public final class GuiceEntry {
     PsiElement target = myNavigationTarget.getElement();
     if (target == null) return null;
 
-    return myTextProvider.apply(target);
+    try {
+      return myTextProvider.apply(target);
+    }
+    catch (Exception e) {
+      GuiceExtensionIndex.rethrowIfControlFlow(e);
+      LOG.warn("Guice entry text provider failed on " + target, e);
+      return SymbolPresentationUtil.getSymbolPresentableText(target);
+    }
   }
 
   /**

@@ -8,6 +8,7 @@ import com.intellij.guice.model.beans.BindToProviderDescriptor;
 import com.intellij.guice.model.extensions.GuiceCallContext;
 import com.intellij.guice.model.extensions.GuiceExtensionIndex;
 import com.intellij.guice.utils.GuiceUtils;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
@@ -43,6 +44,8 @@ import java.util.function.BiConsumer;
  */
 @ApiStatus.Experimental
 public final class GuiceEntryProducer {
+  private static final Logger LOG = Logger.getInstance(GuiceEntryProducer.class);
+
   private GuiceEntryProducer() {}
 
   /**
@@ -86,6 +89,7 @@ public final class GuiceEntryProducer {
     for (PsiClass cls : GuiceInjectorManager.collectAllClasses(file)) {
       extractFromClass(cls, callContext);
     }
+    entries.remove(null);
     return new FileExtractionResult(
         entries,
         callContext.getReferencedTargetPaths(),
@@ -153,6 +157,7 @@ public final class GuiceEntryProducer {
           boolean isKotlinMethod = method.getNavigationElement() != method;
           if (AnnotationUtil.isAnnotated(method, extensionIndex.getProvidesIntoAnnotations(), 0)) {
             for (PsiType wrappedType : extensionIndex.getWrappedProvidesTypes(method)) {
+              if (wrappedType == null) continue;
               PsiType keyType = isKotlinMethod ? unwrapKotlinWildcards(wrappedType) : wrappedType;
               entries.add(new GuiceEntry(
                   new GuiceBindingKey(keyType, GuiceQualifiers.fromDeclaration(method)), method, anchor,
@@ -239,7 +244,13 @@ public final class GuiceEntryProducer {
       if (topLevel != null && topLevel.getName() != null && !topLevel.getName().isEmpty()) {
         myReferencedTargetClassNames.add(topLevel.getName());
       }
-      classExtractor.accept(targetClass, myEntries);
+      try {
+        classExtractor.accept(targetClass, myEntries);
+      }
+      catch (Exception e) {
+        GuiceExtensionIndex.rethrowIfControlFlow(e);
+        LOG.warn("Guice cross-class binding contributor failed on " + targetClass, e);
+      }
     }
 
     @Override
@@ -506,52 +517,60 @@ public final class GuiceEntryProducer {
         GuiceInjectorManager.getBindingDescriptors(moduleClass);
 
     for (BindDescriptor bd : descriptors) {
-      PsiElement bindExpr = bd.getBindExpression();
-      if (bindExpr == null) continue;
+      if (bd == null) continue;
+      try {
+        PsiElement bindExpr = bd.getBindExpression();
+        if (bindExpr == null) continue;
 
-      PsiElement anchor = getBindingAnchor(bindExpr);
+        PsiElement anchor = getBindingAnchor(bindExpr);
 
-      if (bd.isSpecialBinder()) {
-        UCallExpression outermostCall = bd.getOutermostCall();
-        GuiceQualifier qualifier = outermostCall != null ? GuiceQualifiers.fromBinderCall(outermostCall) : null;
-        for (PsiType wrappedType : bd.getWrappedBoundTypes()) {
-          entries.add(new GuiceEntry(
-              new GuiceBindingKey(wrappedType, qualifier), bindExpr, anchor, EntryRole.BINDING_SITE,
-              bd.getTextProvider()));
+        if (bd.isSpecialBinder()) {
+          UCallExpression outermostCall = bd.getOutermostCall();
+          GuiceQualifier qualifier = outermostCall != null ? GuiceQualifiers.fromBinderCall(outermostCall) : null;
+          for (PsiType wrappedType : bd.getWrappedBoundTypes()) {
+            if (wrappedType == null) continue;
+            entries.add(new GuiceEntry(
+                new GuiceBindingKey(wrappedType, qualifier), bindExpr, anchor, EntryRole.BINDING_SITE,
+                bd.getTextProvider()));
+          }
+          continue;
         }
-        continue;
-      }
 
-      // ---- Standard descriptors (bind().to(), untargeted, etc.) ----
+        // ---- Standard descriptors (bind().to(), untargeted, etc.) ----
 
-      // BINDING_SITE for the bound type.
-      // The .to() tail of a multibinder element, for example newSetBinder(...).addBinding().to(Impl.class),
-      // binds no key of its own: the multibinder descriptor gives the keys.
-      PsiClass boundClass = bd.getBoundClass();
-      PsiType boundType = bd.getBoundType();
-      if (boundType == null && boundClass != null) {
-        boundType = JavaPsiFacade.getElementFactory(boundClass.getProject())
-            .createType(boundClass);
-      }
-      boolean elementChain = isBinderElementChain(bd.getOutermostCall());
-      if (boundType != null && !elementChain) {
-        UCallExpression outermostCall = bd.getOutermostCall();
-        GuiceQualifier qualifier = outermostCall != null ? GuiceQualifiers.fromBindingChain(outermostCall) : null;
-        entries.add(new GuiceEntry(
-            new GuiceBindingKey(boundType, qualifier),
-            bindExpr, anchor, EntryRole.BINDING_SITE,
-            GuiceEntryProducer::standardBindText));
-      }
+        // BINDING_SITE for the bound type.
+        // The .to() tail of a multibinder element, for example newSetBinder(...).addBinding().to(Impl.class),
+        // binds no key of its own: the multibinder descriptor gives the keys.
+        PsiClass boundClass = bd.getBoundClass();
+        PsiType boundType = bd.getBoundType();
+        if (boundType == null && boundClass != null) {
+          boundType = JavaPsiFacade.getElementFactory(boundClass.getProject())
+              .createType(boundClass);
+        }
+        boolean elementChain = isBinderElementChain(bd.getOutermostCall());
+        if (boundType != null && !elementChain) {
+          UCallExpression outermostCall = bd.getOutermostCall();
+          GuiceQualifier qualifier = outermostCall != null ? GuiceQualifiers.fromBindingChain(outermostCall) : null;
+          entries.add(new GuiceEntry(
+              new GuiceBindingKey(boundType, qualifier),
+              bindExpr, anchor, EntryRole.BINDING_SITE,
+              GuiceEntryProducer::standardBindText));
+        }
 
-      // INJECTION_POINT for the implementation or provider class
-      PsiClass implClass = bd instanceof BindToProviderDescriptor pbd ? pbd.getProviderClass() : bd.getBindingClass();
-      if (implClass != null && (elementChain || !implClass.equals(boundClass))) {
-        UCallExpression outermost = bd.getOutermostCall();
-        PsiElement implAnchor = outermost != null ? getToCallAnchor(outermost) : bindExpr;
-        entries.add(GuiceEntry.implementationReference(
-            GuiceBindingKey.forClass(implClass),
-            bindExpr, implAnchor,
-            GuiceEntryProducer::standardBindText));
+        // INJECTION_POINT for the implementation or provider class
+        PsiClass implClass = bd instanceof BindToProviderDescriptor pbd ? pbd.getProviderClass() : bd.getBindingClass();
+        if (implClass != null && (elementChain || !implClass.equals(boundClass))) {
+          UCallExpression outermost = bd.getOutermostCall();
+          PsiElement implAnchor = outermost != null ? getToCallAnchor(outermost) : bindExpr;
+          entries.add(GuiceEntry.implementationReference(
+              GuiceBindingKey.forClass(implClass),
+              bindExpr, implAnchor,
+              GuiceEntryProducer::standardBindText));
+        }
+      }
+      catch (Exception e) {
+        GuiceExtensionIndex.rethrowIfControlFlow(e);
+        LOG.warn("Guice BindDescriptor failed in " + moduleClass, e);
       }
     }
   }

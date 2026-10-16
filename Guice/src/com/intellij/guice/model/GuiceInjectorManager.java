@@ -3,6 +3,7 @@ package com.intellij.guice.model;
 
 import com.intellij.guice.model.beans.BindDescriptor;
 import com.intellij.guice.model.extensions.GuiceExtensionIndex;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.JavaPsiFacade;
@@ -36,6 +37,7 @@ import java.util.List;
 import java.util.Set;
 
 public final class GuiceInjectorManager {
+  private static final Logger LOG = Logger.getInstance(GuiceInjectorManager.class);
 
   public static @NotNull Set<BindDescriptor> getBindingDescriptors(final @NotNull PsiElement scope) {
     if (scope instanceof PsiClass scopeClass) {
@@ -54,9 +56,16 @@ public final class GuiceInjectorManager {
     Set<BindDescriptor> all = getBindingDescriptors(scope.getProject(), new LocalSearchScope(scope));
     Set<BindDescriptor> filtered = new HashSet<>();
     for (BindDescriptor bd : all) {
-      PsiElement expr = bd.getBindExpression();
-      if (expr != null && PsiTreeUtil.isContextAncestor(scope, expr, false)) {
-        filtered.add(bd);
+      if (bd == null) continue;
+      try {
+        PsiElement expr = bd.getBindExpression();
+        if (expr != null && PsiTreeUtil.isContextAncestor(scope, expr, false)) {
+          filtered.add(bd);
+        }
+      }
+      catch (Exception e) {
+        GuiceExtensionIndex.rethrowIfControlFlow(e);
+        LOG.warn("Guice BindDescriptor failed in " + scope, e);
       }
     }
     return filtered;

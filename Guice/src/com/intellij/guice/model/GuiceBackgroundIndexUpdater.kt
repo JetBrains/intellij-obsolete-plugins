@@ -203,7 +203,7 @@ class GuiceBackgroundIndexUpdater(
 
     private suspend fun runPopulationLoop(module: Module) {
         var anyCompleted = false
-        while (model.isPopulationNeeded()) {
+        while (model.isPopulationNeeded) {
             val generation = model.structureGeneration
             val pathsBefore = model.indexedFilesSnapshot
 

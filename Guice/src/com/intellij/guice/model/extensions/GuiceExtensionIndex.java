@@ -5,6 +5,8 @@ import com.intellij.guice.constants.GuiceAnnotations;
 import com.intellij.guice.constants.GuiceClasses;
 import com.intellij.guice.model.GuiceEntry;
 import com.intellij.guice.model.beans.BindDescriptor;
+import com.intellij.openapi.diagnostic.ControlFlowException;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
@@ -32,7 +34,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.CancellationException;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -45,7 +47,19 @@ import java.util.function.Function;
  */
 @ApiStatus.Internal
 public final class GuiceExtensionIndex {
-  private static final AtomicLong MODIFICATION_COUNTER = new AtomicLong();
+  private static final Logger LOG = Logger.getInstance(GuiceExtensionIndex.class);
+
+  /**
+   * Re-throws IDE control-flow and cancellation exceptions so read-action cancellation works as expected.
+   */
+  public static void rethrowIfControlFlow(@NotNull Exception e) {
+    if (e instanceof ControlFlowException || e instanceof CancellationException) {
+      if (e instanceof RuntimeException runtimeException) {
+        throw runtimeException;
+      }
+      throw new RuntimeException(e);
+    }
+  }
 
   @FunctionalInterface
   private interface DescriptorCallHandler {
@@ -55,7 +69,6 @@ public final class GuiceExtensionIndex {
                    @NotNull Set<BindDescriptor> descriptors);
   }
 
-  private final long myModificationCount;
   private final @NotNull GuiceCallMatcher<DescriptorCallHandler> myDescriptorCallMatcher;
   private final @NotNull GuiceCallMatcher<BiConsumer<? super UCallExpression, ? super GuiceCallContext>> myCallEntryMatcher;
   private final @NotNull Set<String> myAllCallNames;
@@ -76,8 +89,7 @@ public final class GuiceExtensionIndex {
   private final @NotNull Set<String> myMethodShortNames;
   private final @NotNull Set<String> myClassShortNames;
 
-  private GuiceExtensionIndex(long modificationCount,
-                              @NotNull GuiceCallMatcher<DescriptorCallHandler> descriptorCallMatcher,
+  private GuiceExtensionIndex(@NotNull GuiceCallMatcher<DescriptorCallHandler> descriptorCallMatcher,
                               @NotNull GuiceCallMatcher<BiConsumer<? super UCallExpression, ? super GuiceCallContext>> callEntryMatcher,
                               @NotNull Set<String> allCallNames,
                               @NotNull Set<String> globalCallOwnerClasses,
@@ -92,7 +104,6 @@ public final class GuiceExtensionIndex {
                               @NotNull Map<String, List<BiConsumer<? super PsiField, ? super Set<GuiceEntry>>>> fieldsByAnnotation,
                               @NotNull Map<String, List<BiConsumer<? super PsiMethod, ? super Set<GuiceEntry>>>> methodsByAnnotation,
                               @NotNull Map<String, List<BiConsumer<? super PsiClass, ? super Set<GuiceEntry>>>> classesByAnnotation) {
-    myModificationCount = modificationCount;
     myDescriptorCallMatcher = descriptorCallMatcher;
     myCallEntryMatcher = callEntryMatcher;
     myAllCallNames = allCallNames;
@@ -140,10 +151,6 @@ public final class GuiceExtensionIndex {
    */
   public static @NotNull GuiceExtensionIndex get() {
     return GuiceBindingContributor.EP_NAME.computeIfAbsent(GuiceExtensionIndex.class, GuiceExtensionIndex::build);
-  }
-
-  public long getModificationCount() {
-    return myModificationCount;
   }
 
   public @NotNull Set<String> getDescriptorCallNames() {
@@ -225,8 +232,15 @@ public final class GuiceExtensionIndex {
         @Override
         public boolean visitCallExpression(@NotNull UCallExpression node) {
           myCallEntryMatcher.process(node, isModule, context, (producer, callExpr, _qName, _cls, sink) -> {
-            producer.accept(callExpr, sink);
-            return true;
+            try {
+              producer.accept(callExpr, sink);
+              return true;
+            }
+            catch (Exception e) {
+              rethrowIfControlFlow(e);
+              LOG.warn("Guice call-entry contributor failed on " + callExpr, e);
+              return false;
+            }
           });
           return super.visitCallExpression(node);
         }
@@ -249,9 +263,15 @@ public final class GuiceExtensionIndex {
       List<Function<? super PsiMethod, ? extends List<PsiType>>> providers = myProvidesByAnnotation.get(fqn);
       if (providers != null) {
         for (Function<? super PsiMethod, ? extends List<PsiType>> provider : providers) {
-          List<PsiType> types = provider.apply(method);
-          if (!types.isEmpty()) {
-            return types;
+          try {
+            List<PsiType> types = provider.apply(method);
+            if (types != null && !types.isEmpty()) {
+              return types;
+            }
+          }
+          catch (Exception e) {
+            rethrowIfControlFlow(e);
+            LOG.warn("Guice provides-annotation contributor failed on " + method, e);
           }
         }
         return List.of();
@@ -275,9 +295,7 @@ public final class GuiceExtensionIndex {
       List<BiConsumer<? super PsiField, ? super Set<GuiceEntry>>> producers = myFieldsByAnnotation.get(fqn);
       if (producers != null) {
         matched = true;
-        for (BiConsumer<? super PsiField, ? super Set<GuiceEntry>> producer : producers) {
-          producer.accept(field, entries);
-        }
+        invokeProducers(producers, field, entries);
       }
     }
     if (!matched) {
@@ -290,9 +308,7 @@ public final class GuiceExtensionIndex {
             if (fqn == null) continue;
             List<BiConsumer<? super PsiField, ? super Set<GuiceEntry>>> producers = myFieldsByAnnotation.get(fqn);
             if (producers != null) {
-              for (BiConsumer<? super PsiField, ? super Set<GuiceEntry>> producer : producers) {
-                producer.accept(field, entries);
-              }
+              invokeProducers(producers, field, entries);
             }
           }
         }
@@ -313,9 +329,7 @@ public final class GuiceExtensionIndex {
       if (fqn == null) continue;
       List<BiConsumer<? super PsiMethod, ? super Set<GuiceEntry>>> producers = myMethodsByAnnotation.get(fqn);
       if (producers != null) {
-        for (BiConsumer<? super PsiMethod, ? super Set<GuiceEntry>> producer : producers) {
-          producer.accept(method, entries);
-        }
+        invokeProducers(producers, method, entries);
       }
     }
   }
@@ -333,9 +347,21 @@ public final class GuiceExtensionIndex {
       if (fqn == null) continue;
       List<BiConsumer<? super PsiClass, ? super Set<GuiceEntry>>> producers = myClassesByAnnotation.get(fqn);
       if (producers != null) {
-        for (BiConsumer<? super PsiClass, ? super Set<GuiceEntry>> producer : producers) {
-          producer.accept(psiClass, entries);
-        }
+        invokeProducers(producers, psiClass, entries);
+      }
+    }
+  }
+
+  private static <T> void invokeProducers(@NotNull List<BiConsumer<? super T, ? super Set<GuiceEntry>>> producers,
+                                          @NotNull T element,
+                                          @NotNull Set<GuiceEntry> entries) {
+    for (BiConsumer<? super T, ? super Set<GuiceEntry>> producer : producers) {
+      try {
+        producer.accept(element, entries);
+      }
+      catch (Exception e) {
+        rethrowIfControlFlow(e);
+        LOG.warn("Guice annotation contributor failed on " + element, e);
       }
     }
   }
@@ -343,7 +369,13 @@ public final class GuiceExtensionIndex {
   private static @NotNull GuiceExtensionIndex build() {
     RegistrarImpl registrar = new RegistrarImpl();
     for (GuiceBindingContributor contributor : GuiceBindingContributor.EP_NAME.getExtensionList()) {
-      contributor.register(registrar);
+      try {
+        contributor.register(registrar);
+      }
+      catch (Exception e) {
+        rethrowIfControlFlow(e);
+        LOG.warn("Failed to register GuiceBindingContributor: " + contributor.getClass().getName(), e);
+      }
     }
     return registrar.compile();
   }
@@ -377,8 +409,11 @@ public final class GuiceExtensionIndex {
       registerCallDescriptor(pattern, (call, descriptors) -> {
         PsiElement outermostSource = ContributorUtil.getOutermostSource(call);
         if (outermostSource != null) {
-          descriptors.add(factory.apply(outermostSource, ContributorUtil.extractSinglePsiType(call)));
-          return true;
+          BindDescriptor descriptor = factory.apply(outermostSource, ContributorUtil.extractSinglePsiType(call));
+          if (descriptor != null) {
+            descriptors.add(descriptor);
+            return true;
+          }
         }
         return false;
       });
@@ -393,8 +428,11 @@ public final class GuiceExtensionIndex {
         PsiElement outermostSource = ContributorUtil.getOutermostSource(call);
         if (outermostSource != null) {
           PsiType[] kv = ContributorUtil.extractDualPsiTypes(call);
-          descriptors.add(factory.create(outermostSource, kv[0], kv[1]));
-          return true;
+          BindDescriptor descriptor = factory.create(outermostSource, kv[0], kv[1]);
+          if (descriptor != null) {
+            descriptors.add(descriptor);
+            return true;
+          }
         }
         return false;
       });
@@ -403,7 +441,16 @@ public final class GuiceExtensionIndex {
     @Override
     public void registerCallDescriptor(@NotNull GuiceCallPattern pattern,
                                        @NotNull BiFunction<? super UCallExpression, ? super Set<BindDescriptor>, Boolean> handler) {
-      myDescriptorCalls.add(pattern, (call, _qName, _cls, descriptors) -> handler.apply(call, descriptors));
+      myDescriptorCalls.add(pattern, (call, _qName, _cls, descriptors) -> {
+        try {
+          return Boolean.TRUE.equals(handler.apply(call, descriptors));
+        }
+        catch (Exception e) {
+          rethrowIfControlFlow(e);
+          LOG.warn("Guice call-descriptor contributor failed on " + call, e);
+          return false;
+        }
+      });
     }
 
     @Override
@@ -489,7 +536,6 @@ public final class GuiceExtensionIndex {
       supportedFieldAnnotations.addAll(myFieldsByAnno.keySet());
 
       return new GuiceExtensionIndex(
-          MODIFICATION_COUNTER.incrementAndGet(),
           descriptorMatcher,
           callEntryMatcher,
           Set.copyOf(allCallNames),
