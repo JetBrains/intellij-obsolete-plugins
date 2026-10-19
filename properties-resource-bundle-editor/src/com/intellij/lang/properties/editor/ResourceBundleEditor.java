@@ -21,6 +21,7 @@ import com.intellij.lang.properties.psi.PropertiesResourceBundleUtil;
 import com.intellij.lang.properties.xml.XmlPropertiesFile;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.application.WriteIntentReadAction;
 
@@ -177,11 +178,13 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
         if (oldSelected == null || newSelected == null) {
           return false;
         }
-        final PsiElement oldPsiElement = oldSelected.getPsiElement();
-        if (!oldPsiElement.isValid()) {
-          return false;
-        }
-        return oldPsiElement.isEquivalentTo(newSelected.getPsiElement());
+        return ReadAction.computeBlocking(() -> {
+            final PsiElement oldPsiElement = oldSelected.getPsiElement();
+            if (!oldPsiElement.isValid()) {
+                return false;
+            }
+            return oldPsiElement.isEquivalentTo(newSelected.getPsiElement());
+        });
       }
     });
 
@@ -267,10 +270,15 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
 
   private void writeModifiedEditors() {
     final Map<VirtualFile, PendingEdit> edits = takeModifiedEditors();
-    writeDetachedEdits();
-    for (Map.Entry<VirtualFile, PendingEdit> entry : edits.entrySet()) {
-      writePendingEdit(entry.getKey(), entry.getValue());
-    }
+    if (edits.isEmpty() && myDetachedEdits.isEmpty()) return;
+    // writing a pending edit reads PSI, may ask to make the file writable and runs a write command,
+    // so it needs the write-intent lock rather than a plain read action
+    WriteIntentReadAction.run((Runnable)() -> {
+      writeDetachedEdits();
+      for (Map.Entry<VirtualFile, PendingEdit> entry : edits.entrySet()) {
+        writePendingEdit(entry.getKey(), entry.getValue());
+      }
+    });
   }
 
   private void writeDetachedEdits() {
@@ -855,7 +863,7 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
 
   private @Nullable String getSelectedPropertyName() {
     final IProperty selectedProperty = getSelectedProperty();
-    return selectedProperty == null ? null : selectedProperty.getName();
+    return selectedProperty == null ? null : ReadAction.computeBlocking(() -> selectedProperty.getName());
   }
 
   @Nullable
@@ -865,8 +873,9 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
       .filterMap(AbstractTreeNode::getValue)
       .filter(ResourceBundleEditorViewElement.class)
       .first();
+    // resolving the property restores its PSI from a smart pointer, which requires read access
     return first instanceof PropertyStructureViewElement ?
-           ((PropertyStructureViewElement)first).getProperty() : null;
+           ReadAction.computeBlocking(() -> ((PropertyStructureViewElement)first).getProperty()) : null;
   }
 
   public @NotNull @Unmodifiable Collection<ResourceBundleEditorViewElement> getSelectedElements() {

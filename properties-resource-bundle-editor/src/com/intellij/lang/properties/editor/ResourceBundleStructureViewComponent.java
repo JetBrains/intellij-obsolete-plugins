@@ -46,7 +46,7 @@ public final class ResourceBundleStructureViewComponent extends PropertiesGroupi
     super(resourceBundle.getProject(), editor, new ResourceBundleStructureViewModel(resourceBundle));
     myResourceBundle = resourceBundle;
     tunePopupActionGroup();
-    getTree().setCellRenderer(new ResourceBundleEditorRenderer());
+    getTree().setCellRenderer(new ResourceBundleEditorRenderer(getTree(), this));
     showToolbar();
   }
 
