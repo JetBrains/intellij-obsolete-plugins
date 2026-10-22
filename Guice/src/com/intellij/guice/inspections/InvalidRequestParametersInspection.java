@@ -36,13 +36,13 @@ public final class InvalidRequestParametersInspection extends BaseUastInspection
   }
 
   @Override
-  public @NotNull AbstractUastNonRecursiveVisitor buildUastVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
-    return new Visitor(this, holder, isOnTheFly);
+  public @NotNull AbstractUastNonRecursiveVisitor buildUastVisitor(@NotNull ProblemsHolder holder) {
+    return new Visitor(this, holder);
   }
 
   private static class Visitor extends BaseUastInspectionVisitor {
-    Visitor(@NotNull BaseUastInspection inspection, @NotNull ProblemsHolder holder, boolean onTheFly) {
-      super(inspection, holder, onTheFly);
+    Visitor(@NotNull BaseUastInspection inspection, @NotNull ProblemsHolder holder) {
+      super(inspection, holder);
     }
 
     @Override

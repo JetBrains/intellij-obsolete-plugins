@@ -9,7 +9,6 @@ import com.intellij.guice.model.extensions.GuiceCallPattern;
 import com.intellij.guice.utils.AnnotationUtils;
 import com.intellij.guice.utils.GuiceUtils;
 import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.uast.UCallExpression;
 
@@ -33,7 +32,7 @@ public final class RedundantToBindingInspection extends BaseUastInspection {
   }
 
   @Override
-  public LocalQuickFix buildFix(PsiElement location, Object[] infos) {
+  public LocalQuickFix buildFix() {
     return new DeleteBindingFix(DeleteBindingFix.Mode.CHAIN_CALL, "remove.binding.target");
   }
 

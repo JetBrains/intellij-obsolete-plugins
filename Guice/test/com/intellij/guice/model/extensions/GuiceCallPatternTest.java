@@ -56,7 +56,7 @@ public class GuiceCallPatternTest extends GuiceTestBase {
     Set<String> matched = new LinkedHashSet<>();
     for (UCallExpression call : calls) {
       String text = call.getSourcePsi().getText();
-      matcher.process(call, true, matched, (handler, c, qualifiedName, containingClass, sink) -> {
+      matcher.process(call, true, matched, (handler, c, sink) -> {
         sink.add(text);
         return true;
       });

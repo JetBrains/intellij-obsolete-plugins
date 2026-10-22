@@ -306,14 +306,9 @@ public final class GuiceUtils {
     PsiClass receiverClass = classType.resolve();
     if (receiverClass == null) return null;
     String fqn = receiverClass.getQualifiedName();
-    if (fqn == null) return null;
-    if (typeArgs.length == 1 && extensionIndex.getSingleTypeBinderClassFqns().contains(fqn)) {
-      return typeArgs[0];
-    }
-    if (typeArgs.length == 2 && extensionIndex.getDualTypeBinderClassFqns().contains(fqn)) {
-      return typeArgs[1];
-    }
-    return null;
+    if (fqn == null || !extensionIndex.getBinderClassFqns().contains(fqn)) return null;
+    // The bound type is the last type argument: Multibinder<T>, LinkedBindingBuilder<T>, MapBinder<K, V>.
+    return typeArgs[typeArgs.length - 1];
   }
 
   public static @Nullable UCallExpression getReceiverCall(@Nullable UCallExpression call) {

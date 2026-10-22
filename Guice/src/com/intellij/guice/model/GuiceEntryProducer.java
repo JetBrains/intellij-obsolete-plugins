@@ -65,14 +65,6 @@ public final class GuiceEntryProducer {
   ) {
     public static final FileExtractionResult EMPTY =
         new FileExtractionResult(Set.of(), Set.of(), Set.of(), Set.of());
-
-    public FileExtractionResult(
-        @NotNull Set<GuiceEntry> entries,
-        @NotNull Set<String> referencedTargetPaths,
-        @NotNull Set<String> referencedTargetClassNames
-    ) {
-      this(entries, referencedTargetPaths, referencedTargetClassNames, Set.of());
-    }
   }
 
   /**

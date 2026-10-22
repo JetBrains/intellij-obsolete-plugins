@@ -7,7 +7,6 @@ import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.codeInspection.util.InspectionMessage;
 import com.intellij.guice.model.extensions.GuiceCallMatcher;
 import com.intellij.guice.model.extensions.GuiceCallPattern;
-import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.uast.UastHintedVisitorAdapter;
 import org.jetbrains.annotations.NotNull;
@@ -24,10 +23,6 @@ import java.util.function.BiConsumer;
 public abstract class BaseUastInspection extends LocalInspectionTool {
   protected abstract @NotNull @InspectionMessage String buildErrorString(Object... infos);
 
-  protected boolean buildQuickFixesOnlyForOnTheFlyErrors() {
-    return false;
-  }
-
   private final Class<? extends UElement>[] myUElementsTypesHint;
   private @Nullable GuiceCallMatcher.Builder<BiConsumer<UCallExpression, BaseUastInspectionVisitor>> myCallMatcherBuilder;
   private volatile @Nullable GuiceCallMatcher<BiConsumer<UCallExpression, BaseUastInspectionVisitor>> myCompiledCallMatcher;
@@ -40,7 +35,7 @@ public abstract class BaseUastInspection extends LocalInspectionTool {
 
   /**
    * Registers a declarative call rule that is compiled into a multi-stage candidate filter
-   * and evaluated in {@link #buildUastVisitor(ProblemsHolder, boolean)}.
+   * and evaluated in {@link #buildUastVisitor(ProblemsHolder)}.
    */
   protected final void extendCall(@NotNull GuiceCallPattern pattern,
                                   @NotNull BiConsumer<@NotNull UCallExpression, @NotNull BaseUastInspectionVisitor> handler) {
@@ -79,12 +74,12 @@ public abstract class BaseUastInspection extends LocalInspectionTool {
     return hints;
   }
 
-  public @NotNull AbstractUastNonRecursiveVisitor buildUastVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
+  public @NotNull AbstractUastNonRecursiveVisitor buildUastVisitor(@NotNull ProblemsHolder holder) {
     GuiceCallMatcher<BiConsumer<UCallExpression, BaseUastInspectionVisitor>> matcher = getCompiledCallMatcher();
-    return new BaseUastInspectionVisitor(this, holder, isOnTheFly) {
+    return new BaseUastInspectionVisitor(this, holder) {
       @Override
       public boolean visitCallExpression(@NotNull UCallExpression expression) {
-        matcher.process(expression, this, (handler, call, _qName, _cls, visitor) -> {
+        matcher.process(expression, this, (handler, call, visitor) -> {
           handler.accept(call, visitor);
           return true;
         });
@@ -97,12 +92,12 @@ public abstract class BaseUastInspection extends LocalInspectionTool {
   public @NotNull PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, final boolean isOnTheFly) {
     return UastHintedVisitorAdapter.create(
       holder.getFile().getLanguage(),
-      buildUastVisitor(holder, isOnTheFly),
+      buildUastVisitor(holder),
       getEffectiveHints()
     );
   }
 
-  public LocalQuickFix buildFix(PsiElement location, Object[] infos) {
+  public LocalQuickFix buildFix() {
     return null;
   }
 }

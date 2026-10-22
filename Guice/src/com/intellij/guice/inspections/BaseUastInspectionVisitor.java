@@ -23,12 +23,10 @@ import java.util.List;
 public abstract class BaseUastInspectionVisitor extends AbstractUastNonRecursiveVisitor {
   private final BaseUastInspection inspection;
   private final ProblemsHolder holder;
-  private final boolean onTheFly;
 
-  protected BaseUastInspectionVisitor(@NotNull BaseUastInspection inspection, @NotNull ProblemsHolder holder, boolean onTheFly) {
+  protected BaseUastInspectionVisitor(@NotNull BaseUastInspection inspection, @NotNull ProblemsHolder holder) {
     this.inspection = inspection;
     this.holder = holder;
-    this.onTheFly = onTheFly;
   }
 
   protected void registerCallError(@NotNull UCallExpression expression, Object... infos) {
@@ -139,20 +137,9 @@ public abstract class BaseUastInspectionVisitor extends AbstractUastNonRecursive
   }
 
   protected void registerError(@NotNull PsiElement location, Object... infos) {
-    final LocalQuickFix[] fixes = createFixes(location, infos);
+    final LocalQuickFix fix = inspection.buildFix();
     final String description = inspection.buildErrorString(infos);
-    holder.registerProblem(location, description, fixes);
+    holder.registerProblem(location, description, fix != null ? new LocalQuickFix[]{fix} : null);
   }
 
-  private @NotNull LocalQuickFix @Nullable [] createFixes(PsiElement location, Object[] infos) {
-    if (!onTheFly && inspection.buildQuickFixesOnlyForOnTheFlyErrors()) {
-      return null;
-    }
-
-    final LocalQuickFix fix = inspection.buildFix(location, infos);
-    if (fix == null) {
-      return null;
-    }
-    return new LocalQuickFix[]{fix};
-  }
 }

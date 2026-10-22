@@ -53,8 +53,8 @@ public sealed interface GuiceQualifier {
    */
   static boolean matches(@Nullable GuiceQualifier a, @Nullable GuiceQualifier b) {
     if (a == null || b == null) return a == b;
-    if (a instanceof Named na && b instanceof Named nb) {
-      return na.value() == null || nb.value() == null || na.value().equals(nb.value());
+    if (a instanceof Named(String aValue) && b instanceof Named(String bValue)) {
+      return aValue == null || bValue == null || aValue.equals(bValue);
     }
     String fqnA = typeFqn(a);
     String fqnB = typeFqn(b);
@@ -65,7 +65,7 @@ public sealed interface GuiceQualifier {
   }
 
   private static @Nullable String typeFqn(@NotNull GuiceQualifier q) {
-    if (q instanceof Marker m) return m.fqn();
+    if (q instanceof Marker(String fqn)) return fqn;
     if (q instanceof Instance i) return i.fqn();
     return null;
   }

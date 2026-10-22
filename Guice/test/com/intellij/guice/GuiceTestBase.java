@@ -155,11 +155,9 @@ public abstract class GuiceTestBase extends LightJavaCodeInsightFixtureTestCase 
   protected GuiceNavigationIndex getNavigationIndex() {
     PlatformTestUtil.dispatchAllEventsInIdeEventQueue();
     final GuiceNavigationIndex[] indexHolder = new GuiceNavigationIndex[1];
-    ProgressManager.getInstance().runProcess(() -> {
-      ApplicationManager.getApplication().runReadAction(() -> {
-        indexHolder[0] = GuiceProjectModel.getInstance(getProject()).getNavigationIndex(myFixture.getModule());
-      });
-    }, new EmptyProgressIndicator());
+    ProgressManager.getInstance().runProcess(() -> ApplicationManager.getApplication().runReadAction(() -> {
+      indexHolder[0] = GuiceProjectModel.getInstance(getProject()).getNavigationIndex(myFixture.getModule());
+    }), new EmptyProgressIndicator());
     return indexHolder[0];
   }
 }

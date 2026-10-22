@@ -40,13 +40,13 @@ public final class GuiceCallMatcher<H> {
   private final boolean myStopOnFirstMatch;
   private final boolean myHasGlobalRules;
 
+  /**
+   * Runs one matched handler. The matcher resolves the call for its own bucket lookup; a handler that needs
+   * the owner resolves the call itself, so the invoker receives only the call and the context.
+   */
   @FunctionalInterface
   public interface HandlerInvoker<H, C> {
-    boolean invoke(@NotNull H handler,
-                   @NotNull UCallExpression call,
-                   @Nullable String resolvedOwnerQName,
-                   @Nullable PsiClass containingClass,
-                   @NotNull C context);
+    boolean invoke(@NotNull H handler, @NotNull UCallExpression call, @NotNull C context);
   }
 
   private record Rule<H>(@NotNull GuiceCallPattern pattern, @NotNull H handler, boolean moduleOnly) {
@@ -154,7 +154,7 @@ public final class GuiceCallMatcher<H> {
       boolean matched = false;
       for (Rule<H> rule : bucket.generalRules) {
         if (rule.isApplicable(isModule) && rule.pattern.matchesSyntactic(call, argCount)) {
-          if (invoker.invoke(rule.handler, call, null, null, context)) {
+          if (invoker.invoke(rule.handler, call, context)) {
             matched = true;
             if (myStopOnFirstMatch) {
               return true;
@@ -180,7 +180,7 @@ public final class GuiceCallMatcher<H> {
       if (exactRules != null) {
         for (Rule<H> rule : exactRules) {
           if (rule.isApplicable(isModule) && rule.pattern.matchesSyntactic(call, argCount)) {
-            if (invoker.invoke(rule.handler, call, resolvedOwnerQName, containingClass, context)) {
+            if (invoker.invoke(rule.handler, call, context)) {
               matched = true;
               if (myStopOnFirstMatch) {
                 return true;
@@ -199,7 +199,7 @@ public final class GuiceCallMatcher<H> {
               && rule.pattern.matchesSyntactic(call, argCount)
               && rule.pattern.matchesResolved(
                   call, resolvedOwnerQName, containingClass, ownerCache, receiverCache, returnCache)) {
-            if (invoker.invoke(rule.handler, call, resolvedOwnerQName, containingClass, context)) {
+            if (invoker.invoke(rule.handler, call, context)) {
               matched = true;
               if (myStopOnFirstMatch) {
                 return true;
@@ -217,7 +217,7 @@ public final class GuiceCallMatcher<H> {
         if (rule.isApplicable(isModule)
             && rule.pattern.matchesSyntactic(call, argCount)
             && (!rule.pattern.requiresResolution() || rule.pattern.matchesUnresolved(call))) {
-          if (invoker.invoke(rule.handler, call, null, null, context)) {
+          if (invoker.invoke(rule.handler, call, context)) {
             matched = true;
             if (myStopOnFirstMatch) {
               return true;

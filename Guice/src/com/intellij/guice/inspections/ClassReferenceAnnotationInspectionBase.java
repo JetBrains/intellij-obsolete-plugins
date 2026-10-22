@@ -28,13 +28,13 @@ abstract class ClassReferenceAnnotationInspectionBase extends BaseUastInspection
   protected abstract boolean isValidReferent(@NotNull PsiClass referentClass, @Nullable PsiClass annotatedClass);
 
   @Override
-  public @NotNull AbstractUastNonRecursiveVisitor buildUastVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
-    return new Visitor(this, holder, isOnTheFly);
+  public @NotNull AbstractUastNonRecursiveVisitor buildUastVisitor(@NotNull ProblemsHolder holder) {
+    return new Visitor(this, holder);
   }
 
   private final class Visitor extends BaseUastInspectionVisitor {
-    Visitor(@NotNull BaseUastInspection inspection, @NotNull ProblemsHolder holder, boolean onTheFly) {
-      super(inspection, holder, onTheFly);
+    Visitor(@NotNull BaseUastInspection inspection, @NotNull ProblemsHolder holder) {
+      super(inspection, holder);
     }
 
     @Override

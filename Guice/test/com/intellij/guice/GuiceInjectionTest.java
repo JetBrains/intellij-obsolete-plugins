@@ -1223,11 +1223,9 @@ public class GuiceInjectionTest extends GuiceTestBase {
 
     assertThat(gutterAnchors(TO_BINDINGS_TOOLTIP)).isEmpty();
 
-    WriteCommandAction.runWriteCommandAction(getProject(), () -> {
-      myFixture.getEditor().getDocument().insertString(
-          myFixture.getCaretOffset(),
-          "bind(MyService.class).to(NestedImpl.class);");
-    });
+    WriteCommandAction.runWriteCommandAction(getProject(), () -> myFixture.getEditor().getDocument().insertString(
+        myFixture.getCaretOffset(),
+        "bind(MyService.class).to(NestedImpl.class);"));
     PsiDocumentManager.getInstance(getProject()).commitAllDocuments();
 
     var elements = PsiTreeUtil.collectElementsOfType(myFixture.getFile(), PsiElement.class);
@@ -1269,11 +1267,9 @@ public class GuiceInjectionTest extends GuiceTestBase {
         """);
       assertThat(gutterAnchors(TO_INJECTION_POINTS_TOOLTIP)).isEmpty();
 
-      WriteCommandAction.runWriteCommandAction(getProject(), () -> {
-        myFixture.getEditor().getDocument().insertString(
-            myFixture.getCaretOffset(),
-            "bind(MyService.class).to(MyServiceImpl.class);");
-      });
+      WriteCommandAction.runWriteCommandAction(getProject(), () -> myFixture.getEditor().getDocument().insertString(
+          myFixture.getCaretOffset(),
+          "bind(MyService.class).to(MyServiceImpl.class);"));
       PsiDocumentManager.getInstance(getProject()).commitAllDocuments();
 
       var model = GuiceProjectModel.getInstance(getProject());
@@ -1345,11 +1341,9 @@ public class GuiceInjectionTest extends GuiceTestBase {
       myFixture.configureFromExistingVirtualFile(flagsFile.getVirtualFile());
       assertThat(gutterAnchors(TO_INJECTION_POINTS_TOOLTIP)).isEmpty();
 
-      WriteCommandAction.runWriteCommandAction(getProject(), () -> {
-        myFixture.getEditor().getDocument().insertString(
-            myFixture.getCaretOffset(),
-            "public static MyFlagValue FLAG;");
-      });
+      WriteCommandAction.runWriteCommandAction(getProject(), () -> myFixture.getEditor().getDocument().insertString(
+          myFixture.getCaretOffset(),
+          "public static MyFlagValue FLAG;"));
       PsiDocumentManager.getInstance(getProject()).commitAllDocuments();
 
       var model = GuiceProjectModel.getInstance(getProject());

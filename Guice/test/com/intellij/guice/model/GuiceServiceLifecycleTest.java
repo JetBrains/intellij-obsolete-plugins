@@ -23,9 +23,7 @@ public class GuiceServiceLifecycleTest extends JavaCodeInsightFixtureTestCase {
 
   public void testServiceIsCreatedOnlyForGuiceModulesAndFollowsLibraryChanges() {
     Sdk sdk = JavaSdk.getInstance().createJdk("TestJDK", System.getProperty("java.home"), false);
-    WriteCommandAction.runWriteCommandAction(getProject(), () -> {
-      ProjectJdkTable.getInstance().addJdk(sdk, getTestRootDisposable());
-    });
+    WriteCommandAction.runWriteCommandAction(getProject(), () -> ProjectJdkTable.getInstance().addJdk(sdk, getTestRootDisposable()));
     Module module = myFixture.getModule();
     ModuleRootModificationUtil.setModuleSdk(module, sdk);
 

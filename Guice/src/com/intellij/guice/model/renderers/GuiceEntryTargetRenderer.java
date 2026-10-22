@@ -17,11 +17,6 @@ import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.presentation.java.SymbolPresentationUtil;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.Unmodifiable;
-
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,6 +26,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.Icon;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
 /**
  * Unified target presentation renderer for Guice navigation popups.
@@ -164,11 +163,6 @@ public final class GuiceEntryTargetRenderer extends PsiTargetPresentationRendere
       sortedTargets.add(item.target());
     }
     return new SortedTargets(Collections.unmodifiableList(sortedEntries), Collections.unmodifiableList(sortedTargets));
-  }
-
-  public static @Unmodifiable @NotNull List<GuiceEntry> sortEntries(@NotNull Collection<GuiceEntry> entries,
-                                                                    @NotNull PsiElement contextElement) {
-    return sortTargets(entries, contextElement).entries();
   }
 
   private static String @NotNull [] getPackageSegments(@Nullable PsiFile file) {

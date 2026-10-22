@@ -8,6 +8,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.application.smartReadAction
+import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
@@ -34,6 +35,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.TestOnly
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Schedules background processing of Guice files and triggers
@@ -75,7 +77,7 @@ class GuiceBackgroundIndexUpdater(
         fun isFatalForCollector(e: Throwable, coroutineActive: Boolean): Boolean = !coroutineActive
 
         /** Debounce delay: wait this long after the last dirty event before processing. */
-        private const val DEBOUNCE_MS = 300L
+        private val DEBOUNCE = 300L.milliseconds
     }
 
     @Volatile
@@ -136,7 +138,7 @@ class GuiceBackgroundIndexUpdater(
     fun enableBackgroundModeForTests(parentDisposable: Disposable, startDirtyCollector: Boolean = true) {
         synchronous = false
         startCollectors(startDirtyCollector)
-        Disposer.register(parentDisposable, Disposable {
+        Disposer.register(parentDisposable, {
             synchronous = true
             stopCollectors()
         })
@@ -161,7 +163,7 @@ class GuiceBackgroundIndexUpdater(
         val jobs = mutableListOf<Job>()
         if (startDirtyCollector) {
             jobs += cs.launch {
-                dirtyRequests.debounce(DEBOUNCE_MS).collect {
+                dirtyRequests.debounce(DEBOUNCE).collect {
                     runGuarded("dirty files") { processDirtyFilesInBackground() }
                 }
             }
@@ -186,7 +188,8 @@ class GuiceBackgroundIndexUpdater(
             if (e is CancellationException) {
                 // A cancellation of one pass, for example AlreadyDisposedException from a module that went away,
                 // is not a cancellation of the collector. The next request runs a new pass.
-                LOG.debug("Guice $what update was cancelled", e)
+                // A cancellation exception must not reach the logger, so only its kind is noted.
+                LOG.debug { "Guice $what update was cancelled (${e.javaClass.simpleName})" }
             }
             else {
                 LOG.error("Guice $what update failed", e)

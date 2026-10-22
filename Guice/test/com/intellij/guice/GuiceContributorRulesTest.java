@@ -71,9 +71,8 @@ public class GuiceContributorRulesTest extends GuiceTestBase {
   /**
    * Call rules apply to every declaration of a class: field initializers and initializer blocks too,
    * not only method bodies.
-   */
-  /**
-   * E6: the sinks are add-only and the index takes their content only after a normal return. A handler,
+   *
+   * <p>the sinks are add-only and the index takes their content only after a normal return. A handler,
    * a producer or a context producer that throws after it reported something contributes nothing, and the
    * results of the built-in contributors stay intact.
    */

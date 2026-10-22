@@ -127,7 +127,7 @@ public final class GuiceProjectModel implements Disposable {
   private final AtomicInteger myStructureGeneration = new AtomicInteger();
 
   /**
-   * The structure generation that the last completed population covered, or {@link #NOT_POPULATED}.
+   * The structure generation that the last completed population covered, or {@code #NOT_POPULATED}.
    * A population is needed while this differs from {@link #myStructureGeneration}: a concurrent
    * {@link #markStructureChanged()} can therefore never be lost to a completion (it moves the target).
    */
@@ -859,10 +859,6 @@ public final class GuiceProjectModel implements Disposable {
     IMMEDIATELY,
     /** Restart after the running daemon cycle. For updates that run inside a highlighting pass. */
     WHEN_DAEMON_FINISHES
-  }
-
-  boolean hasPendingRestarts() {
-    return !myPendingRestartTypeFqns.isEmpty();
   }
 
   @TestOnly

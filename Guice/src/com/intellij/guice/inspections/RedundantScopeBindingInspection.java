@@ -7,7 +7,6 @@ import com.intellij.guice.GuiceBundle;
 import com.intellij.guice.model.extensions.GuiceCallPattern;
 import com.intellij.guice.utils.GuiceUtils;
 import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.uast.UCallExpression;
 import org.jetbrains.uast.UExpression;
@@ -36,7 +35,7 @@ public final class RedundantScopeBindingInspection extends BaseUastInspection {
   }
 
   @Override
-  public LocalQuickFix buildFix(PsiElement location, Object[] infos) {
+  public LocalQuickFix buildFix() {
     return new DeleteBindingFix(DeleteBindingFix.Mode.CHAIN_CALL, "remove.scope.binding");
   }
 

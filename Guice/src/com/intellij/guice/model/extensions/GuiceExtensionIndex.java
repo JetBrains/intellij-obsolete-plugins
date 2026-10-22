@@ -89,10 +89,7 @@ public final class GuiceExtensionIndex {
 
   @FunctionalInterface
   private interface DescriptorCallHandler {
-    boolean handle(@NotNull UCallExpression call,
-                   @Nullable String resolvedOwnerQName,
-                   @Nullable PsiClass containingClass,
-                   @NotNull Set<BindDescriptor> descriptors);
+    boolean handle(@NotNull UCallExpression call, @NotNull Set<BindDescriptor> descriptors);
   }
 
   private final @NotNull FailureReporter myFailureReporter;
@@ -100,10 +97,7 @@ public final class GuiceExtensionIndex {
   private final @NotNull GuiceCallMatcher<BiConsumer<? super UCallExpression, ? super GuiceCallContext>> myCallEntryMatcher;
   private final @NotNull Set<String> myAllCallNames;
   private final @NotNull Set<String> myGlobalCallOwnerClasses;
-  private final @NotNull Set<String> mySingleTypeBinderMethodNames;
-  private final @NotNull Set<String> myDualTypeBinderMethodNames;
-  private final @NotNull Set<String> mySingleTypeBinderClassFqns;
-  private final @NotNull Set<String> myDualTypeBinderClassFqns;
+  private final @NotNull Set<String> myBinderClassFqns;
   private final @NotNull Map<String, BinderShape> myBinderShapesByMethod;
   private final @NotNull Set<String> myBinderElementCallNames;
   private final @NotNull Set<String> myAllProvidesAnnotations;
@@ -117,10 +111,7 @@ public final class GuiceExtensionIndex {
                               @NotNull GuiceCallMatcher<BiConsumer<? super UCallExpression, ? super GuiceCallContext>> callEntryMatcher,
                               @NotNull Set<String> allCallNames,
                               @NotNull Set<String> globalCallOwnerClasses,
-                              @NotNull Set<String> singleTypeBinderMethodNames,
-                              @NotNull Set<String> dualTypeBinderMethodNames,
-                              @NotNull Set<String> singleTypeBinderClassFqns,
-                              @NotNull Set<String> dualTypeBinderClassFqns,
+                              @NotNull Set<String> binderClassFqns,
                               @NotNull Map<String, BinderShape> binderShapesByMethod,
                               @NotNull Set<String> allProvidesAnnotations,
                               @NotNull Set<String> providesIntoAnnotations,
@@ -131,10 +122,7 @@ public final class GuiceExtensionIndex {
     myCallEntryMatcher = callEntryMatcher;
     myAllCallNames = allCallNames;
     myGlobalCallOwnerClasses = globalCallOwnerClasses;
-    mySingleTypeBinderMethodNames = singleTypeBinderMethodNames;
-    myDualTypeBinderMethodNames = dualTypeBinderMethodNames;
-    mySingleTypeBinderClassFqns = singleTypeBinderClassFqns;
-    myDualTypeBinderClassFqns = dualTypeBinderClassFqns;
+    myBinderClassFqns = binderClassFqns;
     myBinderShapesByMethod = binderShapesByMethod;
     Set<String> elementCalls = new LinkedHashSet<>(BinderShape.GUICE_ELEMENT_CALLS);
     for (BinderShape shape : binderShapesByMethod.values()) {
@@ -199,10 +187,6 @@ public final class GuiceExtensionIndex {
     return myGlobalCallOwnerClasses;
   }
 
-  public @NotNull Set<String> getSingleTypeBinderMethodNames() {
-    return mySingleTypeBinderMethodNames;
-  }
-
   /**
    * Returns the shape of the binder factory call with the given method name, or {@code null} when no
    * contributor registered a binder for it.
@@ -219,16 +203,12 @@ public final class GuiceExtensionIndex {
     return myBinderElementCallNames;
   }
 
-  public @NotNull Set<String> getDualTypeBinderMethodNames() {
-    return myDualTypeBinderMethodNames;
-  }
-
-  public @NotNull Set<String> getSingleTypeBinderClassFqns() {
-    return mySingleTypeBinderClassFqns;
-  }
-
-  public @NotNull Set<String> getDualTypeBinderClassFqns() {
-    return myDualTypeBinderClassFqns;
+  /**
+   * Returns the classes of the binders and binding builders that a chain may start from through a variable:
+   * the Guice binding builders and the {@link BinderShape#binderClassFqns()} of every registered binder.
+   */
+  public @NotNull Set<String> getBinderClassFqns() {
+    return myBinderClassFqns;
   }
 
   public @NotNull Set<String> getAllProvidesAnnotations() {
@@ -307,7 +287,7 @@ public final class GuiceExtensionIndex {
         }
         if (runCallEntries) {
           // The producers are wrapped at registration time, so a failure is reported there with its contributor class.
-          myCallEntryMatcher.process(node, isModule, context, (producer, callExpr, _qName, _cls, sink) -> {
+          myCallEntryMatcher.process(node, isModule, context, (producer, callExpr, sink) -> {
             producer.accept(callExpr, sink);
             return true;
           });
@@ -432,13 +412,10 @@ public final class GuiceExtensionIndex {
         GuiceCallMatcher.builder(false);
 
     private final Set<String> myGlobalCallOwnerClasses = new LinkedHashSet<>();
-    private final Set<String> mySingleTypeBinderMethods = new LinkedHashSet<>();
-    private final Set<String> myDualTypeBinderMethods = new LinkedHashSet<>();
-    private final Set<String> mySingleTypeBinderClasses = new LinkedHashSet<>(List.of(
+    private final Set<String> myBinderClasses = new LinkedHashSet<>(List.of(
         GuiceClasses.LINKED_BINDING_BUILDER,
         "com.google.inject.binder.AnnotatedBindingBuilder"
     ));
-    private final Set<String> myDualTypeBinderClasses = new LinkedHashSet<>();
     private final Map<String, BinderShape> myBinderShapesByMethod = new HashMap<>();
     private final Set<String> myBindingFieldAnnotations = new LinkedHashSet<>();
 
@@ -481,8 +458,7 @@ public final class GuiceExtensionIndex {
     public void registerSingleTypeBinder(@NotNull GuiceCallPattern pattern,
                                          @NotNull BinderShape shape,
                                          @NotNull BiFunction<? super PsiElement, ? super PsiType, ? extends BindDescriptor> factory) {
-      mySingleTypeBinderMethods.addAll(pattern.getMethodNames());
-      mySingleTypeBinderClasses.addAll(shape.binderClassFqns());
+      myBinderClasses.addAll(shape.binderClassFqns());
       for (String methodName : pattern.getMethodNames()) {
         myBinderShapesByMethod.put(methodName, shape);
       }
@@ -503,8 +479,7 @@ public final class GuiceExtensionIndex {
     public void registerDualTypeBinder(@NotNull GuiceCallPattern pattern,
                                        @NotNull BinderShape shape,
                                        @NotNull ContributorUtil.DualTypeDescriptorFactory factory) {
-      myDualTypeBinderMethods.addAll(pattern.getMethodNames());
-      myDualTypeBinderClasses.addAll(shape.binderClassFqns());
+      myBinderClasses.addAll(shape.binderClassFqns());
       for (String methodName : pattern.getMethodNames()) {
         myBinderShapesByMethod.put(methodName, shape);
       }
@@ -524,7 +499,7 @@ public final class GuiceExtensionIndex {
     public void registerCallDescriptor(@NotNull GuiceCallPattern pattern, @NotNull CallDescriptorHandler handler) {
       Class<?> contributorClass = myCurrentContributor;
       FailureReporter reporter = myReporter;
-      myDescriptorCalls.add(pattern, (call, _qName, _cls, descriptors) -> {
+      myDescriptorCalls.add(pattern, (call, descriptors) -> {
         // The handler fills a buffer; the index takes it only after a normal return.
         List<BindDescriptor> buffer = new ArrayList<>();
         try {
@@ -608,10 +583,7 @@ public final class GuiceExtensionIndex {
           callEntryMatcher,
           Set.copyOf(allCallNames),
           Set.copyOf(myGlobalCallOwnerClasses),
-          Set.copyOf(mySingleTypeBinderMethods),
-          Set.copyOf(myDualTypeBinderMethods),
-          Set.copyOf(mySingleTypeBinderClasses),
-          Set.copyOf(myDualTypeBinderClasses),
+          Set.copyOf(myBinderClasses),
           Map.copyOf(myBinderShapesByMethod),
           Set.copyOf(allProvides),
           providesInto,

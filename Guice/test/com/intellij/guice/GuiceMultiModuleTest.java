@@ -29,9 +29,7 @@ public class GuiceMultiModuleTest extends JavaCodeInsightFixtureTestCase {
 
   public void testMultiModuleDiscoveryWhenDependencyModuleHighlightedFirst() throws Exception {
     Sdk sdk = JavaSdk.getInstance().createJdk("TestJDK", System.getProperty("java.home"), false);
-    WriteCommandAction.runWriteCommandAction(getProject(), () -> {
-      ProjectJdkTable.getInstance().addJdk(sdk, getTestRootDisposable());
-    });
+    WriteCommandAction.runWriteCommandAction(getProject(), () -> ProjectJdkTable.getInstance().addJdk(sdk, getTestRootDisposable()));
     Module baseModule = myFixture.getModule();
     configureGuiceModule(baseModule, sdk);
 
@@ -95,9 +93,7 @@ public class GuiceMultiModuleTest extends JavaCodeInsightFixtureTestCase {
    */
   public void testApiOnlyModuleWithJsr330InjectIsGuiceEnabledWhenGuiceIsInProject() throws Exception {
     Sdk sdk = JavaSdk.getInstance().createJdk("TestJDK", System.getProperty("java.home"), false);
-    WriteCommandAction.runWriteCommandAction(getProject(), () -> {
-      ProjectJdkTable.getInstance().addJdk(sdk, getTestRootDisposable());
-    });
+    WriteCommandAction.runWriteCommandAction(getProject(), () -> ProjectJdkTable.getInstance().addJdk(sdk, getTestRootDisposable()));
     // The fixture module is the API module: jakarta.inject only.
     Module apiModule = myFixture.getModule();
     ModuleRootModificationUtil.setModuleSdk(apiModule, sdk);
@@ -131,7 +127,6 @@ public class GuiceMultiModuleTest extends JavaCodeInsightFixtureTestCase {
     });
     PsiDocumentManager.getInstance(getProject()).commitAllDocuments();
 
-    GuiceProjectModel model = GuiceProjectModel.getInstance(getProject());
     Truth.assertThat(GuiceProjectModel.isGuiceAvailable(appModule)).isTrue();
     Truth.assertThat(GuiceProjectModel.isGuiceAvailable(apiModule)).isTrue();
 

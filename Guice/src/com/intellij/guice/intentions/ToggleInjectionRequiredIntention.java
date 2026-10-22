@@ -58,14 +58,13 @@ public final class ToggleInjectionRequiredIntention extends PsiUpdateModCommandA
   @Override
   protected void invoke(@NotNull ActionContext context, @NotNull PsiAnnotation annotation, @NotNull ModPsiUpdater updater) {
     PsiAnnotationMemberValue value = annotation.findAttributeValue("optional");
-    if (value == null) {
-      MutationUtils.replaceAnnotation(annotation, OPTIONAL_INJECT);
-    }
-    else if (value instanceof PsiLiteralExpression) {
-      MutationUtils.replaceAnnotation(annotation, "false".equals(value.getText()) ? OPTIONAL_INJECT : MANDATORY_INJECT);
-    }
-    else if (value instanceof PsiExpression expression) {
-      MutationUtils.negateExpression(expression);
+    switch (value) {
+      case null -> MutationUtils.replaceAnnotation(annotation, OPTIONAL_INJECT);
+      case PsiLiteralExpression expression -> MutationUtils.replaceAnnotation(annotation,
+          "false".equals(expression.getText()) ? OPTIONAL_INJECT : MANDATORY_INJECT);
+      case PsiExpression expression -> MutationUtils.negateExpression(expression);
+      default -> {
+      }
     }
   }
 }

@@ -10,6 +10,7 @@ import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiAnnotationMemberValue;
 import com.intellij.psi.PsiAnnotationMethod;
+import com.intellij.psi.PsiAnonymousClass;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassObjectAccessExpression;
 import com.intellij.psi.PsiClassType;
@@ -24,21 +25,17 @@ import com.intellij.psi.PsiNameValuePair;
 import com.intellij.psi.PsiParameter;
 import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiType;
-import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.uast.UAnnotated;
-import org.jetbrains.uast.UAnnotation;
-import org.jetbrains.uast.UCallExpression;
-import org.jetbrains.uast.UElement;
-import org.jetbrains.uast.UExpression;
-import org.jetbrains.uast.UObjectLiteralExpression;
-import com.intellij.psi.PsiAnonymousClass;
-import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
-import org.jetbrains.uast.UastContextKt;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.uast.UCallExpression;
+import org.jetbrains.uast.UElement;
+import org.jetbrains.uast.UExpression;
+import org.jetbrains.uast.UObjectLiteralExpression;
 import org.jetbrains.uast.UastUtils;
 
 /**
@@ -102,28 +99,6 @@ public final class GuiceQualifiers {
     // it (javax.inject.Named has no @Target). Guice reflects on the backing field and does not see it, so the
     // key is unqualified here, as at runtime. @field:Named is on the light field and is handled above.
     return unknown;
-  }
-
-  static @NotNull List<UAnnotation> getDeclarationUAnnotations(@NotNull PsiElement navElem) {
-    ArrayList<UAnnotation> result = new ArrayList<>();
-    UElement uElem = UastContextKt.toUElement(navElem);
-    if (uElem instanceof UAnnotated uAnnotated) {
-      result.addAll(uAnnotated.getUAnnotations());
-    }
-    for (PsiElement child : navElem.getChildren()) {
-      UAnnotation direct = UastContextKt.toUElement(child, UAnnotation.class);
-      if (direct != null) {
-        result.add(direct);
-        continue;
-      }
-      for (PsiElement grandChild : child.getChildren()) {
-        UAnnotation nested = UastContextKt.toUElement(grandChild, UAnnotation.class);
-        if (nested != null) {
-          result.add(nested);
-        }
-      }
-    }
-    return result;
   }
 
   /**
