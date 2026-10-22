@@ -1,6 +1,7 @@
 // Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package com.intellij.guice.model;
 
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import java.util.Collection;
@@ -80,6 +81,13 @@ public final class GuiceNavigationIndex {
    */
   public @NotNull FileUpdate updateFile(@NotNull String filePath,
                                         @NotNull GuiceEntryProducer.FileExtractionResult extractionResult) {
+    // Entry equality goes through smart pointers, whose equals() calls checkCanceled(). A mutation must not stop
+    // halfway, so it runs in a non-cancelable section (see GuiceEntry.equals).
+    return ProgressManager.getInstance().computeInNonCancelableSection(() -> doUpdateFile(filePath, extractionResult));
+  }
+
+  private @NotNull FileUpdate doUpdateFile(@NotNull String filePath,
+                                           @NotNull GuiceEntryProducer.FileExtractionResult extractionResult) {
     lock.writeLock().lock();
     try {
       FileEntries old = entriesByFile.get(filePath);
@@ -113,14 +121,16 @@ public final class GuiceNavigationIndex {
    * Removes all entries contributed by a file.
    */
   public @NotNull FileUpdate removeFile(@NotNull String filePath) {
-    lock.writeLock().lock();
-    try {
-      FileEntries old = removeFileEntries(filePath);
-      return old == null ? FileUpdate.NONE : new FileUpdate(true, Set.copyOf(old.keyToEntries().keySet()));
-    }
-    finally {
-      lock.writeLock().unlock();
-    }
+    return ProgressManager.getInstance().computeInNonCancelableSection(() -> {
+      lock.writeLock().lock();
+      try {
+        FileEntries old = removeFileEntries(filePath);
+        return old == null ? FileUpdate.NONE : new FileUpdate(true, Set.copyOf(old.keyToEntries().keySet()));
+      }
+      finally {
+        lock.writeLock().unlock();
+      }
+    });
   }
 
   /**

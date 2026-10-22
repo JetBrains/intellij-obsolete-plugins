@@ -152,6 +152,116 @@ public class GuiceModelUpdateTest extends GuiceTestBase {
     assertThat(model.hasDirtyFiles()).isFalse();
   }
 
+  /**
+   * N1: the index mutation must finish even when the surrounding progress is cancelled. Entry equality goes
+   * through smart pointers, whose {@code equals} calls {@code checkCanceled()}; two injection points of the
+   * same key in one file share a hash bucket, so the removal compares them.
+   *
+   * <p>Note: the test framework runs in a non-cancelable section, so {@code checkCanceled()} does not throw here
+   * even without the non-cancelable section in {@link GuiceNavigationIndex}. The test guards the atomicity
+   * contract; the real protection is the non-cancelable section plus "read action before the index lock".
+   */
+  public void testIndexMutationCompletesUnderCancelledIndicator() throws Exception {
+    // No other entry of the type: the removal then looks the entries up in the file's own set, which compares
+    // the pointers of different fields that share a hash bucket.
+    PsiFile client = myFixture.configureByText("Client.java", """
+      import com.google.inject.Inject;
+      public class Client {
+        @Inject MyService first;
+        @Inject MyService second;
+        @Inject MyService third;
+      }
+      """);
+    GuiceNavigationIndex index = getNavigationIndex();
+    String path = client.getVirtualFile().getPath();
+    GuiceBindingKey key = ReadAction.compute(() -> GuiceBindingKey.forClass(myFixture.findClass("MyService")));
+    assertThat(index.findByKey(key, EntryRole.INJECTION_POINT)).hasSize(3);
+
+    // The test thread runs in a non-cancelable section, so the mutation runs on a pooled thread under a
+    // cancelled indicator, as a background drain that a write action interrupts.
+    var cancelled = new com.intellij.openapi.progress.EmptyProgressIndicator();
+    cancelled.cancel();
+    var mutation = java.util.concurrent.CompletableFuture.runAsync(
+      () -> com.intellij.openapi.progress.ProgressManager.getInstance().runProcess(
+        () -> ReadAction.run(() -> index.updateFile(path, GuiceEntryProducer.FileExtractionResult.EMPTY)),
+        cancelled),
+      com.intellij.util.concurrency.AppExecutorUtil.getAppExecutorService());
+    mutation.get(30, java.util.concurrent.TimeUnit.SECONDS);
+
+    assertThat(index.getIndexedFiles()).doesNotContain(path);
+    assertThat(index.findByKey(key, EntryRole.INJECTION_POINT)).isEmpty();
+    assertThat(index.getFilesWithEntriesOfTypes(java.util.List.of("MyService"))).doesNotContain(client.getVirtualFile());
+  }
+
+  /**
+   * N2: a file whose extraction throws must leave the dirty set, or the drain loops on it forever.
+   */
+  public void testDirtyFileWhoseExtractionThrowsDoesNotBlockTheDrain() throws Exception {
+    PsiFile client = configureClientAndModule();
+    getNavigationIndex();
+    GuiceProjectModel model = model();
+    VirtualFile clientFile = client.getVirtualFile();
+
+    GuiceProjectModel.setExtractionFailureForTests(vf -> vf.equals(clientFile), getTestRootDisposable());
+    replaceClientText(CLIENT_WITH_ONE_INJECT.replace("MyService service;", "MyService service;\n  @Inject MyKey key;"));
+    assertThat(model.hasDirtyFiles()).isTrue();
+
+    // The drain runs on another thread so that a regression shows up as a timeout, not as a hung test.
+    var drained = java.util.concurrent.CompletableFuture.runAsync(
+      () -> ReadAction.run(() -> model.getBackgroundUpdater().processDirtyFilesNow()),
+      com.intellij.util.concurrency.AppExecutorUtil.getAppExecutorService());
+    drained.get(30, java.util.concurrent.TimeUnit.SECONDS);
+
+    assertThat(model.hasDirtyFiles()).isFalse();
+    // The old entries stay until an extraction succeeds; the next edit retries.
+    assertThat(getNavigationIndex().getFilesWithEntriesOfTypes(java.util.List.of("MyService"))).contains(clientFile);
+  }
+
+  /**
+   * N4: the targeted restart must reach an open file that declares an affected type but holds no entry of
+   * its own, such as an interface whose class gutter shows the bindings of other files.
+   */
+  public void testRestartReachesOpenFilesThatDeclareAffectedTypes() {
+    PsiFile api = myFixture.addFileToProject("Api.java", "public interface Api {}\n");
+    myFixture.addClass("public class ApiImpl implements Api {}");
+    PsiFile module = myFixture.configureByText("MyModule.java", """
+      import com.google.inject.AbstractModule;
+      public class MyModule extends AbstractModule {
+        @Override
+        protected void configure() {
+        }
+      }
+      """);
+    getNavigationIndex();
+    GuiceProjectModel model = model();
+    myFixture.openFileInEditor(api.getVirtualFile());
+    myFixture.openFileInEditor(module.getVirtualFile());
+    model.clearPendingRestartsForTests();
+
+    replaceClientText(module.getText().replace("protected void configure() {", "protected void configure() {\n    bind(Api.class).to(ApiImpl.class);"));
+    assertThat(processClientNow(module.getVirtualFile())).isTrue();
+    model.requestRestartOfAffectedEditors(GuiceProjectModel.RestartMode.WHEN_DAEMON_FINISHES, module.getVirtualFile());
+
+    assertThat(model.hasDeferredRestart(api.getVirtualFile())).isTrue();
+    assertThat(model.hasDeferredRestart(module.getVirtualFile())).isFalse();
+  }
+
+  /**
+   * N3: only a real coroutine cancellation may end a collector; a {@code ProcessCanceledException} from one pass
+   * (for example from a disposed module) is logged and the collector stays alive.
+   */
+  public void testOnlyCoroutineCancellationIsFatalForACollector() {
+    // ProcessCanceledException extends CancellationException, so only the state of the collector decides.
+    var pce = new com.intellij.openapi.progress.ProcessCanceledException();
+    var disposed = new com.intellij.serviceContainer.AlreadyDisposedException("module");
+    assertThat(GuiceBackgroundIndexUpdater.isFatalForCollector(pce, true)).isFalse();
+    assertThat(GuiceBackgroundIndexUpdater.isFatalForCollector(disposed, true)).isFalse();
+    assertThat(GuiceBackgroundIndexUpdater.isFatalForCollector(new RuntimeException(), true)).isFalse();
+    assertThat(GuiceBackgroundIndexUpdater.isFatalForCollector(new java.util.concurrent.CancellationException(), false)).isTrue();
+    assertThat(GuiceBackgroundIndexUpdater.isFatalForCollector(pce, false)).isTrue();
+  }
+
+
   public void testEditInsideHighlightingDefersRestartOfOtherOpenFiles() {
     PsiFile client = configureClientAndModule();
     getNavigationIndex();

@@ -5,6 +5,7 @@ import com.intellij.guice.GuiceBundle
 import com.intellij.guice.model.extensions.GuiceExtensionIndex
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.readAction
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.application.smartReadAction
 import com.intellij.openapi.diagnostic.logger
@@ -20,12 +21,16 @@ import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.LibraryEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.TestOnly
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -56,6 +61,17 @@ class GuiceBackgroundIndexUpdater(
 ) {
     companion object {
         private val LOG = logger<GuiceBackgroundIndexUpdater>()
+
+        /**
+         * Tells if an exception from one pass must end the collector coroutine. Only the cancellation of the
+         * collector itself does. A [ProcessCanceledException] (which extends [CancellationException]) or a
+         * cancellation of an inner scope belongs to the pass; any other failure is logged.
+         *
+         * @param coroutineActive whether the collector coroutine is still active after the exception
+         */
+        @JvmStatic
+        @ApiStatus.Internal
+        fun isFatalForCollector(e: Throwable, coroutineActive: Boolean): Boolean = !coroutineActive
 
         /** Debounce delay: wait this long after the last dirty event before processing. */
         private const val DEBOUNCE_MS = 300L
@@ -140,8 +156,15 @@ class GuiceBackgroundIndexUpdater(
             block()
         }
         catch (e: Throwable) {
-            GuiceExtensionIndex.rethrowIfControlFlow(e)
-            LOG.error("Guice $what update failed", e)
+            if (isFatalForCollector(e, currentCoroutineContext().isActive)) throw e
+            if (e is CancellationException) {
+                // A cancellation of one pass, for example AlreadyDisposedException from a module that went away,
+                // is not a cancellation of the collector. The next request runs a new pass.
+                LOG.debug("Guice $what update was cancelled", e)
+            }
+            else {
+                LOG.error("Guice $what update failed", e)
+            }
         }
     }
 
@@ -235,12 +258,14 @@ class GuiceBackgroundIndexUpdater(
             processSafely(vf) { model.processDiscoveredFile(vf, generation) }
         }
         processDirtyFilesNow()
-        model.completePopulationIfCurrent(generation, pathsBefore, discoveredFiles)
+        runReadAction { model.completePopulationIfCurrent(generation, pathsBefore, discoveredFiles) }
         model.requestRestartOfAffectedEditors(GuiceProjectModel.RestartMode.WHEN_DAEMON_FINISHES, null)
     }
 
     private suspend fun runPopulationLoop(module: Module) {
         while (model.isPopulationNeeded) {
+            if (module.isDisposed) return
+
             val generation = model.structureGeneration
             val pathsBefore = model.indexedFilesSnapshot
 
@@ -283,7 +308,14 @@ class GuiceBackgroundIndexUpdater(
                     }
 
                     reporter.fraction(1.0)
-                    model.completePopulationIfCurrent(generation, pathsBefore, discoveredFiles)
+                    // The prune compares entries, and entry equality takes a read action (smart pointers).
+                    // Take the read action first, then the index lock, like every other caller of the index.
+                    val outcome = readAction { model.completePopulationIfCurrent(generation, pathsBefore, discoveredFiles) }
+                    if (outcome.completed) {
+                        // Files without entries of their own (an interface whose class gutter shows bindings of
+                        // other files) are not in the affected set: after a population, every open file is restarted.
+                        model.restartAllOpenFilesAfterPopulation()
+                    }
                 }
             }
         }

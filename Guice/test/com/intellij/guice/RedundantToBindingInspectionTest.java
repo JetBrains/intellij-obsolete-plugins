@@ -50,6 +50,36 @@ public class RedundantToBindingInspectionTest extends GuiceTestBase {
    * {@code to()} on a multibinder or optional-binder element binds no key of its own,
    * so it is never redundant, even when the element type has {@code @ImplementedBy}.
    */
+  /**
+   * N6: {@code to(Key.get(T, qualifier))} links to another binding of the same type. It is not a self-binding,
+   * and the "Remove binding target" fix would break the injector.
+   */
+  public void testLinkToQualifiedKeyOfSameTypeIsNotRedundant() {
+    myFixture.addClass("""
+      package test;
+      public interface Foo {}
+    """);
+    myFixture.addClass("""
+      package test;
+      public class FooImpl implements Foo {}
+    """);
+    myFixture.configureByText("MyModule.java", """
+      import com.google.inject.AbstractModule;
+      import com.google.inject.Key;
+      import com.google.inject.name.Names;
+      import test.*;
+      public class MyModule extends AbstractModule {
+        @Override
+        protected void configure() {
+          bind(Foo.class).to(Key.get(Foo.class, Names.named("prod")));
+          bind(Foo.class).annotatedWith(Names.named("prod")).to(FooImpl.class);
+          bind(FooImpl.class).to(<warning descr="Binding to class FooImpl is redundant">FooImpl</warning>.class);
+        }
+      }
+    """);
+    myFixture.testHighlighting(true, false, true);
+  }
+
   public void testBinderElementBindingIsNotRedundant() {
     myFixture.addClass("""
       package test;

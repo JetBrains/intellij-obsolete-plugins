@@ -37,6 +37,10 @@ public final class UninstantiableBindingInspection extends BaseUastInspection {
   }
 
   private static void checkToCall(@NotNull UCallExpression expression, @NotNull BaseUastInspectionVisitor visitor) {
+    // to(Key.get(T, qualifier)) links to another binding of T; Guice constructs nothing here.
+    if (GuiceUtils.linksToQualifiedKey(expression)) {
+      return;
+    }
     PsiClass referentClass = GuiceUtils.resolveClassArgument(expression);
     if (referentClass == null || GuiceUtils.isInstantiable(referentClass)) {
       return;

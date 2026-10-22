@@ -17,8 +17,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.uast.*;
 
-import static com.intellij.codeInsight.AnnotationUtil.CHECK_HIERARCHY;
-
 @ApiStatus.Experimental
 public final class GuiceUtils {
   private GuiceUtils() { }
@@ -78,7 +76,7 @@ public final class GuiceUtils {
     for (String providerFqn : GuiceClasses.PROVIDERS) {
       if (InheritanceUtil.isInheritor(providerClass, providerFqn)) {
         PsiClass providedType = getProvidedType(providerClass);
-        return providedType != null && InheritanceUtil.isInheritorOrSelf(providedType, providedClass, true);
+        return InheritanceUtil.isInheritorOrSelf(providedType, providedClass, true);
       }
     }
     PsiMethod[] allMethods = providerClass.getAllMethods();
@@ -472,6 +470,15 @@ public final class GuiceUtils {
   public static boolean isQualifiedKey(@NotNull UExpression expression) {
     UCallExpression keyGet = GuiceQualifiers.asKeyGet(expression);
     return keyGet != null && keyGet.getValueArgumentCount() > 1;
+  }
+
+  /**
+   * Tells if the call links to another binding through a qualified key, {@code to(Key.get(T, qualifier))}.
+   * Such a target is a link, not a construction: it is neither redundant nor uninstantiable here.
+   */
+  public static boolean linksToQualifiedKey(@NotNull UCallExpression call) {
+    List<UExpression> args = call.getValueArguments();
+    return args.size() == 1 && isQualifiedKey(args.getFirst());
   }
 
   /**

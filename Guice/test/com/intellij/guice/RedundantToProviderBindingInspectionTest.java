@@ -10,6 +10,37 @@ public class RedundantToProviderBindingInspectionTest extends GuiceTestBase {
     myFixture.enableInspections(new RedundantToProviderBindingInspection());
   }
 
+  /**
+   * N6: {@code toProvider(Key.get(P, qualifier))} links to a qualified provider binding; it is not redundant.
+   */
+  public void testLinkToQualifiedProviderKeyIsNotRedundant() {
+    myFixture.addClass("""
+      package test;
+      @com.google.inject.ProvidedBy(FooProvider.class)
+      public interface Foo {}
+    """);
+    myFixture.addClass("""
+      package test;
+      public class FooProvider implements com.google.inject.Provider<Foo> {
+        public Foo get() { return null; }
+      }
+    """);
+    myFixture.configureByText("MyModule.java", """
+      import com.google.inject.AbstractModule;
+      import com.google.inject.Key;
+      import com.google.inject.name.Names;
+      import test.*;
+      public class MyModule extends AbstractModule {
+        @Override
+        protected void configure() {
+          bind(Foo.class).toProvider(Key.get(FooProvider.class, Names.named("x")));
+          bind(Foo.class).toProvider(<warning descr="Binding to class FooProvider is redundant">FooProvider</warning>.class);
+        }
+      }
+    """);
+    myFixture.testHighlighting(true, false, true);
+  }
+
   public void testJavaRedundantToProviderBinding() {
     myFixture.addClass("""
       package test;

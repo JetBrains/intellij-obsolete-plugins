@@ -51,6 +51,9 @@ import kotlinx.coroutines.CoroutineScope;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
+import com.intellij.openapi.util.Disposer;
+import java.util.function.Predicate;
+import com.intellij.openapi.application.ReadAction;
 
 /**
  * Project-level service that owns the Guice index infrastructure and keeps it up-to-date
@@ -373,7 +376,8 @@ public final class GuiceProjectModel implements Disposable {
    * synchronously after the platform cleared the cached {@link com.intellij.guice.model.extensions.GuiceExtensionIndex}.
    */
   private void onContributorsChanged() {
-    myNavigationIndex.clear();
+    // Read action first, then the index lock: entry equality takes a read action (smart pointers).
+    ReadAction.run(myNavigationIndex::clear);
     myFileStamps.clear();
     myPendingRestartTypeFqns.clear();
     myFilesToRestartWhenDaemonFinishes.clear();
@@ -481,7 +485,10 @@ public final class GuiceProjectModel implements Disposable {
    */
   @NotNull List<DiscoveryStep> createDiscoverySteps(@NotNull Module module) {
     Set<Module> guiceModules = new HashSet<>();
-    guiceModules.add(module);
+    // The module that requested the index may be gone when a background pass reaches this point.
+    if (!module.isDisposed()) {
+      guiceModules.add(module);
+    }
     for (Module m : ModuleManager.getInstance(myProject).getModules()) {
       if (isGuiceAvailable(m)) {
         guiceModules.add(m);
@@ -642,7 +649,28 @@ public final class GuiceProjectModel implements Disposable {
    * or the new extraction result equals the stored one
    */
   boolean processSingleDirtyFile(@NotNull VirtualFile file) {
-    return processFileAtomically(file, myStructureGeneration.get(), true);
+    try {
+      return processFileAtomically(file, myStructureGeneration.get(), true);
+    }
+    catch (Throwable t) {
+      GuiceExtensionIndex.rethrowIfControlFlow(t);
+      // The file leaves the dirty set, or the drain would loop on it forever. Its stamp is not recorded,
+      // so the next highlighting pass or edit of the file retries the extraction.
+      myDirtyFiles.remove(file);
+      throw t;
+    }
+  }
+
+  private static volatile @Nullable Predicate<VirtualFile> ourExtractionFailureForTests;
+
+  /**
+   * Makes the extraction of the files that match {@code failing} throw, to test the failure paths of the
+   * update pipeline.
+   */
+  @TestOnly
+  public static void setExtractionFailureForTests(@NotNull Predicate<VirtualFile> failing, @NotNull Disposable parent) {
+    ourExtractionFailureForTests = failing;
+    Disposer.register(parent, () -> ourExtractionFailureForTests = null);
   }
 
   /**
@@ -694,6 +722,10 @@ public final class GuiceProjectModel implements Disposable {
       return false;
     }
 
+    Predicate<VirtualFile> failureForTests = ourExtractionFailureForTests;
+    if (failureForTests != null && failureForTests.test(vf)) {
+      throw new IllegalStateException("Simulated extraction failure for " + path);
+    }
     GuiceEntryProducer.FileExtractionResult result =
         fileForExtraction instanceof PsiClassOwner
         ? GuiceEntryProducer.extractFileData(fileForExtraction)
@@ -799,6 +831,9 @@ public final class GuiceProjectModel implements Disposable {
     myPendingRestartTypeFqns.removeAll(typeFqns);
 
     Set<VirtualFile> files = myNavigationIndex.getFilesWithEntriesOfTypes(typeFqns);
+    // An open file that declares an affected type holds no entry of its own when the type is an interface
+    // or has no @Inject member, but its class gutter shows the bindings of the type.
+    files.addAll(openFilesDeclaringTypes(typeFqns));
     if (excludedFile != null) {
       files.remove(excludedFile);
     }
@@ -810,6 +845,46 @@ public final class GuiceProjectModel implements Disposable {
     else {
       ApplicationManager.getApplication().invokeLater(() -> restartOpenFiles(files), myProject.getDisposed());
     }
+  }
+
+  /**
+   * Returns the open files that declare a class whose qualified name is in {@code typeFqns}. Reads the
+   * class names from the stubs; open editors are few, so this is cheap.
+   */
+  private @NotNull Set<VirtualFile> openFilesDeclaringTypes(@NotNull Set<String> typeFqns) {
+    if (myProject.isDisposed()) return Set.of();
+    VirtualFile[] openFiles = FileEditorManager.getInstance(myProject).getOpenFiles();
+    if (openFiles.length == 0) return Set.of();
+    return ReadAction.compute(() -> {
+      Set<VirtualFile> result = new HashSet<>();
+      PsiManager psiManager = PsiManager.getInstance(myProject);
+      for (VirtualFile openFile : openFiles) {
+        if (!openFile.isValid() || !GuiceVfsListener.isRelevantFile(openFile)) continue;
+        PsiFile psiFile = psiManager.findFile(openFile);
+        if (psiFile instanceof PsiClassOwner classOwner && declaresAnyOf(classOwner.getClasses(), typeFqns)) {
+          result.add(openFile);
+        }
+      }
+      return result;
+    });
+  }
+
+  private static boolean declaresAnyOf(PsiClass @NotNull [] classes, @NotNull Set<String> typeFqns) {
+    for (PsiClass psiClass : classes) {
+      String fqn = psiClass.getQualifiedName();
+      if (fqn != null && typeFqns.contains(fqn)) return true;
+      if (declaresAnyOf(psiClass.getInnerClasses(), typeFqns)) return true;
+    }
+    return false;
+  }
+
+  /**
+   * Restarts the highlighting of every open file after a population pass. The targeted restart cannot name
+   * the files whose gutters depend on the new index but that hold no entries themselves.
+   */
+  void restartAllOpenFilesAfterPopulation() {
+    if (myProject.isDisposed() || isUnitTestMode()) return;
+    DaemonCodeAnalyzer.getInstance(myProject).restart("Guice model populated");
   }
 
   private void restartDeferredFiles() {

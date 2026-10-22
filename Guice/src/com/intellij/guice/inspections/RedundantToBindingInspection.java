@@ -11,7 +11,6 @@ import com.intellij.guice.utils.GuiceUtils;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.uast.UCallExpression;
 
 
@@ -39,6 +38,10 @@ public final class RedundantToBindingInspection extends BaseUastInspection {
   }
 
   private static void checkToCall(@NotNull UCallExpression expression, @NotNull BaseUastInspectionVisitor visitor) {
+    // to(Key.get(T, qualifier)) links to another binding of T; Guice constructs nothing here.
+    if (GuiceUtils.linksToQualifiedKey(expression)) {
+      return;
+    }
     PsiClass referentClass = GuiceUtils.resolveClassArgument(expression);
     if (referentClass == null) {
       return;

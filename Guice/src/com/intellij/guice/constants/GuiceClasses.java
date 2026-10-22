@@ -10,6 +10,7 @@ public final class GuiceClasses {
   }
 
   public static final String ABSTRACT_MODULE = "com.google.inject.AbstractModule";
+  public static final String PRIVATE_MODULE = "com.google.inject.PrivateModule";
 
   public static final String PROVIDER = "com.google.inject.Provider";
   public static final String JAVAX_PROVIDER = "javax.inject.Provider";

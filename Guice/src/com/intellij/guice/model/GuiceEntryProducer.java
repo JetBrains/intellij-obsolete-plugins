@@ -196,6 +196,36 @@ public final class GuiceEntryProducer {
     extensionIndex.processClassCalls(cls, isModule, descriptors, callContext);
     if (descriptors != null) {
       addBindingCallEntries(cls, descriptors, entries);
+      recordUnresolvedClassArguments(descriptors, callContext);
+    }
+  }
+
+  /**
+   * Records the names of the classes that a binding chain names but that do not resolve yet, for example
+   * {@code LateImpl} in {@code bind(Foo.class).to(LateImpl.class)} written before the class exists. When a
+   * file of that name appears or is renamed, the index re-extracts this file (see
+   * {@link GuiceNavigationIndex#getDependentRegistrarFilesByClassName}), so the new class gets its entries
+   * without an edit of the module.
+   */
+  private static void recordUnresolvedClassArguments(@NotNull Set<BindDescriptor> descriptors,
+                                                     @NotNull CallContextImpl callContext) {
+    for (BindDescriptor descriptor : descriptors) {
+      UCallExpression chain;
+      try {
+        chain = descriptor.getOutermostCall();
+      }
+      catch (Throwable t) {
+        GuiceExtensionIndex.rethrowIfControlFlow(t);
+        continue;
+      }
+      for (UCallExpression call = chain; call != null; call = GuiceUtils.getReceiverCall(call)) {
+        for (UExpression argument : call.getValueArguments()) {
+          PsiType type = GuiceUtils.getBindingTypeFromExpression(argument);
+          if (type instanceof PsiClassType classType && classType.resolve() == null) {
+            callContext.recordCandidateClassNames(argument);
+          }
+        }
+      }
     }
   }
 

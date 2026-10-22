@@ -12,8 +12,13 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiMethod;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.uast.UCallExpression;
+import org.jetbrains.uast.visitor.AbstractUastVisitor;
+import org.jetbrains.uast.UastUtils;
+import org.jetbrains.uast.UClass;
+import com.intellij.psi.util.InheritanceUtil;
+import com.intellij.openapi.util.Ref;
+import com.intellij.guice.constants.GuiceClasses;
 
 /**
  * Reports pointless untargeted {@code bind()} calls where the bound class has no
@@ -48,7 +53,31 @@ public final class PointlessBindingInspection extends BaseUastInspection {
     if (psiClass == null || usesInject(psiClass)) {
       return;
     }
+    if (requiresExplicitBindings(expression)) {
+      return;
+    }
     visitor.registerError(expression);
+  }
+
+  /**
+   * Tells if the module needs an explicit binding for every class it uses: a {@code PrivateModule} (an exposed
+   * class needs a binding inside the private module) or a module that calls {@code requireExplicitBindings()}.
+   */
+  private static boolean requiresExplicitBindings(@NotNull UCallExpression bindCall) {
+    UClass moduleClass = UastUtils.getParentOfType(bindCall, UClass.class);
+    if (moduleClass == null) return false;
+    if (InheritanceUtil.isInheritor(moduleClass.getJavaPsi(), GuiceClasses.PRIVATE_MODULE)) return true;
+    Ref<Boolean> found = new Ref<>(false);
+    moduleClass.accept(new AbstractUastVisitor() {
+      @Override
+      public boolean visitCallExpression(@NotNull UCallExpression node) {
+        if ("requireExplicitBindings".equals(node.getMethodName())) {
+          found.set(true);
+        }
+        return found.get() || super.visitCallExpression(node);
+      }
+    });
+    return found.get();
   }
 
   private static boolean usesInject(PsiClass aClass) {

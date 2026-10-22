@@ -56,6 +56,37 @@ public class GuiceIntentionsTest extends GuiceTestBase {
     assertThat(intentionTexts()).doesNotContain("Move binding scope to class");
   }
 
+  /**
+   * N7: moving the target of a qualified key, of a multibinder element or of a {@code Key.get} link to an
+   * {@code @ImplementedBy}/{@code @ProvidedBy} annotation would change what Guice injects.
+   */
+  public void testMoveBindingToClassIsNotOfferedWhenTheResultWouldChangeSemantics() {
+    myFixture.addFileToProject("test/Foo.java", "package test;\npublic interface Foo {}\n");
+    myFixture.addFileToProject("test/FooImpl.java", "package test;\npublic class FooImpl implements Foo {}\n");
+    myFixture.addFileToProject("test/FooProvider.java", """
+      package test;
+      public class FooProvider implements javax.inject.Provider<Foo> {
+        public Foo get() { return null; }
+      }
+      """);
+
+    configureModule("bind(Foo.class).annotatedWith(com.google.inject.name.Names.named(\"x\")).t<caret>o(FooImpl.class);");
+    assertThat(intentionTexts()).doesNotContain("Move binding class to class");
+
+    configureModule("bind(Foo.class).annotatedWith(com.google.inject.name.Names.named(\"x\")).toProv<caret>ider(FooProvider.class);");
+    assertThat(intentionTexts()).doesNotContain("Move provider binding to class");
+
+    configureModule("bind(Foo.class).t<caret>o(com.google.inject.Key.get(FooImpl.class, com.google.inject.name.Names.named(\"q\")));");
+    assertThat(intentionTexts()).doesNotContain("Move binding class to class");
+
+    configureModule("com.google.inject.multibindings.Multibinder.newSetBinder(binder(), Foo.class).addBinding().t<caret>o(FooImpl.class);");
+    assertThat(intentionTexts()).doesNotContain("Move binding class to class");
+
+    // The plain linked binding is still offered.
+    configureModule("bind(Foo.class).t<caret>o(FooImpl.class);");
+    assertThat(intentionTexts()).contains("Move binding class to class");
+  }
+
   public void testMoveBindingScopeToClassForLinkedBinding() {
     myFixture.addFileToProject("test/Foo.java", "package test;\npublic interface Foo {}\n");
     myFixture.addFileToProject("test/FooImpl.java", "package test;\npublic class FooImpl implements Foo {}\n");

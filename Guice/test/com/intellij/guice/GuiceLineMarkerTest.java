@@ -123,6 +123,33 @@ public class GuiceLineMarkerTest extends GuiceTestBase {
     assertThat(gutterTargets(TO_BINDINGS_TOOLTIP)).containsExactly("bind(MyService.class).to(FooImpl.class)");
   }
 
+  /**
+   * N5: the module references {@code LateImpl} before that class exists (the usual "write the binding, then
+   * create the class with a quick-fix" flow). Creating the class must re-index the module, so the new class
+   * gets its gutter without an edit of the module.
+   */
+  public void testImplementationClassCreatedAfterTheBindingGetsGutter() {
+    var moduleFile = myFixture.configureByText("MyModule.java", """
+      import com.google.inject.AbstractModule;
+      public class MyModule extends AbstractModule {
+        @Override
+        protected void configure() {
+          bind(MyService.class).to(LateImpl.class);
+        }
+      }
+      """);
+    assertThat(gutterAnchors(TO_INJECTION_POINTS_TOOLTIP)).isEmpty();
+    assertThat(getNavigationIndex().getIndexedFiles()).contains(moduleFile.getVirtualFile().getPath());
+
+    var implFile = myFixture.addFileToProject("LateImpl.java", """
+      public class LateImpl implements MyService {}
+      """);
+    myFixture.openFileInEditor(implFile.getVirtualFile());
+
+    assertThat(gutterAnchors(TO_BINDINGS_TOOLTIP)).containsExactly("LateImpl");
+    assertThat(gutterTargets(TO_BINDINGS_TOOLTIP)).containsExactly("bind(MyService.class).to(LateImpl.class)");
+  }
+
   public void testGetProviderGutter() {
     myFixture.configureByText("MyModule.java", """
       import com.google.inject.AbstractModule;

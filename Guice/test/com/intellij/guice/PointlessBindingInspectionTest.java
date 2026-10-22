@@ -10,6 +10,41 @@ public class PointlessBindingInspectionTest extends GuiceTestBase {
     myFixture.enableInspections(new PointlessBindingInspection());
   }
 
+  /**
+   * N8: an untargeted {@code bind(X.class)} is required under {@code requireExplicitBindings()} and in a
+   * {@code PrivateModule} that exposes {@code X}; the "Delete binding" fix would break the injector.
+   */
+  public void testBindingIsRequiredUnderExplicitBindingsAndInPrivateModules() {
+    myFixture.addClass("""
+      public class Foo {
+        public Foo() {}
+      }
+    """);
+    myFixture.configureByText("ExplicitModule.java", """
+      import com.google.inject.AbstractModule;
+      public class ExplicitModule extends AbstractModule {
+        @Override
+        protected void configure() {
+          binder().requireExplicitBindings();
+          bind(Foo.class);
+        }
+      }
+    """);
+    myFixture.testHighlighting(true, false, true);
+
+    myFixture.configureByText("ExposingModule.java", """
+      import com.google.inject.PrivateModule;
+      public class ExposingModule extends PrivateModule {
+        @Override
+        protected void configure() {
+          bind(Foo.class);
+          expose(Foo.class);
+        }
+      }
+    """);
+    myFixture.testHighlighting(true, false, true);
+  }
+
   public void testJavaPointlessBinding() {
     myFixture.addClass("""
       public class Foo {

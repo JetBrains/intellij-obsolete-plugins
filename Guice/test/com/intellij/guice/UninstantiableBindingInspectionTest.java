@@ -10,6 +10,40 @@ public class UninstantiableBindingInspectionTest extends GuiceTestBase {
     myFixture.enableInspections(new UninstantiableBindingInspection());
   }
 
+  /**
+   * N6: {@code to(Key.get(T, qualifier))} links to another binding; Guice does not construct {@code T} there.
+   */
+  public void testLinkToQualifiedKeyIsNotUninstantiable() {
+    myFixture.addClass("""
+      package test;
+      public interface Foo {}
+    """);
+    myFixture.addClass("""
+      package test;
+      public class FooImpl implements Foo {}
+    """);
+    myFixture.addClass("""
+      package test;
+      public interface Bar {}
+    """);
+    myFixture.configureByText("MyModule.java", """
+      import com.google.inject.AbstractModule;
+      import com.google.inject.Key;
+      import com.google.inject.name.Names;
+      import test.*;
+      public class MyModule extends AbstractModule {
+        @Override
+        protected void configure() {
+          bind(Foo.class).to(Key.get(Foo.class, Names.named("prod")));
+          bind(Foo.class).annotatedWith(Names.named("prod")).to(FooImpl.class);
+          // A link to a class that no binding of the module provides is still reported.
+          bind(Bar.class).annotatedWith(Names.named("bad")).to(<warning descr="Class Bar is uninstantiable, and thus can not be bound">Bar</warning>.class);
+        }
+      }
+    """);
+    myFixture.testHighlighting(true, false, true);
+  }
+
   public void testJavaUninstantiableBinding() {
     myFixture.addClass("""
       package test;

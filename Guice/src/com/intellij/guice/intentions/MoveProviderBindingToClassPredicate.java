@@ -18,6 +18,9 @@ public class MoveProviderBindingToClassPredicate implements PsiElementPredicate 
     if (GuiceInjectionUtil.getCallExpressionType(uCall, "toProvider") == null) {
       return false;
     }
+    if (!MoveBindingToClassPredicate.isPlainLinkedBinding(uCall, "toProvider")) {
+      return false;
+    }
     final PsiClass implementedClass = GuiceUtils.findImplementedClassForBinding(uCall);
     if (!MoveBindingToClassPredicate.isAnnotatableSourceClass(implementedClass)) {
       return false;
