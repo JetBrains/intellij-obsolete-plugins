@@ -3,11 +3,14 @@ package com.intellij.guice.model;
 
 import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.guice.constants.GuiceAnnotations;
+import com.intellij.guice.model.extensions.BinderShape;
 import com.intellij.guice.model.extensions.GuiceExtensionIndex;
 import com.intellij.guice.utils.GuiceUtils;
 import com.intellij.psi.*;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.uast.UObjectLiteralExpression;
+import com.intellij.psi.PsiAnonymousClass;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.uast.*;
 
@@ -73,37 +76,9 @@ public final class GuiceQualifiers {
       }
     }
 
-    // A Kotlin property without a use-site target puts qualifier annotations on the property,
-    // not on the light backing field. Inspect UAST annotations on the source property.
-    if (unknown == null && element instanceof PsiField && element.getNavigationElement() != element) {
-      for (UAnnotation uAnno : getDeclarationUAnnotations(element.getNavigationElement())) {
-        String fqn = uAnno.getQualifiedName();
-        if (isKnownNonQualifier(fqn) || (fqn != null && ignoredAnnotations.contains(fqn))) continue;
-
-        PsiClass annotationClass = uAnno.resolve();
-        if (annotationClass == null) {
-          if (unknown == null) {
-            PsiElement sourcePsi = uAnno.getSourcePsi();
-            unknown = new GuiceQualifier.Unknown(sourcePsi != null ? sourcePsi.getText() : String.valueOf(fqn));
-          }
-          continue;
-        }
-        String resolvedFqn = annotationClass.getQualifiedName();
-        if (resolvedFqn == null || ignoredAnnotations.contains(resolvedFqn)) continue;
-        if (GuiceAnnotations.NAMEDS.contains(resolvedFqn)) {
-          UExpression valExpr = uAnno.findAttributeValue("value");
-          return new GuiceQualifier.Named(valExpr != null ? UastUtils.evaluateString(valExpr) : null);
-        }
-        if (AnnotationUtil.isAnnotated(annotationClass, GuiceAnnotations.BINDING_ANNOTATIONS, AnnotationUtil.CHECK_HIERARCHY)) {
-          PsiAnnotation javaPsi = uAnno.getJavaPsi();
-          if (javaPsi != null) {
-            return fromAnnotationInstance(javaPsi, annotationClass, resolvedFqn);
-          }
-          return new GuiceQualifier.Marker(resolvedFqn);
-        }
-      }
-    }
-
+    // A Kotlin property annotation without a use-site target lands on the property when the annotation allows
+    // it (javax.inject.Named has no @Target). Guice reflects on the backing field and does not see it, so the
+    // key is unqualified here, as at runtime. @field:Named is on the light field and is handled above.
     return unknown;
   }
 
@@ -221,7 +196,26 @@ public final class GuiceQualifiers {
     if (keyGet != null && keyGet.getValueArgumentCount() > 1) {
       return fromExpression(keyGet.getValueArguments().get(1));
     }
+    UExpression keyLiteralQualifier = bindArg != null ? qualifierOfAnonymousKey(bindArg) : null;
+    if (keyLiteralQualifier != null) {
+      return fromExpression(keyLiteralQualifier);
+    }
     return null;
+  }
+
+  /**
+   * Returns the qualifier argument of an anonymous {@code Key} subclass, {@code new Key<T>(qualifier) {}},
+   * or {@code null} when the expression is not such a key or the key has no qualifier.
+   */
+  static @Nullable UExpression qualifierOfAnonymousKey(@NotNull UExpression expression) {
+    UExpression unwrapped = GuiceUtils.skipParenthesesAndCasts(expression);
+    if (!(unwrapped instanceof UObjectLiteralExpression objectLiteral)) return null;
+    PsiClass declaration = objectLiteral.getDeclaration().getJavaPsi();
+    if (!(declaration instanceof PsiAnonymousClass anonymousClass)) return null;
+    PsiClass baseClass = anonymousClass.getBaseClassType().resolve();
+    if (baseClass == null || !"com.google.inject.Key".equals(baseClass.getQualifiedName())) return null;
+    List<UExpression> args = objectLiteral.getValueArguments();
+    return args.isEmpty() ? null : args.getFirst();
   }
 
   /**
@@ -232,34 +226,16 @@ public final class GuiceQualifiers {
    */
   static @Nullable GuiceQualifier fromBinderCall(@NotNull UCallExpression outermostCall) {
     GuiceExtensionIndex extensionIndex = GuiceExtensionIndex.get();
-    for (String name : extensionIndex.getSingleTypeBinderMethodNames()) {
-      UCallExpression call = GuiceUtils.findCallInChain(outermostCall, name);
-      if (call != null) {
-        List<UExpression> args = call.getValueArguments();
-        if (args.size() >= 3) {
-          return fromExpression(args.get(2));
-        }
-        if (args.size() == 2) {
-          UCallExpression keyGet = asKeyGet(args.get(1));
-          if (keyGet != null && keyGet.getValueArgumentCount() > 1) {
-            return fromExpression(keyGet.getValueArguments().get(1));
-          }
-        }
-        return null;
-      }
-    }
-    for (String name : extensionIndex.getDualTypeBinderMethodNames()) {
-      UCallExpression call = GuiceUtils.findCallInChain(outermostCall, name);
-      if (call != null) {
-        List<UExpression> args = call.getValueArguments();
-        if (args.size() >= 4) {
-          return fromExpression(args.get(3));
-        }
-        return null;
+    for (UCallExpression call = outermostCall; call != null; call = GuiceUtils.getReceiverCall(call)) {
+      BinderShape shape = extensionIndex.findBinderShape(call.getMethodName());
+      if (shape != null) {
+        UExpression qualifier = shape.qualifierExtractor().apply(call);
+        return qualifier != null ? fromExpression(qualifier) : null;
       }
     }
     return null;
   }
+
 
   /**
    * Returns the call {@code Key.get(...)} if the expression is such a call, possibly qualified.

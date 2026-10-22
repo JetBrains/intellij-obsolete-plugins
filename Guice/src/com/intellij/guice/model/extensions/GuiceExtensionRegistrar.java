@@ -47,9 +47,19 @@ public interface GuiceExtensionRegistrar {
    * @param typeExtractor   returns the element type of a factory call, or {@code null} when it has none
    * @param factory         creates the descriptor from the outermost chain expression and the element type
    */
+  default void registerSingleTypeBinder(@NotNull GuiceCallPattern pattern,
+                                        @NotNull Collection<String> binderClassFqns,
+                                        @NotNull Function<? super UCallExpression, ? extends PsiType> typeExtractor,
+                                        @NotNull BiFunction<? super PsiElement, ? super PsiType, ? extends BindDescriptor> factory) {
+    registerSingleTypeBinder(pattern, BinderShape.singleType(binderClassFqns, typeExtractor), factory);
+  }
+
+  /**
+   * Registers a single-type binder factory call with its full {@link BinderShape}: bound type, qualifier and
+   * element calls. Every consumer of the binder call follows the shape.
+   */
   void registerSingleTypeBinder(@NotNull GuiceCallPattern pattern,
-                                @NotNull Collection<String> binderClassFqns,
-                                @NotNull Function<? super UCallExpression, ? extends PsiType> typeExtractor,
+                                @NotNull BinderShape shape,
                                 @NotNull BiFunction<? super PsiElement, ? super PsiType, ? extends BindDescriptor> factory);
 
   /**
@@ -70,9 +80,19 @@ public interface GuiceExtensionRegistrar {
    * @param typesExtractor  returns the key and value types of a factory call as a two-element array; an element
    *                        is {@code null} when the call has no such type
    */
+  default void registerDualTypeBinder(@NotNull GuiceCallPattern pattern,
+                                      @NotNull Collection<String> binderClassFqns,
+                                      @NotNull Function<? super UCallExpression, PsiType @NotNull []> typesExtractor,
+                                      @NotNull ContributorUtil.DualTypeDescriptorFactory factory) {
+    registerDualTypeBinder(pattern, BinderShape.dualType(binderClassFqns, typesExtractor), factory);
+  }
+
+  /**
+   * Registers a dual-type binder factory call with its full {@link BinderShape}: key and value types,
+   * qualifier and element calls. Every consumer of the binder call follows the shape.
+   */
   void registerDualTypeBinder(@NotNull GuiceCallPattern pattern,
-                              @NotNull Collection<String> binderClassFqns,
-                              @NotNull Function<? super UCallExpression, PsiType @NotNull []> typesExtractor,
+                              @NotNull BinderShape shape,
                               @NotNull ContributorUtil.DualTypeDescriptorFactory factory);
 
   /**

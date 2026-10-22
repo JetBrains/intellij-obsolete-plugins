@@ -8,6 +8,8 @@ import com.intellij.guice.model.beans.BindToDescriptor;
 import com.intellij.guice.model.beans.SetMultibindDescriptor;
 import com.intellij.guice.model.extensions.GuiceBindingContributor;
 import com.intellij.guice.model.extensions.GuiceCallPattern;
+import com.intellij.guice.model.extensions.BinderShape;
+import com.intellij.guice.model.beans.MapMultibindDescriptor;
 import com.intellij.guice.utils.GuiceUtils;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.util.Disposer;
@@ -146,6 +148,68 @@ public class GuiceContributorRulesTest extends GuiceTestBase {
       // The @Inject field, the bind() key and the to(MyServiceImpl) implementation reference; nothing from the broken calls.
       assertThat(anchors).containsNoneOf("brokenBind", "brokenFlags", "NAME");
       assertThat(entries.stream().noneMatch(e -> e.getPresentableText() != null && e.getPresentableText().contains("NAME"))).isTrue();
+    }
+    finally {
+      Disposer.dispose(disposable);
+    }
+  }
+
+  /**
+   * M10: a binder with its own argument order and element call describes its shape through the API, and every
+   * consumer follows it: the key types and the qualifier of the entries, and the element chain that turns a
+   * {@code .to(Impl)} tail into an implementation reference instead of a binding of the value type.
+   */
+  public void testBinderShapeDrivesTypesQualifierAndElementCalls() {
+    myFixture.addClass("""
+      import com.google.inject.Binder;
+      import com.google.inject.binder.LinkedBindingBuilder;
+      import java.lang.annotation.Annotation;
+      public final class RegistryBinder<K, V> {
+        public static <K, V> RegistryBinder<K, V> create(Class<K> key, Class<V> value, Annotation qualifier, Binder binder) { return null; }
+        public LinkedBindingBuilder<V> addEntry(K key) { return null; }
+      }
+      """);
+    var disposable = Disposer.newDisposable();
+    try {
+      GuiceBindingContributor.EP_NAME.getPoint().registerExtension(
+        registrar -> registrar.registerDualTypeBinder(
+          GuiceCallPattern.named("create").withOwnerClass("RegistryBinder"),
+          new BinderShape(
+            List.of("RegistryBinder"),
+            call -> new com.intellij.psi.PsiType[]{
+              GuiceUtils.getBindingTypeFromExpression(call.getValueArguments().get(0)),
+              GuiceUtils.getBindingTypeFromExpression(call.getValueArguments().get(1))},
+            call -> call.getValueArguments().get(2),
+            List.of("addEntry")),
+          MapMultibindDescriptor::new),
+        disposable);
+
+      myFixture.addFileToProject("MyModule.java", """
+        import com.google.inject.AbstractModule;
+        import com.google.inject.name.Names;
+        public class MyModule extends AbstractModule {
+          @Override
+          protected void configure() {
+            RegistryBinder.create(String.class, MyService.class, Names.named("reg"), binder()).addEntry("a").to(MyServiceImpl.class);
+          }
+        }
+        """);
+      myFixture.configureByText("Client.java", """
+        import com.google.inject.Inject;
+        import com.google.inject.name.Named;
+        import java.util.Map;
+        public class Client {
+          @Inject @Named("reg")
+          Map<String, MyService> registry;
+          @Inject
+          Map<String, MyService> unqualifiedRegistry;
+          @Inject
+          MyService plain;
+        }
+        """);
+      // The qualifier comes from the third argument, the key and value types from the first two, and the
+      // .to(MyServiceImpl) tail of the element chain binds no MyService of its own.
+      assertThat(gutterAnchors(TO_BINDINGS_TOOLTIP)).containsExactly("registry");
     }
     finally {
       Disposer.dispose(disposable);

@@ -51,6 +51,9 @@ import kotlinx.coroutines.CoroutineScope;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.vfs.VirtualFileVisitor;
+import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.util.Disposer;
 import java.util.function.Predicate;
 import com.intellij.openapi.application.ReadAction;
@@ -89,7 +92,11 @@ public final class GuiceProjectModel implements Disposable {
     @NotNull Set<VirtualFile> discover();
   }
 
-  private record FileStamp(long vfsStamp, long psiStamp, int generation) {}
+  /**
+   * The state of a file at extraction time. The PSI modification stamp covers the content: it follows the
+   * document while one is loaded and the virtual file otherwise, so a save (VFS stamp only) does not count.
+   */
+  private record FileStamp(long psiStamp, int generation) {}
 
   private final Project myProject;
 
@@ -107,23 +114,25 @@ public final class GuiceProjectModel implements Disposable {
   private final Set<VirtualFile> myDirtyFiles = ConcurrentHashMap.newKeySet();
 
   /**
-   * Set to {@code true} when the project structure changes (modules, libraries,
-   * or content/source roots added or removed). This triggers a re-population
-   * scheduled via {@link #myBackgroundUpdater}.
+   * Directories that a VFS event (create, copy, move, rename) made dirty as a whole. The listener records only
+   * the directory; {@link #collectDirtyFiles()} expands it to its relevant files in the background, so the
+   * event handler never walks a directory tree on the EDT.
    */
-  private volatile boolean myStructureChanged = true;
+  private final Set<VirtualFile> myDirtyDirectories = ConcurrentHashMap.newKeySet();
 
   /**
-   * Counts structure changes. A population records the value when it starts.
-   * If the value changed while the population ran, the population does not clear {@link #myStructureChanged}.
+   * Counts structure changes (modules, libraries, content or source roots added or removed). A population
+   * records the value when it starts; {@link #completePopulationIfCurrent} completes only for that value.
    */
   private final AtomicInteger myStructureGeneration = new AtomicInteger();
 
   /**
-   * Whether the initial population has been performed. Set to {@code true} after
-   * {@link #completePopulationIfCurrent} succeeds.
+   * The structure generation that the last completed population covered, or {@link #NOT_POPULATED}.
+   * A population is needed while this differs from {@link #myStructureGeneration}: a concurrent
+   * {@link #markStructureChanged()} can therefore never be lost to a completion (it moves the target).
    */
-  private volatile boolean myInitialized = false;
+  private static final int NOT_POPULATED = -1;
+  private volatile int myPopulatedGeneration = NOT_POPULATED;
 
   /**
    * Set once the index has been requested for the first time, and cleared only in {@link #dispose()}.
@@ -290,6 +299,14 @@ public final class GuiceProjectModel implements Disposable {
   }
 
   /**
+   * Marks every relevant file under {@code directory} dirty. The walk happens in {@link #collectDirtyFiles()}.
+   */
+  void markDirectoryDirty(@NotNull VirtualFile directory) {
+    myDirtyDirectories.add(directory);
+    myBackgroundUpdater.scheduleDirtyProcessing();
+  }
+
+  /**
    * Removes a file's or directory's data entirely (when deleted, moved, or renamed).
    *
    * <p>Immediately removes the file's contributions (and any indexed child files when
@@ -360,7 +377,6 @@ public final class GuiceProjectModel implements Disposable {
    */
   void markStructureChanged() {
     myStructureGeneration.incrementAndGet();
-    myStructureChanged = true;
     if (!ApplicationManager.getApplication().isUnitTestMode() && !myProject.isDisposed()) {
       DaemonCodeAnalyzer.getInstance(myProject).restart("Guice project structure changed");
     }
@@ -407,7 +423,8 @@ public final class GuiceProjectModel implements Disposable {
     myFileStamps.clear();
     myDirtyFiles.clear();
     myFilesByPath.clear();
-    myInitialized = false;
+    myDirtyDirectories.clear();
+    myPopulatedGeneration = NOT_POPULATED;
     myIndexRequested = false;
   }
 
@@ -428,11 +445,11 @@ public final class GuiceProjectModel implements Disposable {
   }
 
   boolean isPopulationNeeded() {
-    return !myInitialized || myStructureChanged;
+    return myPopulatedGeneration != myStructureGeneration.get();
   }
 
   boolean hasDirtyFiles() {
-    return !myDirtyFiles.isEmpty();
+    return !myDirtyFiles.isEmpty() || !myDirtyDirectories.isEmpty();
   }
 
   @NotNull Set<String> getIndexedFilesSnapshot() {
@@ -466,8 +483,7 @@ public final class GuiceProjectModel implements Disposable {
       myFileStamps.remove(path);
     }
     if (generation == myStructureGeneration.get()) {
-      myStructureChanged = false;
-      myInitialized = true;
+      myPopulatedGeneration = generation;
       return new PopulationOutcome(true, changed);
     }
     return new PopulationOutcome(false, changed);
@@ -483,6 +499,9 @@ public final class GuiceProjectModel implements Disposable {
    * Each step executes a single index search inside its own read action so write actions
    * can interleave without restarting completed searches from the beginning.
    */
+  private static final List<String> LAMBDA_MODULE_REFERENCE_CLASSES =
+      List.of("com.google.inject.Module", "com.google.inject.Guice", "com.google.inject.util.Modules");
+
   @NotNull List<DiscoveryStep> createDiscoverySteps(@NotNull Module module) {
     Set<Module> guiceModules = new HashSet<>();
     // The module that requested the index may be gone when a background pass reaches this point.
@@ -530,6 +549,12 @@ public final class GuiceProjectModel implements Disposable {
     // 5. Files calling contributor-registered global binder helpers outside Module classes
     for (String ownerFqn : extensionIndex.getGlobalCallOwnerClasses()) {
       steps.add(() -> discoverClassReferences(ownerFqn, scope));
+    }
+
+    // 6. Files with lambda modules, which are no Module subclasses: they reference the Module type
+    //    (a Module-typed variable or parameter) or an injector factory (Guice.createInjector(binder -> ...)).
+    for (String fqn : LAMBDA_MODULE_REFERENCE_CLASSES) {
+      steps.add(() -> discoverClassReferences(fqn, scope));
     }
 
     return steps;
@@ -634,8 +659,34 @@ public final class GuiceProjectModel implements Disposable {
    * Returns a snapshot of the current dirty files without mutating state.
    */
   @NotNull List<VirtualFile> collectDirtyFiles() {
+    expandDirtyDirectories();
     if (myDirtyFiles.isEmpty()) return List.of();
     return new ArrayList<>(myDirtyFiles);
+  }
+
+  /**
+   * Moves the files of the dirty directories into the dirty set. Runs on the thread of the drain (a read
+   * action in the background, or the test thread), not on the EDT inside the VFS event.
+   */
+  private void expandDirtyDirectories() {
+    if (myDirtyDirectories.isEmpty()) return;
+    ProjectFileIndex fileIndex = ProjectFileIndex.getInstance(myProject);
+    for (VirtualFile directory : new ArrayList<>(myDirtyDirectories)) {
+      myDirtyDirectories.remove(directory);
+      if (!directory.isValid() || !fileIndex.isInContent(directory)) continue;
+      VfsUtilCore.visitChildrenRecursively(directory, new VirtualFileVisitor<Void>() {
+        @Override
+        public boolean visitFile(@NotNull VirtualFile child) {
+          ProgressManager.checkCanceled();
+          if (!fileIndex.isInContent(child)) return false;
+          if (GuiceVfsListener.isRelevantFile(child)) {
+            myFilesByPath.put(child.getPath(), child);
+            myDirtyFiles.add(child);
+          }
+          return true;
+        }
+      });
+    }
   }
 
   /**
@@ -709,11 +760,7 @@ public final class GuiceProjectModel implements Disposable {
       }
     }
 
-    FileStamp currentStamp = new FileStamp(
-        vf.getModificationStamp(),
-        fileForExtraction.getModificationStamp(),
-        generation
-    );
+    FileStamp currentStamp = new FileStamp(fileForExtraction.getModificationStamp(), generation);
     FileStamp recordedStamp = myFileStamps.get(path);
     if (currentStamp.equals(recordedStamp)) {
       if (fromDirtySet) {
@@ -787,7 +834,6 @@ public final class GuiceProjectModel implements Disposable {
     if (!myDirtyFiles.contains(vf)) {
       FileStamp recordedStamp = myFileStamps.get(vf.getPath());
       if (recordedStamp != null
-          && recordedStamp.vfsStamp() == vf.getModificationStamp()
           && recordedStamp.psiStamp() == psiFile.getModificationStamp()
           && recordedStamp.generation() == myStructureGeneration.get()) {
         return;

@@ -3,9 +3,7 @@ package com.intellij.guice.model;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectFileIndex;
-import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
 import com.intellij.openapi.vfs.newvfs.events.VFileContentChangeEvent;
 import com.intellij.openapi.vfs.newvfs.events.VFileCopyEvent;
@@ -100,23 +98,19 @@ public final class GuiceVfsListener implements BulkFileListener {
     }
   }
 
+  /**
+   * Marks a file dirty, or records a directory for the background drain to expand. The event handler runs on
+   * the EDT inside a write action, so it never walks a directory tree here.
+   */
   private static void markDirtyRecursively(@NotNull VirtualFile fileOrDir,
                                            @NotNull ProjectFileIndex fileIndex,
                                            @NotNull GuiceProjectModel model) {
     if (!fileOrDir.isValid() || (!fileOrDir.isDirectory() && !isRelevantFile(fileOrDir))) return;
     if (!fileIndex.isInContent(fileOrDir)) return;
     if (fileOrDir.isDirectory()) {
-      VfsUtilCore.visitChildrenRecursively(fileOrDir, new VirtualFileVisitor<Void>() {
-        @Override
-        public boolean visitFile(@NotNull VirtualFile child) {
-          if (!fileIndex.isInContent(child)) return false;
-          if (isRelevantFile(child)) {
-            model.markFileDirty(child);
-          }
-          return true;
-        }
-      });
-    } else {
+      model.markDirectoryDirty(fileOrDir);
+    }
+    else {
       model.markFileDirty(fileOrDir);
     }
   }

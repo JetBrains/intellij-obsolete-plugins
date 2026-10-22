@@ -8,6 +8,8 @@ import com.intellij.guice.model.GuiceQualifiers;
 import com.intellij.guice.utils.GuiceUtils;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiCompiledElement;
+import com.intellij.psi.PsiJavaFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.uast.UCallExpression;
 import org.jetbrains.uast.UExpression;
@@ -60,6 +62,9 @@ public class MoveBindingToClassPredicate implements PsiElementPredicate {
     return psiClass != null
            && psiClass.getModifierList() != null
            && psiClass.getManager().isInProject(psiClass)
-           && psiClass.isWritable();
+           && psiClass.isWritable()
+           // The intentions edit Java PSI; a Kotlin class is a light class whose modifier list rejects the edit.
+           && psiClass.getContainingFile() instanceof PsiJavaFile
+           && !(psiClass instanceof PsiCompiledElement);
   }
 }

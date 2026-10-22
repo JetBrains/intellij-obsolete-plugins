@@ -91,7 +91,7 @@ public final class BindingAnnotationWithoutInjectInspection extends BaseUastInsp
      */
     private static boolean isInjectOrProvides(@NotNull PsiMethod method) {
       GuiceExtensionIndex extensionIndex = GuiceExtensionIndex.get();
-      return AnnotationUtil.isAnnotated(method, GuiceAnnotations.INJECTS, 0) ||
+      return AnnotationUtil.isAnnotated(method, GuiceAnnotations.CONSTRUCTOR_INJECTS, 0) ||
              AnnotationUtil.isAnnotated(method, extensionIndex.getAllProvidesAnnotations(), 0);
     }
 

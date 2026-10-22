@@ -6,14 +6,14 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiFileFactory;
-import com.intellij.psi.codeStyle.CodeStyleManager;
+import com.intellij.psi.JavaDirectoryService;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.codeStyle.JavaCodeStyleManager;
 import com.intellij.util.IncorrectOperationException;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
+import java.util.Map;
 
 public class NewGuiceProviderAction extends GeneratePluginClassAction{
 
@@ -41,30 +41,28 @@ public class NewGuiceProviderAction extends GeneratePluginClassAction{
 
     @Override
     protected PsiElement @NotNull [] create(@NotNull String newName, @NotNull PsiDirectory directory){
-        final Project project = directory.getProject();
-        final PsiFileFactory elementFactory = PsiFileFactory.getInstance(project);
-        final GuiceProviderBuilder builder = new GuiceProviderBuilder();
-        builder.setClassName(newName);
-        builder.setProvidedClassName(providedClassName);
-
-        final String beanClassString;
         try{
-            beanClassString = builder.buildProviderClass(project);
-        } catch(IOException e){
-            LOGGER.error(e);
-            return PsiElement.EMPTY_ARRAY;
-        }
-        try{
-            final PsiFile newFile = elementFactory.createFileFromText(newName + ".java", beanClassString);
-            final JavaCodeStyleManager codeStyleManager = JavaCodeStyleManager.getInstance(project);
-            final PsiElement shortenedFile = codeStyleManager.shortenClassReferences(newFile);
-            final PsiElement reformattedFile = CodeStyleManager.getInstance(project).reformat(shortenedFile);
-            directory.add(reformattedFile);
-            return new PsiElement[]{reformattedFile};
+            return new PsiElement[]{createProviderClass(directory, newName, providedClassName)};
         } catch(IncorrectOperationException e){
             LOGGER.error(e);
             return PsiElement.EMPTY_ARRAY;
         }
+    }
+
+    /**
+     * Creates {@code <name> implements Provider<providedClass>} from the {@code GuiceNewProvider.java} template in
+     * the package of {@code directory}.
+     */
+    @ApiStatus.Internal
+    public static @NotNull PsiClass createProviderClass(@NotNull PsiDirectory directory,
+                                                        @NotNull String name,
+                                                        @NotNull String providedClass) {
+        // All variables of the template are defined here, so no dialog for undefined variables is needed
+        // (that mode must not run inside the write action of the create command).
+        PsiClass created = JavaDirectoryService.getInstance().createClass(
+            directory, name, "GuiceNewProvider.java", false, Map.of("PROVIDED_CLASS", providedClass));
+        JavaCodeStyleManager.getInstance(directory.getProject()).shortenClassReferences(created.getContainingFile());
+        return created;
     }
 
     @Override
@@ -74,6 +72,6 @@ public class NewGuiceProviderAction extends GeneratePluginClassAction{
 
     @Override
     protected @NotNull String getActionName(@NotNull PsiDirectory directory, @NotNull String newName){
-        return GuiceBundle.message("new.guice.provider.name", directory, newName);
+        return GuiceBundle.message("new.guice.provider.name", AbstractNewGuiceClassAction.packageName(directory), newName);
     }
 }

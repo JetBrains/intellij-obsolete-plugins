@@ -59,5 +59,12 @@ public final class GuiceAnnotations {
   );
 
   public static final Collection<String> INJECTS = List.of(INJECT, JAVAX_INJECT, JAKARTA_INJECT, THROWING_INJECT);
+
+  /**
+   * The annotations that make Guice inject the parameters of a constructor: {@link #INJECTS} and
+   * {@code @AssistedInject}. An assisted constructor is not a JIT binding of its class (a factory constructs
+   * it), so {@link #INJECTS} stays the list for binding sites and instantiability.
+   */
+  public static final Collection<String> CONSTRUCTOR_INJECTS = List.of(INJECT, JAVAX_INJECT, JAKARTA_INJECT, THROWING_INJECT, ASSISTED_INJECT);
 }
 

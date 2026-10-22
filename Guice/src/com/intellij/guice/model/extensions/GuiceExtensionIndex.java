@@ -17,6 +17,13 @@ import com.intellij.util.ExceptionUtil;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.psi.util.InheritanceUtil;
+import com.intellij.psi.JavaPsiFacade;
+import com.intellij.psi.PsiClassType;
+import com.intellij.psi.PsiCompiledElement;
+import com.intellij.psi.PsiFile;
+import org.jetbrains.uast.ULambdaExpression;
 import org.jetbrains.uast.UExpression;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.uast.UCallExpression;
@@ -97,6 +104,8 @@ public final class GuiceExtensionIndex {
   private final @NotNull Set<String> myDualTypeBinderMethodNames;
   private final @NotNull Set<String> mySingleTypeBinderClassFqns;
   private final @NotNull Set<String> myDualTypeBinderClassFqns;
+  private final @NotNull Map<String, BinderShape> myBinderShapesByMethod;
+  private final @NotNull Set<String> myBinderElementCallNames;
   private final @NotNull Set<String> myAllProvidesAnnotations;
   private final @NotNull Set<String> myProvidesIntoAnnotations;
   private final @NotNull Set<String> mySupportedFieldAnnotations;
@@ -112,6 +121,7 @@ public final class GuiceExtensionIndex {
                               @NotNull Set<String> dualTypeBinderMethodNames,
                               @NotNull Set<String> singleTypeBinderClassFqns,
                               @NotNull Set<String> dualTypeBinderClassFqns,
+                              @NotNull Map<String, BinderShape> binderShapesByMethod,
                               @NotNull Set<String> allProvidesAnnotations,
                               @NotNull Set<String> providesIntoAnnotations,
                               @NotNull Set<String> supportedFieldAnnotations,
@@ -125,6 +135,12 @@ public final class GuiceExtensionIndex {
     myDualTypeBinderMethodNames = dualTypeBinderMethodNames;
     mySingleTypeBinderClassFqns = singleTypeBinderClassFqns;
     myDualTypeBinderClassFqns = dualTypeBinderClassFqns;
+    myBinderShapesByMethod = binderShapesByMethod;
+    Set<String> elementCalls = new LinkedHashSet<>(BinderShape.GUICE_ELEMENT_CALLS);
+    for (BinderShape shape : binderShapesByMethod.values()) {
+      elementCalls.addAll(shape.elementCallNames());
+    }
+    myBinderElementCallNames = Set.copyOf(elementCalls);
     myAllProvidesAnnotations = allProvidesAnnotations;
     myProvidesIntoAnnotations = providesIntoAnnotations;
     mySupportedFieldAnnotations = supportedFieldAnnotations;
@@ -187,6 +203,22 @@ public final class GuiceExtensionIndex {
     return mySingleTypeBinderMethodNames;
   }
 
+  /**
+   * Returns the shape of the binder factory call with the given method name, or {@code null} when no
+   * contributor registered a binder for it.
+   */
+  public @Nullable BinderShape findBinderShape(@Nullable String methodName) {
+    return methodName != null ? myBinderShapesByMethod.get(methodName) : null;
+  }
+
+  /**
+   * Returns the names of the binder calls that start an element chain ({@code addBinding} and the like),
+   * from the Guice binders and from every registered {@link BinderShape}.
+   */
+  public @NotNull Set<String> getBinderElementCallNames() {
+    return myBinderElementCallNames;
+  }
+
   public @NotNull Set<String> getDualTypeBinderMethodNames() {
     return myDualTypeBinderMethodNames;
   }
@@ -230,16 +262,21 @@ public final class GuiceExtensionIndex {
                                 boolean isModule,
                                 @Nullable Set<BindDescriptor> descriptors,
                                 @Nullable GuiceCallContext context) {
-    boolean runDescriptors = descriptors != null && isModule;
+    // Descriptor rules run in a module class, and inside a lambda that implements com.google.inject.Module
+    // in any class: Guice.createInjector(binder -> binder.bind(...)).
+    boolean runDescriptorsInClass = descriptors != null && isModule;
+    boolean runDescriptorsInLambdas = descriptors != null && !isModule && mayHoldModuleLambda(psiClass);
     boolean runCallEntries = context != null
                              && !myCallEntryMatcher.isEmpty()
                              && (isModule || myCallEntryMatcher.hasGlobalRules());
-    if (!runDescriptors && !runCallEntries) return;
+    if (!runDescriptorsInClass && !runDescriptorsInLambdas && !runCallEntries) return;
 
     UClass uClass = UastContextKt.toUElement(psiClass, UClass.class);
     if (uClass == null) return;
 
     AbstractUastVisitor visitor = new AbstractUastVisitor() {
+      private int myModuleLambdaDepth;
+
       @Override
       public boolean visitClass(@NotNull UClass node) {
         // Nested, local and anonymous classes are processed as classes of their own.
@@ -247,8 +284,25 @@ public final class GuiceExtensionIndex {
       }
 
       @Override
+      public boolean visitLambdaExpression(@NotNull ULambdaExpression node) {
+        // The children of the lambda are visited after this method returns and before afterVisitLambdaExpression.
+        if (runDescriptorsInLambdas && isModuleLambda(node)) {
+          myModuleLambdaDepth++;
+        }
+        return super.visitLambdaExpression(node);
+      }
+
+      @Override
+      public void afterVisitLambdaExpression(@NotNull ULambdaExpression node) {
+        if (runDescriptorsInLambdas && isModuleLambda(node)) {
+          myModuleLambdaDepth--;
+        }
+        super.afterVisitLambdaExpression(node);
+      }
+
+      @Override
       public boolean visitCallExpression(@NotNull UCallExpression node) {
-        if (runDescriptors) {
+        if (runDescriptorsInClass || (runDescriptorsInLambdas && myModuleLambdaDepth > 0)) {
           processDescriptorCall(node, descriptors);
         }
         if (runCallEntries) {
@@ -258,12 +312,37 @@ public final class GuiceExtensionIndex {
             return true;
           });
         }
+        // false: visit the arguments too, for example a FactoryModuleBuilder chain inside install(...) or a
+        // lambda module inside Guice.createInjector(...).
         return false;
       }
     };
     for (UElement declaration : uClass.getUastDeclarations()) {
       declaration.accept(visitor);
     }
+  }
+
+  /**
+   * A cheap pre-check before the UAST walk of a class that is not a module: a lambda module needs the
+   * {@code Module} type or an injector factory in the file.
+   */
+  private static boolean mayHoldModuleLambda(@NotNull PsiClass psiClass) {
+    PsiFile file = psiClass.getContainingFile();
+    // A compiled class has no lambda to find, and its decompiled text mentions Module all the time.
+    if (file == null || file instanceof PsiCompiledElement) return false;
+    CharSequence text = file.getViewProvider().getContents();
+    return StringUtil.contains(text, "Module") || StringUtil.contains(text, "createInjector");
+  }
+
+  private static boolean isModuleLambda(@NotNull ULambdaExpression lambda) {
+    PsiType type = lambda.getFunctionalInterfaceType();
+    if (!(type instanceof PsiClassType classType)) return false;
+    PsiClass functionalInterface = classType.resolve();
+    return functionalInterface != null && InheritanceUtil.isInheritorOrSelf(functionalInterface, findModuleClass(functionalInterface), true);
+  }
+
+  private static @Nullable PsiClass findModuleClass(@NotNull PsiClass context) {
+    return JavaPsiFacade.getInstance(context.getProject()).findClass("com.google.inject.Module", context.getResolveScope());
   }
 
   /**
@@ -360,6 +439,7 @@ public final class GuiceExtensionIndex {
         "com.google.inject.binder.AnnotatedBindingBuilder"
     ));
     private final Set<String> myDualTypeBinderClasses = new LinkedHashSet<>();
+    private final Map<String, BinderShape> myBinderShapesByMethod = new HashMap<>();
     private final Set<String> myBindingFieldAnnotations = new LinkedHashSet<>();
 
     private final Map<String, List<Function<? super PsiMethod, ? extends List<PsiType>>>> myProvidesByAnno = new HashMap<>();
@@ -399,15 +479,17 @@ public final class GuiceExtensionIndex {
 
     @Override
     public void registerSingleTypeBinder(@NotNull GuiceCallPattern pattern,
-                                         @NotNull Collection<String> binderClassFqns,
-                                         @NotNull Function<? super UCallExpression, ? extends PsiType> typeExtractor,
+                                         @NotNull BinderShape shape,
                                          @NotNull BiFunction<? super PsiElement, ? super PsiType, ? extends BindDescriptor> factory) {
       mySingleTypeBinderMethods.addAll(pattern.getMethodNames());
-      mySingleTypeBinderClasses.addAll(binderClassFqns);
+      mySingleTypeBinderClasses.addAll(shape.binderClassFqns());
+      for (String methodName : pattern.getMethodNames()) {
+        myBinderShapesByMethod.put(methodName, shape);
+      }
       registerCallDescriptor(pattern, (call, sink) -> {
         PsiElement outermostSource = ContributorUtil.getOutermostSource(call);
         if (outermostSource != null) {
-          BindDescriptor descriptor = factory.apply(outermostSource, typeExtractor.apply(call));
+          BindDescriptor descriptor = factory.apply(outermostSource, shape.boundType(call));
           if (descriptor != null) {
             sink.accept(descriptor);
             return true;
@@ -419,15 +501,17 @@ public final class GuiceExtensionIndex {
 
     @Override
     public void registerDualTypeBinder(@NotNull GuiceCallPattern pattern,
-                                       @NotNull Collection<String> binderClassFqns,
-                                       @NotNull Function<? super UCallExpression, PsiType @NotNull []> typesExtractor,
+                                       @NotNull BinderShape shape,
                                        @NotNull ContributorUtil.DualTypeDescriptorFactory factory) {
       myDualTypeBinderMethods.addAll(pattern.getMethodNames());
-      myDualTypeBinderClasses.addAll(binderClassFqns);
+      myDualTypeBinderClasses.addAll(shape.binderClassFqns());
+      for (String methodName : pattern.getMethodNames()) {
+        myBinderShapesByMethod.put(methodName, shape);
+      }
       registerCallDescriptor(pattern, (call, sink) -> {
         PsiElement outermostSource = ContributorUtil.getOutermostSource(call);
         if (outermostSource != null) {
-          PsiType[] kv = typesExtractor.apply(call);
+          PsiType[] kv = shape.typesExtractor().apply(call);
           BindDescriptor descriptor = factory.create(outermostSource, kv.length > 0 ? kv[0] : null, kv.length > 1 ? kv[1] : null);
           sink.accept(descriptor);
           return true;
@@ -528,6 +612,7 @@ public final class GuiceExtensionIndex {
           Set.copyOf(myDualTypeBinderMethods),
           Set.copyOf(mySingleTypeBinderClasses),
           Set.copyOf(myDualTypeBinderClasses),
+          Map.copyOf(myBinderShapesByMethod),
           Set.copyOf(allProvides),
           providesInto,
           Set.copyOf(myBindingFieldAnnotations),

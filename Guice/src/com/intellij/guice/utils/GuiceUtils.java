@@ -5,13 +5,13 @@ import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.guice.constants.GuiceAnnotations;
 import com.intellij.guice.constants.GuiceClasses;
 import com.intellij.guice.model.GuiceQualifiers;
+import com.intellij.guice.model.extensions.BinderShape;
 import com.intellij.guice.model.extensions.GuiceExtensionIndex;
 import com.intellij.psi.*;
 import com.intellij.psi.util.InheritanceUtil;
 import com.intellij.psi.util.TypeConversionUtil;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -260,12 +260,15 @@ public final class GuiceUtils {
    */
   public static @Nullable PsiType findImplementedTypeForBinding(UCallExpression call) {
     GuiceExtensionIndex extensionIndex = GuiceExtensionIndex.get();
-    Set<String> singleTypeMethods = extensionIndex.getSingleTypeBinderMethodNames();
-    Set<String> dualTypeMethods = extensionIndex.getDualTypeBinderMethodNames();
     UCallExpression current = call;
     while (current != null) {
       final String name = current.getMethodName();
-      if ("bind".equals(name) || "build".equals(name) || (name != null && singleTypeMethods.contains(name))) {
+      // A binder factory call: the shape of the binder tells which type the chain binds.
+      BinderShape shape = extensionIndex.findBinderShape(name);
+      if (shape != null) {
+        return shape.boundType(current);
+      }
+      if ("bind".equals(name) || "build".equals(name)) {
         final List<PsiType> typeArgs = current.getTypeArguments();
         if (!typeArgs.isEmpty()) {
           return typeArgs.getFirst();
@@ -282,18 +285,6 @@ public final class GuiceUtils {
       if ("bindConstant".equals(name)) {
         UExpression toArg = getArgumentOfCallInChain(call, "to");
         return toArg != null ? toArg.getExpressionType() : null;
-      }
-      if (name != null && dualTypeMethods.contains(name)) {
-        final List<PsiType> typeArgs = current.getTypeArguments();
-        if (typeArgs.size() > 1) {
-          return typeArgs.get(1);
-        } else {
-          final List<UExpression> args = current.getValueArguments();
-          if (args.size() > 2) {
-            return getBindingTypeFromExpression(args.get(2));
-          }
-        }
-        return null;
       }
       UCallExpression next = getReceiverCall(current);
       if (next == null) {
@@ -408,9 +399,11 @@ public final class GuiceUtils {
               return parameters[0];
             }
           } else if (psiClass instanceof PsiAnonymousClass anonymousClass) {
+            // new TypeLiteral<T>() {} and new Key<T>(qualifier) {}: the type argument of the base class.
             final PsiClassType baseClassType = anonymousClass.getBaseClassType();
             final PsiClass baseClass = baseClassType.resolve();
-            if (baseClass != null && "com.google.inject.TypeLiteral".equals(baseClass.getQualifiedName())) {
+            final String baseFqn = baseClass != null ? baseClass.getQualifiedName() : null;
+            if ("com.google.inject.TypeLiteral".equals(baseFqn) || "com.google.inject.Key".equals(baseFqn)) {
               final PsiType[] parameters = baseClassType.getParameters();
               if (parameters.length > 0) {
                 return parameters[0];
@@ -435,7 +428,6 @@ public final class GuiceUtils {
     return true;
   }
 
-  private static final List<String> BINDER_ELEMENT_CALLS = List.of("addBinding", "setDefault", "setBinding");
 
   /**
    * Tells if the call belongs to a standard {@code bind()} or {@code bindConstant()} chain.
@@ -448,7 +440,7 @@ public final class GuiceUtils {
     boolean hasBind = false;
     for (UCallExpression current = call; current != null; current = getReceiverCall(current)) {
       String name = current.getMethodName();
-      if (BINDER_ELEMENT_CALLS.contains(name)) return false;
+      if (GuiceExtensionIndex.get().getBinderElementCallNames().contains(name)) return false;
       if ("bind".equals(name) || "bindConstant".equals(name)) hasBind = true;
     }
     return hasBind;

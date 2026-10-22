@@ -3,6 +3,8 @@ package com.intellij.guice.model.extensions;
 
 import com.intellij.guice.constants.GuiceAnnotations;
 import com.intellij.guice.model.beans.MapMultibindDescriptor;
+import com.intellij.codeInsight.AnnotationUtil;
+import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
@@ -47,6 +49,11 @@ final class MapBinderContributor implements GuiceBindingContributor {
 
       PsiAnnotation mapKeyAnno = annotationClass.getAnnotation("com.google.inject.multibindings.MapKey");
       if (mapKeyAnno == null) continue;
+
+      // @MapKey(unwrapValue = false): the key is the annotation instance itself.
+      if (Boolean.FALSE.equals(AnnotationUtil.getBooleanAttributeValue(mapKeyAnno, "unwrapValue"))) {
+        return JavaPsiFacade.getElementFactory(method.getProject()).createType(annotationClass);
+      }
 
       for (PsiMethod valueMethod : annotationClass.findMethodsByName("value", false)) {
         PsiType returnType = valueMethod.getReturnType();

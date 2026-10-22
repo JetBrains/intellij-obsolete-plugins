@@ -851,6 +851,104 @@ public class GuiceInjectionTest extends GuiceTestBase {
     assertThat(gutterAnchors(TO_BINDINGS_TOOLTIP)).containsExactly("directList", "optionalList");
   }
 
+  /** M5: a lambda {@code Module} binds like a module class. */
+  public void testBindingsInLambdaModuleAreIndexed() {
+    myFixture.addFileToProject("Main.java", """
+      import com.google.inject.Guice;
+      import com.google.inject.Module;
+      public class Main {
+        static final Module EXTRA = binder -> binder.bind(MyKey.class).to(MyKey.class);
+        public static void main(String[] args) {
+          Guice.createInjector(binder -> binder.bind(MyService.class).to(MyServiceImpl.class));
+        }
+      }
+      """);
+    myFixture.configureByText("Client.java", """
+      import com.google.inject.Inject;
+      public class Client {
+        @Inject
+        MyService service;
+        @Inject
+        MyKey key;
+      }
+      """);
+    assertThat(gutterTargets(TO_BINDINGS_TOOLTIP)).containsExactly(
+        "binder.bind(MyService.class).to(MyServiceImpl.class)",
+        "binder.bind(MyKey.class).to(MyKey.class)");
+  }
+
+  /** M6: Guice injects the non-assisted parameters of an {@code @AssistedInject} constructor. */
+  public void testAssistedInjectConstructorParametersAreInjectionPoints() {
+    addModule("bind(MyService.class).to(MyServiceImpl.class);");
+    myFixture.configureByText("Worker.java", """
+      import com.google.inject.assistedinject.Assisted;
+      import com.google.inject.assistedinject.AssistedInject;
+      public class Worker {
+        @AssistedInject
+        Worker(MyService service, @Assisted String id) {}
+      }
+      """);
+    assertThat(gutterAnchors(TO_BINDINGS_TOOLTIP)).containsExactly("service");
+    // The class itself is constructed by the factory, not by a JIT binding: no binding site for Worker.
+    assertThat(gutterAnchors(TO_INJECTION_POINTS_TOOLTIP)).isEmpty();
+  }
+
+  /** M7: an anonymous {@code Key} subclass carries the type and, through its constructor, the qualifier. */
+  public void testAnonymousKeySubclassBindsTypeAndQualifier() {
+    addModule("""
+      bind(new com.google.inject.Key<java.util.List<String>>(Names.named("names")) {}).toInstance(java.util.List.of());
+      bind(new com.google.inject.Key<java.util.Set<Integer>>() {}).toInstance(java.util.Set.of());
+      """);
+    myFixture.configureByText("Client.java", """
+      import com.google.inject.Inject;
+      import com.google.inject.name.Named;
+      public class Client {
+        @Inject @Named("names")
+        java.util.List<String> names;
+        @Inject
+        java.util.List<String> unqualifiedNames;
+        @Inject
+        java.util.Set<Integer> numbers;
+      }
+      """);
+    assertThat(gutterAnchors(TO_BINDINGS_TOOLTIP)).containsExactly("names", "numbers");
+  }
+
+  /** M9: {@code @MapKey(unwrapValue = false)} keys the map by the annotation type itself. */
+  public void testProvidesIntoMapWithUnwrappedMapKeyAnnotation() {
+    myFixture.addClass("""
+      import com.google.inject.multibindings.MapKey;
+      import java.lang.annotation.Retention;
+      import java.lang.annotation.RetentionPolicy;
+      @MapKey(unwrapValue = false)
+      @Retention(RetentionPolicy.RUNTIME)
+      public @interface VersionKey {
+        String name();
+        int version();
+      }
+      """);
+    myFixture.addFileToProject("MyModule.java", """
+      import com.google.inject.AbstractModule;
+      import com.google.inject.multibindings.ProvidesIntoMap;
+      public class MyModule extends AbstractModule {
+        @ProvidesIntoMap
+        @VersionKey(name = "a", version = 1)
+        MyService provideA() { return null; }
+      }
+      """);
+    myFixture.configureByText("Client.java", """
+      import com.google.inject.Inject;
+      import java.util.Map;
+      public class Client {
+        @Inject
+        Map<VersionKey, MyService> byVersion;
+        @Inject
+        Map<String, MyService> byName;
+      }
+      """);
+    assertThat(gutterAnchors(TO_BINDINGS_TOOLTIP)).containsExactly("byVersion");
+  }
+
   public void testProvidesIntoMapWithClassMapKey() {
     myFixture.addFileToProject("MyModule.java", """
       import com.google.inject.AbstractModule;
@@ -1030,7 +1128,12 @@ public class GuiceInjectionTest extends GuiceTestBase {
         .containsExactly("qualifiedMap", "qualifiedOptional", "qualifiedSet");
   }
 
-  public void testKotlinPropertyQualifierWithoutUseSiteTarget() {
+  /**
+   * M8: Kotlin puts an annotation without a use-site target on the property when the annotation allows it
+   * ({@code javax.inject.Named} has no {@code @Target}). Guice reads the backing field and sees no qualifier,
+   * so the injection point is the unqualified key. {@code @field:Named} is what Guice sees.
+   */
+  public void testKotlinPropertyQualifierWithoutUseSiteTargetIsNotSeenByGuice() {
     addModule("""
       bind(MyService.class).annotatedWith(com.google.inject.name.Names.named("a")).to(MyServiceImpl.class);
       bind(MyService.class).to(MyServiceImpl.class);
@@ -1041,12 +1144,18 @@ public class GuiceInjectionTest extends GuiceTestBase {
       class Client {
         @Inject
         @Named("a")
-        lateinit var service: MyService
+        lateinit var onProperty: MyService
+
+        @Inject
+        @field:Named("a")
+        lateinit var onField: MyService
       }
       """);
 
-    assertThat(gutterTargets(TO_BINDINGS_TOOLTIP))
-        .containsExactly("bind(MyService.class).annotatedWith(com.google.inject.name.Names.named(\"a\")).to(MyServiceImpl.class)");
+    assertThat(gutterTargets(TO_BINDINGS_TOOLTIP)).containsExactly(
+        "bind(MyService.class).to(MyServiceImpl.class)",
+        "bind(MyService.class).annotatedWith(com.google.inject.name.Names.named(\"a\")).to(MyServiceImpl.class)");
+    assertThat(gutterAnchors(TO_BINDINGS_TOOLTIP)).containsExactly("onField", "onProperty");
   }
 
   public void testQualifierWithDefaultAttributeDoesNotMatchDifferentAttributeValue() {

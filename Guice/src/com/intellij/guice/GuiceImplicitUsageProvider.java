@@ -30,7 +30,7 @@ public final class GuiceImplicitUsageProvider implements ImplicitUsageProvider {
       return !extensionIndex.getSupportedFieldAnnotations().isEmpty()
           && AnnotationUtil.isAnnotated(owner, extensionIndex.getSupportedFieldAnnotations(), 0);
     }
-    if (owner instanceof PsiMethod && AnnotationUtil.isAnnotated(owner, GuiceAnnotations.INJECTS, 0)) return true;
+    if (owner instanceof PsiMethod && AnnotationUtil.isAnnotated(owner, GuiceAnnotations.CONSTRUCTOR_INJECTS, 0)) return true;
     return AnnotationUtil.isAnnotated(owner, extensionIndex.getAllProvidesAnnotations(), 0);
   }
 

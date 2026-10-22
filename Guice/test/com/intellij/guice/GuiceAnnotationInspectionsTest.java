@@ -159,6 +159,21 @@ public class GuiceAnnotationInspectionsTest extends GuiceTestBase {
     myFixture.testHighlighting(true, false, true);
   }
 
+  /** M6: an {@code @AssistedInject} constructor is an injection point for its qualified parameters. */
+  public void testBindingAnnotationOnAssistedInjectConstructorParameterIsAllowed() {
+    myFixture.enableInspections(new BindingAnnotationWithoutInjectInspection());
+    myFixture.configureByText("Worker.java", """
+      import com.google.inject.assistedinject.Assisted;
+      import com.google.inject.assistedinject.AssistedInject;
+      import com.google.inject.name.Named;
+      public class Worker {
+        @AssistedInject
+        Worker(@Named("pool") MyService service, @Assisted String id) {}
+      }
+      """);
+    myFixture.testHighlighting(true, false, true);
+  }
+
   public void testBindingAnnotationWithoutInjectInKotlin() {
     myFixture.enableInspections(new BindingAnnotationWithoutInjectInspection());
 

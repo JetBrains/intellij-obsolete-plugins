@@ -23,6 +23,7 @@ import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.FlowPreview
@@ -82,6 +83,9 @@ class GuiceBackgroundIndexUpdater(
 
     private val collectorsStarted = AtomicBoolean()
 
+    /** The collector coroutines, kept so that a test can stop them with its scope. */
+    private val collectorJobs = mutableListOf<Job>()
+
     private val dirtyRequests = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     private val populationRequests = MutableSharedFlow<Module>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
@@ -128,24 +132,46 @@ class GuiceBackgroundIndexUpdater(
      * Switches a unit test to the background mode of production until [parentDisposable] is disposed.
      */
     @TestOnly
-    fun enableBackgroundModeForTests(parentDisposable: Disposable) {
+    @JvmOverloads
+    fun enableBackgroundModeForTests(parentDisposable: Disposable, startDirtyCollector: Boolean = true) {
         synchronous = false
-        startCollectors()
-        Disposer.register(parentDisposable, Disposable { synchronous = true })
+        startCollectors(startDirtyCollector)
+        Disposer.register(parentDisposable, Disposable {
+            synchronous = true
+            stopCollectors()
+        })
     }
 
-    private fun startCollectors() {
+    /** Whether collector coroutines are running. */
+    @TestOnly
+    fun collectorsRunningForTests(): Boolean = synchronized(collectorJobs) { collectorJobs.any { it.isActive } }
+
+    private fun stopCollectors() {
+        val jobs = synchronized(collectorJobs) {
+            val copy = collectorJobs.toList()
+            collectorJobs.clear()
+            copy
+        }
+        jobs.forEach { it.cancel() }
+        collectorsStarted.set(false)
+    }
+
+    private fun startCollectors(startDirtyCollector: Boolean = true) {
         if (!collectorsStarted.compareAndSet(false, true)) return
-        cs.launch {
-            dirtyRequests.debounce(DEBOUNCE_MS).collect {
-                runGuarded("dirty files") { processDirtyFilesInBackground() }
+        val jobs = mutableListOf<Job>()
+        if (startDirtyCollector) {
+            jobs += cs.launch {
+                dirtyRequests.debounce(DEBOUNCE_MS).collect {
+                    runGuarded("dirty files") { processDirtyFilesInBackground() }
+                }
             }
         }
-        cs.launch {
+        jobs += cs.launch {
             populationRequests.collect { module ->
                 runGuarded("population") { runPopulationLoop(module) }
             }
         }
+        synchronized(collectorJobs) { collectorJobs += jobs }
     }
 
     /**

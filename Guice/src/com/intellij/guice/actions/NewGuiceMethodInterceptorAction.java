@@ -22,7 +22,7 @@ public class NewGuiceMethodInterceptorAction extends AbstractNewGuiceClassAction
 
     @Override
     protected String getActionName(PsiDirectory directory, @NotNull String newName, String templateName) {
-        return GuiceBundle.message("new.guice.method.interceptor.name", directory, newName);
+        return GuiceBundle.message("new.guice.method.interceptor.name", packageName(directory), newName);
     }
 
     @Override

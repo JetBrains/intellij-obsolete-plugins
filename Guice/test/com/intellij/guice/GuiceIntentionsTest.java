@@ -87,6 +87,22 @@ public class GuiceIntentionsTest extends GuiceTestBase {
     assertThat(intentionTexts()).contains("Move binding class to class");
   }
 
+  /**
+   * M12: the intentions edit Java PSI; a Kotlin class (a light class) is not a target they can annotate.
+   */
+  public void testMoveIntentionsAreNotOfferedWhenTheTargetClassIsKotlin() {
+    myFixture.addFileToProject("test/Foo.java", "package test;\npublic interface Foo {}\n");
+    myFixture.addFileToProject("test/KtImpl.kt", "package test\nclass KtImpl : Foo\n");
+    myFixture.addFileToProject("test/KtApi.kt", "package test\ninterface KtApi\n");
+    myFixture.addFileToProject("test/KtApiImpl.java", "package test;\npublic class KtApiImpl implements KtApi {}\n");
+
+    configureModule("bind(Foo.class).to(KtImpl.class).i<caret>n(Scopes.SINGLETON);");
+    assertThat(intentionTexts()).doesNotContain("Move binding scope to class");
+
+    configureModule("bind(KtApi.class).t<caret>o(KtApiImpl.class);");
+    assertThat(intentionTexts()).doesNotContain("Move binding class to class");
+  }
+
   public void testMoveBindingScopeToClassForLinkedBinding() {
     myFixture.addFileToProject("test/Foo.java", "package test;\npublic interface Foo {}\n");
     myFixture.addFileToProject("test/FooImpl.java", "package test;\npublic class FooImpl implements Foo {}\n");

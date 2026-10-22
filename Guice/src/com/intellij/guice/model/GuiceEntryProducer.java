@@ -18,6 +18,12 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiJavaCodeReferenceElement;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifierListOwner;
+import com.intellij.psi.PsiReferenceExpression;
+import com.intellij.psi.PsiNameValuePair;
+import com.intellij.psi.PsiModifierList;
+import com.intellij.psi.PsiArrayInitializerMemberValue;
+import com.intellij.psi.PsiAnnotationMemberValue;
+import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiParameter;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiWildcardType;
@@ -119,6 +125,7 @@ public final class GuiceEntryProducer {
       if (isInjectAnnotated(field)) {
         GuiceEntry entry = createInjectionPointEntry(field, field.getType());
         entries.add(entry);
+        recordResolutionDependencies(field, field.getType(), callContext);
       }
     }
 
@@ -138,12 +145,14 @@ public final class GuiceEntryProducer {
           if (GuiceQualifiers.isAssisted(param)) continue;
           GuiceEntry entry = createInjectionPointEntry(param, param.getType());
           entries.add(entry);
+          recordResolutionDependencies(param, param.getType(), callContext);
         }
       }
 
       // @Provides → BINDING_SITE for return type (only in Module classes)
       if (isProvides) {
         PsiType returnType = method.getReturnType();
+        recordResolutionDependencies(method, returnType, callContext);
         if (returnType != null) {
           PsiElement anchor = resolveDeclarationAnchor(method);
           boolean isKotlinMethod = method.getNavigationElement() != method;
@@ -167,21 +176,25 @@ public final class GuiceEntryProducer {
       }
     }
 
-    // @Inject constructors → BINDING_SITE for the class + INJECTION_POINT for params
+    // @Inject constructors → BINDING_SITE for the class + INJECTION_POINT for params;
+    // @AssistedInject constructors → INJECTION_POINT for the non-assisted params only (a factory constructs the class)
     for (PsiMethod ctor : cls.getConstructors()) {
-      if (AnnotationUtil.isAnnotated(ctor, GuiceAnnotations.INJECTS, 0)) {
-        // The constructor IS a JIT binding for its containing class
-        PsiElement anchor = resolveDeclarationAnchor(ctor);
-        entries.add(new GuiceEntry(
-            GuiceBindingKey.forClass(cls),
-            ctor, anchor, EntryRole.BINDING_SITE,
-            GuiceEntryProducer::providesMethodText));
+      if (AnnotationUtil.isAnnotated(ctor, GuiceAnnotations.CONSTRUCTOR_INJECTS, 0)) {
+        if (AnnotationUtil.isAnnotated(ctor, GuiceAnnotations.INJECTS, 0)) {
+          // The constructor IS a JIT binding for its containing class
+          PsiElement anchor = resolveDeclarationAnchor(ctor);
+          entries.add(new GuiceEntry(
+              GuiceBindingKey.forClass(cls),
+              ctor, anchor, EntryRole.BINDING_SITE,
+              GuiceEntryProducer::providesMethodText));
+        }
 
         // Each parameter → INJECTION_POINT
         for (PsiParameter param : ctor.getParameterList().getParameters()) {
           if (GuiceQualifiers.isAssisted(param)) continue;
           GuiceEntry entry = createInjectionPointEntry(param, param.getType());
           entries.add(entry);
+          recordResolutionDependencies(param, param.getType(), callContext);
         }
       }
     }
@@ -192,11 +205,79 @@ public final class GuiceEntryProducer {
 
     // One walk over the declarations of the class runs the descriptor rules (module classes only)
     // and the call-entry rules of the contributors.
-    Set<BindDescriptor> descriptors = isModule ? new HashSet<>() : null;
+    // A class that is not a module may still hold a lambda module; the index decides whether a walk is needed.
+    Set<BindDescriptor> descriptors = new HashSet<>();
     extensionIndex.processClassCalls(cls, isModule, descriptors, callContext);
-    if (descriptors != null) {
+    if (!descriptors.isEmpty()) {
       addBindingCallEntries(cls, descriptors, entries);
       recordUnresolvedClassArguments(descriptors, callContext);
+    }
+  }
+
+  /**
+   * Records what the key of a declaration depends on besides its own file, so that a change of those classes
+   * re-extracts this file (see {@link GuiceNavigationIndex#getDependentRegistrarFilesByClassName}):
+   * <ul>
+   *   <li>the type, when it does not resolve yet (the class is created later);</li>
+   *   <li>the annotation classes on the declaration: a qualifier gains or loses {@code @BindingAnnotation},
+   *       or is created after the declaration;</li>
+   *   <li>the classes that hold the constants of annotation attributes, such as {@code @Named(Names.DB)}.</li>
+   * </ul>
+   */
+  private static void recordResolutionDependencies(@NotNull PsiModifierListOwner owner,
+                                                   @Nullable PsiType type,
+                                                   @NotNull CallContextImpl callContext) {
+    recordUnresolvedType(type, callContext);
+    PsiModifierList modifierList = owner.getModifierList();
+    if (modifierList == null) return;
+    for (PsiAnnotation annotation : modifierList.getAnnotations()) {
+      PsiJavaCodeReferenceElement reference = annotation.getNameReferenceElement();
+      String referenceName = reference != null ? reference.getReferenceName() : null;
+      if (referenceName == null) {
+        String qualifiedName = annotation.getQualifiedName();
+        referenceName = qualifiedName != null ? qualifiedName.substring(qualifiedName.lastIndexOf('.') + 1) : null;
+      }
+      if (referenceName != null && !referenceName.isEmpty()) {
+        callContext.recordClassName(referenceName);
+      }
+      for (PsiNameValuePair attribute : annotation.getParameterList().getAttributes()) {
+        recordConstantHolders(attribute.getValue(), callContext);
+      }
+    }
+  }
+
+  private static void recordUnresolvedType(@Nullable PsiType type, @NotNull CallContextImpl callContext) {
+    PsiType unwrapped = type instanceof PsiWildcardType wildcard ? wildcard.getBound() : type;
+    if (!(unwrapped instanceof PsiClassType classType)) return;
+    if (classType.resolve() == null) {
+      String className = classType.getClassName();
+      if (className != null && !className.isEmpty()) {
+        callContext.recordClassName(className);
+      }
+    }
+    for (PsiType parameter : classType.getParameters()) {
+      recordUnresolvedType(parameter, callContext);
+    }
+  }
+
+  private static void recordConstantHolders(@Nullable PsiAnnotationMemberValue value, @NotNull CallContextImpl callContext) {
+    if (value instanceof PsiArrayInitializerMemberValue array) {
+      for (PsiAnnotationMemberValue element : array.getInitializers()) {
+        recordConstantHolders(element, callContext);
+      }
+      return;
+    }
+    if (!(value instanceof PsiReferenceExpression reference)) return;
+    PsiElement resolved = reference.resolve();
+    if (resolved instanceof PsiField field) {
+      PsiClass holder = field.getContainingClass();
+      String name = holder != null ? holder.getName() : null;
+      if (name != null) callContext.recordClassName(name);
+    }
+    else if (reference.getQualifierExpression() instanceof PsiReferenceExpression qualifier
+             && qualifier.getReferenceName() != null) {
+      // Unresolved Holder.CONSTANT: the holder class may be created later.
+      callContext.recordClassName(qualifier.getReferenceName());
     }
   }
 
@@ -291,6 +372,10 @@ public final class GuiceEntryProducer {
       }
       recordCandidateClassNames(classLiteralArgument);
       return null;
+    }
+
+    void recordClassName(@NotNull String className) {
+      myReferencedTargetClassNames.add(className);
     }
 
     private void recordCandidateClassNames(@NotNull UExpression expr) {
@@ -645,7 +730,6 @@ public final class GuiceEntryProducer {
     }
   }
 
-  private static final List<String> BINDER_ELEMENT_CALLS = List.of("addBinding", "setDefault", "setBinding");
 
   /**
    * Unwraps {@code ? extends T} wildcards introduced by Kotlin declaration-site variance
@@ -674,7 +758,7 @@ public final class GuiceEntryProducer {
 
   private static boolean isBinderElementChain(@Nullable UCallExpression outermost) {
     if (outermost == null) return false;
-    for (String name : BINDER_ELEMENT_CALLS) {
+    for (String name : GuiceExtensionIndex.get().getBinderElementCallNames()) {
       if (GuiceUtils.findCallInChain(outermost, name) != null) return true;
     }
     return false;

@@ -133,6 +133,17 @@ public class GuiceImplicitUsageProviderTest extends LightJavaCodeInsightFixtureT
     assertTrue(provider.isImplicitWrite(field));
   }
 
+  public void testAssistedInjectConstructorIsImplicitUsage() {
+    myFixture.configureByText("Worker.java", """
+      public class Worker {
+        @com.google.inject.assistedinject.AssistedInject
+        Worker(MyService service, @com.google.inject.assistedinject.Assisted String id) {}
+      }
+      """);
+    var ctor = myFixture.findClass("Worker").getConstructors()[0];
+    assertTrue(new GuiceImplicitUsageProvider().isImplicitUsage(ctor));
+  }
+
   public void testProvidesMethodIsImplicitUsage() {
     PsiMethod method = createJavaProvidesMethod("com.google.inject.Provides", "provideString");
     GuiceImplicitUsageProvider provider = new GuiceImplicitUsageProvider();

@@ -27,7 +27,7 @@ public class NewGuiceModuleAction extends AbstractNewGuiceClassAction {
 
     @Override
     protected String getActionName(PsiDirectory directory, @NotNull String newName, String templateName) {
-        return GuiceBundle.message("new.guice.module.name", directory, newName);
+        return GuiceBundle.message("new.guice.module.name", packageName(directory), newName);
     }
 
     @Override
