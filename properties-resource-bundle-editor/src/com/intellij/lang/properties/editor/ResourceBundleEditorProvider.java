@@ -6,9 +6,9 @@ import com.intellij.lang.properties.PropertiesImplUtil;
 import com.intellij.lang.properties.ResourceBundle;
 import com.intellij.lang.properties.psi.PropertiesFile;
 import com.intellij.openapi.application.ReadAction;
+import com.intellij.openapi.fileEditor.AsyncFileEditorProvider;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorPolicy;
-import com.intellij.openapi.fileEditor.FileEditorProvider;
 import com.intellij.openapi.fileEditor.FileEditorState;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.StdFileTypes;
@@ -20,7 +20,7 @@ import com.intellij.psi.PsiManager;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 
-public final class ResourceBundleEditorProvider implements FileEditorProvider, DumbAware {
+public final class ResourceBundleEditorProvider implements AsyncFileEditorProvider, DumbAware {
   @Override
   public boolean accept(final @NotNull Project project, final @NotNull VirtualFile file){
     if (file instanceof ResourceBundleAsVirtualFile) {
@@ -49,6 +49,23 @@ public final class ResourceBundleEditorProvider implements FileEditorProvider, D
 
   @Override
   public @NotNull FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile file) {
+    return createEditorAsync(project, file).build();
+  }
+
+  @Override
+  public @NotNull Builder createEditorAsync(@NotNull Project project, @NotNull VirtualFile file) {
+    ResourceBundle resourceBundle = findResourceBundle(project, file);
+    // computing the keys order reads all files of the bundle, which may need to load their stubs, so it must not happen on EDT
+    ResourceBundlePropertiesUpdateManager propertiesUpdateManager = new ResourceBundlePropertiesUpdateManager(resourceBundle);
+    return new Builder() {
+      @Override
+      public @NotNull FileEditor build() {
+        return new ResourceBundleEditor(project, file, resourceBundle, propertiesUpdateManager);
+      }
+    };
+  }
+
+  private static @NotNull ResourceBundle findResourceBundle(@NotNull Project project, @NotNull VirtualFile file) {
     ResourceBundle resourceBundle;
     if (file instanceof ResourceBundleAsVirtualFile) {
       resourceBundle = ((ResourceBundleAsVirtualFile)file).getResourceBundle();
@@ -60,8 +77,7 @@ public final class ResourceBundleEditorProvider implements FileEditorProvider, D
       }
       resourceBundle = PropertiesImplUtil.getPropertiesFile(psiFile).getResourceBundle();
     }
-
-    return new ResourceBundleEditor(project, file, resourceBundle);
+    return resourceBundle;
   }
 
   @Override

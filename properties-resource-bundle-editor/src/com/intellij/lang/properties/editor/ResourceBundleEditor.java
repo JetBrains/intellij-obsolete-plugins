@@ -123,6 +123,13 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
   private final ResourceBundleEditorHighlighter myHighlighter;
 
   public ResourceBundleEditor(@NotNull Project project, @NotNull VirtualFile file, @NotNull ResourceBundle resourceBundle) {
+    this(project, file, resourceBundle, new ResourceBundlePropertiesUpdateManager(resourceBundle));
+  }
+
+  ResourceBundleEditor(@NotNull Project project,
+                       @NotNull VirtualFile file,
+                       @NotNull ResourceBundle resourceBundle,
+                       @NotNull ResourceBundlePropertiesUpdateManager propertiesUpdateManager) {
     myProject = project;
     myFile = file;
 
@@ -139,7 +146,7 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
     splitPanel.add(splitter, BorderLayout.CENTER);
 
     myResourceBundle = resourceBundle;
-    myPropertiesInsertDeleteManager = new ResourceBundlePropertiesUpdateManager(resourceBundle);
+    myPropertiesInsertDeleteManager = propertiesUpdateManager;
 
     myStructureViewComponent = new ResourceBundleStructureViewComponent(myResourceBundle, this);
     myStructureViewPanel.setLayout(new BorderLayout());
