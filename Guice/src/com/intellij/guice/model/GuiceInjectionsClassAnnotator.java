@@ -2,7 +2,6 @@
 package com.intellij.guice.model;
 
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
-import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.guice.GuiceBundle;
 import com.intellij.guice.model.extensions.GuiceBindingContributor;
 import com.intellij.guice.model.extensions.GuiceExtensionIndex;
@@ -235,18 +234,18 @@ public final class GuiceInjectionsClassAnnotator extends GuiceLineMarkerProvider
     GuiceEntryTargetRenderer.SortedTargets sorted = GuiceEntryTargetRenderer.sortTargets(counterparts, anchor);
     if (sorted.targets().isEmpty()) return;
 
-    NavigationGutterIconBuilder<PsiElement> builder;
+    GuiceGutterIconBuilder builder;
     if (role == EntryRole.INJECTION_POINT) {
       // This element is an injection point → navigate to its bindings
-      builder = NavigationGutterIconBuilder
-          .create(JavaUltimateIcons.Cdi.Gutter.ShowAutowiredCandidates, GuiceBundle.GUICE)
+      builder = new GuiceGutterIconBuilder(JavaUltimateIcons.Cdi.Gutter.ShowAutowiredCandidates);
+      builder
           .setPopupTitle(GuiceBundle.message("GuiceClassAnnotator.popup.title"))
           .setTooltipText(GuiceBundle.message("GuiceClassAnnotator.popup.tooltip.text"));
     }
     else {
       // This element is a binding site → navigate to injection points
-      builder = NavigationGutterIconBuilder
-          .create(JavaUltimateIcons.Cdi.Gutter.ShowAutowiredDependencies, GuiceBundle.GUICE)
+      builder = new GuiceGutterIconBuilder(JavaUltimateIcons.Cdi.Gutter.ShowAutowiredDependencies);
+      builder
           .setPopupTitle(GuiceBundle.message("gutter.choose.injected.point"))
           .setTooltipText(GuiceBundle.message("gutter.navigate.to.injection.point"));
     }
@@ -255,6 +254,6 @@ public final class GuiceInjectionsClassAnnotator extends GuiceLineMarkerProvider
     builder
         .setTargets(sorted.targets())
         .setTargetRenderer(() -> new GuiceEntryTargetRenderer(immutableEntries));
-    result.add(builder.createLineMarkerInfo(anchor));
+    result.add(builder.createGuiceLineMarkerInfo(anchor));
   }
 }

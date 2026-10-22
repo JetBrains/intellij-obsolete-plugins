@@ -2,7 +2,6 @@
 package com.intellij.guice.model;
 
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
-import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.guice.GuiceBundle;
 import com.intellij.guice.GuiceIcons;
 import com.intellij.guice.model.renderers.GuiceEntryTargetRenderer;
@@ -96,14 +95,14 @@ public final class GuiceBindingClassAnnotator extends GuiceLineMarkerProviderBas
       GuiceEntryTargetRenderer.SortedTargets sorted = GuiceEntryTargetRenderer.sortTargets(filteredEntries, psiElement);
       if (!sorted.targets().isEmpty()) {
         List<GuiceEntry> immutableEntries = sorted.entries();
-        final NavigationGutterIconBuilder<PsiElement> builder =
-          NavigationGutterIconBuilder.create(GuiceIcons.GoogleSmall, GuiceBundle.GUICE).
-            setPopupTitle(GuiceBundle.message("GuiceClassAnnotator.popup.title")).
-            setTooltipText(GuiceBundle.message("GuiceClassAnnotator.popup.tooltip.text")).
-            setTargetRenderer(() -> new GuiceEntryTargetRenderer(immutableEntries)).
-            setTargets(sorted.targets());
+        final GuiceGutterIconBuilder builder = new GuiceGutterIconBuilder(GuiceIcons.GoogleSmall);
+        builder
+          .setPopupTitle(GuiceBundle.message("GuiceClassAnnotator.popup.title"))
+          .setTooltipText(GuiceBundle.message("GuiceClassAnnotator.popup.tooltip.text"))
+          .setTargetRenderer(() -> new GuiceEntryTargetRenderer(immutableEntries))
+          .setTargets(sorted.targets());
 
-        result.add(builder.createLineMarkerInfo(psiElement));
+        result.add(builder.createGuiceLineMarkerInfo(psiElement));
       }
     }
   }

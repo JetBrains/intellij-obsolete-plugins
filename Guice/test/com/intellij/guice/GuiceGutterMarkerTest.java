@@ -168,6 +168,48 @@ public class GuiceGutterMarkerTest extends GuiceTestBase {
     assertThat(renderer.getContainerText(forward.get(1))).isEqualTo("Client.java:5");
   }
 
+  /**
+   * On a dynamic unload the platform removes the plugin's highlighters from the open editors, and it recognises
+   * a line marker by the class of its {@code LineMarkerInfo}. A platform {@code RelatedItemLineMarkerInfo} would
+   * stay in the gutter and keep the plugin class loader alive through the target-renderer lambda.
+   */
+  public void testGuiceLineMarkersUseAPluginOwnedMarkerClass() {
+    PsiFile apiFile = myFixture.addClass("public interface Api {}").getContainingFile();
+    myFixture.addClass("public class ApiImpl implements Api {}");
+    myFixture.addFileToProject("MyModule.java", """
+      import com.google.inject.AbstractModule;
+      public class MyModule extends AbstractModule {
+        @Override
+        protected void configure() {
+          bind(Api.class).to(ApiImpl.class);
+          bind(MyService.class).to(MyServiceImpl.class);
+        }
+      }
+      """);
+    myFixture.configureByText("Client.java", """
+      import com.google.inject.Inject;
+      public class Client {
+        @Inject
+        Api api;
+        @Inject
+        MyService service;
+      }
+      """);
+    var injectionMarkers = guiceMarkers(TO_BINDINGS_TOOLTIP);
+    assertThat(injectionMarkers).hasSize(2);
+    for (RelatedItemLineMarkerInfo<?> marker : injectionMarkers) {
+      assertThat(marker.getClass().getName()).startsWith("com.intellij.guice.");
+    }
+
+    // The class gutter of GuiceBindingClassAnnotator: Api is the key of bind(Api.class).
+    myFixture.openFileInEditor(apiFile.getVirtualFile());
+    var classMarkers = guiceMarkers(TO_BINDINGS_TOOLTIP);
+    assertThat(classMarkers).hasSize(1);
+    for (RelatedItemLineMarkerInfo<?> marker : classMarkers) {
+      assertThat(marker.getClass().getName()).startsWith("com.intellij.guice.");
+    }
+  }
+
   public void testPluginCanBeUnloadedWithoutRestart() {
     IdeaPluginDescriptor descriptor = PluginManagerCore.getPlugin(PluginId.getId("com.intellij.guice"));
     assertNotNull("The Guice plugin must be loaded in the test IDE", descriptor);
