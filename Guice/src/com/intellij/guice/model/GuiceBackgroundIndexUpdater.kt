@@ -227,6 +227,7 @@ class GuiceBackgroundIndexUpdater(
                     val files = model.collectDirtyFiles()
                     if (files.isEmpty()) break
                     val total = files.size
+                    reporter.text(GuiceBundle.message("progress.updating.files", total))
                     for ((index, vf) in files.withIndex()) {
                         reporter.fraction(index.toDouble() / total)
                         reporter.details(vf.name)
@@ -305,16 +306,23 @@ class GuiceBackgroundIndexUpdater(
             ) {
                 // reportRawProgress MUST be first to take ownership of the progress step.
                 reportRawProgress { reporter ->
+                    // The index searches of the steps write their own text into this reporter (a coroutine read
+                    // action bridges the indicator to it). Each phase sets its own text, so the text of the last
+                    // search does not outlive the discovery.
                     val steps = smartReadAction(project) { model.createDiscoverySteps(module) }
                     val discoveredFiles = LinkedHashSet<VirtualFile>()
                     for (step in steps) {
                         if (generation != model.structureGeneration) return@reportRawProgress
+                        reporter.text(GuiceBundle.message("progress.looking.for.kind", step.kind.label()))
+                        reporter.details(null)
                         val stepFiles = smartReadAction(project) { step.discover() }
                         discoveredFiles.addAll(stepFiles)
                     }
 
                     val fileList = ArrayList(discoveredFiles)
                     val total = fileList.size
+                    reporter.text(GuiceBundle.message("progress.extracting.bindings", total))
+                    reporter.details(null)
                     for ((index, vf) in fileList.withIndex()) {
                         if (generation != model.structureGeneration) return@reportRawProgress
                         reporter.fraction(index.toDouble() / total)
@@ -328,8 +336,10 @@ class GuiceBackgroundIndexUpdater(
                         if (generation != model.structureGeneration) return@reportRawProgress
                         val dirtyBatch = model.collectDirtyFiles()
                         if (dirtyBatch.isEmpty()) break
+                        reporter.text(GuiceBundle.message("progress.updating.files", dirtyBatch.size))
                         for (vf in dirtyBatch) {
                             if (generation != model.structureGeneration) return@reportRawProgress
+                            reporter.details(vf.name)
                             smartReadAction(project) {
                                 processSafely(vf) { model.processSingleDirtyFile(vf) }
                             }

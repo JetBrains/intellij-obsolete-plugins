@@ -2,6 +2,7 @@
 package com.intellij.guice.model;
 
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
+import com.intellij.guice.GuiceBundle;
 import com.intellij.guice.constants.GuiceAnnotations;
 import com.intellij.guice.model.extensions.GuiceBindingContributor;
 import com.intellij.guice.model.extensions.GuiceExtensionIndex;
@@ -48,6 +49,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import kotlinx.coroutines.CoroutineScope;
 
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
@@ -56,7 +58,9 @@ import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.util.Disposer;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import com.intellij.openapi.application.ReadAction;
+import org.jetbrains.annotations.Nls;
 
 /**
  * Project-level service that owns the Guice index infrastructure and keeps it up-to-date
@@ -87,9 +91,38 @@ import com.intellij.openapi.application.ReadAction;
 @Service(Service.Level.PROJECT)
 public final class GuiceProjectModel implements Disposable {
 
-  @FunctionalInterface
-  interface DiscoveryStep {
-    @NotNull Set<VirtualFile> discover();
+  /**
+   * What a discovery step looks for. The label names the kind in the progress text of the step.
+   */
+  @ApiStatus.Internal
+  public enum DiscoveryKind {
+    INJECT_MEMBERS(() -> GuiceBundle.message("progress.kind.inject.members")),
+    PROVIDES_METHODS(() -> GuiceBundle.message("progress.kind.provides.methods")),
+    JIT_CLASSES(() -> GuiceBundle.message("progress.kind.jit.classes")),
+    MODULES(() -> GuiceBundle.message("progress.kind.modules")),
+    BINDER_HELPER_CALLS(() -> GuiceBundle.message("progress.kind.binder.helper.calls")),
+    MODULE_REFERENCES(() -> GuiceBundle.message("progress.kind.module.references"));
+
+    private final Supplier<@Nls String> myLabel;
+
+    DiscoveryKind(@NotNull Supplier<@Nls String> label) {
+      myLabel = label;
+    }
+
+    public @NotNull @Nls String label() {
+      return myLabel.get();
+    }
+  }
+
+  /**
+   * One index search of the discovery. Each step runs inside its own read action, see
+   * {@link #createDiscoverySteps(Module)}.
+   */
+  @ApiStatus.Internal
+  public record DiscoveryStep(@NotNull DiscoveryKind kind, @NotNull Supplier<Set<VirtualFile>> search) {
+    @NotNull Set<VirtualFile> discover() {
+      return search.get();
+    }
   }
 
   /**
@@ -523,38 +556,38 @@ public final class GuiceProjectModel implements Disposable {
 
     // 1. Files with @Inject fields/methods (one step per annotation FQN)
     for (String injectAnno : GuiceAnnotations.INJECTS) {
-      steps.add(() -> discoverFieldsAndMethodsByAnnotation(injectAnno, scope));
+      steps.add(new DiscoveryStep(DiscoveryKind.INJECT_MEMBERS, () -> discoverFieldsAndMethodsByAnnotation(injectAnno, scope)));
     }
 
     // 2. Files with @Provides* method annotations
     for (String providesAnno : extensionIndex.getAllProvidesAnnotations()) {
-      steps.add(() -> discoverMethodsByAnnotation(providesAnno, scope));
+      steps.add(new DiscoveryStep(DiscoveryKind.PROVIDES_METHODS, () -> discoverMethodsByAnnotation(providesAnno, scope)));
     }
 
     // 3. Classes with @ImplementedBy or @ProvidedBy
     for (String jitAnno : List.of(GuiceAnnotations.IMPLEMENTED_BY, GuiceAnnotations.PROVIDED_BY)) {
-      steps.add(() -> discoverClassesByAnnotation(jitAnno, scope));
+      steps.add(new DiscoveryStep(DiscoveryKind.JIT_CLASSES, () -> discoverClassesByAnnotation(jitAnno, scope)));
     }
 
     // 4. Guice module files (for bindings defined in configure())
-    steps.add(() -> {
+    steps.add(new DiscoveryStep(DiscoveryKind.MODULES, () -> {
       Set<VirtualFile> files = new LinkedHashSet<>();
       for (PsiClass cls : GuiceInjectorManager.getGuiceModuleClasses(module, scope)) {
         addFileOf(cls, files);
       }
       recordDiscoveredFiles(files);
       return files;
-    });
+    }));
 
     // 5. Files calling contributor-registered global binder helpers outside Module classes
     for (String ownerFqn : extensionIndex.getGlobalCallOwnerClasses()) {
-      steps.add(() -> discoverClassReferences(ownerFqn, scope));
+      steps.add(new DiscoveryStep(DiscoveryKind.BINDER_HELPER_CALLS, () -> discoverClassReferences(ownerFqn, scope)));
     }
 
     // 6. Files with lambda modules, which are no Module subclasses: they reference the Module type
     //    (a Module-typed variable or parameter) or an injector factory (Guice.createInjector(binder -> ...)).
     for (String fqn : LAMBDA_MODULE_REFERENCE_CLASSES) {
-      steps.add(() -> discoverClassReferences(fqn, scope));
+      steps.add(new DiscoveryStep(DiscoveryKind.MODULE_REFERENCES, () -> discoverClassReferences(fqn, scope)));
     }
 
     return steps;
