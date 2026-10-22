@@ -4,9 +4,11 @@ import static com.intellij.codeInsight.daemon.LineMarkerInfo.LineMarkerGutterIco
 
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.intellij.codeInsight.daemon.GutterMark;
+import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.navigation.NavigationGutterIconRenderer;
 import com.intellij.guice.model.GuiceNavigationIndex;
 import com.intellij.guice.model.GuiceProjectModel;
+import com.intellij.java.ultimate.icons.JavaUltimateIcons;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.module.Module;
@@ -91,24 +93,24 @@ public abstract class GuiceTestBase extends LightJavaCodeInsightFixtureTestCase 
    */
   protected static boolean isGuiceMark(@NotNull GutterMark mark, @NotNull String tooltip) {
     javax.swing.Icon icon = mark.getIcon();
-    if (icon != com.intellij.guice.GuiceIcons.GoogleSmall
-        && icon != com.intellij.guice.model.GuiceInjectionsClassAnnotator.showAutowiredCandidates
-        && icon != com.intellij.guice.model.GuiceInjectionsClassAnnotator.showAutowiredDependencies) {
+    if (icon != GuiceIcons.GoogleSmall
+        && icon != JavaUltimateIcons.Cdi.Gutter.ShowAutowiredCandidates
+        && icon != JavaUltimateIcons.Cdi.Gutter.ShowAutowiredDependencies) {
       return false;
     }
     return tooltip.equals(mark.getTooltipText());
   }
 
   /** Returns the Guice line markers with the tooltip after highlighting the file in the editor. */
-  protected java.util.List<com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo<?>> guiceMarkers(@NotNull String tooltip) {
+  protected List<RelatedItemLineMarkerInfo<?>> guiceMarkers(@NotNull String tooltip) {
     myFixture.doHighlighting();
-    java.util.List<com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo<?>> result = new ArrayList<>();
+    List<RelatedItemLineMarkerInfo<?>> result = new ArrayList<>();
     for (GutterMark mark : myFixture.findAllGutters()) {
       if (!isGuiceMark(mark, tooltip)) continue;
       assertInstanceOf(mark, LineMarkerGutterIconRenderer.class);
       var info = ((LineMarkerGutterIconRenderer<?>)mark).getLineMarkerInfo();
-      assertInstanceOf(info, com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo.class);
-      result.add((com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo<?>)info);
+      assertInstanceOf(info, RelatedItemLineMarkerInfo.class);
+      result.add((RelatedItemLineMarkerInfo<?>)info);
     }
     return result;
   }
@@ -117,9 +119,9 @@ public abstract class GuiceTestBase extends LightJavaCodeInsightFixtureTestCase 
    * Highlights the file in the editor and returns the navigation targets of all gutter icons with the tooltip.
    * Each target is given as the text of the target element with collapsed whitespace, sorted.
    */
-  protected java.util.List<String> gutterTargets(@NotNull String tooltip) {
+  protected List<String> gutterTargets(@NotNull String tooltip) {
     myFixture.doHighlighting();
-    java.util.List<String> result = new ArrayList<>();
+    List<String> result = new ArrayList<>();
     for (GutterMark mark : myFixture.findAllGutters()) {
       if (!isGuiceMark(mark, tooltip)) continue;
       assertInstanceOf(mark, LineMarkerGutterIconRenderer.class);
@@ -137,9 +139,9 @@ public abstract class GuiceTestBase extends LightJavaCodeInsightFixtureTestCase 
   /**
    * Returns the text of the elements that carry a gutter icon with the tooltip, sorted.
    */
-  protected java.util.List<String> gutterAnchors(@NotNull String tooltip) {
+  protected List<String> gutterAnchors(@NotNull String tooltip) {
     myFixture.doHighlighting();
-    java.util.List<String> result = new ArrayList<>();
+    List<String> result = new ArrayList<>();
     for (GutterMark mark : myFixture.findAllGutters()) {
       if (!isGuiceMark(mark, tooltip)) continue;
       var info = ((LineMarkerGutterIconRenderer<?>)mark).getLineMarkerInfo();
