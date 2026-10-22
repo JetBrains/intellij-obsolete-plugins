@@ -37,7 +37,7 @@ public class RedundantToBindingInspectionTest extends GuiceTestBase {
         protected void configure() {
           bind(Bar.class).to(<warning descr="Binding to class Bar is redundant">Bar</warning>.class);
           bind(Foo.class).to(<warning descr="Binding to class FooImpl is redundant">FooImpl</warning>.class);
-          
+    
           bind(Foo.class).to(SpecialFoo.class); // Valid and not redundant
           bind(MyService.class).to(MyServiceImpl.class); // Valid
         }
@@ -47,11 +47,7 @@ public class RedundantToBindingInspectionTest extends GuiceTestBase {
   }
 
   /**
-   * {@code to()} on a multibinder or optional-binder element binds no key of its own,
-   * so it is never redundant, even when the element type has {@code @ImplementedBy}.
-   */
-  /**
-   * N6: {@code to(Key.get(T, qualifier))} links to another binding of the same type. It is not a self-binding,
+   * {@code to(Key.get(T, qualifier))} links to another binding of the same type. It is not a self-binding,
    * and the "Remove binding target" fix would break the injector.
    */
   public void testLinkToQualifiedKeyOfSameTypeIsNotRedundant() {

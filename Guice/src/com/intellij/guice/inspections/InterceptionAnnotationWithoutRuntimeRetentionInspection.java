@@ -11,6 +11,12 @@ import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiType;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.uast.UastContextKt;
+import org.jetbrains.uast.UReferenceExpression;
+import org.jetbrains.uast.UAnnotation;
+import org.jetbrains.uast.UClass;
+import com.intellij.psi.PsiEnumConstant;
 import org.jetbrains.uast.UCallExpression;
 import org.jetbrains.uast.UExpression;
 import org.jetbrains.uast.visitor.AbstractUastNonRecursiveVisitor;
@@ -87,12 +93,37 @@ public final class InterceptionAnnotationWithoutRuntimeRetentionInspection exten
       if (operantAnnotation == null || !operantAnnotation.isAnnotationType()) {
         return true;
       }
-      final PsiAnnotation retentionAnnotation =
-          AnnotationUtil.findAnnotation(operantAnnotation, RETENTION_ANNOTATIONS);
-      if (retentionAnnotation == null || !retentionAnnotation.getText().contains("RUNTIME")) {
+      if (!hasRuntimeRetention(operantAnnotation)) {
         registerClassLiteralError(argExpr, operantAnnotation.getName());
       }
       return true;
     }
+  }
+
+  /**
+   * Tells if the annotation class keeps its instances at runtime. Reads {@code java.lang.annotation.Retention}
+   * or {@code kotlin.annotation.Retention} and resolves the policy constant. Without a retention annotation a
+   * Kotlin annotation class is RUNTIME and a Java one is CLASS.
+   */
+  static boolean hasRuntimeRetention(@NotNull PsiClass annotationClass) {
+    UClass uClass = UastContextKt.toUElement(annotationClass, UClass.class);
+    if (uClass != null) {
+      for (UAnnotation annotation : uClass.getUAnnotations()) {
+        if (RETENTION_ANNOTATIONS.contains(annotation.getQualifiedName())) {
+          return isRuntimePolicy(annotation.findAttributeValue("value"));
+        }
+      }
+      return "kotlin".equalsIgnoreCase(uClass.getLang().getID());
+    }
+    PsiAnnotation retention = AnnotationUtil.findAnnotation(annotationClass, RETENTION_ANNOTATIONS);
+    return retention != null && retention.getText().contains("RUNTIME");
+  }
+
+  private static boolean isRuntimePolicy(@Nullable UExpression value) {
+    if (value == null) return false;
+    if (value instanceof UReferenceExpression reference && reference.resolve() instanceof PsiEnumConstant constant) {
+      return "RUNTIME".equals(constant.getName());
+    }
+    return value.asSourceString().contains("RUNTIME");
   }
 }

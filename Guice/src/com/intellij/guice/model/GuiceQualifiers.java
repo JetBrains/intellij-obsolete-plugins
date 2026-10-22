@@ -6,18 +6,40 @@ import com.intellij.guice.constants.GuiceAnnotations;
 import com.intellij.guice.model.extensions.BinderShape;
 import com.intellij.guice.model.extensions.GuiceExtensionIndex;
 import com.intellij.guice.utils.GuiceUtils;
-import com.intellij.psi.*;
+import com.intellij.psi.JavaPsiFacade;
+import com.intellij.psi.PsiAnnotation;
+import com.intellij.psi.PsiAnnotationMemberValue;
+import com.intellij.psi.PsiAnnotationMethod;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiClassObjectAccessExpression;
+import com.intellij.psi.PsiClassType;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiEnumConstant;
+import com.intellij.psi.PsiExpression;
+import com.intellij.psi.PsiJavaCodeReferenceElement;
+import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiModifierList;
+import com.intellij.psi.PsiModifierListOwner;
+import com.intellij.psi.PsiNameValuePair;
+import com.intellij.psi.PsiParameter;
+import com.intellij.psi.PsiReferenceExpression;
+import com.intellij.psi.PsiType;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.uast.UAnnotated;
+import org.jetbrains.uast.UAnnotation;
+import org.jetbrains.uast.UCallExpression;
+import org.jetbrains.uast.UElement;
+import org.jetbrains.uast.UExpression;
 import org.jetbrains.uast.UObjectLiteralExpression;
 import com.intellij.psi.PsiAnonymousClass;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.uast.*;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
+import org.jetbrains.uast.UastContextKt;
+import org.jetbrains.uast.UastUtils;
 
 /**
  * Builds {@link GuiceQualifier} values from declarations (fields, parameters, {@code @Provides} methods)
@@ -138,17 +160,23 @@ public final class GuiceQualifiers {
   }
 
   private static @NotNull String valueText(@NotNull PsiAnnotationMemberValue value) {
-    if (value instanceof PsiReferenceExpression ref && ref.resolve() instanceof PsiEnumConstant constant) {
-      PsiClass enumClass = constant.getContainingClass();
-      return (enumClass != null ? enumClass.getQualifiedName() : "") + "#" + constant.getName();
-    }
-    if (value instanceof PsiClassObjectAccessExpression classAccess) {
-      return classAccess.getOperand().getType().getCanonicalText();
-    }
-    if (value instanceof PsiExpression expression) {
-      Object constant = JavaPsiFacade.getInstance(value.getProject()).getConstantEvaluationHelper()
-        .computeConstantExpression(expression);
-      if (constant != null) return String.valueOf(constant);
+    switch (value) {
+      case PsiReferenceExpression ref when ref.resolve() instanceof PsiEnumConstant constant -> {
+        PsiClass enumClass = constant.getContainingClass();
+        return (enumClass != null ? enumClass.getQualifiedName() : "") + "#" + constant.getName();
+      }
+      case PsiClassObjectAccessExpression classAccess -> {
+        return classAccess.getOperand().getType().getCanonicalText();
+      }
+      case PsiExpression expression -> {
+        Object constant = JavaPsiFacade.getInstance(value.getProject())
+            .getConstantEvaluationHelper()
+            .computeConstantExpression(expression);
+        if (constant != null)
+          return String.valueOf(constant);
+      }
+      default -> {
+      }
     }
     return value.getText();
   }

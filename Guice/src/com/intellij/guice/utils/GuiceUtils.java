@@ -320,7 +320,21 @@ public final class GuiceUtils {
     if (call == null) return null;
     UExpression receiver = skipParenthesesAndCasts(getEffectiveReceiver(call));
     UExpression selector = skipParenthesesAndCasts(getSelectorIfQualified(receiver));
-    return selector instanceof UCallExpression ? (UCallExpression)selector : null;
+    if (selector instanceof UCallExpression receiverCall) return receiverCall;
+    // A chain split through a local variable: `b = bind(Foo.class).annotatedWith(q); b.to(Impl.class);`
+    // continues in the initializer of the variable.
+    return initializerCallOfLocalVariable(receiver);
+  }
+
+  private static @Nullable UCallExpression initializerCallOfLocalVariable(@Nullable UExpression receiver) {
+    if (!(receiver instanceof USimpleNameReferenceExpression reference)) return null;
+    PsiElement resolved = reference.resolve();
+    if (!(resolved instanceof PsiLocalVariable)) return null;
+    ULocalVariable variable = UastContextKt.toUElement(resolved, ULocalVariable.class);
+    UExpression initializer = variable != null ? skipParenthesesAndCasts(variable.getUastInitializer()) : null;
+    UExpression selector = skipParenthesesAndCasts(getSelectorIfQualified(initializer));
+    if (selector instanceof UCallExpression call) return call;
+    return initializer instanceof UCallExpression call ? call : null;
   }
 
   /**

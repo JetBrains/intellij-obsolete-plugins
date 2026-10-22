@@ -801,12 +801,18 @@ public final class GuiceProjectModel implements Disposable {
       Set<String> dependentRegistrars = new LinkedHashSet<>(myNavigationIndex.getDependentRegistrarFiles(path));
       dependentRegistrars.addAll(myNavigationIndex.getDependentRegistrarFilesByClassName(vf.getNameWithoutExtension()));
       dependentRegistrars.remove(path);
+      boolean queued = false;
       for (String registrarPath : dependentRegistrars) {
         myFileStamps.remove(registrarPath);
         VirtualFile registrarVf = myFilesByPath.get(registrarPath);
         if (registrarVf != null) {
-          myDirtyFiles.add(registrarVf);
+          queued |= myDirtyFiles.add(registrarVf);
         }
+      }
+      if (queued) {
+        // A highlighting pass (ensureFileCurrent) may be the caller: without a request, the queued files would
+        // wait for the next unrelated event. A running drain ignores the extra request.
+        myBackgroundUpdater.scheduleDirtyProcessing();
       }
     }
     return changed;

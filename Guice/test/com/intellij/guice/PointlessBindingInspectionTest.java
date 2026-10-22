@@ -77,12 +77,12 @@ public class PointlessBindingInspectionTest extends GuiceTestBase {
     
       // Mock Kotlin extensions for Guice
       inline fun <reified T> AbstractModule.bind() {}
-      
+    
       class MyModule : AbstractModule() {
         override fun configure() {
           <warning descr="Binding is unnecessary, and can be removed">bind(Foo::class.java)</warning>
           <warning descr="Binding is unnecessary, and can be removed">bind<Foo>()</warning>
-          
+    
           bind(MyService::class.java).to(MyServiceImpl::class.java) // Valid
         }
       }
@@ -128,9 +128,9 @@ public class PointlessBindingInspectionTest extends GuiceTestBase {
 
     myFixture.configureByText("MyModule.kt", """
       import com.google.inject.AbstractModule
-      
+    
       inline fun <reified T> AbstractModule.bind() {}
-      
+    
       class MyModule : AbstractModule() {
         override fun configure() {
           bind(Foo::cl<caret>ass.java)
@@ -142,9 +142,9 @@ public class PointlessBindingInspectionTest extends GuiceTestBase {
     myFixture.launchAction(action);
     myFixture.checkResult("""
       import com.google.inject.AbstractModule
-      
+    
       inline fun <reified T> AbstractModule.bind() {}
-      
+    
       class MyModule : AbstractModule() {
         override fun configure() {
         }
@@ -161,9 +161,9 @@ public class PointlessBindingInspectionTest extends GuiceTestBase {
 
     myFixture.configureByText("MyModule.kt", """
       import com.google.inject.AbstractModule
-      
+    
       inline fun <reified T> AbstractModule.bind() {}
-      
+    
       class MyModule : AbstractModule() {
         override fun configure() {
           bind<Fo<caret>o>()
@@ -175,9 +175,9 @@ public class PointlessBindingInspectionTest extends GuiceTestBase {
     myFixture.launchAction(action);
     myFixture.checkResult("""
       import com.google.inject.AbstractModule
-      
+    
       inline fun <reified T> AbstractModule.bind() {}
-      
+    
       class MyModule : AbstractModule() {
         override fun configure() {
         }

@@ -851,6 +851,25 @@ public class GuiceInjectionTest extends GuiceTestBase {
     assertThat(gutterAnchors(TO_BINDINGS_TOOLTIP)).containsExactly("directList", "optionalList");
   }
 
+  /** §6.3: a chain split through a builder variable keeps the qualifier of its head. */
+  public void testBindingChainSplitThroughBuilderVariableKeepsQualifier() {
+    addModule("""
+      com.google.inject.binder.LinkedBindingBuilder<MyService> builder = bind(MyService.class).annotatedWith(Names.named("x"));
+      builder.to(MyServiceImpl.class);
+      """);
+    myFixture.configureByText("Client.java", """
+      import com.google.inject.Inject;
+      import com.google.inject.name.Named;
+      public class Client {
+        @Inject @Named("x")
+        MyService named;
+        @Inject
+        MyService plain;
+      }
+      """);
+    assertThat(gutterAnchors(TO_BINDINGS_TOOLTIP)).containsExactly("named");
+  }
+
   /** M5: a lambda {@code Module} binds like a module class. */
   public void testBindingsInLambdaModuleAreIndexed() {
     myFixture.addFileToProject("Main.java", """
@@ -1490,6 +1509,8 @@ public class GuiceInjectionTest extends GuiceTestBase {
       }
     });
     assertThat(getNavigationIndex().getIndexedFiles()).doesNotContain(oldPath);
+    // The renamed module is indexed under its new path: the client keeps its gutter.
+    assertThat(gutterAnchors(TO_BINDINGS_TOOLTIP)).containsExactly("service");
 
     var movedDir = myFixture.getTempDirFixture().findOrCreateDir("moved");
     String renamedPath = vf.getPath();

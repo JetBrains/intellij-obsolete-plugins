@@ -32,8 +32,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static com.intellij.codeInsight.AnnotationUtil.CHECK_HIERARCHY;
-
 public final class AnnotationUtils {
   public static @Nullable PsiElement findDefaultValue(@Nullable PsiAnnotation annotation) {
     return annotation != null ? annotation.findDeclaredAttributeValue(PsiAnnotation.DEFAULT_REFERENCED_METHOD_NAME) : null;

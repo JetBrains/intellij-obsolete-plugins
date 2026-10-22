@@ -9,7 +9,6 @@ import com.intellij.guice.utils.GuiceUtils;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.uast.UCallExpression;
 import org.jetbrains.uast.UExpression;
 

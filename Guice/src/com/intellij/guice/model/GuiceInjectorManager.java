@@ -23,7 +23,6 @@ import com.intellij.psi.util.InheritanceUtil;
 import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.uast.UCallExpression;
 import org.jetbrains.uast.UClass;
 import org.jetbrains.uast.UFile;
 import org.jetbrains.uast.UastContextKt;

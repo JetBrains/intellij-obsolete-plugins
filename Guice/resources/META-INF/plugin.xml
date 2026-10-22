@@ -7,7 +7,7 @@
   Adds support for <a href="https://github.com/google/guice">Guice</a>, Google's dependency injection framework.
   <ul>
   <li>Templates for creating new Guice files</li>
-  <li>Coding assistance specific to Guice constructs: code completion, inspections, intention actions, and much more
+  <li>Coding assistance specific to Guice constructs: navigation between injection points and bindings, inspections, intention actions
   </ul>
   <p>Originally developed by Sixth and Red River Software.</p>
   ]]></description>

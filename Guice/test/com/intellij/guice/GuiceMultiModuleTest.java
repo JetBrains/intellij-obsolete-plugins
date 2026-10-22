@@ -132,8 +132,8 @@ public class GuiceMultiModuleTest extends JavaCodeInsightFixtureTestCase {
     PsiDocumentManager.getInstance(getProject()).commitAllDocuments();
 
     GuiceProjectModel model = GuiceProjectModel.getInstance(getProject());
-    Truth.assertThat(model.isGuiceAvailable(appModule)).isTrue();
-    Truth.assertThat(model.isGuiceAvailable(apiModule)).isTrue();
+    Truth.assertThat(GuiceProjectModel.isGuiceAvailable(appModule)).isTrue();
+    Truth.assertThat(GuiceProjectModel.isGuiceAvailable(apiModule)).isTrue();
 
     myFixture.configureByText("Client.java", """
       package api;

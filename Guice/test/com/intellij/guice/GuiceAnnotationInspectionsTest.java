@@ -269,6 +269,29 @@ public class GuiceAnnotationInspectionsTest extends GuiceTestBase {
     myFixture.testHighlighting(true, false, true);
   }
 
+  /** §6.4: Guice subclasses a class with {@code @Transactional} methods at runtime; such a method must be overridable. */
+  public void testTransactionalMethodsMustBeOverridable() {
+    myFixture.addClass("""
+      package com.google.inject.persist;
+      import java.lang.annotation.*;
+      @Retention(RetentionPolicy.RUNTIME) @Target(ElementType.METHOD)
+      public @interface Transactional {}
+      """);
+    myFixture.enableInspections(new com.intellij.codeInspection.inheritance.ImplicitSubclassInspection());
+    myFixture.configureByText("Repo.java", """
+      import com.google.inject.persist.Transactional;
+      public class Repo {
+        @Transactional
+        public void open() {}
+        @Transactional
+        <error descr="@Transactional methods must not be private or final">private</error> void secret() {}
+        @Transactional
+        public <error descr="@Transactional methods must not be private or final">final</error> void sealed() {}
+      }
+      """);
+    myFixture.testHighlighting(true, false, true);
+  }
+
   public void testInterceptionAnnotationWithoutRuntimeRetentionInKotlin() {
     myFixture.enableInspections(new InterceptionAnnotationWithoutRuntimeRetentionInspection());
     myFixture.addClass("""
@@ -284,16 +307,27 @@ public class GuiceAnnotationInspectionsTest extends GuiceTestBase {
       public @interface RuntimeAnno {}
       """);
 
+    // Kotlin annotation classes: RUNTIME by default, SOURCE and BINARY through kotlin.annotation.Retention.
+    myFixture.addFileToProject("test/KtAnnotations.kt", """
+      package test
+      annotation class KtDefaultAnno
+      @Retention(AnnotationRetention.RUNTIME) annotation class KtRuntimeAnno
+      @Retention(AnnotationRetention.SOURCE) annotation class KtSourceAnno
+      @Retention(AnnotationRetention.BINARY) annotation class KtBinaryAnno
+      """);
     myFixture.configureByText("KotlinInterceptorModule.kt", """
       import com.google.inject.AbstractModule
       import com.google.inject.matcher.Matchers
-      import test.NonRuntimeAnno
-      import test.RuntimeAnno
+      import test.*
 
       class KotlinInterceptorModule : AbstractModule() {
         override fun configure() {
           Matchers.annotatedWith(<warning descr="Annotation NonRuntimeAnno does not have Runtime retention">NonRuntimeAnno</warning>::class.java)
           Matchers.annotatedWith(RuntimeAnno::class.java)
+          Matchers.annotatedWith(KtDefaultAnno::class.java)
+          Matchers.annotatedWith(KtRuntimeAnno::class.java)
+          Matchers.annotatedWith(<warning descr="Annotation KtSourceAnno does not have Runtime retention">KtSourceAnno</warning>::class.java)
+          Matchers.annotatedWith(<warning descr="Annotation KtBinaryAnno does not have Runtime retention">KtBinaryAnno</warning>::class.java)
         }
       }
       """);

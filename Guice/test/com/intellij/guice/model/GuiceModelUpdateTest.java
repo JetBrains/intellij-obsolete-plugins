@@ -453,6 +453,61 @@ public class GuiceModelUpdateTest extends GuiceTestBase {
     assertThat(updater.collectorsRunningForTests()).isTrue();
   }
 
+  /**
+   * T1: the production pipeline end to end. A module edit in background mode goes through the debounced drain,
+   * and the next highlighting of the client shows the new binding; no test-only drain is involved.
+   */
+  public void testBackgroundDrainUpdatesTheGuttersOfAnotherFile() {
+    PsiFile client = myFixture.addFileToProject("Client.java", CLIENT_WITH_ONE_INJECT.replace("MyService service;", "MyService service;\n  @Inject MyKey key;"));
+    PsiFile module = myFixture.configureByText("MyModule.java", """
+      import com.google.inject.AbstractModule;
+      public class MyModule extends AbstractModule {
+        @Override
+        protected void configure() {
+          bind(MyService.class).to(MyServiceImpl.class);
+        }
+      }
+      """);
+    getNavigationIndex();
+    GuiceProjectModel model = model();
+    myFixture.openFileInEditor(client.getVirtualFile());
+    assertThat(gutterAnchors(TO_BINDINGS_TOOLTIP)).containsExactly("service");
+
+    model.getBackgroundUpdater().enableBackgroundModeForTests(getTestRootDisposable());
+    myFixture.openFileInEditor(module.getVirtualFile());
+    replaceClientText(module.getText().replace("bind(MyService.class).to(MyServiceImpl.class);",
+                                               "bind(MyService.class).to(MyServiceImpl.class);\n    bind(MyKey.class).toInstance(null);"));
+    assertThat(model.hasDirtyFiles()).isTrue();
+    PlatformTestUtil.waitWithEventsDispatching("The background drain did not process the module",
+                                               () -> !model.hasDirtyFiles(), 30);
+
+    myFixture.openFileInEditor(client.getVirtualFile());
+    assertThat(gutterAnchors(TO_BINDINGS_TOOLTIP)).containsExactly("key", "service");
+  }
+
+  /**
+   * T1: a structure change in background mode runs the background population loop (discovery, extraction,
+   * prune) and the index comes back complete.
+   */
+  public void testBackgroundPopulationAfterStructureChange() {
+    PsiFile client = configureClientAndModule();
+    GuiceNavigationIndex index = getNavigationIndex();
+    GuiceProjectModel model = model();
+    GuiceBindingKey key = ReadAction.compute(() -> GuiceBindingKey.forClass(myFixture.findClass("MyService")));
+    assertThat(index.findByKey(key, EntryRole.INJECTION_POINT)).hasSize(1);
+
+    model.getBackgroundUpdater().enableBackgroundModeForTests(getTestRootDisposable());
+    model.markStructureChanged();
+    assertThat(model.isPopulationNeeded()).isTrue();
+    // A highlighting pass requests the index, which schedules the background population.
+    ReadAction.run(() -> model.getNavigationIndex(myFixture.getModule()));
+    PlatformTestUtil.waitWithEventsDispatching("The background population did not complete",
+                                               () -> !model.isPopulationNeeded(), 30);
+
+    assertThat(ReadAction.compute(() -> index.findByKey(key, EntryRole.INJECTION_POINT))).hasSize(1);
+    assertThat(index.getIndexedFiles()).contains(client.getVirtualFile().getPath());
+  }
+
   public void testBackgroundModeDrainsDirtyFilesAfterDebounce() {
     PsiFile client = configureClientAndModule();
     GuiceNavigationIndex index = getNavigationIndex();
