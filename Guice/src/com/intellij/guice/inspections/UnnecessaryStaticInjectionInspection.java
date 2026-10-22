@@ -37,7 +37,7 @@ public final class UnnecessaryStaticInjectionInspection extends BaseUastInspecti
 
   @Override
   public LocalQuickFix buildFix(PsiElement location, Object[] infos) {
-    return new DeleteBindingFix(DeleteBindingFix.Mode.ARGUMENT);
+    return new DeleteBindingFix(DeleteBindingFix.Mode.ARGUMENT, "remove.static.injection");
   }
 
   private static void checkRequestStaticInjection(@NotNull UCallExpression expression,
@@ -57,16 +57,20 @@ public final class UnnecessaryStaticInjectionInspection extends BaseUastInspecti
     }
   }
 
+  /**
+   * Guice injects the static {@code @Inject} members of the class and of its superclasses
+   * ({@code InjectionPoint.forStaticMethodsAndFields} walks the hierarchy).
+   */
   private static boolean classHasStaticInjects(PsiClass aClass) {
-    for (PsiMethod method : aClass.getMethods()) {
+    for (PsiMethod method : aClass.getAllMethods()) {
       if (method.hasModifierProperty(PsiModifier.STATIC) &&
-          AnnotationUtil.isAnnotated(method, GuiceAnnotations.INJECTS, AnnotationUtil.CHECK_HIERARCHY)) {
+          AnnotationUtil.isAnnotated(method, GuiceAnnotations.INJECTS, 0)) {
         return true;
       }
     }
-    for (PsiField field : aClass.getFields()) {
+    for (PsiField field : aClass.getAllFields()) {
       if (field.hasModifierProperty(PsiModifier.STATIC) &&
-          AnnotationUtil.isAnnotated(field, GuiceAnnotations.INJECTS, AnnotationUtil.CHECK_HIERARCHY)) {
+          AnnotationUtil.isAnnotated(field, GuiceAnnotations.INJECTS, 0)) {
         return true;
       }
     }

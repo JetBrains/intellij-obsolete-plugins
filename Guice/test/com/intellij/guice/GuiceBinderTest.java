@@ -318,11 +318,11 @@ public class GuiceBinderTest extends GuiceTestBase {
 
     GuiceBindingContributor customContributor = registrar -> registrar.registerCallDescriptor(
         GuiceCallPattern.named("customBind").withOwnerClass("MyModule").argumentCount(1),
-        (call, descriptors) -> {
+        (call, sink) -> {
           var method = call.resolve();
           var containingClass = method != null ? method.getContainingClass() : null;
           if (call.getSourcePsi() != null && containingClass != null) {
-            descriptors.add(new BindDescriptor(call.getSourcePsi()) {
+            sink.accept(new BindDescriptor(call.getSourcePsi()) {
               @Override
               public PsiClass calculateBindingClass() {
                 return containingClass;

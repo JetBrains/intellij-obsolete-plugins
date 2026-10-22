@@ -3,13 +3,12 @@ package com.intellij.guice.intentions;
 
 import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.guice.constants.GuiceAnnotations;
-import com.intellij.guice.model.GuiceInjectionUtil;
 import com.intellij.guice.utils.GuiceUtils;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiExpression;
+import com.intellij.psi.PsiMethodCallExpression;
 import org.jetbrains.uast.UCallExpression;
-import org.jetbrains.uast.UExpression;
-
-import static com.intellij.codeInsight.AnnotationUtil.CHECK_HIERARCHY;
 
 import java.util.Collection;
 
@@ -27,17 +26,23 @@ public class MoveBindingScopeToClassPredicate implements PsiElementPredicate {
     if (!(scopeCallPsi instanceof PsiMethodCallExpression psiScopeCall)) {
       return false;
     }
-    final PsiExpression arg = psiScopeCall.getArgumentList().getExpressions()[0];
-    final String scopeAnnotation = GuiceUtils.getScopeAnnotationForScopeExpression(arg);
+    final PsiExpression[] args = psiScopeCall.getArgumentList().getExpressions();
+    if (args.length != 1) {
+      return false;
+    }
+    final String scopeAnnotation = GuiceUtils.getScopeAnnotationForScopeExpression(args[0]);
     if (scopeAnnotation == null) {
       return false;
     }
-    final PsiClass implementingClass = GuiceInjectionUtil.getCallExpressionType(uCall, "to");
-    if (implementingClass == null) {
+    // The scope goes to the class that Guice constructs: the 'to' target, or the bound class itself
+    // for an untargeted binding. Provider, instance and constructor bindings have no such class.
+    final PsiClass scopedClass = GuiceUtils.findScopeAnnotatedClassForBinding(uCall);
+    if (!MoveBindingToClassPredicate.isAnnotatableSourceClass(scopedClass)) {
       return false;
     }
+    // Scope annotations are not inherited: only an annotation on the class itself conflicts.
     for (Collection<String> scopeGroup : GuiceAnnotations.SCOPE_GROUPS) {
-      if (AnnotationUtil.isAnnotated(implementingClass, scopeGroup, CHECK_HIERARCHY)) {
+      if (AnnotationUtil.isAnnotated(scopedClass, scopeGroup, 0)) {
         return false;
       }
     }

@@ -81,7 +81,9 @@ public final class MutationUtils {
     final PsiElementFactory elementFactory = JavaPsiFacade.getInstance(project).getElementFactory();
     final PsiAnnotation newAnnotation = elementFactory.createAnnotationFromText(annotation, owner);
     assert modifiers != null;
-    final PsiElement replacedAnnotation = modifiers.add(newAnnotation);
+    // Put the annotation before the keywords: '@Singleton public class', not 'public @Singleton class'.
+    final PsiElement firstChild = modifiers.getFirstChild();
+    final PsiElement replacedAnnotation = firstChild != null ? modifiers.addBefore(newAnnotation, firstChild) : modifiers.add(newAnnotation);
     JavaCodeStyleManager codeStyleManager = JavaCodeStyleManager.getInstance(project);
     codeStyleManager.shortenClassReferences(replacedAnnotation);
   }

@@ -167,14 +167,16 @@ public final class GuiceCallMatcher<H> {
 
     // Stage 3: Resolve the target method once for all candidates in the bucket.
     PsiMethod resolved = call.resolve();
-    PsiClass containingClass = resolved != null ? resolved.getContainingClass() : null;
-    String resolvedOwnerQName = containingClass != null ? containingClass.getQualifiedName() : null;
 
     boolean matched = false;
 
     // Stage 4a: Resolved call dispatch (O(1) exact owner lookup + memoized general rules).
-    if (containingClass != null && resolvedOwnerQName != null) {
-      List<Rule<H>> exactRules = bucket.byExactOwnerClass.get(resolvedOwnerQName);
+    // A method of a local or anonymous class resolves but its class has no qualified name:
+    // it matches no exact owner and does not qualify for the unresolved fallback.
+    if (resolved != null) {
+      PsiClass containingClass = resolved.getContainingClass();
+      String resolvedOwnerQName = containingClass != null ? containingClass.getQualifiedName() : null;
+      List<Rule<H>> exactRules = resolvedOwnerQName != null ? bucket.byExactOwnerClass.get(resolvedOwnerQName) : null;
       if (exactRules != null) {
         for (Rule<H> rule : exactRules) {
           if (rule.isApplicable(isModule) && rule.pattern.matchesSyntactic(call, argCount)) {

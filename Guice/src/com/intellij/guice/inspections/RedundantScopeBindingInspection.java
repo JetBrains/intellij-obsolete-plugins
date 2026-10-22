@@ -15,11 +15,13 @@ import org.jetbrains.uast.UExpression;
 
 import java.util.Collection;
 
-import static com.intellij.codeInsight.AnnotationUtil.CHECK_HIERARCHY;
 
 /**
- * Reports redundant {@code .in()} scope bindings where the bound class already declares
- * the same scope via an annotation (e.g., {@code @Singleton}, {@code @RequestScoped}).
+ * Reports a redundant {@code .in()} scope binding: the class that Guice constructs for the binding
+ * already declares the same scope with an annotation (such as {@code @Singleton} or {@code @RequestScoped}).
+ *
+ * <p>That class is the {@code to()} class of a linked binding or the bound class of an untargeted binding,
+ * see {@link GuiceUtils#findScopeAnnotatedClassForBinding}. Scope annotations are not inherited.
  */
 public final class RedundantScopeBindingInspection extends BaseUastInspection {
   public RedundantScopeBindingInspection() {
@@ -35,8 +37,8 @@ public final class RedundantScopeBindingInspection extends BaseUastInspection {
   }
 
   @Override
-  public @Nullable LocalQuickFix buildFix(PsiElement location, Object[] infos) {
-    return new DeleteBindingFix(DeleteBindingFix.Mode.CHAIN_CALL);
+  public LocalQuickFix buildFix(PsiElement location, Object[] infos) {
+    return new DeleteBindingFix(DeleteBindingFix.Mode.CHAIN_CALL, "remove.scope.binding");
   }
 
   private static void checkInCall(@NotNull UCallExpression expression, @NotNull BaseUastInspectionVisitor visitor) {
@@ -45,11 +47,14 @@ public final class RedundantScopeBindingInspection extends BaseUastInspection {
     if (scopeAnnotations == null || scopeAnnotations.isEmpty()) {
       return;
     }
-    final PsiClass boundClass = GuiceUtils.findImplementedClassForBinding(expression);
-    if (boundClass == null) {
+    if (!GuiceUtils.isStandardBindChain(expression)) {
       return;
     }
-    if (!AnnotationUtil.isAnnotated(boundClass, scopeAnnotations, CHECK_HIERARCHY)) {
+    final PsiClass scopedClass = GuiceUtils.findScopeAnnotatedClassForBinding(expression);
+    if (scopedClass == null) {
+      return;
+    }
+    if (!AnnotationUtil.isAnnotated(scopedClass, scopeAnnotations, 0)) {
       return;
     }
     visitor.registerError(arg);

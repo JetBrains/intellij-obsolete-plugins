@@ -3,7 +3,6 @@ package com.intellij.guice.model;
 
 import com.intellij.guice.model.beans.BindDescriptor;
 import com.intellij.guice.model.extensions.GuiceExtensionIndex;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.JavaPsiFacade;
@@ -23,10 +22,9 @@ import com.intellij.psi.search.searches.ClassInheritorsSearch;
 import com.intellij.psi.util.InheritanceUtil;
 import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.uast.UCallExpression;
 import org.jetbrains.uast.UClass;
-import org.jetbrains.uast.UElement;
-import org.jetbrains.uast.UField;
 import org.jetbrains.uast.UFile;
 import org.jetbrains.uast.UastContextKt;
 import org.jetbrains.uast.visitor.AbstractUastVisitor;
@@ -37,7 +35,6 @@ import java.util.List;
 import java.util.Set;
 
 public final class GuiceInjectorManager {
-  private static final Logger LOG = Logger.getInstance(GuiceInjectorManager.class);
 
   public static @NotNull Set<BindDescriptor> getBindingDescriptors(final @NotNull PsiElement scope) {
     if (scope instanceof PsiClass scopeClass) {
@@ -57,18 +54,27 @@ public final class GuiceInjectorManager {
     Set<BindDescriptor> filtered = new HashSet<>();
     for (BindDescriptor bd : all) {
       if (bd == null) continue;
-      try {
-        PsiElement expr = bd.getBindExpression();
-        if (expr != null && PsiTreeUtil.isContextAncestor(scope, expr, false)) {
-          filtered.add(bd);
-        }
-      }
-      catch (Exception e) {
-        GuiceExtensionIndex.rethrowIfControlFlow(e);
-        LOG.warn("Guice BindDescriptor failed in " + scope, e);
+      PsiElement expr = getBindExpressionGuarded(bd, scope);
+      if (expr != null && PsiTreeUtil.isContextAncestor(scope, expr, false)) {
+        filtered.add(bd);
       }
     }
     return filtered;
+  }
+
+  /**
+   * Calls {@link BindDescriptor#getBindExpression()}, which a descriptor of another plugin can override,
+   * inside a guard that attributes a failure to the descriptor class.
+   */
+  private static @Nullable PsiElement getBindExpressionGuarded(@NotNull BindDescriptor bd, @NotNull PsiElement scope) {
+    try {
+      return bd.getBindExpression();
+    }
+    catch (Throwable t) {
+      GuiceExtensionIndex.rethrowIfControlFlow(t);
+      GuiceExtensionIndex.get().reportContributorFailure(bd.getClass(), "BindDescriptor in " + scope, t);
+      return null;
+    }
   }
 
   public static @NotNull Set<BindDescriptor> getBindingDescriptors(@NotNull Project project, @NotNull SearchScope scope) {
@@ -130,31 +136,8 @@ public final class GuiceInjectorManager {
 
   private static @NotNull Set<BindDescriptor> extractDescriptorsFromModuleClass(@NotNull PsiClass moduleClass,
                                                                                 @NotNull GuiceExtensionIndex currentIndex) {
-    UClass uClass = UastContextKt.toUElement(moduleClass, UClass.class);
-    if (uClass == null) {
-      return Set.of();
-    }
     final Set<BindDescriptor> descriptors = new HashSet<>();
-    AbstractUastVisitor visitor = new AbstractUastVisitor() {
-      @Override
-      public boolean visitClass(@NotNull UClass node) {
-        return true;
-      }
-
-      @Override
-      public boolean visitField(@NotNull UField node) {
-        return true;
-      }
-
-      @Override
-      public boolean visitCallExpression(@NotNull UCallExpression call) {
-        currentIndex.processDescriptorCall(call, descriptors);
-        return false;
-      }
-    };
-    for (UElement declaration : uClass.getUastDeclarations()) {
-      declaration.accept(visitor);
-    }
+    currentIndex.processClassCalls(moduleClass, true, descriptors, null);
     return descriptors.isEmpty() ? Set.of() : descriptors;
   }
 

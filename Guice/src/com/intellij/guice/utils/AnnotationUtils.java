@@ -136,13 +136,23 @@ public final class AnnotationUtils {
     return result;
   }
 
+  /**
+   * Tells if the declaration itself carries one of the annotations.
+   *
+   * <p>Guice reads scope annotations, {@code @ImplementedBy} and {@code @ProvidedBy} on the class itself,
+   * and {@code @Inject} on the member itself: an overriding method without {@code @Inject} is not injected.
+   * So the supertypes and the overridden members are not consulted.
+   */
   public static boolean isAnnotated(@NotNull UDeclaration declaration, @NotNull String annotationFqn) {
     return isAnnotated(declaration, List.of(annotationFqn));
   }
 
+  /**
+   * Tells if the declaration itself carries one of the annotations, see {@link #isAnnotated(UDeclaration, String)}.
+   */
   public static boolean isAnnotated(@NotNull UDeclaration declaration, @NotNull Collection<String> annotationFqns) {
     if (declaration.getJavaPsi() instanceof PsiModifierListOwner owner &&
-        AnnotationUtil.isAnnotated(owner, annotationFqns, CHECK_HIERARCHY)) {
+        AnnotationUtil.isAnnotated(owner, annotationFqns, 0)) {
       return true;
     }
     for (UAnnotation anno : collectDeclarationUAnnotations(declaration)) {

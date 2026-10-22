@@ -37,7 +37,7 @@ public final class MultipleInjectedConstructorsForClassInspection extends BaseUa
 
   @Override
   protected @NotNull String buildErrorString(Object... infos) {
-    return GuiceBundle.message("multiple.injected.constructors.for.class.problem.descriptor");
+    return GuiceBundle.message("multiple.injected.constructors.for.class.problem.descriptor", infos);
   }
 
   @Override
@@ -64,18 +64,18 @@ public final class MultipleInjectedConstructorsForClassInspection extends BaseUa
       if (constructors.length <= 1) {
         return true;
       }
-      if (!AnnotationUtil.isAnnotated(method, GuiceAnnotations.INJECTS, AnnotationUtil.CHECK_HIERARCHY)) {
+      if (!AnnotationUtil.isAnnotated(method, GuiceAnnotations.INJECTS, 0)) {
         return true;
       }
 
       int annotatedConstructorCount = 0;
       for (PsiMethod constructor : constructors) {
-        if (AnnotationUtil.isAnnotated(constructor, GuiceAnnotations.INJECTS, AnnotationUtil.CHECK_HIERARCHY)) {
+        if (AnnotationUtil.isAnnotated(constructor, GuiceAnnotations.INJECTS, 0)) {
           annotatedConstructorCount++;
         }
       }
       if (annotatedConstructorCount > 1) {
-        registerMethodError(uMethod);
+        registerMethodError(uMethod, containingClass.getName());
       }
       return true;
     }

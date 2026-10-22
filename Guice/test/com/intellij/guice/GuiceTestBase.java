@@ -85,6 +85,35 @@ public abstract class GuiceTestBase extends LightJavaCodeInsightFixtureTestCase 
   protected static final String TO_INJECTION_POINTS_TOOLTIP = "Navigate to injection points";
 
   /**
+   * Tells if a gutter mark is a Guice mark with the tooltip. The icon is checked first: a mark of another
+   * plugin (for example the Kotlin "is implemented" mark) may compute its tooltip with an analysis that is
+   * not allowed on the EDT.
+   */
+  protected static boolean isGuiceMark(@NotNull GutterMark mark, @NotNull String tooltip) {
+    javax.swing.Icon icon = mark.getIcon();
+    if (icon != com.intellij.guice.GuiceIcons.GoogleSmall
+        && icon != com.intellij.guice.model.GuiceInjectionsClassAnnotator.showAutowiredCandidates
+        && icon != com.intellij.guice.model.GuiceInjectionsClassAnnotator.showAutowiredDependencies) {
+      return false;
+    }
+    return tooltip.equals(mark.getTooltipText());
+  }
+
+  /** Returns the Guice line markers with the tooltip after highlighting the file in the editor. */
+  protected java.util.List<com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo<?>> guiceMarkers(@NotNull String tooltip) {
+    myFixture.doHighlighting();
+    java.util.List<com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo<?>> result = new ArrayList<>();
+    for (GutterMark mark : myFixture.findAllGutters()) {
+      if (!isGuiceMark(mark, tooltip)) continue;
+      assertInstanceOf(mark, LineMarkerGutterIconRenderer.class);
+      var info = ((LineMarkerGutterIconRenderer<?>)mark).getLineMarkerInfo();
+      assertInstanceOf(info, com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo.class);
+      result.add((com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo<?>)info);
+    }
+    return result;
+  }
+
+  /**
    * Highlights the file in the editor and returns the navigation targets of all gutter icons with the tooltip.
    * Each target is given as the text of the target element with collapsed whitespace, sorted.
    */
@@ -92,7 +121,7 @@ public abstract class GuiceTestBase extends LightJavaCodeInsightFixtureTestCase 
     myFixture.doHighlighting();
     java.util.List<String> result = new ArrayList<>();
     for (GutterMark mark : myFixture.findAllGutters()) {
-      if (!tooltip.equals(mark.getTooltipText())) continue;
+      if (!isGuiceMark(mark, tooltip)) continue;
       assertInstanceOf(mark, LineMarkerGutterIconRenderer.class);
       var info = ((LineMarkerGutterIconRenderer<?>)mark).getLineMarkerInfo();
       var handler = info.getNavigationHandler();
@@ -112,7 +141,7 @@ public abstract class GuiceTestBase extends LightJavaCodeInsightFixtureTestCase 
     myFixture.doHighlighting();
     java.util.List<String> result = new ArrayList<>();
     for (GutterMark mark : myFixture.findAllGutters()) {
-      if (!tooltip.equals(mark.getTooltipText())) continue;
+      if (!isGuiceMark(mark, tooltip)) continue;
       var info = ((LineMarkerGutterIconRenderer<?>)mark).getLineMarkerInfo();
       PsiElement element = info.getElement();
       result.add(element == null ? "<invalid>" : element.getText());

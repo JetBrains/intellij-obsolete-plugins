@@ -47,7 +47,7 @@ public final class InterceptionAnnotationWithoutRuntimeRetentionInspection exten
 
   @Override
   protected @NotNull String buildErrorString(Object... infos) {
-    return GuiceBundle.message("interception.annotation.without.runtime.retention.problem.descriptor");
+    return GuiceBundle.message("interception.annotation.without.runtime.retention.problem.descriptor", infos);
   }
 
   @Override
@@ -90,7 +90,7 @@ public final class InterceptionAnnotationWithoutRuntimeRetentionInspection exten
       final PsiAnnotation retentionAnnotation =
           AnnotationUtil.findAnnotation(operantAnnotation, RETENTION_ANNOTATIONS);
       if (retentionAnnotation == null || !retentionAnnotation.getText().contains("RUNTIME")) {
-        registerError(argExpr);
+        registerClassLiteralError(argExpr, operantAnnotation.getName());
       }
       return true;
     }

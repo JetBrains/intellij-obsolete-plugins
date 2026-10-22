@@ -21,12 +21,14 @@ import org.jetbrains.uast.UCallExpression;
  */
 public final class PointlessBindingInspection extends BaseUastInspection {
   public PointlessBindingInspection() {
+    GuiceCallPattern bindStatement = GuiceCallPattern.named("bind")
+        .requireValueOrTypeArgument()
+        .statementOnly();
     extendCall(
-        GuiceCallPattern.named("bind")
-            .requireValueOrTypeArgument()
-            .statementOnly()
-            .inGuicePackage()
-            .withReceiverInheritor("com.google.inject.Module", "com.google.inject.Binder"),
+        // bind() of Guice itself, or an extension function (Kotlin) on a Module or Binder receiver
+        GuiceCallPattern.anyOf(
+            bindStatement.inGuicePackage(),
+            bindStatement.withReceiverInheritor("com.google.inject.Module", "com.google.inject.Binder")),
         PointlessBindingInspection::checkBindCall
     );
   }
@@ -37,8 +39,8 @@ public final class PointlessBindingInspection extends BaseUastInspection {
   }
 
   @Override
-  public @Nullable LocalQuickFix buildFix(PsiElement location, Object[] infos) {
-    return new DeleteBindingFix(DeleteBindingFix.Mode.STATEMENT);
+  public LocalQuickFix buildFix(PsiElement location, Object[] infos) {
+    return new DeleteBindingFix(DeleteBindingFix.Mode.STATEMENT, "delete.binding");
   }
 
   private static void checkBindCall(@NotNull UCallExpression expression, @NotNull BaseUastInspectionVisitor visitor) {
@@ -51,12 +53,12 @@ public final class PointlessBindingInspection extends BaseUastInspection {
 
   private static boolean usesInject(PsiClass aClass) {
     for (PsiMethod method : aClass.getAllMethods()) {
-      if (AnnotationUtil.isAnnotated(method, GuiceAnnotations.INJECTS, AnnotationUtil.CHECK_HIERARCHY)) {
+      if (AnnotationUtil.isAnnotated(method, GuiceAnnotations.INJECTS, 0)) {
         return true;
       }
     }
     for (PsiField field : aClass.getAllFields()) {
-      if (AnnotationUtil.isAnnotated(field, GuiceAnnotations.INJECTS, AnnotationUtil.CHECK_HIERARCHY)) {
+      if (AnnotationUtil.isAnnotated(field, GuiceAnnotations.INJECTS, 0)) {
         return true;
       }
     }

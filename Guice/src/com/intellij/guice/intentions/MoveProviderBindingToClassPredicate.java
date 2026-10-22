@@ -9,8 +9,6 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import org.jetbrains.uast.UCallExpression;
 
-import static com.intellij.codeInsight.AnnotationUtil.CHECK_HIERARCHY;
-
 public class MoveProviderBindingToClassPredicate implements PsiElementPredicate {
   @Override
   public boolean satisfiedBy(PsiElement element) {
@@ -21,11 +19,12 @@ public class MoveProviderBindingToClassPredicate implements PsiElementPredicate 
       return false;
     }
     final PsiClass implementedClass = GuiceUtils.findImplementedClassForBinding(uCall);
-    if (implementedClass == null || !implementedClass.getManager().isInProject(implementedClass)) {
+    if (!MoveBindingToClassPredicate.isAnnotatableSourceClass(implementedClass)) {
       return false;
     }
-    if (AnnotationUtil.isAnnotated(implementedClass, GuiceAnnotations.IMPLEMENTED_BY, CHECK_HIERARCHY) ||
-        AnnotationUtil.isAnnotated(implementedClass, GuiceAnnotations.PROVIDED_BY, CHECK_HIERARCHY)) {
+    // JIT annotations are not inherited: only an annotation on the class itself conflicts.
+    if (AnnotationUtil.isAnnotated(implementedClass, GuiceAnnotations.IMPLEMENTED_BY, 0) ||
+        AnnotationUtil.isAnnotated(implementedClass, GuiceAnnotations.PROVIDED_BY, 0)) {
       return false;
     }
     return true;

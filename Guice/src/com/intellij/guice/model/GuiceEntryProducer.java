@@ -8,7 +8,6 @@ import com.intellij.guice.model.beans.BindToProviderDescriptor;
 import com.intellij.guice.model.extensions.GuiceCallContext;
 import com.intellij.guice.model.extensions.GuiceExtensionIndex;
 import com.intellij.guice.utils.GuiceUtils;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
@@ -33,7 +32,8 @@ import org.jetbrains.uast.*;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Produces {@link GuiceEntry} instances from PSI/UAST elements.
@@ -44,7 +44,6 @@ import java.util.function.BiConsumer;
  */
 @ApiStatus.Experimental
 public final class GuiceEntryProducer {
-  private static final Logger LOG = Logger.getInstance(GuiceEntryProducer.class);
 
   private GuiceEntryProducer() {}
 
@@ -112,7 +111,7 @@ public final class GuiceEntryProducer {
    * </ul>
    */
   private static void extractFromClass(@NotNull PsiClass cls, @NotNull CallContextImpl callContext) {
-    Set<GuiceEntry> entries = callContext.getEntries();
+    Set<GuiceEntry> entries = callContext.entries();
     GuiceExtensionIndex extensionIndex = GuiceExtensionIndex.get();
 
     // @Inject fields → INJECTION_POINT
@@ -191,11 +190,13 @@ public final class GuiceEntryProducer {
     addJitAnnotationEntries(cls, GuiceAnnotations.IMPLEMENTED_BY, entries);
     addJitAnnotationEntries(cls, GuiceAnnotations.PROVIDED_BY, entries);
 
-    // Binding calls in configure() for module classes
-    if (isModule) {
-      extractBindingCallEntries(cls, entries);
+    // One walk over the declarations of the class runs the descriptor rules (module classes only)
+    // and the call-entry rules of the contributors.
+    Set<BindDescriptor> descriptors = isModule ? new HashSet<>() : null;
+    extensionIndex.processClassCalls(cls, isModule, descriptors, callContext);
+    if (descriptors != null) {
+      addBindingCallEntries(cls, descriptors, entries);
     }
-    extensionIndex.processCallEntries(cls, isModule, callContext);
   }
 
   private static final class CallContextImpl implements GuiceCallContext {
@@ -208,16 +209,17 @@ public final class GuiceEntryProducer {
       myEntries = entries;
     }
 
-    @Override
-    public @NotNull Set<GuiceEntry> getEntries() {
+    @NotNull Set<GuiceEntry> entries() {
       return myEntries;
     }
 
     @Override
-    public void reportClassBindings(
-        @NotNull PsiClass targetClass,
-        @NotNull BiConsumer<? super PsiClass, ? super Set<GuiceEntry>> classExtractor
-    ) {
+    public void addEntry(@NotNull GuiceEntry entry) {
+      myEntries.add(entry);
+    }
+
+    @Override
+    public void reportClassBindings(@NotNull PsiClass targetClass, @NotNull ClassEntryExtractor classExtractor) {
       PsiElement navElement = targetClass.getNavigationElement();
       PsiFile targetFile = navElement != null ? navElement.getContainingFile() : null;
       if (targetFile == null) {
@@ -236,20 +238,14 @@ public final class GuiceEntryProducer {
       if (topLevel != null && topLevel.getName() != null && !topLevel.getName().isEmpty()) {
         myReferencedTargetClassNames.add(topLevel.getName());
       }
-      try {
-        classExtractor.accept(targetClass, myEntries);
-      }
-      catch (Exception e) {
-        GuiceExtensionIndex.rethrowIfControlFlow(e);
-        LOG.warn("Guice cross-class binding contributor failed on " + targetClass, e);
-      }
+      // A failure of the extractor goes up to the producer, whose wrapper in GuiceExtensionIndex reports it
+      // with the contributor class.
+      classExtractor.extract(targetClass, myEntries::add);
     }
 
     @Override
-    public @Nullable PsiClass reportClassArgument(
-        @Nullable UExpression classLiteralArgument,
-        @NotNull BiConsumer<? super PsiClass, ? super Set<GuiceEntry>> classExtractor
-    ) {
+    public @Nullable PsiClass reportClassArgument(@Nullable UExpression classLiteralArgument,
+                                                  @NotNull ClassEntryExtractor classExtractor) {
       if (classLiteralArgument == null) return null;
       PsiType type = GuiceUtils.getBindingTypeFromExpression(classLiteralArgument);
       if (type instanceof PsiClassType classType) {
@@ -478,15 +474,13 @@ public final class GuiceEntryProducer {
   }
 
   /**
-   * Produces display text for a {@code @Provides} method: {@code ClassName.methodName()}.
+   * Produces display text for a {@code @Provides} method: {@code methodName()}.
    * Omits parameter types to keep the navigation popup compact.
+   * Uses the stub-based name, not the identifier element: the latter loads the AST of the file.
    */
   static @NotNull String providesMethodText(@NotNull PsiElement element) {
     if (element instanceof PsiMethod method) {
-      var nameElement = method.getIdentifyingElement();
-      if (nameElement != null) {
-        return nameElement.getText() + "()";
-      }
+      return method.getName() + "()";
     }
     return SymbolPresentationUtil.getSymbolPresentableText(element);
   }
@@ -496,74 +490,108 @@ public final class GuiceEntryProducer {
   // -----------------------------------------------------------------------
 
   /**
-   * Extracts entries from binding calls inside module configure() methods.
+   * Adds the entries of the binding calls of a module class.
    * Each {@code bind(X).to(Y)} chain produces:
    * <ul>
    *   <li>BINDING_SITE with key=X (the bound type)</li>
    *   <li>INJECTION_POINT with key=Y (the implementation reference)</li>
    * </ul>
+   *
+   * @param descriptors the descriptors that {@link GuiceExtensionIndex#processClassCalls} collected for the class
    */
-  private static void extractBindingCallEntries(@NotNull PsiClass moduleClass,
-                                                @NotNull Set<GuiceEntry> entries) {
-    Set<BindDescriptor> descriptors =
-        GuiceInjectorManager.getBindingDescriptors(moduleClass);
-
+  private static void addBindingCallEntries(@NotNull PsiClass moduleClass,
+                                            @NotNull Set<BindDescriptor> descriptors,
+                                            @NotNull Set<GuiceEntry> entries) {
     for (BindDescriptor bd : descriptors) {
       if (bd == null) continue;
-      try {
-        PsiElement bindExpr = bd.getBindExpression();
-        if (bindExpr == null) continue;
+      DescriptorData data = readDescriptor(bd, moduleClass);
+      if (data == null) continue;
 
-        PsiElement anchor = getBindingAnchor(bindExpr);
+      PsiElement bindExpr = data.bindExpression();
+      PsiElement anchor = getBindingAnchor(bindExpr);
+      UCallExpression outermostCall = data.outermostCall();
 
-        if (bd.isSpecialBinder()) {
-          UCallExpression outermostCall = bd.getOutermostCall();
-          GuiceQualifier qualifier = outermostCall != null ? GuiceQualifiers.fromBinderCall(outermostCall) : null;
-          for (PsiType wrappedType : bd.getWrappedBoundTypes()) {
-            if (wrappedType == null) continue;
-            entries.add(new GuiceEntry(
-                new GuiceBindingKey(wrappedType, qualifier), bindExpr, anchor, EntryRole.BINDING_SITE,
-                bd.getTextProvider()));
-          }
-          continue;
-        }
-
-        // ---- Standard descriptors (bind().to(), untargeted, etc.) ----
-
-        // BINDING_SITE for the bound type.
-        // The .to() tail of a multibinder element, for example newSetBinder(...).addBinding().to(Impl.class),
-        // binds no key of its own: the multibinder descriptor gives the keys.
-        PsiClass boundClass = bd.getBoundClass();
-        PsiType boundType = bd.getBoundType();
-        if (boundType == null && boundClass != null) {
-          boundType = JavaPsiFacade.getElementFactory(boundClass.getProject())
-              .createType(boundClass);
-        }
-        boolean elementChain = isBinderElementChain(bd.getOutermostCall());
-        if (boundType != null && !elementChain) {
-          UCallExpression outermostCall = bd.getOutermostCall();
-          GuiceQualifier qualifier = outermostCall != null ? GuiceQualifiers.fromBindingChain(outermostCall) : null;
+      if (data.specialBinder()) {
+        GuiceQualifier qualifier = outermostCall != null ? GuiceQualifiers.fromBinderCall(outermostCall) : null;
+        for (PsiType wrappedType : data.wrappedBoundTypes()) {
+          if (wrappedType == null) continue;
           entries.add(new GuiceEntry(
-              new GuiceBindingKey(boundType, qualifier),
-              bindExpr, anchor, EntryRole.BINDING_SITE,
-              GuiceEntryProducer::standardBindText));
+              new GuiceBindingKey(wrappedType, qualifier), bindExpr, anchor, EntryRole.BINDING_SITE,
+              data.textProvider()));
         }
+        continue;
+      }
 
-        // INJECTION_POINT for the implementation or provider class
-        PsiClass implClass = bd instanceof BindToProviderDescriptor pbd ? pbd.getProviderClass() : bd.getBindingClass();
-        if (implClass != null && (elementChain || !implClass.equals(boundClass))) {
-          UCallExpression outermost = bd.getOutermostCall();
-          PsiElement implAnchor = outermost != null ? getToCallAnchor(outermost) : bindExpr;
-          entries.add(GuiceEntry.implementationReference(
-              GuiceBindingKey.forClass(implClass),
-              bindExpr, implAnchor,
-              GuiceEntryProducer::standardBindText));
-        }
+      // ---- Standard descriptors (bind().to(), untargeted, etc.) ----
+
+      // BINDING_SITE for the bound type.
+      // The .to() tail of a multibinder element, for example newSetBinder(...).addBinding().to(Impl.class),
+      // binds no key of its own: the multibinder descriptor gives the keys.
+      PsiClass boundClass = data.boundClass();
+      PsiType boundType = data.boundType();
+      if (boundType == null && boundClass != null) {
+        boundType = JavaPsiFacade.getElementFactory(boundClass.getProject())
+            .createType(boundClass);
       }
-      catch (Exception e) {
-        GuiceExtensionIndex.rethrowIfControlFlow(e);
-        LOG.warn("Guice BindDescriptor failed in " + moduleClass, e);
+      boolean elementChain = isBinderElementChain(outermostCall);
+      if (boundType != null && !elementChain) {
+        GuiceQualifier qualifier = outermostCall != null ? GuiceQualifiers.fromBindingChain(outermostCall) : null;
+        entries.add(new GuiceEntry(
+            new GuiceBindingKey(boundType, qualifier),
+            bindExpr, anchor, EntryRole.BINDING_SITE,
+            GuiceEntryProducer::standardBindText));
       }
+
+      // INJECTION_POINT for the implementation or provider class
+      PsiClass implClass = data.implementationClass();
+      if (implClass != null && (elementChain || !implClass.equals(boundClass))) {
+        PsiElement implAnchor = outermostCall != null ? getToCallAnchor(outermostCall) : bindExpr;
+        entries.add(GuiceEntry.implementationReference(
+            GuiceBindingKey.forClass(implClass),
+            bindExpr, implAnchor,
+            GuiceEntryProducer::standardBindText));
+      }
+    }
+  }
+
+  /**
+   * The values that a {@link BindDescriptor} supplies for its entries, read in one guarded step.
+   * The fields of a special binder are {@code wrappedBoundTypes} and {@code textProvider};
+   * the fields of a standard descriptor are {@code boundClass}, {@code boundType} and {@code implementationClass}.
+   */
+  private record DescriptorData(@NotNull PsiElement bindExpression,
+                                @Nullable UCallExpression outermostCall,
+                                boolean specialBinder,
+                                @NotNull List<PsiType> wrappedBoundTypes,
+                                @Nullable Function<PsiElement, String> textProvider,
+                                @Nullable PsiClass boundClass,
+                                @Nullable PsiType boundType,
+                                @Nullable PsiClass implementationClass) {}
+
+  /**
+   * Calls the methods of a descriptor, which can be a class of another plugin, inside one guard,
+   * so a failure is attributed to the descriptor class and the other descriptors of the module still produce entries.
+   * The code of this plugin that builds the entries runs outside the guard.
+   *
+   * @return the descriptor data, or {@code null} when the bind expression is gone or the descriptor failed
+   */
+  private static @Nullable DescriptorData readDescriptor(@NotNull BindDescriptor bd, @NotNull PsiClass moduleClass) {
+    try {
+      PsiElement bindExpr = bd.getBindExpression();
+      if (bindExpr == null) return null;
+      UCallExpression outermostCall = bd.getOutermostCall();
+      if (bd.isSpecialBinder()) {
+        return new DescriptorData(bindExpr, outermostCall, true, bd.getWrappedBoundTypes(), bd.getTextProvider(),
+                                  null, null, null);
+      }
+      PsiClass implClass = bd instanceof BindToProviderDescriptor pbd ? pbd.getProviderClass() : bd.getBindingClass();
+      return new DescriptorData(bindExpr, outermostCall, false, List.of(), null,
+                                bd.getBoundClass(), bd.getBoundType(), implClass);
+    }
+    catch (Throwable t) {
+      GuiceExtensionIndex.rethrowIfControlFlow(t);
+      GuiceExtensionIndex.get().reportContributorFailure(bd.getClass(), "BindDescriptor in " + moduleClass, t);
+      return null;
     }
   }
 
@@ -571,7 +599,7 @@ public final class GuiceEntryProducer {
    * Adds an INJECTION_POINT entry for a {@code getProvider(Foo.class)} or {@code getProvider(Key.get(...))}
    * call inside a module class.
    */
-  public static void addGetProviderEntry(@NotNull UCallExpression call, @NotNull Set<GuiceEntry> entries) {
+  public static void addGetProviderEntry(@NotNull UCallExpression call, @NotNull Consumer<? super GuiceEntry> sink) {
     List<UExpression> valueArgs = call.getValueArguments();
     if (valueArgs.isEmpty()) return;
     UExpression argument = valueArgs.getFirst();
@@ -583,7 +611,7 @@ public final class GuiceEntryProducer {
                                : null;
     GuiceEntry entry = createCallEntry(call, type, qualifier, EntryRole.INJECTION_POINT);
     if (entry != null) {
-      entries.add(entry);
+      sink.accept(entry);
     }
   }
 

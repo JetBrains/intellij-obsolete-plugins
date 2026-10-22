@@ -4,13 +4,16 @@ package com.intellij.guice.inspections;
 import com.intellij.codeInspection.LocalQuickFix;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.guice.utils.GuiceUtils;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.uast.UCallExpression;
 import org.jetbrains.uast.UClassLiteralExpression;
 import org.jetbrains.uast.UElement;
 import org.jetbrains.uast.UExpression;
+import org.jetbrains.uast.UIdentifier;
 import org.jetbrains.uast.UMethod;
 import org.jetbrains.uast.UQualifiedReferenceExpression;
 import org.jetbrains.uast.visitor.AbstractUastNonRecursiveVisitor;
@@ -48,6 +51,53 @@ public abstract class BaseUastInspectionVisitor extends AbstractUastNonRecursive
     if (!registerClassLiteralError(args.getFirst(), infos)) {
       registerCallError(call, infos);
     }
+  }
+
+  /**
+   * Registers a problem about the class that a binding call names, with the class name as {@code {0}}
+   * of the message. The anchor is the class name: the operand of a class literal argument, or for a call
+   * that names the class with a type argument ({@code to<Impl>()}) the type argument itself.
+   */
+  protected void registerClassArgumentError(@NotNull UCallExpression call, @NotNull PsiClass referentClass) {
+    String name = referentClass.getName();
+    if (name == null) {
+      registerClassArgumentError(call);
+      return;
+    }
+    List<UExpression> args = call.getValueArguments();
+    if (!args.isEmpty()) {
+      if (!registerClassLiteralError(args.getFirst(), name)) {
+        registerCallError(call, name);
+      }
+      return;
+    }
+    PsiElement typeArgument = findTypeArgumentReference(call, name);
+    if (typeArgument != null) {
+      registerError(typeArgument, name);
+    }
+    else {
+      registerError(call, name);
+    }
+  }
+
+  /**
+   * Finds the reference to the class in the type-argument list of a call such as {@code to<Impl>()},
+   * in a language-agnostic way: the first leaf with the class name after the method identifier.
+   */
+  private static @Nullable PsiElement findTypeArgumentReference(@NotNull UCallExpression call, @NotNull String className) {
+    PsiElement sourcePsi = call.getSourcePsi();
+    UIdentifier identifier = call.getMethodIdentifier();
+    PsiElement identifierPsi = identifier != null ? identifier.getSourcePsi() : null;
+    if (sourcePsi == null) return null;
+    int afterIdentifier = identifierPsi != null ? identifierPsi.getTextRange().getEndOffset() : sourcePsi.getTextRange().getStartOffset();
+    for (PsiElement leaf = PsiTreeUtil.firstChild(sourcePsi); leaf != null; leaf = PsiTreeUtil.nextLeaf(leaf)) {
+      if (!PsiTreeUtil.isAncestor(sourcePsi, leaf, false)) break;
+      if (leaf.getTextRange().getStartOffset() >= afterIdentifier && className.equals(leaf.getText())) {
+        PsiElement parent = leaf.getParent();
+        return parent != null && parent.getTextRange().equals(leaf.getTextRange()) ? parent : leaf;
+      }
+    }
+    return null;
   }
 
   /**

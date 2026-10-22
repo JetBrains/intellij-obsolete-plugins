@@ -146,8 +146,6 @@
     </intentionAction>
 
     <implicitUsageProvider implementation="com.intellij.guice.GuiceImplicitUsageProvider"/>
-
-    <postStartupActivity implementation="com.intellij.guice.model.GuiceWorkspaceModelListener"/>
   </extensions>
 
   <projectListeners>

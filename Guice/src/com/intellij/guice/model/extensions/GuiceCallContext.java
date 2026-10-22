@@ -8,23 +8,36 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.uast.UExpression;
 
-import java.util.Set;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
- * Callback context passed to {@link GuiceExtensionRegistrar} call-entry handlers.
+ * Callback context passed to {@link GuiceExtensionRegistrar#registerCallWithContext} producers.
  *
- * <p>Allows a call handler to emit {@link GuiceEntry} items directly and to extract bindings
+ * <p>Allows a call producer to emit {@link GuiceEntry} items directly and to extract bindings
  * from external classes referenced by the call (such as {@code ConfigBinder.createModule(AppConfig.class)})
  * while recording cross-file dependencies in {@link com.intellij.guice.model.GuiceNavigationIndex}.
+ *
+ * <p>The context is add-only. The index takes the reported entries only when the producer returns normally.
  */
 @ApiStatus.Experimental
 @ApiStatus.NonExtendable
 public interface GuiceCallContext {
   /**
-   * Returns the mutable set of entries collected for the current file.
+   * Extracts the {@link GuiceEntry} items of a class that a call references.
    */
-  @NotNull Set<GuiceEntry> getEntries();
+  @FunctionalInterface
+  interface ClassEntryExtractor {
+    /**
+     * @param targetClass the referenced class
+     * @param sink        receives the entries extracted from {@code targetClass}
+     */
+    void extract(@NotNull PsiClass targetClass, @NotNull Consumer<? super GuiceEntry> sink);
+  }
+
+  /**
+   * Adds an entry for the current file.
+   */
+  void addEntry(@NotNull GuiceEntry entry);
 
   /**
    * Extracts {@link GuiceEntry} items from {@code targetClass} and records a dependency from
@@ -33,10 +46,7 @@ public interface GuiceCallContext {
    * <p>When {@code targetClass}'s file is edited, moved, renamed, or deleted, the registering
    * file is automatically re-indexed so its cross-class bindings stay up to date.
    */
-  void reportClassBindings(
-      @NotNull PsiClass targetClass,
-      @NotNull BiConsumer<? super PsiClass, ? super Set<GuiceEntry>> classExtractor
-  );
+  void reportClassBindings(@NotNull PsiClass targetClass, @NotNull ClassEntryExtractor classExtractor);
 
   /**
    * Resolves a class-literal argument expression (such as {@code AppConfig.class}), extracts
@@ -45,8 +55,5 @@ public interface GuiceCallContext {
    *
    * @return the resolved {@link PsiClass}, or {@code null} if unresolved
    */
-  @Nullable PsiClass reportClassArgument(
-      @Nullable UExpression classLiteralArgument,
-      @NotNull BiConsumer<? super PsiClass, ? super Set<GuiceEntry>> classExtractor
-  );
+  @Nullable PsiClass reportClassArgument(@Nullable UExpression classLiteralArgument, @NotNull ClassEntryExtractor classExtractor);
 }

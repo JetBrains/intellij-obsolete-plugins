@@ -2,14 +2,20 @@
 package com.intellij.guice.model;
 
 import com.intellij.guice.model.extensions.GuiceExtensionIndex;
-import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.util.Iconable;
+import com.intellij.openapi.util.TextRange;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.SmartPointerManager;
 import com.intellij.psi.SmartPsiElementPointer;
 import com.intellij.psi.presentation.java.SymbolPresentationUtil;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.uast.UDeclaration;
+import org.jetbrains.uast.UastContextKt;
+import org.jetbrains.uast.UastUtils;
 
 import javax.swing.*;
 import java.util.Objects;
@@ -39,11 +45,37 @@ import java.util.function.Function;
  */
 @ApiStatus.Experimental
 public final class GuiceEntry {
-  private static final Logger LOG = Logger.getInstance(GuiceEntry.class);
+
+  /**
+   * Identifies the gutter anchor of an entry by position, for O(1) lookups in {@link GuiceNavigationIndex}.
+   *
+   * <p>A position key is valid only while the index holds a fresh extraction of the file. The line marker
+   * providers guarantee this for the highlighted file ({@link GuiceProjectModel#ensureFileCurrent}), and the
+   * index re-keys a file's entries on every update, also when the entries did not change.
+   * A {@link SmartPsiElementPointer} would survive edits, but its hash code is only the file and the element
+   * kind, so a map keyed by pointers degrades to range comparisons over all anchors of a file.
+   *
+   * @param filePath    the path of the file that holds the anchor
+   * @param startOffset the start offset of the anchor element
+   * @param leaf        whether the anchor is a leaf (a call identifier) rather than a declaration;
+   *                    a declaration and a leaf can start at the same offset
+   */
+  public record AnchorKey(@NotNull String filePath, int startOffset, boolean leaf) {
+    public static @Nullable AnchorKey of(@NotNull PsiElement element) {
+      PsiFile file = element.getContainingFile();
+      VirtualFile virtualFile = file != null ? file.getViewProvider().getVirtualFile() : null;
+      TextRange range = element.getTextRange();
+      if (virtualFile == null || range == null) return null;
+      return new AnchorKey(virtualFile.getPath(), range.getStartOffset(), element.getFirstChild() == null);
+    }
+  }
 
   private final @NotNull GuiceBindingKey myKey;
   private final @NotNull SmartPsiElementPointer<PsiElement> myNavigationTarget;
   private final @NotNull SmartPsiElementPointer<PsiElement> myGutterAnchor;
+  private final @Nullable AnchorKey myAnchorKey;
+  /** Start offset of the navigation target at extraction time, for sorting without PSI access. */
+  private final int myNavigationStartOffset;
   private final @NotNull EntryRole myRole;
   private final @NotNull Function<PsiElement, String> myTextProvider;
   private final boolean myImplementationReference;
@@ -101,6 +133,9 @@ public final class GuiceEntry {
     myKey = key;
     myNavigationTarget = SmartPointerManager.createPointer(navigationTarget);
     myGutterAnchor = SmartPointerManager.createPointer(gutterAnchor);
+    myAnchorKey = AnchorKey.of(gutterAnchor);
+    TextRange targetRange = navigationTarget.getTextRange();
+    myNavigationStartOffset = targetRange != null ? targetRange.getStartOffset() : -1;
     myRole = role;
     myTextProvider = textProvider != null ? textProvider : SymbolPresentationUtil::getSymbolPresentableText;
     myImplementationReference = implementationReference;
@@ -120,10 +155,30 @@ public final class GuiceEntry {
   }
 
   /**
-   * Returns the smart pointer for the gutter anchor, for use as a stable map key.
+   * Returns the smart pointer for the gutter anchor. It survives edits, so it is part of {@link #equals}.
    */
   public @NotNull SmartPsiElementPointer<PsiElement> getGutterAnchorPointer() {
     return myGutterAnchor;
+  }
+
+  /**
+   * Returns the position key of the gutter anchor at extraction time, or {@code null} if the anchor has no
+   * file or range. See {@link AnchorKey}.
+   */
+  public @Nullable AnchorKey getAnchorKey() {
+    return myAnchorKey;
+  }
+
+  /**
+   * Returns the start offset of the navigation target at extraction time, or {@code -1}.
+   *
+   * <p>Sorting uses it instead of {@link PsiElement#getTextOffset()}: for a stub-based element that call
+   * loads the AST of its file, and a popular key has hundreds of counterparts in files that are not loaded.
+   * An edit in the target file re-extracts the entry, so the offset is stale only between the edit and
+   * the background update, which only affects the order of targets in the same file.
+   */
+  public int getNavigationStartOffset() {
+    return myNavigationStartOffset;
   }
 
   public @NotNull EntryRole getRole() {
@@ -161,9 +216,9 @@ public final class GuiceEntry {
     try {
       return myTextProvider.apply(target);
     }
-    catch (Exception e) {
-      GuiceExtensionIndex.rethrowIfControlFlow(e);
-      LOG.warn("Guice entry text provider failed on " + target, e);
+    catch (Throwable t) {
+      GuiceExtensionIndex.rethrowIfControlFlow(t);
+      GuiceExtensionIndex.get().reportContributorFailure(myTextProvider.getClass(), "text provider on " + target, t);
       return SymbolPresentationUtil.getSymbolPresentableText(target);
     }
   }
@@ -178,7 +233,13 @@ public final class GuiceEntry {
    */
   public @Nullable Icon getIcon() {
     PsiElement target = myNavigationTarget.getElement();
-    return target != null ? target.getIcon(0) : null;
+    if (target == null) return null;
+    int flags = Iconable.ICON_FLAG_VISIBILITY | Iconable.ICON_FLAG_READ_STATUS;
+    Icon icon = target.getIcon(flags);
+    if (icon != null) return icon;
+    UDeclaration uDecl = UastUtils.getParentOfType(UastContextKt.toUElement(target), UDeclaration.class);
+    PsiElement declPsi = uDecl != null ? uDecl.getJavaPsi() : null;
+    return declPsi != null ? declPsi.getIcon(flags) : null;
   }
 
   /**

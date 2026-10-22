@@ -37,6 +37,142 @@ public class MyModule extends AbstractModule {
     myFixture.testHighlighting(true, false, true);
   }
 
+  /**
+   * Guice applies a scope annotation of the class it constructs. For a linked binding that is the
+   * implementation class, not the bound type; a scope annotation on an abstract bound type is never applied.
+   */
+  public void testLinkedBindingScopeIsCheckedOnImplementation() {
+    myFixture.addClass("""
+      package test;
+      @com.google.inject.Singleton
+      public interface AnnotatedIface {}
+    """);
+    myFixture.addClass("""
+      package test;
+      public class UnscopedImpl implements AnnotatedIface {}
+    """);
+    myFixture.addClass("""
+      package test;
+      public interface PlainIface {}
+    """);
+    myFixture.addClass("""
+      package test;
+      @com.google.inject.Singleton
+      public class ScopedImpl implements PlainIface {}
+    """);
+
+    myFixture.configureByText("MyModule.java", """
+      import com.google.inject.AbstractModule;
+      import com.google.inject.Scopes;
+      import test.*;
+      public class MyModule extends AbstractModule {
+        @Override
+        protected void configure() {
+          bind(AnnotatedIface.class).to(UnscopedImpl.class).in(Scopes.SINGLETON); // Valid: the impl has no scope
+          bind(PlainIface.class).to(ScopedImpl.class).in(<warning descr="Binding to scope Scopes.SINGLETON is redundant">Scopes.SINGLETON</warning>);
+        }
+      }
+    """);
+    myFixture.testHighlighting(true, false, true);
+  }
+
+  /**
+   * The scope of a provider binding scopes the provided instances. Neither a scope annotation on the
+   * bound type nor one on the provider class makes {@code in()} redundant.
+   */
+  public void testProviderBindingScopeIsNotRedundant() {
+    myFixture.addClass("""
+      package test;
+      @com.google.inject.Singleton
+      public class Foo {}
+    """);
+    myFixture.addClass("""
+      package test;
+      @com.google.inject.Singleton
+      public class FooProvider implements javax.inject.Provider<Foo> {
+        public Foo get() { return null; }
+      }
+    """);
+
+    myFixture.configureByText("MyModule.java", """
+      import com.google.inject.AbstractModule;
+      import com.google.inject.Scopes;
+      import test.*;
+      public class MyModule extends AbstractModule {
+        @Override
+        protected void configure() {
+          bind(Foo.class).toProvider(FooProvider.class).in(Scopes.SINGLETON); // Valid
+          bind(Foo.class).in(<warning descr="Binding to scope Scopes.SINGLETON is redundant">Scopes.SINGLETON</warning>);
+        }
+      }
+    """);
+    myFixture.testHighlighting(true, false, true);
+  }
+
+  /**
+   * Scope annotations are not inherited: {@code @Singleton} on a superclass does not scope the subclass.
+   */
+  public void testInheritedScopeAnnotationIsNotRedundant() {
+    myFixture.addClass("""
+      package test;
+      @com.google.inject.Singleton
+      public class Base {}
+    """);
+    myFixture.addClass("""
+      package test;
+      public class Sub extends Base {}
+    """);
+
+    myFixture.configureByText("MyModule.java", """
+      import com.google.inject.AbstractModule;
+      import com.google.inject.Scopes;
+      import test.*;
+      public class MyModule extends AbstractModule {
+        @Override
+        protected void configure() {
+          bind(Sub.class).in(Scopes.SINGLETON); // Valid
+          bind(Base.class).in(<warning descr="Binding to scope Scopes.SINGLETON is redundant">Scopes.SINGLETON</warning>);
+        }
+      }
+    """);
+    myFixture.testHighlighting(true, false, true);
+  }
+
+  public void testKotlinLinkedBindingScopeIsCheckedOnImplementation() {
+    myFixture.addClass("""
+      package test;
+      @com.google.inject.Singleton
+      public interface AnnotatedIface {}
+    """);
+    myFixture.addClass("""
+      package test;
+      public class UnscopedImpl implements AnnotatedIface {}
+    """);
+    myFixture.addClass("""
+      package test;
+      public interface PlainIface {}
+    """);
+    myFixture.addClass("""
+      package test;
+      @com.google.inject.Singleton
+      public class ScopedImpl implements PlainIface {}
+    """);
+
+    myFixture.configureByText("MyModule.kt", """
+      import com.google.inject.AbstractModule
+      import com.google.inject.Scopes
+      import test.*
+
+      class MyModule : AbstractModule() {
+          override fun configure() {
+              bind(AnnotatedIface::class.java).to(UnscopedImpl::class.java).`in`(Scopes.SINGLETON) // Valid
+              bind(PlainIface::class.java).to(ScopedImpl::class.java).`in`(<warning descr="Binding to scope Scopes.SINGLETON is redundant">Scopes.SINGLETON</warning>)
+          }
+      }
+    """);
+    myFixture.testHighlighting(true, false, true);
+  }
+
   public void testKotlinRedundantScopeBinding() {
     myFixture.addClass("""
       package test;
@@ -91,7 +227,7 @@ public class MyModule extends AbstractModule {
 }
 """);
     myFixture.doHighlighting();
-    var action = myFixture.findSingleIntention("Delete binding");
+    var action = myFixture.findSingleIntention("Remove scope binding");
     myFixture.launchAction(action);
     myFixture.checkResult("""
 import com.google.inject.AbstractModule;
@@ -128,7 +264,7 @@ class MyModule : AbstractModule() {
 }
 """);
     myFixture.doHighlighting();
-    var action = myFixture.findSingleIntention("Delete binding");
+    var action = myFixture.findSingleIntention("Remove scope binding");
     myFixture.launchAction(action);
     myFixture.checkResult("""
 import com.google.inject.AbstractModule
@@ -169,7 +305,7 @@ class MyModule : AbstractModule() {
 }
 """);
     myFixture.doHighlighting();
-    var action = myFixture.findSingleIntention("Delete binding");
+    var action = myFixture.findSingleIntention("Remove scope binding");
     myFixture.launchAction(action);
     myFixture.checkResult("""
 import com.google.inject.AbstractModule

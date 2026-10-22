@@ -33,6 +33,24 @@ public class UnnecessaryStaticInjectionInspectionTest extends GuiceTestBase {
     myFixture.testHighlighting(true, false, true);
   }
 
+  /**
+   * Guice injects the static members of the superclasses too, so a subclass of a class
+   * with static {@code @Inject} members is a useful argument.
+   */
+  public void testStaticInjectMembersOfSuperclassCount() {
+    myFixture.addClass("public class SubOfWithStatics extends WithStatics {}");
+    myFixture.configureByText("MyModule.java", """
+      import com.google.inject.AbstractModule;
+      public class MyModule extends AbstractModule {
+        @Override
+        protected void configure() {
+          requestStaticInjection(SubOfWithStatics.class, <warning descr="Class NoStatics has no static @Inject members">NoStatics</warning>.class);
+        }
+      }
+      """);
+    myFixture.testHighlighting(true, false, true);
+  }
+
   public void testQuickFixDeletesOnlyTheReportedArgument() {
     myFixture.configureByText("MyModule.java", """
       import com.google.inject.AbstractModule;
@@ -43,7 +61,7 @@ public class UnnecessaryStaticInjectionInspectionTest extends GuiceTestBase {
         }
       }
       """);
-    myFixture.launchAction(myFixture.findSingleIntention("Delete binding"));
+    myFixture.launchAction(myFixture.findSingleIntention("Remove static injection"));
     myFixture.checkResult("""
       import com.google.inject.AbstractModule;
       public class MyModule extends AbstractModule {
@@ -65,7 +83,7 @@ public class UnnecessaryStaticInjectionInspectionTest extends GuiceTestBase {
         }
       }
       """);
-    myFixture.launchAction(myFixture.findSingleIntention("Delete binding"));
+    myFixture.launchAction(myFixture.findSingleIntention("Remove static injection"));
     myFixture.checkResult("""
       import com.google.inject.AbstractModule;
       public class MyModule extends AbstractModule {
@@ -87,7 +105,7 @@ public class UnnecessaryStaticInjectionInspectionTest extends GuiceTestBase {
         }
       }
       """);
-    myFixture.launchAction(myFixture.findSingleIntention("Delete binding"));
+    myFixture.launchAction(myFixture.findSingleIntention("Remove static injection"));
     myFixture.checkResult("""
       import com.google.inject.AbstractModule;
       public class MyModule extends AbstractModule {
@@ -107,7 +125,7 @@ public class UnnecessaryStaticInjectionInspectionTest extends GuiceTestBase {
         }
       }
       """);
-    myFixture.launchAction(myFixture.findSingleIntention("Delete binding"));
+    myFixture.launchAction(myFixture.findSingleIntention("Remove static injection"));
     myFixture.checkResult("""
       import com.google.inject.AbstractModule
       class MyModule : AbstractModule() {

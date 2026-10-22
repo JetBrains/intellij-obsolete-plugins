@@ -21,7 +21,6 @@ import org.jetbrains.uast.visitor.AbstractUastNonRecursiveVisitor;
 
 import java.util.Collection;
 
-import static com.intellij.codeInsight.AnnotationUtil.CHECK_HIERARCHY;
 
 /**
  * Shared base for inspections that flag narrower-scoped dependencies injected into a broader-scoped class.
@@ -79,14 +78,15 @@ abstract class ScopedInjectionInspectionBase extends BaseUastInspection {
       if (referencedClass == null) {
         return;
       }
-      if (AnnotationUtil.isAnnotated(referencedClass, myForbiddenDependencyScopes, CHECK_HIERARCHY)) {
+      // Guice applies the scope annotation of the class it constructs; a subclass does not inherit it.
+      if (AnnotationUtil.isAnnotated(referencedClass, myForbiddenDependencyScopes, 0)) {
         registerError(typeAnchor);
         return;
       }
       final PsiClass implementedByClass =
         AnnotationUtils.resolveAnnotationClassValue(referencedClass, GuiceAnnotations.IMPLEMENTED_BY);
       if (implementedByClass != null &&
-          AnnotationUtil.isAnnotated(implementedByClass, myForbiddenDependencyScopes, CHECK_HIERARCHY)) {
+          AnnotationUtil.isAnnotated(implementedByClass, myForbiddenDependencyScopes, 0)) {
         registerError(typeAnchor);
       }
     }

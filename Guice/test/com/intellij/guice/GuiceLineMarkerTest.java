@@ -2,9 +2,28 @@ package com.intellij.guice;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
+import com.intellij.codeInsight.daemon.GutterIconDescriptor;
 import com.intellij.codeInsight.daemon.GutterMark;
+import com.intellij.codeInsight.daemon.LineMarkerSettings;
+import com.intellij.guice.model.GuiceBindingClassAnnotator;
+import com.intellij.guice.model.GuiceEntry;
+import com.intellij.guice.model.GuiceEntryProducer;
+import com.intellij.guice.model.GuiceInjectionsClassAnnotator;
+import com.intellij.guice.model.renderers.GuiceEntryTargetRenderer;
+import com.intellij.openapi.extensions.ExtensionPointName;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.TestSourcesFilter;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.platform.backend.presentation.TargetPresentation;
+import com.intellij.psi.PsiElement;
+import org.jetbrains.annotations.NotNull;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public class GuiceLineMarkerTest extends GuiceTestBase {
 
@@ -203,5 +222,248 @@ public class GuiceLineMarkerTest extends GuiceTestBase {
     myFixture.openFileInEditor(providerFile.getVirtualFile());
     assertThat(gutterAnchors(TO_BINDINGS_TOOLTIP)).containsExactly("CustomProvider");
     assertThat(gutterTargets(TO_BINDINGS_TOOLTIP)).containsExactly("bind(MyService.class).toProvider(CustomProvider.class)");
+  }
+
+  public void testGutterIconsSettingsRegistration() {
+    var bindingAnnotator = new GuiceBindingClassAnnotator();
+    assertThat(bindingAnnotator.getId()).isEqualTo("guice.bound.class");
+    assertThat(bindingAnnotator.getName()).isEqualTo("Bound class");
+    assertThat(bindingAnnotator.getIcon()).isNotNull();
+
+    var injectionsAnnotator = new GuiceInjectionsClassAnnotator();
+    assertThat(injectionsAnnotator.getName()).isEqualTo("Guice injections and bindings");
+    GutterIconDescriptor.Option[] options = injectionsAnnotator.getOptions();
+    assertThat(Arrays.stream(options).map(GutterIconDescriptor.Option::getId).toList())
+        .containsExactly("guice.injection.point", "guice.binding.site");
+
+    var moduleFile = myFixture.configureByText("MyModule.java", """
+      import com.google.inject.AbstractModule;
+      import com.google.inject.Inject;
+      public class MyModule extends AbstractModule {
+        @Inject MyService injectedService;
+        @Override
+        protected void configure() {
+          bind(MyService.class).to(MyServiceImpl.class);
+        }
+      }
+      """);
+    myFixture.openFileInEditor(moduleFile.getVirtualFile());
+
+    LineMarkerSettings settings = LineMarkerSettings.getSettings();
+    try {
+      settings.setEnabled(options[0], false);
+      DaemonCodeAnalyzer.getInstance(getProject()).restart("test");
+      assertThat(gutterAnchors(TO_BINDINGS_TOOLTIP)).isEmpty();
+      assertThat(gutterAnchors(TO_INJECTION_POINTS_TOOLTIP)).containsExactly("bind");
+
+      settings.setEnabled(options[0], true);
+      settings.setEnabled(options[1], false);
+      DaemonCodeAnalyzer.getInstance(getProject()).restart("test");
+      assertThat(gutterAnchors(TO_BINDINGS_TOOLTIP)).containsExactly("injectedService");
+      assertThat(gutterAnchors(TO_INJECTION_POINTS_TOOLTIP)).isEmpty();
+    }
+    finally {
+      settings.setEnabled(options[0], true);
+      settings.setEnabled(options[1], true);
+    }
+  }
+
+  public void testTargetPresentationOmitsModuleLocationAndProvidesIcon() {
+    var moduleFile = myFixture.configureByText("MyModule.java", """
+      import com.google.inject.AbstractModule;
+      public class MyModule extends AbstractModule {
+        @Override
+        protected void configure() {
+          bind(MyService.class).to(MyServiceImpl.class);
+        }
+      }
+      """);
+    var clientFile = myFixture.configureByText("Client.java", """
+      import com.google.inject.Inject;
+      public class Client {
+        @Inject MyService service;
+      }
+      """);
+    myFixture.openFileInEditor(clientFile.getVirtualFile());
+    myFixture.doHighlighting();
+
+    Set<GuiceEntry> allEntries = new HashSet<>();
+    allEntries.addAll(GuiceEntryProducer.extractFromFile(moduleFile));
+    allEntries.addAll(GuiceEntryProducer.extractFromFile(clientFile));
+    assertThat(allEntries).isNotEmpty();
+
+    GuiceEntryTargetRenderer renderer = new GuiceEntryTargetRenderer(List.copyOf(allEntries));
+    for (GuiceEntry entry : allEntries) {
+      PsiElement target = entry.getNavigationTarget();
+      assertThat(target).isNotNull();
+      TargetPresentation presentation = renderer.getPresentation(target);
+      assertThat(presentation.getLocationText()).isNull();
+      assertThat(presentation.getContainerText()).isNotNull();
+      assertThat(presentation.getIcon()).isNotNull();
+    }
+  }
+
+  public void testDuplicateSymbolAndFileAppendsLineNumber() {
+    var testFile = myFixture.configureByText("IndexedSchemaDataTest.java", """
+      import com.google.inject.AbstractModule;
+      import com.google.inject.Provides;
+      public class IndexedSchemaDataTest {
+        Object module1() {
+          return new AbstractModule() {
+            @Provides
+            MyService provideRoleMapParser() { return null; }
+          };
+        }
+        Object module2() {
+          return new AbstractModule() {
+            @Provides
+            MyService provideRoleMapParser() { return null; }
+          };
+        }
+      }
+      """);
+    var otherFile = myFixture.configureByText("OtherModule.java", """
+      import com.google.inject.AbstractModule;
+      import com.google.inject.Provides;
+      public class OtherModule extends AbstractModule {
+        @Provides
+        MyService provideRoleMapParser() { return null; }
+      }
+      """);
+
+    Set<GuiceEntry> allEntries = new HashSet<>();
+    allEntries.addAll(GuiceEntryProducer.extractFromFile(testFile));
+    allEntries.addAll(GuiceEntryProducer.extractFromFile(otherFile));
+    assertThat(allEntries).hasSize(3);
+
+    GuiceEntryTargetRenderer renderer = new GuiceEntryTargetRenderer(List.copyOf(allEntries));
+    List<String> containerTexts = allEntries.stream()
+        .map(GuiceEntry::getNavigationTarget)
+        .filter(Objects::nonNull)
+        .map(renderer::getContainerText)
+        .sorted()
+        .toList();
+
+    assertThat(containerTexts).containsExactly(
+        "IndexedSchemaDataTest.java:13",
+        "IndexedSchemaDataTest.java:7",
+        "OtherModule.java"
+    );
+  }
+
+  public void testSortTargetsByTestStatusAndPackageHierarchy() {
+    ExtensionPointName.<TestSourcesFilter>create("com.intellij.testSourcesFilter")
+        .getPoint()
+        .registerExtension(new TestSourcesFilter() {
+          @Override
+          public boolean isTestSource(@NotNull VirtualFile file, @NotNull Project project) {
+            return file.getName().endsWith("Test.java");
+          }
+        }, getTestRootDisposable());
+
+    var sourceFile = myFixture.addFileToProject("company/product1/SourceClient.java", """
+      package company.product1;
+      import com.google.inject.AbstractModule;
+      import com.google.inject.Inject;
+      import com.google.inject.Provides;
+      public class SourceClient {
+        @Inject String value;
+        static class LocalModule extends AbstractModule {
+          @Provides String provideInSameFile() { return ""; }
+        }
+      }
+      """);
+    var samePkgFile = myFixture.addFileToProject("company/product1/SamePkgModule.java", """
+      package company.product1;
+      import com.google.inject.AbstractModule;
+      import com.google.inject.Provides;
+      public class SamePkgModule extends AbstractModule {
+        @Provides String provideSamePkg() { return ""; }
+      }
+      """);
+    var subPkgFile = myFixture.addFileToProject("company/product1/sub/SubPkgModule.java", """
+      package company.product1.sub;
+      import com.google.inject.AbstractModule;
+      import com.google.inject.Provides;
+      public class SubPkgModule extends AbstractModule {
+        @Provides String provideSubPkg() { return ""; }
+      }
+      """);
+    var deepSubPkgFile = myFixture.addFileToProject("company/product1/sub/impl/DeepSubPkgModule.java", """
+      package company.product1.sub.impl;
+      import com.google.inject.AbstractModule;
+      import com.google.inject.Provides;
+      public class DeepSubPkgModule extends AbstractModule {
+        @Provides String provideDeepSubPkg() { return ""; }
+      }
+      """);
+    var parentPkgFile = myFixture.addFileToProject("company/ParentPkgModule.java", """
+      package company;
+      import com.google.inject.AbstractModule;
+      import com.google.inject.Provides;
+      public class ParentPkgModule extends AbstractModule {
+        @Provides String provideParentPkg() { return ""; }
+      }
+      """);
+    var siblingPkgFile = myFixture.addFileToProject("company/product2/SiblingPkgModule.java", """
+      package company.product2;
+      import com.google.inject.AbstractModule;
+      import com.google.inject.Provides;
+      public class SiblingPkgModule extends AbstractModule {
+        @Provides String provideSiblingPkg() { return ""; }
+      }
+      """);
+    var unrelatedPkgFile = myFixture.addFileToProject("other/domain/UnrelatedModule.java", """
+      package other.domain;
+      import com.google.inject.AbstractModule;
+      import com.google.inject.Provides;
+      public class UnrelatedModule extends AbstractModule {
+        @Provides String provideUnrelated() { return ""; }
+      }
+      """);
+    var samePkgTestFile = myFixture.addFileToProject("company/product1/SamePkgModuleTest.java", """
+      package company.product1;
+      import com.google.inject.AbstractModule;
+      import com.google.inject.Provides;
+      public class SamePkgModuleTest extends AbstractModule {
+        @Provides String provideSamePkgTest() { return ""; }
+      }
+      """);
+    var siblingPkgTestFile = myFixture.addFileToProject("company/product2/SiblingPkgModuleTest.java", """
+      package company.product2;
+      import com.google.inject.AbstractModule;
+      import com.google.inject.Provides;
+      public class SiblingPkgModuleTest extends AbstractModule {
+        @Provides String provideSiblingPkgTest() { return ""; }
+      }
+      """);
+
+    List<GuiceEntry> entries = new ArrayList<>();
+    for (var file : List.of(
+        siblingPkgTestFile, unrelatedPkgFile, siblingPkgFile, samePkgTestFile,
+        deepSubPkgFile, parentPkgFile, samePkgFile, subPkgFile, sourceFile)) {
+      for (GuiceEntry e : GuiceEntryProducer.extractFromFile(file)) {
+        if (e.getPresentableText() != null && e.getPresentableText().startsWith("provide")) {
+          entries.add(e);
+        }
+      }
+    }
+
+    GuiceEntryTargetRenderer.SortedTargets sorted = GuiceEntryTargetRenderer.sortTargets(entries, sourceFile);
+    List<String> orderedNames = sorted.entries().stream()
+        .map(GuiceEntry::getPresentableText)
+        .toList();
+
+    assertThat(orderedNames).containsExactly(
+        "provideInSameFile()",
+        "provideSamePkg()",
+        "provideSubPkg()",
+        "provideDeepSubPkg()",
+        "provideParentPkg()",
+        "provideSiblingPkg()",
+        "provideUnrelated()",
+        "provideSamePkgTest()",
+        "provideSiblingPkgTest()"
+    ).inOrder();
   }
 }

@@ -35,6 +35,9 @@ public final class InvalidImplementedByInspection extends ClassReferenceAnnotati
 
   @Override
   protected boolean isValidReferent(@NotNull PsiClass referentClass, @Nullable PsiClass annotatedClass) {
-    return annotatedClass == null || InheritanceUtil.isInheritorOrSelf(referentClass, annotatedClass, true);
+    if (annotatedClass == null) return true;
+    // Guice rejects an @ImplementedBy that points to the annotated class itself.
+    if (referentClass.getManager().areElementsEquivalent(referentClass, annotatedClass)) return false;
+    return InheritanceUtil.isInheritorOrSelf(referentClass, annotatedClass, true);
   }
 }

@@ -9,8 +9,6 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import org.jetbrains.uast.UCallExpression;
 
-import static com.intellij.codeInsight.AnnotationUtil.CHECK_HIERARCHY;
-
 public class MoveBindingToClassPredicate implements PsiElementPredicate {
   @Override
   public boolean satisfiedBy(PsiElement element) {
@@ -21,13 +19,25 @@ public class MoveBindingToClassPredicate implements PsiElementPredicate {
       return false;
     }
     final PsiClass implementedClass = GuiceUtils.findImplementedClassForBinding(uCall);
-    if (implementedClass == null) {
+    if (!isAnnotatableSourceClass(implementedClass)) {
       return false;
     }
-    if (AnnotationUtil.isAnnotated(implementedClass, GuiceAnnotations.IMPLEMENTED_BY, CHECK_HIERARCHY) ||
+    // JIT annotations are not inherited: only an annotation on the class itself conflicts.
+    if (AnnotationUtil.isAnnotated(implementedClass, GuiceAnnotations.IMPLEMENTED_BY, 0) ||
         AnnotationUtil.isAnnotated(implementedClass, GuiceAnnotations.PROVIDED_BY, 0)) {
       return false;
     }
     return true;
+  }
+
+  /**
+   * Returns {@code true} when the intention can add an annotation to {@code psiClass}: the class is
+   * a project source class with a modifier list, not a library class.
+   */
+  static boolean isAnnotatableSourceClass(PsiClass psiClass) {
+    return psiClass != null
+           && psiClass.getModifierList() != null
+           && psiClass.getManager().isInProject(psiClass)
+           && psiClass.isWritable();
   }
 }

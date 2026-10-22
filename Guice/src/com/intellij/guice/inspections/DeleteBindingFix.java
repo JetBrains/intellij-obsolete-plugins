@@ -16,6 +16,7 @@ import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.PropertyKey;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.uast.UCallExpression;
 import org.jetbrains.uast.UElement;
@@ -42,19 +43,25 @@ final class DeleteBindingFix implements LocalQuickFix {
   }
 
   private final Mode myMode;
+  private final @NotNull @PropertyKey(resourceBundle = GuiceBundle.BUNDLE) String myNameKey;
 
-  DeleteBindingFix(@NotNull Mode mode) {
+  /**
+   * @param nameKey the bundle key of the name that tells the user what the fix removes,
+   *                for example {@code remove.scope.binding} for {@link Mode#CHAIN_CALL} on {@code in()}
+   */
+  DeleteBindingFix(@NotNull Mode mode, @NotNull @PropertyKey(resourceBundle = GuiceBundle.BUNDLE) String nameKey) {
     myMode = mode;
+    myNameKey = nameKey;
   }
 
   @Override
   public @NotNull String getName() {
-    return GuiceBundle.message("delete.binding");
+    return GuiceBundle.message(myNameKey);
   }
 
   @Override
   public @NotNull String getFamilyName() {
-    return GuiceBundle.message("delete.binding");
+    return GuiceBundle.message(myNameKey);
   }
 
   @Override
@@ -79,7 +86,8 @@ final class DeleteBindingFix implements LocalQuickFix {
       }
     }
     catch (IncorrectOperationException e) {
-      LOGGER.error(e);
+      // The code did not allow the change, for example a read-only element: a user-data problem, not a plugin error.
+      LOGGER.warn(e);
     }
   }
 
@@ -127,7 +135,7 @@ final class DeleteBindingFix implements LocalQuickFix {
     PsiElement argument = null;
     for (UExpression arg : call.getValueArguments()) {
       PsiElement argPsi = arg.getSourcePsi();
-      if (argPsi != null && PsiTreeUtil.isAncestor(argPsi, element, false)) {
+      if (PsiTreeUtil.isAncestor(argPsi, element, false)) {
         argument = argPsi;
         break;
       }

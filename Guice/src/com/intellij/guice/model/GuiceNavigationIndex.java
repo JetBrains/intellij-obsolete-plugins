@@ -1,16 +1,17 @@
 // Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package com.intellij.guice.model;
 
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.SmartPointerManager;
-import com.intellij.psi.SmartPsiElementPointer;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import org.jetbrains.annotations.NotNull;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * The unified navigation index for the Guice plugin.
@@ -28,10 +29,9 @@ public final class GuiceNavigationIndex {
   /** All entries, indexed by type FQN for fast candidate lookup. */
   private final Map<String, Set<GuiceEntry>> entriesByTypeFqn = new HashMap<>();
 
-  /** Secondary index: entries by gutter anchor pointer for O(1) annotator lookups.
-   *  Keyed by SmartPsiElementPointer which is stable across reparses
-   *  (equals compares by element class + file + text range). */
-  private final Map<SmartPsiElementPointer<PsiElement>, Set<GuiceEntry>> entriesByAnchor = new HashMap<>();
+  /** Secondary index: entries by the position of their gutter anchor for O(1) annotator lookups.
+   *  See {@link GuiceEntry.AnchorKey} for why the key is a position and not a smart pointer. */
+  private final Map<GuiceEntry.AnchorKey, Set<GuiceEntry>> entriesByAnchor = new HashMap<>();
 
   /** Per-file tracking: which entries and cross-file target dependencies came from which file. */
   private final Map<String, FileEntries> entriesByFile = new HashMap<>();
@@ -58,13 +58,51 @@ public final class GuiceNavigationIndex {
   // -----------------------------------------------------------------------
 
   /**
-   * Updates the index with entries and cross-file target dependencies from a single file.
+   * Result of a file update or removal.
+   *
+   * @param changed          whether the stored data of the file changed
+   * @param affectedTypeFqns the type FQNs whose entry sets changed; the files with entries of these types
+   *                         may show different counterparts now, see {@link #getFilesWithEntriesOfTypes}
    */
-  public void updateFile(@NotNull String filePath, @NotNull GuiceEntryProducer.FileExtractionResult extractionResult) {
+  public record FileUpdate(boolean changed, @NotNull Set<String> affectedTypeFqns) {
+    public static final FileUpdate NONE = new FileUpdate(false, Set.of());
+  }
+
+  /**
+   * Updates the index with entries and cross-file target dependencies from a single file.
+   *
+   * <p>{@link GuiceEntry#equals} compares smart pointers by their current range, so an entry that only moved
+   * because of an edit above it is equal to its stored counterpart. An absent {@link FileEntries} stands for
+   * an empty result, as {@link #addFileEntries} stores no empty result.
+   *
+   * @return {@link FileUpdate#NONE} if the new extraction result equals the stored one,
+   * so no re-highlighting is necessary
+   */
+  public @NotNull FileUpdate updateFile(@NotNull String filePath,
+                                        @NotNull GuiceEntryProducer.FileExtractionResult extractionResult) {
     lock.writeLock().lock();
     try {
+      FileEntries old = entriesByFile.get(filePath);
+      Map<String, Set<GuiceEntry>> newKeyToEntries = groupByTypeFqn(extractionResult.entries());
+      Map<String, Set<GuiceEntry>> oldKeyToEntries = old != null ? old.keyToEntries() : Map.of();
+
+      Set<String> affected = new HashSet<>();
+      for (String fqn : oldKeyToEntries.keySet()) {
+        if (!oldKeyToEntries.get(fqn).equals(newKeyToEntries.get(fqn))) affected.add(fqn);
+      }
+      for (String fqn : newKeyToEntries.keySet()) {
+        if (!newKeyToEntries.get(fqn).equals(oldKeyToEntries.get(fqn))) affected.add(fqn);
+      }
+      Set<String> oldPaths = old != null ? old.referencedTargetPaths() : Set.of();
+      Set<String> oldClassNames = old != null ? old.referencedTargetClassNames() : Set.of();
+      boolean changed = !affected.isEmpty()
+                        || !oldPaths.equals(extractionResult.referencedTargetPaths())
+                        || !oldClassNames.equals(extractionResult.referencedTargetClassNames());
+      // Replace the stored entries also when they are equal: the new entries carry the anchor positions
+      // of the current text, and the anchor index is keyed by position.
       removeFileEntries(filePath);
-      addFileEntries(filePath, extractionResult);
+      addFileEntries(filePath, extractionResult, newKeyToEntries);
+      return changed ? new FileUpdate(true, Set.copyOf(affected)) : FileUpdate.NONE;
     }
     finally {
       lock.writeLock().unlock();
@@ -74,13 +112,37 @@ public final class GuiceNavigationIndex {
   /**
    * Removes all entries contributed by a file.
    */
-  public void removeFile(@NotNull String filePath) {
+  public @NotNull FileUpdate removeFile(@NotNull String filePath) {
     lock.writeLock().lock();
     try {
-      removeFileEntries(filePath);
+      FileEntries old = removeFileEntries(filePath);
+      return old == null ? FileUpdate.NONE : new FileUpdate(true, Set.copyOf(old.keyToEntries().keySet()));
     }
     finally {
       lock.writeLock().unlock();
+    }
+  }
+
+  /**
+   * Returns the files that hold entries of the given types. Their gutter icons may show different
+   * counterparts after a change of these types. Uses the smart pointers only, without PSI access.
+   */
+  public @NotNull Set<VirtualFile> getFilesWithEntriesOfTypes(@NotNull Collection<String> typeFqns) {
+    lock.readLock().lock();
+    try {
+      Set<VirtualFile> files = new HashSet<>();
+      for (String fqn : typeFqns) {
+        Set<GuiceEntry> entries = entriesByTypeFqn.get(fqn);
+        if (entries == null) continue;
+        for (GuiceEntry entry : entries) {
+          VirtualFile file = entry.getGutterAnchorPointer().getVirtualFile();
+          if (file != null) files.add(file);
+        }
+      }
+      return files;
+    }
+    finally {
+      lock.readLock().unlock();
     }
   }
 
@@ -282,7 +344,8 @@ public final class GuiceNavigationIndex {
   public @NotNull Set<GuiceEntry> findEntriesByAnchor(@NotNull PsiElement anchor) {
     lock.readLock().lock();
     try {
-      SmartPsiElementPointer<PsiElement> key = SmartPointerManager.createPointer(anchor);
+      GuiceEntry.AnchorKey key = GuiceEntry.AnchorKey.of(anchor);
+      if (key == null) return Set.of();
       Set<GuiceEntry> entries = entriesByAnchor.get(key);
       return entries != null ? new HashSet<>(entries) : Set.of();
     }
@@ -295,9 +358,9 @@ public final class GuiceNavigationIndex {
   // Internal helpers
   // -----------------------------------------------------------------------
 
-  private void removeFileEntries(@NotNull String filePath) {
+  private @Nullable FileEntries removeFileEntries(@NotNull String filePath) {
     FileEntries old = entriesByFile.remove(filePath);
-    if (old == null) return;
+    if (old == null) return null;
 
     for (Map.Entry<String, Set<GuiceEntry>> e : old.keyToEntries().entrySet()) {
       Set<GuiceEntry> indexSet = entriesByTypeFqn.get(e.getKey());
@@ -311,11 +374,12 @@ public final class GuiceNavigationIndex {
 
     // Remove from anchor index
     for (GuiceEntry entry : old.entries()) {
-      SmartPsiElementPointer<PsiElement> anchorPtr = entry.getGutterAnchorPointer();
-      Set<GuiceEntry> anchorSet = entriesByAnchor.get(anchorPtr);
+      GuiceEntry.AnchorKey anchorKey = entry.getAnchorKey();
+      if (anchorKey == null) continue;
+      Set<GuiceEntry> anchorSet = entriesByAnchor.get(anchorKey);
       if (anchorSet != null) {
         anchorSet.remove(entry);
-        if (anchorSet.isEmpty()) entriesByAnchor.remove(anchorPtr);
+        if (anchorSet.isEmpty()) entriesByAnchor.remove(anchorKey);
       }
     }
 
@@ -338,26 +402,35 @@ public final class GuiceNavigationIndex {
         }
       }
     }
+    return old;
+  }
+
+  private static @NotNull Map<String, Set<GuiceEntry>> groupByTypeFqn(@NotNull Set<GuiceEntry> entries) {
+    if (entries.isEmpty()) return Map.of();
+    Map<String, Set<GuiceEntry>> keyToEntries = new HashMap<>();
+    for (GuiceEntry entry : entries) {
+      String fqn = entry.getKey().getTypeFqn();
+      if (fqn == null) continue;
+      keyToEntries.computeIfAbsent(fqn, k -> new HashSet<>()).add(entry);
+    }
+    return keyToEntries;
   }
 
   private void addFileEntries(@NotNull String filePath,
-                              @NotNull GuiceEntryProducer.FileExtractionResult extractionResult) {
+                              @NotNull GuiceEntryProducer.FileExtractionResult extractionResult,
+                              @NotNull Map<String, Set<GuiceEntry>> keyToEntries) {
     Set<GuiceEntry> entries = extractionResult.entries();
     Set<String> targetPaths = extractionResult.referencedTargetPaths();
     Set<String> targetClassNames = extractionResult.referencedTargetClassNames();
     if (entries.isEmpty() && targetPaths.isEmpty() && targetClassNames.isEmpty()) return;
 
-    Map<String, Set<GuiceEntry>> keyToEntries = new HashMap<>();
-
+    for (Map.Entry<String, Set<GuiceEntry>> e : keyToEntries.entrySet()) {
+      entriesByTypeFqn.computeIfAbsent(e.getKey(), k -> new HashSet<>()).addAll(e.getValue());
+    }
     for (GuiceEntry entry : entries) {
-      String fqn = entry.getKey().getTypeFqn();
-      if (fqn == null) continue;
-
-      entriesByTypeFqn.computeIfAbsent(fqn, k -> new HashSet<>()).add(entry);
-      keyToEntries.computeIfAbsent(fqn, k -> new HashSet<>()).add(entry);
-
-      // Populate anchor index
-      entriesByAnchor.computeIfAbsent(entry.getGutterAnchorPointer(), k -> new HashSet<>()).add(entry);
+      GuiceEntry.AnchorKey anchorKey = entry.getAnchorKey();
+      if (entry.getKey().getTypeFqn() == null || anchorKey == null) continue;
+      entriesByAnchor.computeIfAbsent(anchorKey, k -> new HashSet<>()).add(entry);
     }
 
     for (String targetPath : targetPaths) {

@@ -18,11 +18,11 @@ final class AssistedInjectContributor implements GuiceBindingContributor {
         GuiceCallPattern.named("build")
             .withOwnerClass("com.google.inject.assistedinject.FactoryModuleBuilder")
             .minArguments(1),
-        (call, descriptors) -> {
+        (call, sink) -> {
           PsiElement sourcePsi = call.getSourcePsi();
           if (sourcePsi == null) return false;
           PsiType factoryType = GuiceUtils.getBindingTypeFromExpression(call.getValueArguments().getFirst());
-          descriptors.add(new AssistedFactoryBindDescriptor(sourcePsi, factoryType));
+          sink.accept(new AssistedFactoryBindDescriptor(sourcePsi, factoryType));
           return true;
         }
     );

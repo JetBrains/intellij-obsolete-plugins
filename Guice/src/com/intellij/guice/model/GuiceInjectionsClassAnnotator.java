@@ -25,6 +25,7 @@ import org.jetbrains.uast.UastContextKt;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -46,6 +47,28 @@ import java.util.Set;
  */
 public final class GuiceInjectionsClassAnnotator extends GuiceLineMarkerProviderBase {
 
+  private final Option myInjectionPointOption = new Option(
+      "guice.injection.point",
+      GuiceBundle.message("gutter.option.injection.point"),
+      JavaUltimateIcons.Cdi.Gutter.ShowAutowiredCandidates
+  );
+
+  private final Option myBindingSiteOption = new Option(
+      "guice.binding.site",
+      GuiceBundle.message("gutter.option.binding.site"),
+      JavaUltimateIcons.Cdi.Gutter.ShowAutowiredDependencies
+  );
+
+  @Override
+  public @NotNull String getName() {
+    return GuiceBundle.message("gutter.name.injections");
+  }
+
+  @Override
+  public Option @NotNull [] getOptions() {
+    return new Option[]{myInjectionPointOption, myBindingSiteOption};
+  }
+
   /**
    * Method names that represent Guice call-site identifiers in the source.
    */
@@ -60,6 +83,10 @@ public final class GuiceInjectionsClassAnnotator extends GuiceLineMarkerProvider
   @Override
   protected void collectNavigationMarkers(@NotNull PsiElement psiElement,
                                           @NotNull Collection<? super RelatedItemLineMarkerInfo<?>> result) {
+    boolean showInjectionPoints = myInjectionPointOption.isEnabled();
+    boolean showBindingSites = myBindingSiteOption.isEnabled();
+    if (!showInjectionPoints && !showBindingSites) return;
+
     // Quick-reject: only process elements that could be Guice-relevant.
     PsiElement owner = resolveAnnotatableOwner(psiElement);
     if (owner == null) return;
@@ -83,6 +110,9 @@ public final class GuiceInjectionsClassAnnotator extends GuiceLineMarkerProvider
     Set<GuiceEntry> bindingSiteCounterparts = new LinkedHashSet<>();
 
     for (GuiceEntry entry : entries) {
+      if (entry.getRole() == EntryRole.INJECTION_POINT && !showInjectionPoints) continue;
+      if (entry.getRole() == EntryRole.BINDING_SITE && !showBindingSites) continue;
+
       Set<GuiceEntry> counterparts = navIndex.findCounterparts(entry);
       if (counterparts.isEmpty() && entry.getRole() == EntryRole.INJECTION_POINT && !entry.isImplementationReference()) {
         // Guice uses a JIT binding only when the key has no explicit binding.
@@ -100,10 +130,10 @@ public final class GuiceInjectionsClassAnnotator extends GuiceLineMarkerProvider
       }
     }
 
-    if (!injectionPointCounterparts.isEmpty()) {
+    if (showInjectionPoints && !injectionPointCounterparts.isEmpty()) {
       addGutterIcon(result, new ArrayList<>(injectionPointCounterparts), EntryRole.INJECTION_POINT, psiElement);
     }
-    if (!bindingSiteCounterparts.isEmpty()) {
+    if (showBindingSites && !bindingSiteCounterparts.isEmpty()) {
       addGutterIcon(result, new ArrayList<>(bindingSiteCounterparts), EntryRole.BINDING_SITE, psiElement);
     }
   }
@@ -203,15 +233,8 @@ public final class GuiceInjectionsClassAnnotator extends GuiceLineMarkerProvider
                                     @NotNull List<GuiceEntry> counterparts,
                                     @NotNull EntryRole role,
                                     @NotNull PsiElement anchor) {
-    List<GuiceEntry> renderedEntries = new ArrayList<>(counterparts.size());
-    List<PsiElement> targets = new ArrayList<>(counterparts.size());
-    for (GuiceEntry cp : counterparts) {
-      PsiElement target = cp.getNavigationTarget();
-      if (target != null) {
-        targets.add(target);
-        renderedEntries.add(cp);
-      }
-    }
+    GuiceEntryTargetRenderer.SortedTargets sorted = GuiceEntryTargetRenderer.sortTargets(counterparts, anchor);
+    if (sorted.targets().isEmpty()) return;
 
     NavigationGutterIconBuilder<PsiElement> builder;
     if (role == EntryRole.INJECTION_POINT) {
@@ -229,9 +252,10 @@ public final class GuiceInjectionsClassAnnotator extends GuiceLineMarkerProvider
           .setTooltipText(GuiceBundle.message("gutter.navigate.to.injection.point"));
     }
 
+    List<GuiceEntry> immutableEntries = sorted.entries();
     builder
-        .setTargets(targets)
-        .setTargetRenderer(() -> new GuiceEntryTargetRenderer(renderedEntries));
-    result.add(NonPersistentLineMarkerInfo.createFrom(builder, anchor));
+        .setTargets(sorted.targets())
+        .setTargetRenderer(() -> new GuiceEntryTargetRenderer(immutableEntries));
+    result.add(builder.createLineMarkerInfo(anchor));
   }
 }

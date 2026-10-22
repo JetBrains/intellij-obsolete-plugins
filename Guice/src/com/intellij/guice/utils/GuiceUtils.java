@@ -4,6 +4,7 @@ package com.intellij.guice.utils;
 import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.guice.constants.GuiceAnnotations;
 import com.intellij.guice.constants.GuiceClasses;
+import com.intellij.guice.model.GuiceQualifiers;
 import com.intellij.guice.model.extensions.GuiceExtensionIndex;
 import com.intellij.psi.*;
 import com.intellij.psi.util.InheritanceUtil;
@@ -29,6 +30,11 @@ public final class GuiceUtils {
     return selector instanceof UCallExpression ? (UCallExpression)selector : null;
   }
 
+  /**
+   * Tells if Guice can construct the class: a concrete class with an {@code @Inject} constructor,
+   * a usable no-argument constructor, or no constructor at all. Guice uses a private no-argument
+   * constructor only when the class itself is private.
+   */
   public static boolean isInstantiable(PsiClass referentClass) {
     if (referentClass.isInterface() ||
         referentClass.isEnum() ||
@@ -41,29 +47,44 @@ public final class GuiceUtils {
       return true;
     }
     for (PsiMethod constructor : constructors) {
-      if (AnnotationUtil.isAnnotated(constructor, GuiceAnnotations.INJECTS, CHECK_HIERARCHY)) {
+      if (AnnotationUtil.isAnnotated(constructor, GuiceAnnotations.INJECTS, 0)) {
         return true;
       }
 
-      if (constructor.getParameterList().getParametersCount() == 0) {
+      if (constructor.getParameterList().getParametersCount() == 0
+          && (!constructor.hasModifierProperty(PsiModifier.PRIVATE) || referentClass.hasModifierProperty(PsiModifier.PRIVATE))) {
         return true;
       }
     }
     return false;
   }
 
+  /**
+   * Tells if Guice resolves the class without constructing it: through {@code @ImplementedBy} or {@code @ProvidedBy}.
+   */
+  public static boolean hasJitBindingAnnotation(@NotNull PsiClass psiClass) {
+    return AnnotationUtil.isAnnotated(psiClass, GuiceAnnotations.IMPLEMENTED_BY, 0)
+           || AnnotationUtil.isAnnotated(psiClass, GuiceAnnotations.PROVIDED_BY, 0);
+  }
+
   private static final List<String> PROVIDES_RETURN_TYPE = List.of(GuiceAnnotations.PROVIDES, GuiceAnnotations.PROVIDES_INTO_OPTIONAL);
 
+  /**
+   * Tells if the provider class provides the class: a {@code Provider<T>} where {@code T} is the class or a subtype
+   * (as {@code @ProvidedBy} accepts a {@code Provider<? extends T>}), or a module with a {@code @Provides} method
+   * whose return type is exactly the class (a Guice key is exact).
+   */
   public static boolean provides(PsiClass providerClass, PsiClass providedClass) {
     for (String providerFqn : GuiceClasses.PROVIDERS) {
       if (InheritanceUtil.isInheritor(providerClass, providerFqn)) {
-        return providedClass.equals(getProvidedType(providerClass));
+        PsiClass providedType = getProvidedType(providerClass);
+        return providedType != null && InheritanceUtil.isInheritorOrSelf(providedType, providedClass, true);
       }
     }
     PsiMethod[] allMethods = providerClass.getAllMethods();
     for (PsiMethod method : allMethods) {
       // Only @Provides and @ProvidesIntoOptional bind the return type. @ProvidesIntoSet and @CheckedProvides do not.
-      if (AnnotationUtil.isAnnotated(method, PROVIDES_RETURN_TYPE, CHECK_HIERARCHY)) {
+      if (AnnotationUtil.isAnnotated(method, PROVIDES_RETURN_TYPE, 0)) {
         final PsiType returnType = method.getReturnType();
         if (returnType != null) {
           PsiClass resolved = null;
@@ -414,6 +435,70 @@ public final class GuiceUtils {
       current = getReceiverCall(current);
     }
     return true;
+  }
+
+  private static final List<String> BINDER_ELEMENT_CALLS = List.of("addBinding", "setDefault", "setBinding");
+
+  /**
+   * Tells if the call belongs to a standard {@code bind()} or {@code bindConstant()} chain.
+   *
+   * <p>A chain of a multibinder or optional-binder element ({@code addBinding()}, {@code setDefault()},
+   * {@code setBinding()}) binds no key of its own, so the redundancy rules of {@code bind()} do not apply
+   * to it. A chain that starts at a variable has no visible head and does not qualify either.
+   */
+  public static boolean isStandardBindChain(@NotNull UCallExpression call) {
+    boolean hasBind = false;
+    for (UCallExpression current = call; current != null; current = getReceiverCall(current)) {
+      String name = current.getMethodName();
+      if (BINDER_ELEMENT_CALLS.contains(name)) return false;
+      if ("bind".equals(name) || "bindConstant".equals(name)) hasBind = true;
+    }
+    return hasBind;
+  }
+
+  /**
+   * Tells if the chain binds a qualified key: {@code annotatedWith(...)} is in the chain,
+   * or {@code bind()} takes a {@code Key.get(type, qualifier)}.
+   */
+  public static boolean isQualifiedBindChain(@NotNull UCallExpression call) {
+    if (findCallInChain(call, "annotatedWith") != null) return true;
+    UExpression bindArg = getArgumentOfCallInChain(call, "bind");
+    return bindArg != null && isQualifiedKey(bindArg);
+  }
+
+  /**
+   * Tells if the expression is a {@code Key.get(type, qualifier)} call.
+   */
+  public static boolean isQualifiedKey(@NotNull UExpression expression) {
+    UCallExpression keyGet = GuiceQualifiers.asKeyGet(expression);
+    return keyGet != null && keyGet.getValueArgumentCount() > 1;
+  }
+
+  /**
+   * Returns the class whose scope annotation Guice applies to a {@code bind()} chain, or {@code null}
+   * when no class annotation applies.
+   *
+   * <p>Guice reads the scope annotation of the class it constructs: the {@code to()} class of a linked
+   * binding, or the bound class of an untargeted binding when it is concrete. A provider, instance or
+   * constructor binding takes no scope from a class annotation, and neither does a link to a qualified key.
+   */
+  public static @Nullable PsiClass findScopeAnnotatedClassForBinding(@NotNull UCallExpression call) {
+    if (findCallInChain(call, "toProvider") != null
+        || findCallInChain(call, "toInstance") != null
+        || findCallInChain(call, "toConstructor") != null) {
+      return null;
+    }
+    UCallExpression toCall = findCallInChain(call, "to");
+    if (toCall != null) {
+      List<UExpression> args = toCall.getValueArguments();
+      if (args.size() == 1 && isQualifiedKey(args.getFirst())) return null;
+      return resolveClassArgument(toCall);
+    }
+    PsiClass boundClass = findImplementedClassForBinding(call);
+    if (boundClass == null || boundClass.isInterface() || boundClass.hasModifierProperty(PsiModifier.ABSTRACT)) {
+      return null;
+    }
+    return boundClass;
   }
 
   public static boolean areClassesEquivalent(@Nullable PsiClass c1, @Nullable PsiClass c2) {

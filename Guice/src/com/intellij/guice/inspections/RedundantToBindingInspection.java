@@ -14,7 +14,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.uast.UCallExpression;
 
-import static com.intellij.codeInsight.AnnotationUtil.CHECK_HIERARCHY;
 
 /**
  * Reports redundant {@code .to()} bindings where the target class is the same as the bound
@@ -31,12 +30,12 @@ public final class RedundantToBindingInspection extends BaseUastInspection {
 
   @Override
   protected @NotNull String buildErrorString(Object... infos) {
-    return GuiceBundle.message("redundant.to.binding.problem.descriptor");
+    return GuiceBundle.message("redundant.to.binding.problem.descriptor", infos);
   }
 
   @Override
-  public @Nullable LocalQuickFix buildFix(PsiElement location, Object[] infos) {
-    return new DeleteBindingFix(DeleteBindingFix.Mode.CHAIN_CALL);
+  public LocalQuickFix buildFix(PsiElement location, Object[] infos) {
+    return new DeleteBindingFix(DeleteBindingFix.Mode.CHAIN_CALL, "remove.binding.target");
   }
 
   private static void checkToCall(@NotNull UCallExpression expression, @NotNull BaseUastInspectionVisitor visitor) {
@@ -44,25 +43,28 @@ public final class RedundantToBindingInspection extends BaseUastInspection {
     if (referentClass == null) {
       return;
     }
+    // Only a bind() chain for an unqualified key can be redundant: a multibinder element binds no key of its own,
+    // and a qualified key is a different key than the type with the @ImplementedBy annotation.
+    if (!GuiceUtils.isStandardBindChain(expression) || GuiceUtils.isQualifiedBindChain(expression)) {
+      return;
+    }
     final PsiClass boundClass = GuiceUtils.findImplementedClassForBinding(expression);
     if (boundClass == null) {
       return;
     }
-    if (GuiceUtils.findCallInChain(expression, "annotatedWith") != null) {
+    // Guice reads @ProvidedBy and @ImplementedBy on the bound type only, not on its supertypes.
+    if (AnnotationUtil.isAnnotated(boundClass, GuiceAnnotations.PROVIDED_BY, 0)) {
       return;
     }
-    if (AnnotationUtil.isAnnotated(boundClass, GuiceAnnotations.PROVIDED_BY, CHECK_HIERARCHY)) {
-      return;
-    }
-    if (AnnotationUtil.isAnnotated(boundClass, GuiceAnnotations.IMPLEMENTED_BY, CHECK_HIERARCHY)) {
+    if (AnnotationUtil.isAnnotated(boundClass, GuiceAnnotations.IMPLEMENTED_BY, 0)) {
       final PsiClass implementedByClass =
         AnnotationUtils.resolveAnnotationClassValue(boundClass, GuiceAnnotations.IMPLEMENTED_BY);
       if (referentClass.equals(implementedByClass)) {
-        visitor.registerClassArgumentError(expression);
+        visitor.registerClassArgumentError(expression, referentClass);
       }
     }
     else if (boundClass.equals(referentClass)) {
-      visitor.registerClassArgumentError(expression);
+      visitor.registerClassArgumentError(expression, referentClass);
     }
   }
 }

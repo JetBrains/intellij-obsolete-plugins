@@ -277,7 +277,7 @@ public class GuiceAnnotationInspectionsTest extends GuiceTestBase {
 
       class KotlinInterceptorModule : AbstractModule() {
         override fun configure() {
-          Matchers.annotatedWith(<warning descr="Annotation NonRuntimeAnno::class.java does not have Runtime retention">NonRuntimeAnno::class.java</warning>)
+          Matchers.annotatedWith(<warning descr="Annotation NonRuntimeAnno does not have Runtime retention">NonRuntimeAnno</warning>::class.java)
           Matchers.annotatedWith(RuntimeAnno::class.java)
         }
       }
@@ -340,6 +340,76 @@ public class GuiceAnnotationInspectionsTest extends GuiceTestBase {
     myFixture.testHighlighting(true, false, true);
   }
 
+  /**
+   * Guice reads a scope annotation on the class it constructs, and {@code @ImplementedBy}/{@code @ProvidedBy}
+   * on the bound type. None of them is inherited by a subclass.
+   */
+  public void testScopeAnnotationsAreNotInherited() {
+    myFixture.enableInspections(new ConflictingAnnotationsInspection(), new SingletonInjectsScopedInspection());
+    myFixture.addClass("""
+      package com.google.inject.servlet;
+      import java.lang.annotation.*;
+      import com.google.inject.ScopeAnnotation;
+      @Target({ElementType.TYPE, ElementType.METHOD})
+      @Retention(RetentionPolicy.RUNTIME)
+      @ScopeAnnotation
+      public @interface RequestScoped {}
+      """);
+    myFixture.addClass("package test; @com.google.inject.servlet.RequestScoped public class RequestScopedBase {}");
+    myFixture.addClass("package test; public class SubOfRequestScoped extends RequestScopedBase {}");
+    myFixture.addClass("package test; @com.google.inject.Singleton public class SingletonBase {}");
+
+    myFixture.configureByText("Inherit.java", """
+      import com.google.inject.Inject;
+      import com.google.inject.Singleton;
+      import test.*;
+
+      // The subclass does not inherit @RequestScoped: no conflict.
+      @Singleton
+      class SingletonSub extends RequestScopedBase {}
+
+      // The subclass of a singleton is not a singleton: its injections are unchecked.
+      class PlainSub extends SingletonBase {
+        @Inject RequestScopedBase dep;
+      }
+
+      @Singleton
+      class Holder {
+        // The subclass of a request-scoped class is not request-scoped.
+        @Inject SubOfRequestScoped unscoped;
+        @Inject <warning descr="@Inject of scoped class RequestScopedBase from @Singleton class">RequestScopedBase</warning> scoped;
+      }
+      """);
+    myFixture.testHighlighting(true, false, true);
+  }
+
+  /**
+   * {@code @ProvidedBy} accepts a {@code Provider<? extends T>}; {@code @ImplementedBy} rejects the annotated class itself.
+   */
+  public void testProvidedByAcceptsSubtypeProviderAndImplementedByRejectsSelf() {
+    myFixture.enableInspections(new InvalidProvidedByInspection(), new InvalidImplementedByInspection());
+    myFixture.addClass("package test; public interface SubFoo extends Foo {}");
+    myFixture.addClass("""
+      package test;
+      public class SubFooProvider implements javax.inject.Provider<SubFoo> {
+        public SubFoo get() { return null; }
+      }
+      """);
+
+    myFixture.configureByText("Foo.java", """
+      package test;
+      import com.google.inject.ImplementedBy;
+      import com.google.inject.ProvidedBy;
+
+      @ProvidedBy(SubFooProvider.class)
+      public interface Foo {}
+
+      @ImplementedBy(<warning descr="Class Self doesn't implement annotated class">Self</warning>.class)
+      interface Self {}
+      """);
+    myFixture.testHighlighting(true, false, true);
+  }
+
   public void testMultipleInjectedConstructorsInJavaAndKotlin() {
     myFixture.enableInspections(new com.intellij.guice.inspections.MultipleInjectedConstructorsForClassInspection());
 
@@ -358,7 +428,7 @@ public class GuiceAnnotationInspectionsTest extends GuiceTestBase {
       import com.google.inject.Inject
       class <warning descr="Class KotlinMultiCtor has multiple @Inject constructors">KotlinMultiCtor</warning> @Inject constructor(s: MyService) {
         @Inject
-        <warning descr="Class constructor has multiple @Inject constructors">constructor</warning>(k: MyKey) : this(MyServiceImpl())
+        <warning descr="Class KotlinMultiCtor has multiple @Inject constructors">constructor</warning>(k: MyKey) : this(MyServiceImpl())
       }
       """);
     myFixture.testHighlighting(true, false, true);

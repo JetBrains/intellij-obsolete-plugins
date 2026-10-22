@@ -24,6 +24,7 @@ import org.jetbrains.uast.visitor.AbstractUastVisitor;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * Shared utility methods for {@link GuiceBindingContributor} implementations.
@@ -92,12 +93,12 @@ public final class ContributorUtil {
    */
   public static boolean createBindingTailDescriptor(@NotNull String methodName,
                                                     @NotNull PsiElement outermostSource,
-                                                    @NotNull Set<BindDescriptor> descriptors) {
+                                                    @NotNull Consumer<? super BindDescriptor> sink) {
     switch (methodName) {
-      case "to" -> descriptors.add(new BindToDescriptor(outermostSource));
-      case "toInstance" -> descriptors.add(new BindToInstanceDescriptor(outermostSource));
-      case "toProvider" -> descriptors.add(new BindToProviderDescriptor(outermostSource));
-      case "toConstructor" -> descriptors.add(new BindToConstructorDescriptor(outermostSource));
+      case "to" -> sink.accept(new BindToDescriptor(outermostSource));
+      case "toInstance" -> sink.accept(new BindToInstanceDescriptor(outermostSource));
+      case "toProvider" -> sink.accept(new BindToProviderDescriptor(outermostSource));
+      case "toConstructor" -> sink.accept(new BindToConstructorDescriptor(outermostSource));
       default -> { return false; }
     }
     return true;

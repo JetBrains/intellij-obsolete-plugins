@@ -48,6 +48,76 @@ public class MyModule extends AbstractModule {
     myFixture.testHighlighting(true, false, true);
   }
 
+  /**
+   * A target that Guice resolves without a constructor is not uninstantiable: a type with
+   * {@code @ImplementedBy} or {@code @ProvidedBy}, or a type that the same module binds to a target.
+   */
+  public void testTargetsResolvedByJitAnnotationsOrOtherBindingsAreNotReported() {
+    myFixture.addClass("package test; public interface Foo {}");
+    myFixture.addClass("package test; @com.google.inject.ImplementedBy(BarImpl.class) public interface Bar extends Foo {}");
+    myFixture.addClass("package test; public class BarImpl implements Bar {}");
+    myFixture.addClass("package test; @com.google.inject.ProvidedBy(BazProvider.class) public interface Baz extends Foo {}");
+    myFixture.addClass("""
+      package test;
+      public class BazProvider implements javax.inject.Provider<Baz> {
+        public Baz get() { return null; }
+      }
+      """);
+    myFixture.addClass("package test; public interface Qux extends Foo {}");
+    myFixture.addClass("""
+      package test;
+      public class QuxProvider implements javax.inject.Provider<Qux> {
+        public Qux get() { return null; }
+      }
+      """);
+    myFixture.addClass("package test; public interface Plain extends Foo {}");
+
+    myFixture.configureByText("MyModule.java", """
+      import com.google.inject.AbstractModule;
+      import test.*;
+      public class MyModule extends AbstractModule {
+        @Override
+        protected void configure() {
+          bind(Foo.class).to(Bar.class); // Valid: @ImplementedBy
+          bind(Foo.class).to(Baz.class); // Valid: @ProvidedBy
+          bind(Foo.class).to(Qux.class); // Valid: bound below
+          bind(Qux.class).toProvider(QuxProvider.class);
+          bind(Foo.class).to(<warning descr="Class Plain is uninstantiable, and thus can not be bound">Plain</warning>.class);
+        }
+      }
+      """);
+    myFixture.testHighlighting(true, false, true);
+  }
+
+  /**
+   * Guice uses a private no-argument constructor only when the class itself is private.
+   */
+  public void testPrivateNoArgConstructorIsUninstantiable() {
+    myFixture.addClass("package test; public interface Foo {}");
+    myFixture.addClass("""
+      package test;
+      public class Hidden implements Foo {
+        private Hidden() {}
+      }
+      """);
+
+    myFixture.configureByText("MyModule.java", """
+      import com.google.inject.AbstractModule;
+      import test.*;
+      public class MyModule extends AbstractModule {
+        private static class PrivateImpl implements Foo {
+          private PrivateImpl() {}
+        }
+        @Override
+        protected void configure() {
+          bind(Foo.class).to(<warning descr="Class Hidden is uninstantiable, and thus can not be bound">Hidden</warning>.class);
+          bind(Foo.class).to(PrivateImpl.class); // Valid: a private class may use its private constructor
+        }
+      }
+      """);
+    myFixture.testHighlighting(true, false, true);
+  }
+
   public void testKotlinUninstantiableBinding() {
     myFixture.addClass("""
       package test;
@@ -86,8 +156,8 @@ class MyModule : AbstractModule() {
         bind(Foo::class.java).to(<warning descr="Class UninstantiableFoo is uninstantiable, and thus can not be bound">UninstantiableFoo</warning>::class.java)
         
         // Reified generics extension
-        bind<Foo>().<warning descr="Class to<AbstractFoo>() is uninstantiable, and thus can not be bound">to<AbstractFoo>()</warning>
-        bind<Foo>().<warning descr="Class to<UninstantiableFoo>() is uninstantiable, and thus can not be bound">to<UninstantiableFoo>()</warning>
+        bind<Foo>().to<<warning descr="Class AbstractFoo is uninstantiable, and thus can not be bound">AbstractFoo</warning>>()
+        bind<Foo>().to<<warning descr="Class UninstantiableFoo is uninstantiable, and thus can not be bound">UninstantiableFoo</warning>>()
         
         bind(Foo::class.java).to(ConcreteFoo::class.java) // Valid
         bind<Foo>().to<ConcreteFoo>() // Valid

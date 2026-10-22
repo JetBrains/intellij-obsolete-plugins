@@ -19,8 +19,10 @@ import org.jetbrains.uast.UMethod;
 import org.jetbrains.uast.UastContextKt;
 import org.jetbrains.uast.UastUtils;
 
+import javax.swing.Icon;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -33,6 +35,21 @@ import java.util.Set;
  * It also finds the implementation references, for example {@code bind(Foo.class).to(ThisClass.class)}.
  */
 public final class GuiceBindingClassAnnotator extends GuiceLineMarkerProviderBase {
+
+  @Override
+  public @NotNull String getId() {
+    return "guice.bound.class";
+  }
+
+  @Override
+  public @NotNull String getName() {
+    return GuiceBundle.message("gutter.option.bound.class");
+  }
+
+  @Override
+  public @NotNull Icon getIcon() {
+    return GuiceIcons.GoogleSmall;
+  }
 
   @Override
   protected void collectNavigationMarkers(@NotNull PsiElement psiElement,
@@ -49,10 +66,9 @@ public final class GuiceBindingClassAnnotator extends GuiceLineMarkerProviderBas
     if (psiClass.getQualifiedName() == null) return;
 
     final Module module = ModuleUtilCore.findModuleForPsiElement(psiElement);
-    if (module == null) return;
+    if (module == null || !GuiceProjectModel.isGuiceAvailable(module)) return;
 
     GuiceProjectModel model = GuiceProjectModel.getInstance(module.getProject());
-    if (!model.isGuiceAvailable(module)) return;
 
     // Find all BINDING_SITE entries whose type matches this class.
     GuiceBindingKey key = GuiceBindingKey.forClass(psiClass);
@@ -64,8 +80,7 @@ public final class GuiceBindingClassAnnotator extends GuiceLineMarkerProviderBas
     }
 
     if (!bindings.isEmpty()) {
-      List<GuiceEntry> renderedEntries = new ArrayList<>(bindings.size());
-      List<PsiElement> targets = new ArrayList<>(bindings.size());
+      List<GuiceEntry> filteredEntries = new ArrayList<>(bindings.size());
       for (GuiceEntry binding : bindings) {
         PsiElement target = binding.getNavigationTarget();
         if (target == null) continue;
@@ -77,18 +92,19 @@ public final class GuiceBindingClassAnnotator extends GuiceLineMarkerProviderBas
           continue;
         }
 
-        targets.add(target);
-        renderedEntries.add(binding);
+        filteredEntries.add(binding);
       }
-      if (!targets.isEmpty()) {
+      GuiceEntryTargetRenderer.SortedTargets sorted = GuiceEntryTargetRenderer.sortTargets(filteredEntries, psiElement);
+      if (!sorted.targets().isEmpty()) {
+        List<GuiceEntry> immutableEntries = sorted.entries();
         final NavigationGutterIconBuilder<PsiElement> builder =
-          NavigationGutterIconBuilder.create(GuiceIcons.GoogleSmall).
+          NavigationGutterIconBuilder.create(GuiceIcons.GoogleSmall, GuiceBundle.GUICE).
             setPopupTitle(GuiceBundle.message("GuiceClassAnnotator.popup.title")).
             setTooltipText(GuiceBundle.message("GuiceClassAnnotator.popup.tooltip.text")).
-            setTargetRenderer(() -> new GuiceEntryTargetRenderer(renderedEntries)).
-            setTargets(targets);
+            setTargetRenderer(() -> new GuiceEntryTargetRenderer(immutableEntries)).
+            setTargets(sorted.targets());
 
-        result.add(NonPersistentLineMarkerInfo.createFrom(builder, psiElement));
+        result.add(builder.createLineMarkerInfo(psiElement));
       }
     }
   }

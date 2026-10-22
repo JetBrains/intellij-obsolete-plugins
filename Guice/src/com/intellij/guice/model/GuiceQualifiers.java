@@ -264,7 +264,7 @@ public final class GuiceQualifiers {
   /**
    * Returns the call {@code Key.get(...)} if the expression is such a call, possibly qualified.
    */
-  static @Nullable UCallExpression asKeyGet(@NotNull UExpression expression) {
+  public static @Nullable UCallExpression asKeyGet(@NotNull UExpression expression) {
     UExpression e = GuiceUtils.skipParenthesesAndCasts(GuiceUtils.getSelectorIfQualified(expression));
     if (!(e instanceof UCallExpression call) || !"get".equals(call.getMethodName())) return null;
     PsiMethod method = call.resolve();

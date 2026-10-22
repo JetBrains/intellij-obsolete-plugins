@@ -1,6 +1,7 @@
 // Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package com.intellij.guice;
 
+import com.google.common.truth.Truth;
 import com.intellij.codeInsight.daemon.GutterMark;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.guice.model.GuiceProjectModel;
@@ -23,8 +24,6 @@ import com.intellij.testFramework.fixtures.JavaCodeInsightFixtureTestCase;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.google.common.truth.Truth.assertThat;
 
 public class GuiceMultiModuleTest extends JavaCodeInsightFixtureTestCase {
 
@@ -76,7 +75,7 @@ public class GuiceMultiModuleTest extends JavaCodeInsightFixtureTestCase {
 
     // Reset the model so VFS events from test setup do not mask initial discovery when highlighting Client.java in baseModule first.
     PlatformTestUtil.dispatchAllEventsInIdeEventQueue();
-    GuiceProjectModel.getInstance(getProject()).dispose();
+    GuiceProjectModel.getInstance(getProject()).resetForTests();
 
     myFixture.doHighlighting();
     List<String> anchors = new ArrayList<>();
@@ -87,13 +86,83 @@ public class GuiceMultiModuleTest extends JavaCodeInsightFixtureTestCase {
         anchors.add(element == null ? "<invalid>" : element.getText());
       }
     }
-    assertThat(anchors).containsExactly("service");
+    Truth.assertThat(anchors).containsExactly("service");
+  }
+
+  /**
+   * A7: a module that only has JSR-330 on its classpath, in a project where another module has Guice,
+   * is a Guice module too: its injection points get gutters to the bindings of the Guice module.
+   */
+  public void testApiOnlyModuleWithJsr330InjectIsGuiceEnabledWhenGuiceIsInProject() throws Exception {
+    Sdk sdk = JavaSdk.getInstance().createJdk("TestJDK", System.getProperty("java.home"), false);
+    WriteCommandAction.runWriteCommandAction(getProject(), () -> {
+      ProjectJdkTable.getInstance().addJdk(sdk, getTestRootDisposable());
+    });
+    // The fixture module is the API module: jakarta.inject only.
+    Module apiModule = myFixture.getModule();
+    ModuleRootModificationUtil.setModuleSdk(apiModule, sdk);
+    addLibraryOf(apiModule, jakarta.inject.Inject.class);
+
+    VirtualFile appDir = myFixture.getTempDirFixture().findOrCreateDir("app");
+    Module appModule = PsiTestUtil.addModule(getProject(), JavaModuleType.getModuleType(), "app", appDir);
+    configureGuiceModule(appModule, sdk);
+    ModuleRootModificationUtil.addDependency(appModule, apiModule);
+
+    myFixture.addClass("package api; public interface Api {}");
+    myFixture.addClass("package api; public class ApiImpl implements Api { public ApiImpl() {} }");
+    WriteCommandAction.runWriteCommandAction(getProject(), () -> {
+      try {
+        VirtualFile vf = appDir.createChildData(this, "AppModule.java");
+        VfsUtil.saveText(vf, """
+          import com.google.inject.AbstractModule;
+          import api.Api;
+          import api.ApiImpl;
+          public class AppModule extends AbstractModule {
+            @Override
+            protected void configure() {
+              bind(Api.class).to(ApiImpl.class);
+            }
+          }
+          """);
+      }
+      catch (java.io.IOException e) {
+        throw new RuntimeException(e);
+      }
+    });
+    PsiDocumentManager.getInstance(getProject()).commitAllDocuments();
+
+    GuiceProjectModel model = GuiceProjectModel.getInstance(getProject());
+    Truth.assertThat(model.isGuiceAvailable(appModule)).isTrue();
+    Truth.assertThat(model.isGuiceAvailable(apiModule)).isTrue();
+
+    myFixture.configureByText("Client.java", """
+      package api;
+      import jakarta.inject.Inject;
+      public class Client {
+        @Inject
+        Api api;
+      }
+      """);
+    myFixture.doHighlighting();
+    List<String> anchors = new ArrayList<>();
+    for (GutterMark mark : myFixture.findAllGutters()) {
+      if (GuiceTestBase.TO_BINDINGS_TOOLTIP.equals(mark.getTooltipText())) {
+        var info = ((LineMarkerInfo.LineMarkerGutterIconRenderer<?>)mark).getLineMarkerInfo();
+        PsiElement element = info.getElement();
+        anchors.add(element == null ? "<invalid>" : element.getText());
+      }
+    }
+    Truth.assertThat(anchors).containsExactly("api");
   }
 
   private static void configureGuiceModule(Module module, Sdk sdk) {
     ModuleRootModificationUtil.setModuleSdk(module, sdk);
+    addLibraryOf(module, com.google.inject.Inject.class);
+  }
+
+  private static void addLibraryOf(Module module, Class<?> libraryClass) {
     ModuleRootModificationUtil.updateModel(module, model -> {
-      Path jar = Path.of(PathManager.getJarPathForClass(com.google.inject.Inject.class));
+      Path jar = Path.of(PathManager.getJarPathForClass(libraryClass));
       PsiTestUtil.addLibrary(model, jar.getFileName().toString(), jar.getParent().toString(), jar.getFileName().toString());
     });
   }

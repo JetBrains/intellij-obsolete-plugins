@@ -46,6 +46,120 @@ public class RedundantToBindingInspectionTest extends GuiceTestBase {
     myFixture.testHighlighting(true, false, true);
   }
 
+  /**
+   * {@code to()} on a multibinder or optional-binder element binds no key of its own,
+   * so it is never redundant, even when the element type has {@code @ImplementedBy}.
+   */
+  public void testBinderElementBindingIsNotRedundant() {
+    myFixture.addClass("""
+      package test;
+      @com.google.inject.ImplementedBy(FooImpl.class)
+      public interface Foo {}
+    """);
+    myFixture.addClass("""
+      package test;
+      public class FooImpl implements Foo {}
+    """);
+
+    myFixture.configureByText("MyModule.java", """
+      import com.google.inject.AbstractModule;
+      import com.google.inject.multibindings.Multibinder;
+      import com.google.inject.multibindings.OptionalBinder;
+      import test.*;
+      public class MyModule extends AbstractModule {
+        @Override
+        protected void configure() {
+          Multibinder.newSetBinder(binder(), Foo.class).addBinding().to(FooImpl.class); // Valid
+          OptionalBinder.newOptionalBinder(binder(), Foo.class).setDefault().to(FooImpl.class); // Valid
+          OptionalBinder.newOptionalBinder(binder(), Foo.class).setBinding().to(FooImpl.class); // Valid
+          bind(Foo.class).to(<warning descr="Binding to class FooImpl is redundant">FooImpl</warning>.class);
+        }
+      }
+    """);
+    myFixture.testHighlighting(true, false, true);
+  }
+
+  /**
+   * A qualified key is a different key: linking it to the unqualified type or to the
+   * {@code @ImplementedBy} class is a real binding.
+   */
+  public void testQualifiedKeyBindingIsNotRedundant() {
+    myFixture.addClass("""
+      package test;
+      @com.google.inject.ImplementedBy(FooImpl.class)
+      public interface Foo {}
+    """);
+    myFixture.addClass("""
+      package test;
+      public class FooImpl implements Foo {}
+    """);
+    myFixture.addClass("""
+      package test;
+      public class Bar {}
+    """);
+
+    myFixture.configureByText("MyModule.java", """
+      import com.google.inject.AbstractModule;
+      import com.google.inject.Key;
+      import com.google.inject.name.Names;
+      import test.*;
+      public class MyModule extends AbstractModule {
+        @Override
+        protected void configure() {
+          bind(Key.get(Foo.class, Names.named("x"))).to(FooImpl.class); // Valid
+          bind(Key.get(Bar.class, Names.named("x"))).to(Bar.class); // Valid
+          bind(Key.get(Bar.class)).to(<warning descr="Binding to class Bar is redundant">Bar</warning>.class);
+        }
+      }
+    """);
+    myFixture.testHighlighting(true, false, true);
+  }
+
+  /**
+   * Guice reads {@code @ImplementedBy} on the bound type only, not on its supertypes.
+   */
+  public void testImplementedByOnSupertypeIsNotInherited() {
+    myFixture.addClass("""
+      package test;
+      @com.google.inject.ImplementedBy(FooImpl.class)
+      public interface Foo {}
+    """);
+    myFixture.addClass("""
+      package test;
+      public interface SubFoo extends Foo {}
+    """);
+    myFixture.addClass("""
+      package test;
+      public class FooImpl implements SubFoo {}
+    """);
+    myFixture.addClass("""
+      package test;
+      @com.google.inject.ImplementedBy(BaseImpl.class)
+      public abstract class Base {}
+    """);
+    myFixture.addClass("""
+      package test;
+      public class BaseImpl extends Base {}
+    """);
+    myFixture.addClass("""
+      package test;
+      public class Derived extends Base {}
+    """);
+
+    myFixture.configureByText("MyModule.java", """
+      import com.google.inject.AbstractModule;
+      import test.*;
+      public class MyModule extends AbstractModule {
+        @Override
+        protected void configure() {
+          bind(SubFoo.class).to(FooImpl.class); // Valid: SubFoo has no @ImplementedBy of its own
+          bind(Derived.class).to(<warning descr="Binding to class Derived is redundant">Derived</warning>.class); // Self-binding
+        }
+      }
+    """);
+    myFixture.testHighlighting(true, false, true);
+  }
+
   public void testKotlinRedundantToBinding() {
     myFixture.addClass("""
       package test;
@@ -77,8 +191,8 @@ public class RedundantToBindingInspectionTest extends GuiceTestBase {
           bind(Foo::class.java).to(<warning descr="Binding to class FooImpl is redundant">FooImpl</warning>::class.java)
 
           // Reified generics extension
-          bind<Bar>().<warning descr="Binding to class to<Bar>() is redundant">to<Bar>()</warning>
-          bind<Foo>().<warning descr="Binding to class to<FooImpl>() is redundant">to<FooImpl>()</warning>
+          bind<Bar>().to<<warning descr="Binding to class Bar is redundant">Bar</warning>>()
+          bind<Foo>().to<<warning descr="Binding to class FooImpl is redundant">FooImpl</warning>>()
 
           bind(MyService::class.java).to(MyServiceImpl::class.java) // Valid
           bind<MyService>().to<MyServiceImpl>() // Valid
@@ -105,7 +219,7 @@ public class MyModule extends AbstractModule {
 }
 """);
     myFixture.doHighlighting();
-    var action = myFixture.findSingleIntention("Delete binding");
+    var action = myFixture.findSingleIntention("Remove binding target");
     myFixture.launchAction(action);
     myFixture.checkResult("""
 import com.google.inject.AbstractModule;
@@ -139,7 +253,7 @@ class MyModule : AbstractModule() {
 }
 """);
     myFixture.doHighlighting();
-    var action = myFixture.findSingleIntention("Delete binding");
+    var action = myFixture.findSingleIntention("Remove binding target");
     myFixture.launchAction(action);
     myFixture.checkResult("""
 import com.google.inject.AbstractModule
@@ -172,12 +286,12 @@ inline fun <reified T> LinkedBindingBuilder<in T>.to(): Unit = TODO()
 
 class MyModule : AbstractModule() {
     override fun configure() {
-        bind<Bar>().t<caret>o<Bar>()
+        bind<Bar>().to<B<caret>ar>()
     }
 }
 """);
     myFixture.doHighlighting();
-    var action = myFixture.findSingleIntention("Delete binding");
+    var action = myFixture.findSingleIntention("Remove binding target");
     myFixture.launchAction(action);
     myFixture.checkResult("""
 import com.google.inject.AbstractModule

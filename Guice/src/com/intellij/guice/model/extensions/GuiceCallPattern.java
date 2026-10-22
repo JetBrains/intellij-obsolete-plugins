@@ -13,30 +13,117 @@ import org.jetbrains.uast.UCallExpression;
 import org.jetbrains.uast.UExpression;
 import org.jetbrains.uast.UQualifiedReferenceExpression;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 
 /**
  * Declarative pattern that matches UAST call expressions in multiple filtering stages.
  *
  * <p>Callers build a pattern with {@link #named(String...)} and refine it with syntactic
  * argument bounds and semantic owner, receiver, or return-type constraints.
+ *
+ * <h3>Semantics of the constraints</h3>
+ * <ul>
+ *   <li>Constraints of different kinds are <b>conjunctive</b>: {@code withOwnerClass(X).withReturnInheritor(Y)}
+ *       matches a call that is declared in {@code X} <b>and</b> returns a {@code Y}.</li>
+ *   <li>Within one kind, the listed classes are alternatives: {@code withOwnerClass(X, Z)} matches a call
+ *       declared in {@code X} or in {@code Z}. {@link #withOwnerClass}, {@link #withOwnerInheritor} and
+ *       {@link #inGuicePackage} are one kind, the owner.</li>
+ *   <li>{@link #anyOf} combines whole patterns as alternatives, for example a factory method on a binder
+ *       class or a wrapper function that returns the binder class ({@link #forBinder}).</li>
+ *   <li>A constraint added to a combined pattern applies to every alternative.</li>
+ * </ul>
  */
 @ApiStatus.Experimental
 public final class GuiceCallPattern {
+
+  /**
+   * One conjunction of owner, receiver, and return-type constraints.
+   */
+  private record Semantic(@NotNull Set<String> exactOwnerClasses,
+                          @NotNull Set<String> ownerInheritors,
+                          boolean allowGuicePackageOwner,
+                          @NotNull Set<String> receiverInheritors,
+                          @NotNull Set<String> returnInheritors) {
+    static final Semantic ANY = new Semantic(Set.of(), Set.of(), false, Set.of(), Set.of());
+
+    boolean hasOwnerConstraint() {
+      return !exactOwnerClasses.isEmpty() || !ownerInheritors.isEmpty() || allowGuicePackageOwner;
+    }
+
+    boolean requiresResolution() {
+      return hasOwnerConstraint() || !receiverInheritors.isEmpty() || !returnInheritors.isEmpty();
+    }
+
+    boolean isExactOwnerOnly() {
+      return !exactOwnerClasses.isEmpty()
+             && ownerInheritors.isEmpty()
+             && !allowGuicePackageOwner
+             && receiverInheritors.isEmpty()
+             && returnInheritors.isEmpty();
+    }
+
+    boolean matches(@NotNull UCallExpression call,
+                    @Nullable String resolvedOwnerQName,
+                    @Nullable PsiClass containingClass,
+                    @NotNull Map<String, Boolean> ownerInheritorCache,
+                    @NotNull Map<String, Boolean> receiverInheritorCache,
+                    @NotNull Map<String, Boolean> returnInheritorCache) {
+      if (hasOwnerConstraint() && !matchesOwner(resolvedOwnerQName, containingClass, ownerInheritorCache)) {
+        return false;
+      }
+      if (!receiverInheritors.isEmpty()
+          && !matchesAnyType(receiverInheritors, call.getReceiverType(), receiverInheritorCache)) {
+        return false;
+      }
+      return returnInheritors.isEmpty()
+             || matchesAnyType(returnInheritors, call.getReturnType(), returnInheritorCache);
+    }
+
+    private boolean matchesOwner(@Nullable String resolvedOwnerQName,
+                                 @Nullable PsiClass containingClass,
+                                 @NotNull Map<String, Boolean> ownerInheritorCache) {
+      if (resolvedOwnerQName != null) {
+        if (exactOwnerClasses.contains(resolvedOwnerQName)) return true;
+        if (allowGuicePackageOwner && resolvedOwnerQName.startsWith("com.google.inject.")) return true;
+        if (ownerInheritors.contains(resolvedOwnerQName)) return true;
+      }
+      if (containingClass != null) {
+        for (String ownerFqn : ownerInheritors) {
+          if (ownerInheritorCache.computeIfAbsent(ownerFqn, fqn -> InheritanceUtil.isInheritor(containingClass, fqn))) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    private static boolean matchesAnyType(@NotNull Set<String> expectedFqns,
+                                          @Nullable PsiType type,
+                                          @NotNull Map<String, Boolean> cache) {
+      for (String expectedFqn : expectedFqns) {
+        if (cache.computeIfAbsent(expectedFqn, fqn -> matchesTypeOrInheritor(type, fqn))) {
+          return true;
+        }
+      }
+      return false;
+    }
+  }
+
   private final @NotNull Set<String> myMethodNames;
   private final int myMinValueArguments;
   private final int myMaxValueArguments;
   private final boolean myRequireValueOrTypeArgument;
   private final boolean myStatementOnly;
-  private final @NotNull Set<String> myExactOwnerClasses;
-  private final @NotNull Set<String> myOwnerInheritors;
-  private final @NotNull Set<String> myReceiverInheritors;
-  private final @NotNull Set<String> myReturnInheritors;
-  private final boolean myAllowGuicePackageOwner;
+  /** Alternatives: the pattern matches when any of them matches. Never empty. */
+  private final @NotNull List<Semantic> myAlternatives;
   private final boolean myAllowUnresolved;
   private final @NotNull Set<String> myUnresolvedChainHeads;
 
@@ -45,23 +132,18 @@ public final class GuiceCallPattern {
                            int maxValueArguments,
                            boolean requireValueOrTypeArgument,
                            boolean statementOnly,
-                           @NotNull Set<String> exactOwnerClasses,
-                           @NotNull Set<String> ownerInheritors,
-                           @NotNull Set<String> receiverInheritors,
-                           @NotNull Set<String> returnInheritors,
-                           boolean allowGuicePackageOwner,
+                           @NotNull List<Semantic> alternatives,
                            boolean allowUnresolved,
                            @NotNull Set<String> unresolvedChainHeads) {
+    if (minValueArguments < 0 || minValueArguments > maxValueArguments) {
+      throw new IllegalArgumentException("Invalid argument bounds: " + minValueArguments + ".." + maxValueArguments);
+    }
     myMethodNames = methodNames;
     myMinValueArguments = minValueArguments;
     myMaxValueArguments = maxValueArguments;
     myRequireValueOrTypeArgument = requireValueOrTypeArgument;
     myStatementOnly = statementOnly;
-    myExactOwnerClasses = exactOwnerClasses;
-    myOwnerInheritors = ownerInheritors;
-    myReceiverInheritors = receiverInheritors;
-    myReturnInheritors = returnInheritors;
-    myAllowGuicePackageOwner = allowGuicePackageOwner;
+    myAlternatives = alternatives;
     myAllowUnresolved = allowUnresolved;
     myUnresolvedChainHeads = unresolvedChainHeads;
   }
@@ -70,155 +152,162 @@ public final class GuiceCallPattern {
    * Creates a pattern that matches calls with any of the given method names.
    */
   public static @NotNull GuiceCallPattern named(String @NotNull ... methodNames) {
-    return new GuiceCallPattern(
-        Set.of(methodNames),
-        0,
-        Integer.MAX_VALUE,
-        false,
-        false,
-        Set.of(),
-        Set.of(),
-        Set.of(),
-        Set.of(),
-        false,
-        false,
-        Set.of()
-    );
+    return named(Arrays.asList(methodNames));
   }
 
   /**
    * Creates a pattern that matches calls with any of the given method names.
    */
   public static @NotNull GuiceCallPattern named(@NotNull Collection<String> methodNames) {
+    if (methodNames.isEmpty()) {
+      throw new IllegalArgumentException("A call pattern needs at least one method name");
+    }
     return new GuiceCallPattern(
-        Set.copyOf(methodNames),
+        Set.copyOf(new LinkedHashSet<>(methodNames)),
         0,
         Integer.MAX_VALUE,
         false,
         false,
-        Set.of(),
-        Set.of(),
-        Set.of(),
-        Set.of(),
-        false,
+        List.of(Semantic.ANY),
         false,
         Set.of()
     );
   }
 
-  public @NotNull GuiceCallPattern minArguments(int minValueArguments) {
+  /**
+   * Combines patterns as alternatives: the result matches a call when any of the patterns matches it.
+   * The patterns must share the method names and the syntactic constraints.
+   */
+  public static @NotNull GuiceCallPattern anyOf(@NotNull GuiceCallPattern first, GuiceCallPattern @NotNull ... others) {
+    List<Semantic> alternatives = new ArrayList<>(first.myAlternatives);
+    boolean allowUnresolved = first.myAllowUnresolved;
+    Set<String> chainHeads = new LinkedHashSet<>(first.myUnresolvedChainHeads);
+    for (GuiceCallPattern other : others) {
+      if (!other.myMethodNames.equals(first.myMethodNames)
+          || other.myMinValueArguments != first.myMinValueArguments
+          || other.myMaxValueArguments != first.myMaxValueArguments
+          || other.myRequireValueOrTypeArgument != first.myRequireValueOrTypeArgument
+          || other.myStatementOnly != first.myStatementOnly) {
+        throw new IllegalArgumentException("anyOf() needs patterns with the same method names and syntactic constraints");
+      }
+      alternatives.addAll(other.myAlternatives);
+      allowUnresolved |= other.myAllowUnresolved;
+      chainHeads.addAll(other.myUnresolvedChainHeads);
+    }
     return new GuiceCallPattern(
-        myMethodNames, minValueArguments, myMaxValueArguments, myRequireValueOrTypeArgument,
-        myStatementOnly, myExactOwnerClasses, myOwnerInheritors, myReceiverInheritors,
-        myReturnInheritors, myAllowGuicePackageOwner, myAllowUnresolved, myUnresolvedChainHeads);
+        first.myMethodNames, first.myMinValueArguments, first.myMaxValueArguments, first.myRequireValueOrTypeArgument,
+        first.myStatementOnly, List.copyOf(alternatives), allowUnresolved, Set.copyOf(chainHeads));
+  }
+
+  private @NotNull GuiceCallPattern withSyntax(int minValueArguments,
+                                               int maxValueArguments,
+                                               boolean requireValueOrTypeArgument,
+                                               boolean statementOnly) {
+    return new GuiceCallPattern(
+        myMethodNames, minValueArguments, maxValueArguments, requireValueOrTypeArgument,
+        statementOnly, myAlternatives, myAllowUnresolved, myUnresolvedChainHeads);
+  }
+
+  private @NotNull GuiceCallPattern mapAlternatives(@NotNull UnaryOperator<Semantic> operator) {
+    List<Semantic> mapped = new ArrayList<>(myAlternatives.size());
+    for (Semantic alternative : myAlternatives) {
+      mapped.add(operator.apply(alternative));
+    }
+    return new GuiceCallPattern(
+        myMethodNames, myMinValueArguments, myMaxValueArguments, myRequireValueOrTypeArgument,
+        myStatementOnly, List.copyOf(mapped), myAllowUnresolved, myUnresolvedChainHeads);
+  }
+
+  public @NotNull GuiceCallPattern minArguments(int minValueArguments) {
+    return withSyntax(minValueArguments, myMaxValueArguments, myRequireValueOrTypeArgument, myStatementOnly);
   }
 
   public @NotNull GuiceCallPattern maxArguments(int maxValueArguments) {
-    return new GuiceCallPattern(
-        myMethodNames, myMinValueArguments, maxValueArguments, myRequireValueOrTypeArgument,
-        myStatementOnly, myExactOwnerClasses, myOwnerInheritors, myReceiverInheritors,
-        myReturnInheritors, myAllowGuicePackageOwner, myAllowUnresolved, myUnresolvedChainHeads);
+    return withSyntax(myMinValueArguments, maxValueArguments, myRequireValueOrTypeArgument, myStatementOnly);
   }
 
   public @NotNull GuiceCallPattern argumentCount(int count) {
-    return new GuiceCallPattern(
-        myMethodNames, count, count, myRequireValueOrTypeArgument,
-        myStatementOnly, myExactOwnerClasses, myOwnerInheritors, myReceiverInheritors,
-        myReturnInheritors, myAllowGuicePackageOwner, myAllowUnresolved, myUnresolvedChainHeads);
+    return withSyntax(count, count, myRequireValueOrTypeArgument, myStatementOnly);
   }
 
   /**
    * Requires the call to have at least one value argument or at least one explicit type argument.
    */
   public @NotNull GuiceCallPattern requireValueOrTypeArgument() {
-    return new GuiceCallPattern(
-        myMethodNames, myMinValueArguments, myMaxValueArguments, true,
-        myStatementOnly, myExactOwnerClasses, myOwnerInheritors, myReceiverInheritors,
-        myReturnInheritors, myAllowGuicePackageOwner, myAllowUnresolved, myUnresolvedChainHeads);
+    return withSyntax(myMinValueArguments, myMaxValueArguments, true, myStatementOnly);
   }
 
   /**
    * Requires the call to stand as a complete statement expression.
    */
   public @NotNull GuiceCallPattern statementOnly() {
-    return new GuiceCallPattern(
-        myMethodNames, myMinValueArguments, myMaxValueArguments, myRequireValueOrTypeArgument,
-        true, myExactOwnerClasses, myOwnerInheritors, myReceiverInheritors,
-        myReturnInheritors, myAllowGuicePackageOwner, myAllowUnresolved, myUnresolvedChainHeads);
+    return withSyntax(myMinValueArguments, myMaxValueArguments, myRequireValueOrTypeArgument, true);
   }
 
   /**
-   * Matches when the declaring class of the resolved method has one of the given qualified names.
+   * Requires the declaring class of the resolved method to have one of the given qualified names.
    */
   public @NotNull GuiceCallPattern withOwnerClass(String @NotNull ... ownerClassFqns) {
-    return new GuiceCallPattern(
-        myMethodNames, myMinValueArguments, myMaxValueArguments, myRequireValueOrTypeArgument,
-        myStatementOnly, union(myExactOwnerClasses, ownerClassFqns), myOwnerInheritors, myReceiverInheritors,
-        myReturnInheritors, myAllowGuicePackageOwner, myAllowUnresolved, myUnresolvedChainHeads);
+    return mapAlternatives(s -> new Semantic(union(s.exactOwnerClasses, ownerClassFqns), s.ownerInheritors,
+                                             s.allowGuicePackageOwner, s.receiverInheritors, s.returnInheritors));
   }
 
   /**
-   * Matches when the declaring class of the resolved method equals or inherits from one of the given classes.
+   * Requires the declaring class of the resolved method to equal or inherit from one of the given classes.
    */
   public @NotNull GuiceCallPattern withOwnerInheritor(String @NotNull ... ownerClassFqns) {
-    return new GuiceCallPattern(
-        myMethodNames, myMinValueArguments, myMaxValueArguments, myRequireValueOrTypeArgument,
-        myStatementOnly, myExactOwnerClasses, union(myOwnerInheritors, ownerClassFqns), myReceiverInheritors,
-        myReturnInheritors, myAllowGuicePackageOwner, myAllowUnresolved, myUnresolvedChainHeads);
+    return mapAlternatives(s -> new Semantic(s.exactOwnerClasses, union(s.ownerInheritors, ownerClassFqns),
+                                             s.allowGuicePackageOwner, s.receiverInheritors, s.returnInheritors));
   }
 
   /**
-   * Matches when the receiver type of the call equals or inherits from one of the given classes.
+   * Requires the receiver type of the call to equal or inherit from one of the given classes.
    */
   public @NotNull GuiceCallPattern withReceiverInheritor(String @NotNull ... receiverClassFqns) {
-    return new GuiceCallPattern(
-        myMethodNames, myMinValueArguments, myMaxValueArguments, myRequireValueOrTypeArgument,
-        myStatementOnly, myExactOwnerClasses, myOwnerInheritors, union(myReceiverInheritors, receiverClassFqns),
-        myReturnInheritors, myAllowGuicePackageOwner, myAllowUnresolved, myUnresolvedChainHeads);
+    return mapAlternatives(s -> new Semantic(s.exactOwnerClasses, s.ownerInheritors, s.allowGuicePackageOwner,
+                                             union(s.receiverInheritors, receiverClassFqns), s.returnInheritors));
   }
 
   /**
-   * Matches when the return type of the call equals or inherits from one of the given classes.
+   * Requires the return type of the call to equal or inherit from one of the given classes.
    */
   public @NotNull GuiceCallPattern withReturnInheritor(String @NotNull ... returnClassFqns) {
-    return new GuiceCallPattern(
-        myMethodNames, myMinValueArguments, myMaxValueArguments, myRequireValueOrTypeArgument,
-        myStatementOnly, myExactOwnerClasses, myOwnerInheritors, myReceiverInheritors,
-        union(myReturnInheritors, returnClassFqns), myAllowGuicePackageOwner, myAllowUnresolved, myUnresolvedChainHeads);
+    return mapAlternatives(s -> new Semantic(s.exactOwnerClasses, s.ownerInheritors, s.allowGuicePackageOwner,
+                                             s.receiverInheritors, union(s.returnInheritors, returnClassFqns)));
   }
 
   /**
-   * Matches a factory method on a binder class or a Kotlin wrapper that returns the binder class.
+   * Matches a factory method declared on a binder class, or a wrapper (for example a Kotlin function)
+   * that returns the binder class.
    */
   public @NotNull GuiceCallPattern forBinder(@NotNull String binderClassFqn) {
-    return withOwnerClass(binderClassFqn).withReturnInheritor(binderClassFqn);
+    return anyOf(withOwnerClass(binderClassFqn), withReturnInheritor(binderClassFqn));
   }
 
   /**
-   * Matches a method on a binding builder hierarchy or a Kotlin extension on that builder type.
+   * Matches a method declared in a binding builder hierarchy, or an extension (for example a Kotlin function)
+   * whose receiver is such a builder.
    */
   public @NotNull GuiceCallPattern forBindingBuilder(String @NotNull ... builderClassFqns) {
-    return withOwnerInheritor(builderClassFqns).withReceiverInheritor(builderClassFqns);
+    return anyOf(withOwnerInheritor(builderClassFqns), withReceiverInheritor(builderClassFqns));
   }
 
   /**
-   * Matches when the declaring class belongs to the {@code com.google.inject} package hierarchy.
+   * Requires the declaring class to belong to the {@code com.google.inject} package hierarchy.
    */
   public @NotNull GuiceCallPattern inGuicePackage() {
-    return new GuiceCallPattern(
-        myMethodNames, myMinValueArguments, myMaxValueArguments, myRequireValueOrTypeArgument,
-        myStatementOnly, myExactOwnerClasses, myOwnerInheritors, myReceiverInheritors,
-        myReturnInheritors, true, myAllowUnresolved, myUnresolvedChainHeads);
+    return mapAlternatives(s -> new Semantic(s.exactOwnerClasses, s.ownerInheritors, true,
+                                             s.receiverInheritors, s.returnInheritors));
   }
 
   /**
-   * Allows the pattern to match when the call cannot be resolved.
+   * Allows the pattern to match when the call cannot be resolved, if the chain of the call
+   * contains one of the given method names (or unconditionally when no names are given).
    */
   public @NotNull GuiceCallPattern allowUnresolved(String @NotNull ... requiredChainHeads) {
     return new GuiceCallPattern(
         myMethodNames, myMinValueArguments, myMaxValueArguments, myRequireValueOrTypeArgument,
-        myStatementOnly, myExactOwnerClasses, myOwnerInheritors, myReceiverInheritors,
-        myReturnInheritors, myAllowGuicePackageOwner, true, union(myUnresolvedChainHeads, requiredChainHeads));
+        myStatementOnly, myAlternatives, true, union(myUnresolvedChainHeads, requiredChainHeads));
   }
 
   public @NotNull Set<String> getMethodNames() {
@@ -233,10 +322,19 @@ public final class GuiceCallPattern {
     return myMaxValueArguments;
   }
 
+  /**
+   * Returns the exact owner classes of all alternatives.
+   */
   public @NotNull Set<String> getExactOwnerClasses() {
-    return myExactOwnerClasses;
+    if (myAlternatives.size() == 1) return myAlternatives.getFirst().exactOwnerClasses;
+    Set<String> result = new LinkedHashSet<>();
+    for (Semantic alternative : myAlternatives) {
+      result.addAll(alternative.exactOwnerClasses);
+    }
+    return Set.copyOf(result);
   }
 
+  @ApiStatus.Internal
   public boolean isAllowUnresolved() {
     return myAllowUnresolved;
   }
@@ -244,28 +342,30 @@ public final class GuiceCallPattern {
   /**
    * Returns {@code true} when this pattern requires resolving the target method.
    */
+  @ApiStatus.Internal
   public boolean requiresResolution() {
-    return !myExactOwnerClasses.isEmpty()
-        || !myOwnerInheritors.isEmpty()
-        || !myReceiverInheritors.isEmpty()
-        || !myReturnInheritors.isEmpty()
-        || myAllowGuicePackageOwner;
+    for (Semantic alternative : myAlternatives) {
+      if (alternative.requiresResolution()) return true;
+    }
+    return false;
   }
 
   /**
-   * Returns {@code true} when this pattern only checks exact owner class names after resolution.
+   * Returns {@code true} when every alternative only checks exact owner class names after resolution,
+   * so the matcher can dispatch the pattern by the owner name.
    */
+  @ApiStatus.Internal
   public boolean isExactOwnerOnly() {
-    return !myExactOwnerClasses.isEmpty()
-        && myOwnerInheritors.isEmpty()
-        && myReceiverInheritors.isEmpty()
-        && myReturnInheritors.isEmpty()
-        && !myAllowGuicePackageOwner;
+    for (Semantic alternative : myAlternatives) {
+      if (!alternative.isExactOwnerOnly()) return false;
+    }
+    return true;
   }
 
   /**
    * Evaluates syntactic constraints before method resolution.
    */
+  @ApiStatus.Internal
   public boolean matchesSyntactic(@NotNull UCallExpression call, int valueArgCount) {
     if (valueArgCount < myMinValueArguments || valueArgCount > myMaxValueArguments) {
       return false;
@@ -280,43 +380,23 @@ public final class GuiceCallPattern {
   }
 
   /**
-   * Evaluates semantic constraints on a resolved call using memoized inheritance checks.
+   * Evaluates the semantic constraints on a resolved call using memoized inheritance checks.
+   *
+   * @param resolvedOwnerQName the qualified name of the declaring class, or {@code null} when it has none
+   *                           (a local or anonymous class); such an owner matches no owner constraint
+   * @param containingClass    the declaring class, or {@code null} when the resolved method has none
    */
+  @ApiStatus.Internal
   public boolean matchesResolved(@NotNull UCallExpression call,
-                                 @NotNull String resolvedOwnerQName,
-                                 @NotNull PsiClass containingClass,
+                                 @Nullable String resolvedOwnerQName,
+                                 @Nullable PsiClass containingClass,
                                  @NotNull Map<String, Boolean> ownerInheritorCache,
                                  @NotNull Map<String, Boolean> receiverInheritorCache,
                                  @NotNull Map<String, Boolean> returnInheritorCache) {
-    if (!requiresResolution()) {
-      return true;
-    }
-    if (myExactOwnerClasses.contains(resolvedOwnerQName)) {
-      return true;
-    }
-    if (myAllowGuicePackageOwner && resolvedOwnerQName.startsWith("com.google.inject.")) {
-      return true;
-    }
-    for (String ownerFqn : myOwnerInheritors) {
-      if (ownerFqn.equals(resolvedOwnerQName)) {
+    for (Semantic alternative : myAlternatives) {
+      if (alternative.matches(call, resolvedOwnerQName, containingClass,
+                              ownerInheritorCache, receiverInheritorCache, returnInheritorCache)) {
         return true;
-      }
-      if (ownerInheritorCache.computeIfAbsent(ownerFqn, fqn -> InheritanceUtil.isInheritor(containingClass, fqn))) {
-        return true;
-      }
-    }
-    if (!myReceiverInheritors.isEmpty()) {
-      for (String receiverFqn : myReceiverInheritors) {
-        if (receiverInheritorCache.computeIfAbsent(receiverFqn, fqn -> matchesTypeOrInheritor(call.getReceiverType(), fqn))) {
-          return true;
-        }
-      }
-    }
-    if (!myReturnInheritors.isEmpty()) {
-      for (String returnFqn : myReturnInheritors) {
-        if (returnInheritorCache.computeIfAbsent(returnFqn, fqn -> matchesTypeOrInheritor(call.getReturnType(), fqn))) {
-          return true;
-        }
       }
     }
     return false;
@@ -325,6 +405,7 @@ public final class GuiceCallPattern {
   /**
    * Evaluates constraints when a call cannot be resolved.
    */
+  @ApiStatus.Internal
   public boolean matchesUnresolved(@NotNull UCallExpression call) {
     if (!myAllowUnresolved) {
       return false;

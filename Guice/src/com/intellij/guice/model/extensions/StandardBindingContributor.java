@@ -21,12 +21,12 @@ final class StandardBindingContributor implements GuiceBindingContributor {
         GuiceCallPattern.named("to", "toInstance", "toProvider", "toConstructor")
             .forBindingBuilder(GuiceClasses.LINKED_BINDING_BUILDER, GuiceClasses.CONSTANT_BINDING_BUILDER)
             .allowUnresolved("bind", "bindConstant", "addBinding", "setDefault", "setBinding"),
-        (call, descriptors) -> {
+        (call, sink) -> {
           String methodName = call.getMethodName();
           PsiElement outermostSource = ContributorUtil.getOutermostSource(call);
           return methodName != null
               && outermostSource != null
-              && ContributorUtil.createBindingTailDescriptor(methodName, outermostSource, descriptors);
+              && ContributorUtil.createBindingTailDescriptor(methodName, outermostSource, sink);
         }
     );
 
@@ -37,12 +37,12 @@ final class StandardBindingContributor implements GuiceBindingContributor {
                 "com.google.inject.AbstractModule",
                 "com.google.inject.PrivateModule"
             ),
-        (call, descriptors) -> {
+        (call, sink) -> {
           UCallExpression outermostCall = ContributorUtil.getOutermostCall(call);
           if (GuiceUtils.isUntargetedBinding(outermostCall)) {
             PsiElement outermostSource = ContributorUtil.getOutermostSource(call);
             if (outermostSource != null) {
-              descriptors.add(new UntargetedBindDescriptor(outermostSource));
+              sink.accept(new UntargetedBindDescriptor(outermostSource));
               return true;
             }
           }

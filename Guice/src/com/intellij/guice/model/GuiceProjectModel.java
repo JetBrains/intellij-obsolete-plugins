@@ -10,6 +10,8 @@ import com.intellij.java.library.JavaLibraryUtil;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.Service;
+import com.intellij.openapi.fileEditor.FileEditor;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileTypes.FileTypeRegistry;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
@@ -36,18 +38,19 @@ import com.intellij.psi.search.searches.ReferencesSearch;
 import com.intellij.testFramework.LightVirtualFile;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import kotlinx.coroutines.CoroutineScope;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.TestOnly;
 
 /**
  * Project-level service that owns the Guice index infrastructure and keeps it up-to-date
@@ -120,10 +123,13 @@ public final class GuiceProjectModel implements Disposable {
   private volatile boolean myInitialized = false;
 
   /**
-   * Guards initial population: set to true when a background population has
-   * been scheduled, to prevent scheduling duplicates.
+   * Set once the index has been requested for the first time, and cleared only in {@link #dispose()}.
+   * Before the first request, the VFS and PSI listeners can ignore events because the initial
+   * population discovers all files. After it, the listeners must never go inactive again:
+   * a file that a running population has already processed is not revisited, so an edit
+   * dropped by an inactive listener would stay lost.
    */
-  private final AtomicBoolean myPopulationScheduled = new AtomicBoolean();
+  private volatile boolean myIndexRequested = false;
 
   /**
    * Maps file paths to their {@link VirtualFile} instances for fast lookup of dependent registrar
@@ -139,9 +145,21 @@ public final class GuiceProjectModel implements Disposable {
 
   /**
    * Handles debounced background processing of dirty files and initial population.
-   * Triggers {@link com.intellij.codeInsight.daemon.DaemonCodeAnalyzer#restart} after updates.
    */
   private final GuiceBackgroundIndexUpdater myBackgroundUpdater;
+
+  /**
+   * Type FQNs whose entries changed since the last restart request. The files with entries of these
+   * types may show different counterparts, so {@link #requestRestartOfAffectedEditors} re-highlights them.
+   */
+  private final Set<String> myPendingRestartTypeFqns = ConcurrentHashMap.newKeySet();
+
+  /**
+   * Files to re-highlight when the current daemon cycle finishes. Filled by {@link #ensureFileCurrent},
+   * which runs inside a highlighting pass: a restart from there would cancel the pass that just
+   * computed fresh gutter icons. Drained by the {@link DaemonCodeAnalyzer.DaemonListener} of this service.
+   */
+  private final Set<VirtualFile> myFilesToRestartWhenDaemonFinishes = ConcurrentHashMap.newKeySet();
 
   // -----------------------------------------------------------------------
   // Construction / service access
@@ -151,8 +169,13 @@ public final class GuiceProjectModel implements Disposable {
     myProject = project;
     myBackgroundUpdater = new GuiceBackgroundIndexUpdater(project, this, coroutineScope);
     PsiManager.getInstance(myProject).addPsiTreeChangeListener(new GuicePsiTreeChangeListener(), this);
-    // Entries hold objects of dynamic extensions. Rebuild the index when a plugin adds or removes one.
-    GuiceBindingContributor.EP_NAME.addChangeListener(coroutineScope, this::markStructureChanged);
+    GuiceBindingContributor.EP_NAME.addChangeListener(coroutineScope, this::onContributorsChanged);
+    myProject.getMessageBus().connect(this).subscribe(DaemonCodeAnalyzer.DAEMON_EVENT_TOPIC, new DaemonCodeAnalyzer.DaemonListener() {
+      @Override
+      public void daemonFinished(@NotNull Collection<? extends FileEditor> fileEditors) {
+        restartDeferredFiles();
+      }
+    });
   }
 
   /**
@@ -170,12 +193,11 @@ public final class GuiceProjectModel implements Disposable {
   }
 
   /**
-   * Returns {@code true} once initial population has been scheduled or completed.
-   * Before the index is first requested for a Guice-enabled module, VFS and PSI
-   * listeners can ignore events because initial population will discover all files.
+   * Returns {@code true} once the index has been requested for the first time.
+   * Stays {@code true} until {@link #dispose()}, see {@link #myIndexRequested}.
    */
   boolean isIndexActive() {
-    return myInitialized || myPopulationScheduled.get();
+    return myIndexRequested;
   }
 
   // -----------------------------------------------------------------------
@@ -186,17 +208,19 @@ public final class GuiceProjectModel implements Disposable {
    * Returns the unified navigation index. This method <b>never blocks</b> in production mode.
    *
    * <p>If the index is not yet populated (first access or structure change),
-   * it schedules background population and returns the (possibly empty) index.
+   * it requests background population and returns the (possibly empty) index.
+   * Repeated requests are conflated by {@link GuiceBackgroundIndexUpdater}.
    * The background task will trigger re-highlighting when it completes.
    *
    * @param module the IntelliJ module (used for scoping initial population)
    * @return the navigation index (may be empty if population is in progress)
    */
   public @NotNull GuiceNavigationIndex getNavigationIndex(@NotNull Module module) {
-    if (isPopulationNeeded() && myPopulationScheduled.compareAndSet(false, true)) {
+    myIndexRequested = true;
+    if (isPopulationNeeded()) {
       myBackgroundUpdater.scheduleInitialPopulation(module);
     }
-    if (ApplicationManager.getApplication().isUnitTestMode()) {
+    if (myBackgroundUpdater.isSynchronous()) {
       myBackgroundUpdater.processDirtyFilesNow();
     }
     return myNavigationIndex;
@@ -224,14 +248,23 @@ public final class GuiceProjectModel implements Disposable {
   }
 
   /**
-   * Quick check: does this module have Guice on its classpath?
-   * Checks if {@code com.google.inject.Inject} is resolvable.
+   * Tells if the Guice features apply to a module.
    *
-   * @param module the module to check
-   * @return {@code true} if Guice is available on this module's classpath
+   * <p>A module qualifies when Guice itself ({@code com.google.inject.Inject}) is on its classpath, or when
+   * it is an API-only module: it has a JSR-330 {@code Inject} ({@code javax.inject} or {@code jakarta.inject})
+   * and some module of the project has Guice. Such a module declares injection points that a Guice module of
+   * the project binds. A project without Guice anywhere gets no Guice features, whatever JSR-330 library it has.
+   *
+   * <p>The checks are the cached library-class look-ups of {@link JavaLibraryUtil}; the service does not need
+   * to exist, so a caller can test the module before it creates the service.
    */
-  public boolean isGuiceAvailable(@NotNull Module module) {
-    return JavaLibraryUtil.hasLibraryClass(module, GuiceAnnotations.INJECT);
+  public static boolean isGuiceAvailable(@NotNull Module module) {
+    if (JavaLibraryUtil.hasLibraryClass(module, GuiceAnnotations.INJECT)) {
+      return true;
+    }
+    boolean hasJsr330 = JavaLibraryUtil.hasLibraryClass(module, GuiceAnnotations.JAVAX_INJECT)
+                        || JavaLibraryUtil.hasLibraryClass(module, GuiceAnnotations.JAKARTA_INJECT);
+    return hasJsr330 && JavaLibraryUtil.hasLibraryClass(module.getProject(), GuiceAnnotations.INJECT);
   }
 
   // -----------------------------------------------------------------------
@@ -260,13 +293,14 @@ public final class GuiceProjectModel implements Disposable {
    * {@code file} is a directory) from the navigation index and clears stamp tracking.
    *
    * @param file the file or directory whose old path should be removed
+   * @return {@code true} if the index changed
    */
-  void removeFile(@NotNull VirtualFile file) {
+  boolean removeFile(@NotNull VirtualFile file) {
     String path = file.getPath();
     Set<String> dependentRegistrars =
         myNavigationIndex.getDependentRegistrarFilesForPathOrPrefix(path, file.isDirectory());
 
-    myNavigationIndex.removeFile(path);
+    boolean changed = recordUpdate(myNavigationIndex.removeFile(path));
     myFilesByPath.remove(path);
     myFileStamps.remove(path);
     myDirtyFiles.remove(file);
@@ -275,7 +309,7 @@ public final class GuiceProjectModel implements Disposable {
       String prefix = path + "/";
       for (String indexedPath : myNavigationIndex.getIndexedFiles()) {
         if (indexedPath.startsWith(prefix)) {
-          myNavigationIndex.removeFile(indexedPath);
+          changed |= recordUpdate(myNavigationIndex.removeFile(indexedPath));
         }
       }
       myFilesByPath.keySet().removeIf(p -> p.startsWith(prefix));
@@ -293,24 +327,57 @@ public final class GuiceProjectModel implements Disposable {
         markFileDirty(registrarVf);
       }
     }
+    if (changed) {
+      // Let the background updater re-highlight the files that lost counterparts.
+      myBackgroundUpdater.scheduleDirtyProcessing();
+    }
+    return changed;
+  }
+
+  /**
+   * Records the affected types of an index update for the next {@link #requestRestartOfAffectedEditors}.
+   *
+   * @return whether the update changed the index
+   */
+  private boolean recordUpdate(@NotNull GuiceNavigationIndex.FileUpdate update) {
+    if (update.changed()) {
+      myPendingRestartTypeFqns.addAll(update.affectedTypeFqns());
+    }
+    return update.changed();
   }
 
   /**
    * Signals that the project structure has changed (e.g., libraries or modules
    * were added/removed). The next {@link #getNavigationIndex(Module)} call will
-   * schedule a re-population of the index in the background.
+   * request a re-population of the index in the background.
    *
-   * <p>Called by {@link GuiceWorkspaceModelListener} when the workspace model
-   * reports changes to {@code LibraryEntity}, {@code ModuleEntity}, {@code ContentRootEntity},
+   * <p>Called by the workspace-model subscription of {@link GuiceBackgroundIndexUpdater} when the workspace
+   * model reports changes to {@code LibraryEntity}, {@code ModuleEntity}, {@code ContentRootEntity},
    * or {@code SourceRootEntity}.
    */
   void markStructureChanged() {
     myStructureGeneration.incrementAndGet();
     myStructureChanged = true;
-    myPopulationScheduled.set(false);
     if (!ApplicationManager.getApplication().isUnitTestMode() && !myProject.isDisposed()) {
       DaemonCodeAnalyzer.getInstance(myProject).restart("Guice project structure changed");
     }
+  }
+
+  /**
+   * Reacts to a {@link GuiceBindingContributor} added or removed by a dynamic plugin.
+   *
+   * <p>The entries of the index hold objects of the contributors, for example the text providers of
+   * {@link GuiceEntry}. Dropping the index only at the next population would keep an unloaded plugin's
+   * classes, and with them its class loader, alive until then. So the index is cleared at once, and the
+   * next request repopulates it from the new set of contributors. The extension point calls this listener
+   * synchronously after the platform cleared the cached {@link com.intellij.guice.model.extensions.GuiceExtensionIndex}.
+   */
+  private void onContributorsChanged() {
+    myNavigationIndex.clear();
+    myFileStamps.clear();
+    myPendingRestartTypeFqns.clear();
+    myFilesToRestartWhenDaemonFinishes.clear();
+    markStructureChanged();
   }
 
   // -----------------------------------------------------------------------
@@ -319,17 +386,38 @@ public final class GuiceProjectModel implements Disposable {
 
   @Override
   public void dispose() {
+    clearState();
+  }
+
+  /**
+   * Forgets every indexed file and every pending update, as if the project had just opened. A test calls it when
+   * the VFS events of its own set-up must not count as the initial discovery.
+   */
+  @TestOnly
+  public void resetForTests() {
+    clearState();
+  }
+
+  private void clearState() {
     myNavigationIndex.clear();
     myFileStamps.clear();
     myDirtyFiles.clear();
     myFilesByPath.clear();
     myInitialized = false;
-    myPopulationScheduled.set(false);
+    myIndexRequested = false;
   }
 
   // -----------------------------------------------------------------------
   // Internal: helpers for GuiceBackgroundIndexUpdater
   // -----------------------------------------------------------------------
+
+  /**
+   * Outcome of a population pass.
+   *
+   * @param completed    whether the pass finished for the latest structure generation
+   * @param indexChanged whether the pass removed stale files from the index
+   */
+  record PopulationOutcome(boolean completed, boolean indexChanged) {}
 
   int getStructureGeneration() {
     return myStructureGeneration.get();
@@ -349,39 +437,41 @@ public final class GuiceProjectModel implements Disposable {
 
   /**
    * Finishes a population pass if no newer structure change occurred while it ran.
-   * Prunes files from {@code pathsBeforePopulation} that were not discovered in {@code processedFiles},
-   * and marks population complete for {@code generation}.
+   * Prunes the files of {@code pathsBeforePopulation} that the pass did not reach, and marks population
+   * complete for {@code generation}.
+   *
+   * <p>A file is kept when discovery listed it in {@code processedFiles}, or when its {@link FileStamp}
+   * carries {@code generation}: the dirty drain and {@link #ensureFileCurrent} process a file that was
+   * edited during the pass with the current generation, and such a file is current although discovery
+   * did not list it.
    */
-  boolean completePopulationIfCurrent(int generation,
-                                      @NotNull Set<String> pathsBeforePopulation,
-                                      @NotNull Set<VirtualFile> processedFiles) {
+  @NotNull PopulationOutcome completePopulationIfCurrent(int generation,
+                                                         @NotNull Set<String> pathsBeforePopulation,
+                                                         @NotNull Set<VirtualFile> processedFiles) {
     if (generation != myStructureGeneration.get()) {
-      return false;
+      return new PopulationOutcome(false, false);
     }
     Set<String> keep = new HashSet<>();
     for (VirtualFile file : processedFiles) {
       keep.add(file.getPath());
     }
+    boolean changed = false;
     for (String path : pathsBeforePopulation) {
-      if (!keep.contains(path)) {
-        myNavigationIndex.removeFile(path);
-        myFileStamps.remove(path);
-      }
+      if (keep.contains(path) || isStampedWithGeneration(path, generation)) continue;
+      changed |= recordUpdate(myNavigationIndex.removeFile(path));
+      myFileStamps.remove(path);
     }
     if (generation == myStructureGeneration.get()) {
       myStructureChanged = false;
       myInitialized = true;
-      return true;
+      return new PopulationOutcome(true, changed);
     }
-    return false;
+    return new PopulationOutcome(false, changed);
   }
 
-  /**
-   * Allows the next {@link #getNavigationIndex} call to schedule a population again.
-   * The background updater calls this when a population ends, also after a failure.
-   */
-  void onPopulationFinished() {
-    myPopulationScheduled.set(false);
+  private boolean isStampedWithGeneration(@NotNull String path, int generation) {
+    FileStamp stamp = myFileStamps.get(path);
+    return stamp != null && stamp.generation() == generation;
   }
 
   /**
@@ -526,6 +616,8 @@ public final class GuiceProjectModel implements Disposable {
 
   /**
    * Extracts Guice entries for a discovered file if its stamp or structure generation changed.
+   *
+   * @return {@code true} if the index changed
    */
   boolean processDiscoveredFile(@NotNull VirtualFile vf, int generation) {
     return processFileAtomically(vf, generation, false);
@@ -546,7 +638,8 @@ public final class GuiceProjectModel implements Disposable {
    * <p>Must be called under a read action.
    *
    * @param file the file to process
-   * @return {@code true} if the index was updated or the file was removed, {@code false} if the file stamp was unchanged
+   * @return {@code true} if the index changed, {@code false} if the file stamp was unchanged
+   * or the new extraction result equals the stored one
    */
   boolean processSingleDirtyFile(@NotNull VirtualFile file) {
     return processFileAtomically(file, myStructureGeneration.get(), true);
@@ -560,18 +653,19 @@ public final class GuiceProjectModel implements Disposable {
    *   <li><b>Phase 2 (In-memory commit, non-cancellable)</b>: Updates {@link #myNavigationIndex},
    *       {@link #myFileStamps}, and {@link #myDirtyFiles} together, and queues any dependent registrars.</li>
    * </ol>
+   *
+   * @return {@code true} if the index changed. A changed stamp with an equal extraction result
+   * (for example an edit in a comment) returns {@code false}, so the caller does not restart highlighting.
    */
   private boolean processFileAtomically(@NotNull VirtualFile vf, int generation, boolean fromDirtySet) {
     // Phase 1: Pure read-only checks and PSI/UAST extraction (cancellable)
     if (!vf.isValid()) {
-      removeFile(vf);
-      return true;
+      return removeFile(vf);
     }
     String path = vf.getPath();
     PsiFile psiFile = PsiManager.getInstance(myProject).findFile(vf);
     if (psiFile == null) {
-      removeFile(vf);
-      return true;
+      return removeFile(vf);
     }
 
     PsiFile fileForExtraction = psiFile;
@@ -583,8 +677,7 @@ public final class GuiceProjectModel implements Disposable {
         fileForExtraction = sourceFile;
       }
       else if (!ProjectFileIndex.getInstance(myProject).isInProject(vf)) {
-        removeFile(vf);
-        return true;
+        return removeFile(vf);
       }
     }
 
@@ -606,17 +699,25 @@ public final class GuiceProjectModel implements Disposable {
         ? GuiceEntryProducer.extractFileData(fileForExtraction)
         : GuiceEntryProducer.FileExtractionResult.EMPTY;
 
+    // A structure or contributor change during Phase 1 invalidates the result: the entries may hold objects
+    // of a removed contributor. Leave the file for the next population or drain, which uses the new generation.
+    if (generation != myStructureGeneration.get()) {
+      return false;
+    }
+
     // Phase 2: Atomic in-memory commit (zero PSI access, zero cancellation points)
     myFilesByPath.put(path, vf);
     for (VirtualFile targetVf : result.referencedTargetFiles()) {
       myFilesByPath.put(targetVf.getPath(), targetVf);
     }
-    myNavigationIndex.updateFile(path, result);
+    boolean changed = recordUpdate(myNavigationIndex.updateFile(path, result));
     myFileStamps.put(path, currentStamp);
     if (fromDirtySet) {
       myDirtyFiles.remove(vf);
     }
 
+    // Queue the registrar files that read this file, even when this file's own entries did not change:
+    // a registrar extracts its entries from the PSI of this file, so any edit here can change them.
     if (fromDirtySet || recordedStamp != null) {
       Set<String> dependentRegistrars = new LinkedHashSet<>(myNavigationIndex.getDependentRegistrarFiles(path));
       dependentRegistrars.addAll(myNavigationIndex.getDependentRegistrarFilesByClassName(vf.getNameWithoutExtension()));
@@ -629,7 +730,123 @@ public final class GuiceProjectModel implements Disposable {
         }
       }
     }
-    return true;
+    return changed;
+  }
+
+  // -----------------------------------------------------------------------
+  // Current-file freshness for line marker providers
+  // -----------------------------------------------------------------------
+
+  /**
+   * Brings the index up to date for the file of a running highlighting pass.
+   *
+   * <p>The line marker providers call it first, so the first pass after an edit already shows the new
+   * gutter icons instead of lagging one pass behind the background update. The work is the same
+   * two-phase atomic update that the background uses; it removes the file from the dirty set, so the
+   * background does not repeat it. A file that no longer differs from its recorded stamp costs two map
+   * lookups. Other open files whose counterparts changed are re-highlighted when the current daemon cycle
+   * finishes, so this pass is not cancelled.
+   *
+   * <p>Must be called under a read action.
+   */
+  void ensureFileCurrent(@NotNull PsiFile psiFile) {
+    if (!isIndexActive() || !isIndexableProjectFile(psiFile)) return;
+    VirtualFile vf = psiFile.getVirtualFile();
+    if (!myDirtyFiles.contains(vf)) {
+      FileStamp recordedStamp = myFileStamps.get(vf.getPath());
+      if (recordedStamp != null
+          && recordedStamp.vfsStamp() == vf.getModificationStamp()
+          && recordedStamp.psiStamp() == psiFile.getModificationStamp()
+          && recordedStamp.generation() == myStructureGeneration.get()) {
+        return;
+      }
+    }
+    if (processSingleDirtyFile(vf)) {
+      requestRestartOfAffectedEditors(RestartMode.WHEN_DAEMON_FINISHES, vf);
+    }
+  }
+
+  // -----------------------------------------------------------------------
+  // Targeted re-highlighting
+  // -----------------------------------------------------------------------
+
+  enum RestartMode {
+    /** Restart now. For updates that run outside a highlighting pass. */
+    IMMEDIATELY,
+    /** Restart after the running daemon cycle. For updates that run inside a highlighting pass. */
+    WHEN_DAEMON_FINISHES
+  }
+
+  boolean hasPendingRestarts() {
+    return !myPendingRestartTypeFqns.isEmpty();
+  }
+
+  @TestOnly
+  boolean hasDeferredRestart(@NotNull VirtualFile file) {
+    return myFilesToRestartWhenDaemonFinishes.contains(file);
+  }
+
+  /**
+   * Re-highlights the open files whose gutter icons may show different counterparts after the index
+   * updates since the previous call. Only the files with entries of the affected types are restarted,
+   * instead of every open editor.
+   *
+   * @param excludedFile a file that is current already, for example the file of the running pass
+   */
+  void requestRestartOfAffectedEditors(@NotNull RestartMode mode, @Nullable VirtualFile excludedFile) {
+    if (myPendingRestartTypeFqns.isEmpty() || myProject.isDisposed()) return;
+    Set<String> typeFqns = new HashSet<>(myPendingRestartTypeFqns);
+    myPendingRestartTypeFqns.removeAll(typeFqns);
+
+    Set<VirtualFile> files = myNavigationIndex.getFilesWithEntriesOfTypes(typeFqns);
+    if (excludedFile != null) {
+      files.remove(excludedFile);
+    }
+    if (files.isEmpty()) return;
+
+    if (mode == RestartMode.WHEN_DAEMON_FINISHES) {
+      myFilesToRestartWhenDaemonFinishes.addAll(files);
+    }
+    else {
+      ApplicationManager.getApplication().invokeLater(() -> restartOpenFiles(files), myProject.getDisposed());
+    }
+  }
+
+  private void restartDeferredFiles() {
+    if (myFilesToRestartWhenDaemonFinishes.isEmpty() || isUnitTestMode()) return;
+    Set<VirtualFile> files = new HashSet<>(myFilesToRestartWhenDaemonFinishes);
+    myFilesToRestartWhenDaemonFinishes.removeAll(files);
+    restartOpenFiles(files);
+  }
+
+  /**
+   * Restarts the highlighting of the given files that are open in an editor. Runs on the EDT.
+   *
+   * <p>Tests drive highlighting with {@code doHighlighting()} and forbid daemon restarts during a pass,
+   * so unit-test mode issues no restart (like {@link #markStructureChanged}).
+   */
+  private void restartOpenFiles(@NotNull Set<VirtualFile> files) {
+    if (myProject.isDisposed() || isUnitTestMode()) return;
+    FileEditorManager editorManager = FileEditorManager.getInstance(myProject);
+    PsiManager psiManager = PsiManager.getInstance(myProject);
+    DaemonCodeAnalyzer daemon = DaemonCodeAnalyzer.getInstance(myProject);
+    for (VirtualFile file : files) {
+      if (!file.isValid() || !editorManager.isFileOpen(file)) continue;
+      PsiFile psiFile = psiManager.findFile(file);
+      if (psiFile != null) {
+        daemon.restart(psiFile, "Guice counterparts changed");
+      }
+    }
+  }
+
+  private static boolean isUnitTestMode() {
+    return ApplicationManager.getApplication().isUnitTestMode();
+  }
+
+  @TestOnly
+  void clearPendingRestartsForTests() {
+    myPendingRestartTypeFqns.clear();
+    myFilesToRestartWhenDaemonFinishes.clear();
   }
 
   private final class GuicePsiTreeChangeListener extends PsiTreeChangeAdapter {

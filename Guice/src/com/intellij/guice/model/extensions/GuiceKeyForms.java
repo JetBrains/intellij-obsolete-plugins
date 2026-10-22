@@ -128,12 +128,25 @@ public final class GuiceKeyForms {
     if (type != null) result.add(type);
   }
 
+  /**
+   * Creates {@code classFqn<arguments>}. A primitive argument is boxed, as Guice boxes a primitive key type:
+   * {@code @ProvidesIntoSet int port()} contributes to {@code Set<Integer>}.
+   */
   private static @Nullable PsiClassType parameterized(@NotNull PsiElement context,
                                                       @NotNull String classFqn,
                                                       PsiType @NotNull ... arguments) {
     JavaPsiFacade facade = JavaPsiFacade.getInstance(context.getProject());
     PsiClass psiClass = facade.findClass(classFqn, context.getResolveScope());
     if (psiClass == null || psiClass.getTypeParameters().length != arguments.length) return null;
-    return facade.getElementFactory().createType(psiClass, arguments);
+    PsiType[] boxedArgs = new PsiType[arguments.length];
+    for (int i = 0; i < arguments.length; i++) {
+      PsiType arg = arguments[i];
+      if (arg instanceof PsiPrimitiveType pt) {
+        arg = pt.getBoxedType(context);
+        if (arg == null) return null;
+      }
+      boxedArgs[i] = arg;
+    }
+    return facade.getElementFactory().createType(psiClass, boxedArgs);
   }
 }
