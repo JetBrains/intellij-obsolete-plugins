@@ -16,6 +16,7 @@ import com.intellij.openapi.editor.actionSystem.TypedAction;
 import com.intellij.openapi.editor.ex.EditorEx;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditor;
+import com.intellij.openapi.fileEditor.FileEditorStateLevel;
 import com.intellij.openapi.fileEditor.impl.CurrentEditorProvider;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
@@ -163,6 +164,29 @@ public class ResourceBundleEditorUndoTest extends BasePlatformTestCase {
     ActionUtil.performAction(undoAction, event);
     PlatformTestUtil.dispatchAllEventsInIdeEventQueue();
 
+    assertEquals("a_en", getText(myEnFile));
+  }
+
+  public void testUndoOfSavedEditKeepsEditedPropertySelected() {
+    selectProperty("a");
+    UndoManagerImpl undoManager = (UndoManagerImpl)UndoManager.getInstance(getProject());
+    // the undo manager records the state of the current editor around each command, and restores it on undo
+    undoManager.setOverriddenEditorProvider(new CurrentEditorProvider() {
+      @Override
+      public FileEditor getCurrentEditor(@Nullable Project project) {
+        return myEditor;
+      }
+    });
+    Disposer.register(getTestRootDisposable(), () -> undoManager.setOverriddenEditorProvider(null));
+
+    typeInto(myEnFile, "a_en_edited");
+
+    selectProperty("b");
+    selectProperty("a");
+
+    undo();
+    assertPropertyValue(myEnFile, "a", "a_en");
+    assertEquals("a", myEditor.getState(FileEditorStateLevel.FULL).getPropertyName());
     assertEquals("a_en", getText(myEnFile));
   }
 

@@ -121,6 +121,8 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
   private final List<Pair<VirtualFile, PendingEdit>> myDetachedEdits = new ArrayList<>();
   // the property whose values the editors show, can differ from the selected one, e.g. while nothing is selected in the tree
   private @Nullable String    myShownPropertyName;
+  // the property of the edit being written, which is usually written after another property was selected
+  private @Nullable String    myWrittenPropertyName;
   private boolean             myUpdatingEditors;
   private String              myPropertyToSelectWhenVisible;
   private final ResourceBundleEditorHighlighter myHighlighter;
@@ -331,8 +333,15 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
         return;
       }
     }
-    if (!writeEditorPropertyValue(propertyName, edit.value(), file)) {
-      StatusBar.Info.set(ResourceBundleEditorBundle.message("status.bar.edit.not.saved.message", propertyName, file.getName()), myProject);
+    // the undo manager records the editor state around the write and restores it on undo, it must show the edited property
+    myWrittenPropertyName = propertyName;
+    try {
+      if (!writeEditorPropertyValue(propertyName, edit.value(), file)) {
+        StatusBar.Info.set(ResourceBundleEditorBundle.message("status.bar.edit.not.saved.message", propertyName, file.getName()), myProject);
+      }
+    }
+    finally {
+      myWrittenPropertyName = null;
     }
   }
 
@@ -1016,7 +1025,7 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
 
   @Override
   public @NotNull ResourceBundleEditorState getState(@NotNull FileEditorStateLevel level) {
-    return new ResourceBundleEditorState(getSelectedPropertyName());
+    return new ResourceBundleEditorState(myWrittenPropertyName != null ? myWrittenPropertyName : getSelectedPropertyName());
   }
 
   public void selectProperty(final @Nullable String propertyName) {
