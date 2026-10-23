@@ -10,6 +10,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.psi.JavaDirectoryService;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiDirectory;
+import com.intellij.psi.PsiPackage;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.annotations.NotNull;
@@ -31,6 +32,12 @@ public abstract class AbstractNewGuiceClassAction extends JavaCreateTemplateInPa
   @Override
   public boolean startInWriteAction() {
     return false;
+  }
+
+  /** The qualified name of the package of {@code directory}, or an empty string; for command names. */
+  static @NotNull String packageName(@NotNull PsiDirectory directory) {
+    PsiPackage psiPackage = JavaDirectoryService.getInstance().getPackage(directory);
+    return psiPackage != null ? psiPackage.getQualifiedName() : "";
   }
 
   @Override

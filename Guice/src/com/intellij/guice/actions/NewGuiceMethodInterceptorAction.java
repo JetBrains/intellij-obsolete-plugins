@@ -6,6 +6,7 @@ import com.intellij.ide.actions.CreateFileFromTemplateDialog;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.ui.IconManager;
+import com.intellij.ui.PlatformIcons;
 import org.jetbrains.annotations.NotNull;
 
 public class NewGuiceMethodInterceptorAction extends AbstractNewGuiceClassAction {
@@ -21,7 +22,7 @@ public class NewGuiceMethodInterceptorAction extends AbstractNewGuiceClassAction
 
     @Override
     protected String getActionName(PsiDirectory directory, @NotNull String newName, String templateName) {
-        return GuiceBundle.message("new.guice.method.interceptor.name", directory, newName);
+        return GuiceBundle.message("new.guice.method.interceptor.name", packageName(directory), newName);
     }
 
     @Override
@@ -30,7 +31,7 @@ public class NewGuiceMethodInterceptorAction extends AbstractNewGuiceClassAction
         builder
           .setTitle(GuiceBundle.message("new.guice.method.interceptor.action.name"))
           .addKind(GuiceBundle.message("new.guice.method.interceptor.action.name"),
-                   IconManager.getInstance().getPlatformIcon(com.intellij.ui.PlatformIcons.Class),
+                   IconManager.getInstance().getPlatformIcon(PlatformIcons.Class),
                    "GuiceNewMethodInterceptor.java");
     }
 }
