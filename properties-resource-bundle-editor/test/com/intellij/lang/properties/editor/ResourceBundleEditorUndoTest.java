@@ -14,6 +14,7 @@ import com.intellij.openapi.command.undo.UndoManager;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.actionSystem.TypedAction;
 import com.intellij.openapi.editor.ex.EditorEx;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.impl.CurrentEditorProvider;
 import com.intellij.openapi.project.Project;
@@ -162,6 +163,22 @@ public class ResourceBundleEditorUndoTest extends BasePlatformTestCase {
     ActionUtil.performAction(undoAction, event);
     PlatformTestUtil.dispatchAllEventsInIdeEventQueue();
 
+    assertEquals("a_en", getText(myEnFile));
+  }
+
+  public void testEditSavedWithAllDocumentsIsUndoneInItsEditor() {
+    selectProperty("a");
+
+    typeInto(myEnFile, "a_en_edited");
+    FileDocumentManager.getInstance().saveAllDocuments();
+
+    undo();
+    assertEquals("a_en", getText(myEnFile));
+    assertPropertyValue(myEnFile, "a", "a_en");
+
+    typeInto(myDefaultFile, "a_default_edited");
+    undo();
+    assertEquals("a_default", getText(myDefaultFile));
     assertEquals("a_en", getText(myEnFile));
   }
 

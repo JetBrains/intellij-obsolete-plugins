@@ -221,6 +221,15 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
         onSelectionChanged(event);
       }
     });
+    // documents are saved on exit before the editor is disposed, and on frame deactivation while it stays open
+    ApplicationManager.getApplication().getMessageBus().connect(this).subscribe(FileDocumentManagerListener.TOPIC, new FileDocumentManagerListener() {
+      @Override
+      public void beforeAllDocumentsSaving() {
+        if (!myDisposed && !myUpdatingEditors && !UndoManager.getInstance(myProject).isUndoOrRedoInProgress()) {
+          writeModifiedEditors();
+        }
+      }
+    });
     myHighlighter = myResourceBundle.getDefaultPropertiesFile() instanceof XmlPropertiesFile ? null : new ResourceBundleEditorHighlighter(this);
   }
 

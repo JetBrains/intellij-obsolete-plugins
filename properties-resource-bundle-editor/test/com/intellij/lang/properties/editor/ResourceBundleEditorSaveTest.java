@@ -19,6 +19,7 @@ import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
 import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.fileEditor.impl.text.TextEditorProvider;
 import com.intellij.openapi.util.Disposer;
+import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.StatusBarInfo;
 import com.intellij.psi.PsiDocumentManager;
@@ -187,6 +188,41 @@ public class ResourceBundleEditorSaveTest extends BasePlatformTestCase {
     assertPropertyValue(myEnFile, "a", "a_en_edited");
     assertFalse(FileDocumentManager.getInstance().isFileModified(myDefaultFile.getVirtualFile()));
     assertFalse(FileDocumentManager.getInstance().isFileModified(myEnFile.getVirtualFile()));
+  }
+
+  /**
+   * IDEA-395112: documents are saved on exit before the editor is disposed, and on frame deactivation while the editor stays open.
+   */
+  public void testEditsAreSavedWithAllDocuments() throws Exception {
+    selectProperty("a");
+
+    typeInto(myDefaultFile, "a_default_edited");
+    typeInto(myEnFile, "a_en_edited");
+
+    FileDocumentManager.getInstance().saveAllDocuments();
+
+    assertEquals("a=a_default_edited\nb=b_default\n", VfsUtilCore.loadText(myDefaultFile.getVirtualFile()));
+    assertEquals("a=a_en_edited\nb=b_en\n", VfsUtilCore.loadText(myEnFile.getVirtualFile()));
+  }
+
+  public void testSavingAllDocumentsKeepsEditorState() {
+    selectProperty("a");
+
+    typeInto(myEnFile, "a_en_edited");
+    EditorEx editor = getTranslationEditor(myEnFile);
+    editor.getCaretModel().moveToOffset(2);
+
+    FileDocumentManager.getInstance().saveAllDocuments();
+    // the editors are refreshed from the saved files
+    myEditor.updateEditorsFromProperties(true);
+
+    assertEquals("a_en_edited", editor.getDocument().getText());
+    assertEquals(2, editor.getCaretModel().getOffset());
+
+    typeInto(myEnFile, "a_en_edited_again");
+    selectProperty("b");
+
+    assertPropertyValue(myEnFile, "a", "a_en_edited_again");
   }
 
   public void testEditRestoredOnRecreationCanBeUndone() {
