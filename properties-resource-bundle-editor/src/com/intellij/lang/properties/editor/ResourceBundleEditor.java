@@ -28,6 +28,7 @@ import com.intellij.openapi.application.WriteIntentReadAction;
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.command.impl.UndoManagerImpl;
+import com.intellij.openapi.command.undo.DocumentReferenceManager;
 import com.intellij.openapi.command.undo.UndoManager;
 import com.intellij.openapi.command.undo.UndoUtil;
 import com.intellij.openapi.diagnostic.Logger;
@@ -112,8 +113,10 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
   private volatile boolean    myDisposed;
   private final ResourceBundleEditorFileListener myVfsListener;
   private Editor              mySelectedEditor;
-  // editors the user typed into, mapped to the property and value they were showing; written back on selection change, editor switch and dispose
-  private final Map<Editor, EditBase> myModifiedEditors = new HashMap<>();
+  // editors the user typed into, mapped to the property and value they were showing; written back on selection change, editor switch and dispose.
+  // Ordered by the last change, so that the edits are written, and hence undone, in editing order
+  private final Map<Editor, EditBase> myModifiedEditors = new LinkedHashMap<>();
+  private boolean             myRefreshAfterUndoScheduled;
   // edits whose property is no longer shown after the editors were recreated, so the user can't see them anymore; written as soon as possible
   private final List<Pair<VirtualFile, PendingEdit>> myDetachedEdits = new ArrayList<>();
   // the property whose values the editors show, can differ from the selected one, e.g. while nothing is selected in the tree
@@ -337,11 +340,16 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
    */
   private @NotNull Map<VirtualFile, PendingEdit> takeModifiedEditors() {
     if (myModifiedEditors.isEmpty()) return Collections.emptyMap();
-    Map<VirtualFile, PendingEdit> result = new HashMap<>();
+    Map<Editor, VirtualFile> files = new HashMap<>();
     for (Map.Entry<VirtualFile, EditorEx> entry : myEditors.entrySet()) {
-      EditBase base = myModifiedEditors.get(entry.getValue());
-      if (base != null) {
-        result.put(entry.getKey(), new PendingEdit(base, entry.getValue().getDocument().getText()));
+      files.put(entry.getValue(), entry.getKey());
+    }
+    // keeps the editing order
+    Map<VirtualFile, PendingEdit> result = new LinkedHashMap<>();
+    for (Map.Entry<Editor, EditBase> entry : myModifiedEditors.entrySet()) {
+      VirtualFile file = files.get(entry.getKey());
+      if (file != null) {
+        result.put(file, new PendingEdit(entry.getValue(), entry.getKey().getDocument().getText()));
       }
     }
     myModifiedEditors.clear();
@@ -587,8 +595,13 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
       editor.getDocument().addDocumentListener(new DocumentListener() {
         @Override
         public void beforeDocumentChange(@NotNull DocumentEvent event) {
-          if (myUpdatingEditors || myModifiedEditors.containsKey(editor)) return;
-          if (myShownPropertyName != null) {
+          if (myUpdatingEditors) return;
+          EditBase base = myModifiedEditors.remove(editor);
+          if (base != null) {
+            // moved to the end, to keep the order of the last changes
+            myModifiedEditors.put(editor, base);
+          }
+          else if (myShownPropertyName != null) {
             String value = getPropertyEditorValue(findPropertyInFileWithoutIndex(propertiesFile, myShownPropertyName));
             myModifiedEditors.put(editor, new EditBase(myShownPropertyName, value, createPropertyPointer(propertiesFile, myShownPropertyName)));
           }
@@ -828,7 +841,30 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
       }
     };
     PsiManager.getInstance(myProject).addPsiTreeChangeListener(psiTreeChangeAdapter, this);
+    EditorFactory.getInstance().getEventMulticaster().addDocumentListener(new DocumentListener() {
+      @Override
+      public void documentChanged(@NotNull DocumentEvent event) {
+        VirtualFile file = FileDocumentManager.getInstance().getFile(event.getDocument());
+        if (file != null && myEditors.containsKey(file) && UndoManager.getInstance(myProject).isUndoOrRedoInProgress()) {
+          scheduleRefreshAfterUndo();
+        }
+      }
+    }, this);
     return myVfsListener;
+  }
+
+  /**
+   * Shows the values reverted by undo or redo right away, rather than only when the properties files are saved.
+   */
+  private void scheduleRefreshAfterUndo() {
+    if (myRefreshAfterUndoScheduled) return;
+    myRefreshAfterUndoScheduled = true;
+    PsiDocumentManager.getInstance(myProject).performLaterWhenAllCommitted(() -> {
+      myRefreshAfterUndoScheduled = false;
+      if (!myDisposed) {
+        updateEditorsFromProperties(true);
+      }
+    });
   }
 
   private void selectionChanged() {
@@ -843,6 +879,8 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
 
   private void updateDocumentFromPropertyValue(final String value, final Document document) {
     runUpdatingEditors(() -> UndoUtil.disableUndoIn(document, () -> document.replaceString(0, document.getTextLength(), value)));
+    // the typing recorded for the editor was done in the previous text, undoing it now would corrupt the shown value
+    ((UndoManagerImpl)UndoManager.getInstance(myProject)).invalidateActionsFor(DocumentReferenceManager.getInstance().create(document));
   }
 
   /**
@@ -1036,8 +1074,14 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
 
   @Override
   public @NotNull Document @NotNull [] getDocuments() {
-    return ContainerUtil.mapNotNull(myEditors.keySet(), propertiesFile -> FileDocumentManager.getInstance().getDocument(propertiesFile))
-      .toArray(Document.EMPTY_ARRAY);
+    List<Document> documents = new ArrayList<>(
+      ContainerUtil.mapNotNull(myEditors.keySet(), propertiesFile -> FileDocumentManager.getInstance().getDocument(propertiesFile)));
+    // so that undo also reverts the typing that isn't written to the properties files yet;
+    // the other editors only have the history of values they no longer show
+    for (Editor editor : myModifiedEditors.keySet()) {
+      documents.add(editor.getDocument());
+    }
+    return documents.toArray(Document.EMPTY_ARRAY);
   }
 
   Map<VirtualFile, EditorEx> getTranslationEditors() {
@@ -1064,7 +1108,8 @@ public final class ResourceBundleEditor extends UserDataHolderBase implements Do
   private EditorEx createEditor() {
     EditorFactory editorFactory = EditorFactory.getInstance();
     Document document = editorFactory.createDocument("");
-    EditorEx editor = (EditorEx)editorFactory.createEditor(document);
+    // with the project, so that typing is recorded by the undo manager of the project rather than the global one
+    EditorEx editor = (EditorEx)editorFactory.createEditor(document, myProject);
     reinitSettings(editor);
     editor.putUserData(RESOURCE_BUNDLE_EDITOR_KEY, this);
     return editor;
