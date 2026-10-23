@@ -19,9 +19,7 @@ repositories {
 
 dependencies {
   intellijPlatform {
-    intellijIdeaUltimate("262-EAP-SNAPSHOT") {
-      useInstaller = false
-    }
+    intellijIdea("2026.2.3")
     bundledPlugin("com.intellij.properties")
     bundledPlugin("intellij.structureView.plugin")
     // the plugins below are not used directly, they are required by the Properties plugin at runtime
