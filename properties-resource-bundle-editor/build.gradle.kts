@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "com.intellij.properties.bundle.editor"
-version = "262.0.0"
+version = "262.0.1"
 
 repositories {
   mavenCentral()
