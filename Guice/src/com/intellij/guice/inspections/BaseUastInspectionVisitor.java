@@ -1,0 +1,145 @@
+// Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+package com.intellij.guice.inspections;
+
+import com.intellij.codeInspection.LocalQuickFix;
+import com.intellij.codeInspection.ProblemsHolder;
+import com.intellij.guice.utils.GuiceUtils;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.util.PsiTreeUtil;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.uast.UCallExpression;
+import org.jetbrains.uast.UClassLiteralExpression;
+import org.jetbrains.uast.UElement;
+import org.jetbrains.uast.UExpression;
+import org.jetbrains.uast.UIdentifier;
+import org.jetbrains.uast.UMethod;
+import org.jetbrains.uast.UQualifiedReferenceExpression;
+import org.jetbrains.uast.visitor.AbstractUastNonRecursiveVisitor;
+
+import java.util.List;
+
+public abstract class BaseUastInspectionVisitor extends AbstractUastNonRecursiveVisitor {
+  private final BaseUastInspection inspection;
+  private final ProblemsHolder holder;
+
+  protected BaseUastInspectionVisitor(@NotNull BaseUastInspection inspection, @NotNull ProblemsHolder holder) {
+    this.inspection = inspection;
+    this.holder = holder;
+  }
+
+  protected void registerCallError(@NotNull UCallExpression expression, Object... infos) {
+    final UElement methodId = expression.getMethodIdentifier();
+    registerError(methodId != null ? methodId : expression, infos);
+  }
+
+  /**
+   * Registers the problem on the class that a binding call names, for example {@code Impl} in {@code to(Impl.class)}
+   * or in {@code to(Impl::class.java)}.
+   * A Kotlin call can name the class with a type argument, for example {@code to<Impl>()}. Then the problem is on the call.
+   * For a Java call, the source PSI of the call is the whole chain, so do not use the call when an argument exists.
+   */
+  protected void registerClassArgumentError(@NotNull UCallExpression call, Object... infos) {
+    List<UExpression> args = call.getValueArguments();
+    if (args.isEmpty()) {
+      registerError(call, infos);
+      return;
+    }
+    if (!registerClassLiteralError(args.getFirst(), infos)) {
+      registerCallError(call, infos);
+    }
+  }
+
+  /**
+   * Registers a problem about the class that a binding call names, with the class name as {@code {0}}
+   * of the message. The anchor is the class name: the operand of a class literal argument, or for a call
+   * that names the class with a type argument ({@code to<Impl>()}) the type argument itself.
+   */
+  protected void registerClassArgumentError(@NotNull UCallExpression call, @NotNull PsiClass referentClass) {
+    String name = referentClass.getName();
+    if (name == null) {
+      registerClassArgumentError(call);
+      return;
+    }
+    List<UExpression> args = call.getValueArguments();
+    if (!args.isEmpty()) {
+      if (!registerClassLiteralError(args.getFirst(), name)) {
+        registerCallError(call, name);
+      }
+      return;
+    }
+    PsiElement typeArgument = findTypeArgumentReference(call, name);
+    if (typeArgument != null) {
+      registerError(typeArgument, name);
+    }
+    else {
+      registerError(call, name);
+    }
+  }
+
+  /**
+   * Finds the reference to the class in the type-argument list of a call such as {@code to<Impl>()},
+   * in a language-agnostic way: the first leaf with the class name after the method identifier.
+   */
+  private static @Nullable PsiElement findTypeArgumentReference(@NotNull UCallExpression call, @NotNull String className) {
+    PsiElement sourcePsi = call.getSourcePsi();
+    UIdentifier identifier = call.getMethodIdentifier();
+    PsiElement identifierPsi = identifier != null ? identifier.getSourcePsi() : null;
+    if (sourcePsi == null) return null;
+    int afterIdentifier = identifierPsi != null ? identifierPsi.getTextRange().getEndOffset() : sourcePsi.getTextRange().getStartOffset();
+    for (PsiElement leaf = PsiTreeUtil.firstChild(sourcePsi); leaf != null; leaf = PsiTreeUtil.nextLeaf(leaf)) {
+      if (!PsiTreeUtil.isAncestor(sourcePsi, leaf, false)) break;
+      if (leaf.getTextRange().getStartOffset() >= afterIdentifier && className.equals(leaf.getText())) {
+        PsiElement parent = leaf.getParent();
+        return parent != null && parent.getTextRange().equals(leaf.getTextRange()) ? parent : leaf;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Registers the problem on the class name of a class literal, for example {@code Impl} in {@code Impl.class}
+   * or in {@code Impl::class.java}. For another expression, registers the problem on the whole expression.
+   *
+   * @return {@code false} if the expression has no source PSI, so nothing was registered
+   */
+  protected boolean registerClassLiteralError(@NotNull UExpression expression, Object... infos) {
+    UExpression arg = GuiceUtils.skipParenthesesAndCasts(expression);
+    // Kotlin: Impl::class.java is a qualified expression with the class literal as the receiver.
+    if (arg instanceof UQualifiedReferenceExpression qualified && qualified.getReceiver() instanceof UClassLiteralExpression literal) {
+      arg = literal;
+    }
+    if (arg instanceof UClassLiteralExpression literal) {
+      UExpression operand = literal.getExpression();
+      PsiElement operandPsi = operand != null ? operand.getSourcePsi() : null;
+      if (operandPsi != null) {
+        registerError(operandPsi, infos);
+        return true;
+      }
+    }
+    PsiElement argPsi = arg != null ? arg.getSourcePsi() : null;
+    if (argPsi == null) return false;
+    registerError(argPsi, infos);
+    return true;
+  }
+
+  protected void registerMethodError(@NotNull UMethod method, Object... infos) {
+    final UElement nameIdentifier = method.getUastAnchor();
+    registerError(nameIdentifier != null ? nameIdentifier : method, infos);
+  }
+
+  protected void registerError(@NotNull UElement location, Object... infos) {
+    final PsiElement psi = location.getSourcePsi();
+    if (psi != null) {
+      registerError(psi, infos);
+    }
+  }
+
+  protected void registerError(@NotNull PsiElement location, Object... infos) {
+    final LocalQuickFix fix = inspection.buildFix();
+    final String description = inspection.buildErrorString(infos);
+    holder.registerProblem(location, description, fix != null ? new LocalQuickFix[]{fix} : null);
+  }
+
+}
