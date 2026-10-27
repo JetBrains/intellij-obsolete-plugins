@@ -55,7 +55,16 @@ intellijPlatform {
       sinceBuild = "262"
     }
 
-    changeNotes = "Build for 2026.2 IntelliJ IDEA"
+    changeNotes = """
+      <ul>
+        <li>Fixed lost and misdirected edits</li>
+        <li>Fixed threading errors</li>
+        <li>The order of keys is now computed in the background, keeping the UI responsive (IDEA-395129)</li>
+        <li>Undo now reverts unsaved and saved edits immediately and in editing order (IDEA-395149)</li>
+        <li>Pending edits are now written when documents are saved (IDEA-395112)</li>
+        <li>The edited property now stays selected when undoing a saved edit (IDEA-395212)</li>
+      </ul>
+    """.trimIndent()
   }
 }
 
