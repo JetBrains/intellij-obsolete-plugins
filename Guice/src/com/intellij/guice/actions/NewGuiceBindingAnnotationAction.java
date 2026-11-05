@@ -21,7 +21,7 @@ public class NewGuiceBindingAnnotationAction extends AbstractNewGuiceClassAction
 
   @Override
   protected String getActionName(PsiDirectory directory, @NotNull String newName, String templateName) {
-    return GuiceBundle.message("new.guice.binding.annotation.name", directory, newName);
+    return GuiceBundle.message("new.guice.binding.annotation.name", packageName(directory), newName);
   }
 
   @Override

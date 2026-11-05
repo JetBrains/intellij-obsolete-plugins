@@ -1,0 +1,317 @@
+package com.intellij.guice;
+
+import com.intellij.guice.inspections.RedundantToProviderBindingInspection;
+
+public class RedundantToProviderBindingInspectionTest extends GuiceTestBase {
+
+  @Override
+  protected void setUp() throws Exception {
+    super.setUp();
+    myFixture.enableInspections(new RedundantToProviderBindingInspection());
+  }
+
+  /**
+   * N6: {@code toProvider(Key.get(P, qualifier))} links to a qualified provider binding; it is not redundant.
+   */
+  public void testLinkToQualifiedProviderKeyIsNotRedundant() {
+    myFixture.addClass("""
+      package test;
+      @com.google.inject.ProvidedBy(FooProvider.class)
+      public interface Foo {}
+    """);
+    myFixture.addClass("""
+      package test;
+      public class FooProvider implements com.google.inject.Provider<Foo> {
+        public Foo get() { return null; }
+      }
+    """);
+    myFixture.configureByText("MyModule.java", """
+      import com.google.inject.AbstractModule;
+      import com.google.inject.Key;
+      import com.google.inject.name.Names;
+      import test.*;
+      public class MyModule extends AbstractModule {
+        @Override
+        protected void configure() {
+          bind(Foo.class).toProvider(Key.get(FooProvider.class, Names.named("x")));
+          bind(Foo.class).toProvider(<warning descr="Binding to class FooProvider is redundant">FooProvider</warning>.class);
+        }
+      }
+    """);
+    myFixture.testHighlighting(true, false, true);
+  }
+
+  public void testJavaRedundantToProviderBinding() {
+    myFixture.addClass("""
+      package test;
+      @com.google.inject.ProvidedBy(FooProvider.class)
+      public interface Foo {}
+    """);
+    myFixture.addClass("""
+      package test;
+      public class FooProvider implements javax.inject.Provider<Foo> {
+        public Foo get() { return null; }
+      }
+    """);
+    myFixture.addClass("""
+      package test;
+      public class BarProvider implements javax.inject.Provider<Foo> {
+        public Foo get() { return null; }
+      }
+    """);
+    myFixture.configureByText("MyModule.java", """
+import com.google.inject.AbstractModule;
+import test.*;
+public class MyModule extends AbstractModule {
+    @Override
+    protected void configure() {
+        bind(Foo.class).toProvider(<warning descr="Binding to class FooProvider is redundant">FooProvider</warning>.class);
+        
+        bind(Foo.class).toProvider(BarProvider.class); // Valid (different provider)
+        bind(MyService.class).toProvider(MyServiceProvider.class); // Valid
+    }
+}
+""");
+    myFixture.testHighlighting(true, false, true);
+  }
+
+  /**
+   * A qualified binding (through {@code annotatedWith} or a qualified {@code Key}) is a different key,
+   * and the {@code toProvider()} of a multibinder element binds no key of its own.
+   */
+  public void testQualifiedAndElementProviderBindingsAreNotRedundant() {
+    myFixture.addClass("""
+      package test;
+      @com.google.inject.ProvidedBy(FooProvider.class)
+      public interface Foo {}
+    """);
+    myFixture.addClass("""
+      package test;
+      public class FooProvider implements javax.inject.Provider<Foo> {
+        public Foo get() { return null; }
+      }
+    """);
+
+    myFixture.configureByText("MyModule.java", """
+      import com.google.inject.AbstractModule;
+      import com.google.inject.Key;
+      import com.google.inject.multibindings.Multibinder;
+      import com.google.inject.name.Names;
+      import test.*;
+      public class MyModule extends AbstractModule {
+        @Override
+        protected void configure() {
+          bind(Foo.class).annotatedWith(Names.named("x")).toProvider(FooProvider.class); // Valid
+          bind(Key.get(Foo.class, Names.named("y"))).toProvider(FooProvider.class); // Valid
+          Multibinder.newSetBinder(binder(), Foo.class).addBinding().toProvider(FooProvider.class); // Valid
+          bind(Foo.class).toProvider(<warning descr="Binding to class FooProvider is redundant">FooProvider</warning>.class);
+        }
+      }
+    """);
+    myFixture.testHighlighting(true, false, true);
+  }
+
+  /**
+   * Guice reads {@code @ProvidedBy} on the bound type only, not on its supertypes.
+   */
+  public void testProvidedByOnSupertypeIsNotInherited() {
+    myFixture.addClass("""
+      package test;
+      @com.google.inject.ProvidedBy(FooProvider.class)
+      public interface Foo {}
+    """);
+    myFixture.addClass("""
+      package test;
+      public interface SubFoo extends Foo {}
+    """);
+    myFixture.addClass("""
+      package test;
+      public class FooProvider implements javax.inject.Provider<SubFoo> {
+        public SubFoo get() { return null; }
+      }
+    """);
+
+    myFixture.configureByText("MyModule.java", """
+      import com.google.inject.AbstractModule;
+      import test.*;
+      public class MyModule extends AbstractModule {
+        @Override
+        protected void configure() {
+          bind(SubFoo.class).toProvider(FooProvider.class); // Valid: SubFoo has no @ProvidedBy of its own
+        }
+      }
+    """);
+    myFixture.testHighlighting(true, false, true);
+  }
+
+  public void testKotlinRedundantToProviderBinding() {
+    myFixture.addClass("""
+      package test;
+      @com.google.inject.ProvidedBy(FooProvider.class)
+      public interface Foo {}
+    """);
+    myFixture.addClass("""
+      package test;
+      public class FooProvider implements javax.inject.Provider<Foo> {
+        public Foo get() { return null; }
+      }
+    """);
+    myFixture.addClass("""
+      package test;
+      public class BarProvider implements javax.inject.Provider<Foo> {
+        public Foo get() { return null; }
+      }
+    """);
+    myFixture.configureByText("MyModule.kt", """
+import com.google.inject.AbstractModule
+import com.google.inject.binder.LinkedBindingBuilder
+import test.*
+
+// Mock Kotlin extensions
+inline fun <reified T> AbstractModule.bind(): LinkedBindingBuilder<T> = TODO()
+inline fun <reified P : javax.inject.Provider<*>> LinkedBindingBuilder<*>.toProvider(): Unit = TODO()
+
+class MyModule : AbstractModule() {
+    override fun configure() {
+        // Class literal
+        bind(Foo::class.java).toProvider(<warning descr="Binding to class FooProvider is redundant">FooProvider</warning>::class.java)
+        
+        // Reified generics extension
+        bind<Foo>().toProvider<<warning descr="Binding to class FooProvider is redundant">FooProvider</warning>>()
+        
+        bind(Foo::class.java).toProvider(BarProvider::class.java) // Valid (different provider)
+        bind<Foo>().toProvider<BarProvider>() // Valid (different provider)
+    }
+}
+""");
+    myFixture.testHighlighting(true, false, true);
+  }
+
+  public void testJavaRedundantToProviderBindingQuickFix() {
+    myFixture.addClass("""
+      package test;
+      @com.google.inject.ProvidedBy(FooProvider.class)
+      public interface Foo {}
+    """);
+    myFixture.addClass("""
+      package test;
+      public class FooProvider implements javax.inject.Provider<Foo> {
+        public Foo get() { return null; }
+      }
+    """);
+
+    myFixture.configureByText("MyModule.java", """
+import com.google.inject.AbstractModule;
+import test.*;
+public class MyModule extends AbstractModule {
+    @Override
+    protected void configure() {
+        bind(Foo.class).toProvider(FooProv<caret>ider.class);
+    }
+}
+""");
+    myFixture.doHighlighting();
+    var action = myFixture.findSingleIntention("Remove binding target");
+    myFixture.launchAction(action);
+    myFixture.checkResult("""
+import com.google.inject.AbstractModule;
+import test.*;
+public class MyModule extends AbstractModule {
+    @Override
+    protected void configure() {
+        bind(Foo.class);
+    }
+}
+""");
+  }
+
+  public void testKotlinRedundantToProviderBindingQuickFixValueArg() {
+    myFixture.addClass("""
+      package test;
+      @com.google.inject.ProvidedBy(FooProvider.class)
+      public interface Foo {}
+    """);
+    myFixture.addClass("""
+      package test;
+      public class FooProvider implements javax.inject.Provider<Foo> {
+        public Foo get() { return null; }
+      }
+    """);
+
+    myFixture.configureByText("MyModule.kt", """
+import com.google.inject.AbstractModule
+import com.google.inject.binder.LinkedBindingBuilder
+import test.*
+
+inline fun <reified T> AbstractModule.bind(): LinkedBindingBuilder<T> = TODO()
+
+class MyModule : AbstractModule() {
+    override fun configure() {
+        bind(Foo::class.java).toProvider(FooProv<caret>ider::class.java)
+    }
+}
+""");
+    myFixture.doHighlighting();
+    var action = myFixture.findSingleIntention("Remove binding target");
+    myFixture.launchAction(action);
+    myFixture.checkResult("""
+import com.google.inject.AbstractModule
+import com.google.inject.binder.LinkedBindingBuilder
+import test.*
+
+inline fun <reified T> AbstractModule.bind(): LinkedBindingBuilder<T> = TODO()
+
+class MyModule : AbstractModule() {
+    override fun configure() {
+        bind(Foo::class.java)
+    }
+}
+""");
+  }
+
+  public void testKotlinRedundantToProviderBindingQuickFixTypeArg() {
+    myFixture.addClass("""
+      package test;
+      @com.google.inject.ProvidedBy(FooProvider.class)
+      public interface Foo {}
+    """);
+    myFixture.addClass("""
+      package test;
+      public class FooProvider implements javax.inject.Provider<Foo> {
+        public Foo get() { return null; }
+      }
+    """);
+
+    myFixture.configureByText("MyModule.kt", """
+import com.google.inject.AbstractModule
+import com.google.inject.binder.LinkedBindingBuilder
+import test.*
+
+inline fun <reified T> AbstractModule.bind(): LinkedBindingBuilder<T> = TODO()
+inline fun <reified P : javax.inject.Provider<*>> LinkedBindingBuilder<*>.toProvider(): Unit = TODO()
+
+class MyModule : AbstractModule() {
+    override fun configure() {
+        bind<Foo>().toProvider<FooProv<caret>ider>()
+    }
+}
+""");
+    myFixture.doHighlighting();
+    var action = myFixture.findSingleIntention("Remove binding target");
+    myFixture.launchAction(action);
+    myFixture.checkResult("""
+import com.google.inject.AbstractModule
+import com.google.inject.binder.LinkedBindingBuilder
+import test.*
+
+inline fun <reified T> AbstractModule.bind(): LinkedBindingBuilder<T> = TODO()
+inline fun <reified P : javax.inject.Provider<*>> LinkedBindingBuilder<*>.toProvider(): Unit = TODO()
+
+class MyModule : AbstractModule() {
+    override fun configure() {
+        bind<Foo>()
+    }
+}
+""");
+  }
+}

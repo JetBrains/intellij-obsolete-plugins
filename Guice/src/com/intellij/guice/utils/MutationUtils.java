@@ -18,7 +18,7 @@ public final class MutationUtils {
   public static void negateExpression(PsiExpression exp) throws IncorrectOperationException {
     final PsiJavaParserFacade facade = JavaPsiFacade.getInstance(exp.getProject()).getParserFacade();
 
-    PsiExpression expressionToReplace = exp;
+    final PsiExpression expressionToReplace;
     final @NonNls String expString;
     final @NonNls String newExpressionText = exp.getText();
     if ("true".equals(newExpressionText)) {
@@ -38,6 +38,7 @@ public final class MutationUtils {
       expString = BoolUtils.getNegated(exp).getText();
     }
     else if (ComparisonUtils.isComparison(exp)) {
+      expressionToReplace = exp;
       final PsiBinaryExpression binaryExpression =
         (PsiBinaryExpression)exp;
       final String negatedComparison =
@@ -46,8 +47,8 @@ public final class MutationUtils {
       final PsiExpression rhs = binaryExpression.getROperand();
       assert rhs != null;
       expString = lhs.getText() + negatedComparison + rhs.getText();
-    }
-    else {
+    } else {
+      expressionToReplace = exp;
       if (ParenthesesUtils.getPrecedence(exp) > ParenthesesUtils.PREFIX_PRECEDENCE) {
         expString = "!(" + newExpressionText + ')';
       }
@@ -80,7 +81,9 @@ public final class MutationUtils {
     final PsiElementFactory elementFactory = JavaPsiFacade.getInstance(project).getElementFactory();
     final PsiAnnotation newAnnotation = elementFactory.createAnnotationFromText(annotation, owner);
     assert modifiers != null;
-    final PsiElement replacedAnnotation = modifiers.add(newAnnotation);
+    // Put the annotation before the keywords: '@Singleton public class', not 'public @Singleton class'.
+    final PsiElement firstChild = modifiers.getFirstChild();
+    final PsiElement replacedAnnotation = firstChild != null ? modifiers.addBefore(newAnnotation, firstChild) : modifiers.add(newAnnotation);
     JavaCodeStyleManager codeStyleManager = JavaCodeStyleManager.getInstance(project);
     codeStyleManager.shortenClassReferences(replacedAnnotation);
   }

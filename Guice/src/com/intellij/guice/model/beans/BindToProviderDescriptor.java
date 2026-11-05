@@ -3,21 +3,16 @@ package com.intellij.guice.model.beans;
 
 import com.intellij.guice.model.GuiceInjectionUtil;
 import com.intellij.guice.utils.GuiceUtils;
-import com.intellij.openapi.util.NullableLazyValue;
 import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiMethodCallExpression;
+import com.intellij.psi.PsiElement;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.uast.UCallExpression;
 
+@ApiStatus.Experimental
 public class BindToProviderDescriptor extends BindDescriptor {
-  private final NullableLazyValue<PsiClass> myProviderClass = new NullableLazyValue<>() {
-    @Override
-    protected @Nullable PsiClass compute() {
-      return GuiceInjectionUtil.getCallExpressionType(getBindExpression(), "toProvider");
-    }
-  };
-
-  public BindToProviderDescriptor(@NotNull PsiMethodCallExpression callExpression) {
+  public BindToProviderDescriptor(@NotNull PsiElement callExpression) {
     super(callExpression);
   }
 
@@ -31,6 +26,7 @@ public class BindToProviderDescriptor extends BindDescriptor {
   }
 
   public @Nullable PsiClass getProviderClass() {
-    return myProviderClass.getValue();
+    final UCallExpression uCall = getOutermostCall();
+    return uCall != null ? GuiceInjectionUtil.getCallExpressionType(uCall, "toProvider") : null;
   }
 }

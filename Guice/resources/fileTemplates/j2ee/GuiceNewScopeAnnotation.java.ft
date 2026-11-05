@@ -6,7 +6,7 @@ import java.lang.annotation.Target;
 
 #parse("File Header.java")
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.PARAMETER})
+@Target({ElementType.TYPE, ElementType.METHOD})
 @com.google.inject.ScopeAnnotation
 public @interface ${NAME}  {
 }

@@ -10,7 +10,7 @@ import org.jetbrains.annotations.PropertyKey;
 import java.util.function.Supplier;
 
 public final class GuiceBundle {
-  private static final String BUNDLE = "messages.GuiceBundle";
+  public static final String BUNDLE = "messages.GuiceBundle";
   private static final DynamicBundle INSTANCE = new DynamicBundle(GuiceBundle.class, BUNDLE);
 
   public static final @NlsSafe String GUICE = "Guice";

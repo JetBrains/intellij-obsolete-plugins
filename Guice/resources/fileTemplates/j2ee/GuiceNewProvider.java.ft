@@ -1,0 +1,11 @@
+#if (${PACKAGE_NAME} && ${PACKAGE_NAME} != "")package ${PACKAGE_NAME};#end
+import com.google.inject.Provider;
+
+#parse("File Header.java")
+public class ${NAME} implements Provider<${PROVIDED_CLASS}> {
+  @Override
+  public ${PROVIDED_CLASS} get() {
+    // TODO: add provider logic here
+    return null;
+  }
+}

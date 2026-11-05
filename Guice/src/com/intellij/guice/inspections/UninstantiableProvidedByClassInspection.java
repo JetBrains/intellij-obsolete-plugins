@@ -3,51 +3,38 @@ package com.intellij.guice.inspections;
 
 import com.intellij.guice.GuiceBundle;
 import com.intellij.guice.constants.GuiceAnnotations;
-import com.intellij.guice.utils.AnnotationUtils;
 import com.intellij.guice.utils.GuiceUtils;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiClass;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public final class UninstantiableProvidedByClassInspection extends BaseInspection{
+/**
+ * Reports {@code @ProvidedBy} annotations that reference a provider class Guice cannot
+ * instantiate (e.g., an interface, abstract class, or class with no injectable constructor).
+ *
+ * <p>Example:
+ * <pre>
+ * // Flagged: AbstractFooProvider is abstract and cannot be instantiated
+ * {@literal @}ProvidedBy(AbstractFooProvider.class)
+ * interface Foo {}
+ *
+ * // OK: FooProvider is a concrete class
+ * {@literal @}ProvidedBy(FooProvider.class)
+ * interface Foo {}
+ * </pre>
+ */
+public final class UninstantiableProvidedByClassInspection extends ClassReferenceAnnotationInspectionBase {
+  public UninstantiableProvidedByClassInspection() {
+    super(GuiceAnnotations.PROVIDED_BY);
+  }
 
-    @Override
-    protected @NotNull String buildErrorString(Object... infos){
-        return GuiceBundle.message("uninstantiable.provided.by.class.problem.descriptor");
-    }
+  @Override
+  protected @NotNull String buildErrorString(Object... infos) {
+    return GuiceBundle.message("uninstantiable.provided.by.class.problem.descriptor");
+  }
 
-    @Override
-    public BaseInspectionVisitor buildVisitor(){
-        return new Visitor();
-    }
-
-    private static class Visitor extends BaseInspectionVisitor{
-        @Override
-        public void visitAnnotation(@NotNull PsiAnnotation annotation){
-            super.visitAnnotation(annotation);
-            if(!annotation.hasQualifiedName(GuiceAnnotations.PROVIDED_BY)){
-                return;
-            }
-
-            final PsiElement defaultValue = AnnotationUtils.findDefaultValue(annotation);
-            if(defaultValue == null){
-                return;
-            }
-            if(!(defaultValue instanceof PsiClassObjectAccessExpression)){
-                return;
-            }
-            final PsiTypeElement classTypeElement = ((PsiClassObjectAccessExpression) defaultValue).getOperand();
-            final PsiType classType = classTypeElement.getType();
-            if(!(classType instanceof PsiClassType)){
-                return;
-            }
-            final PsiClass referentClass = ((PsiClassType) classType).resolve();
-            if(referentClass == null){
-                return;
-            }
-            if(GuiceUtils.isInstantiable(referentClass)){
-                return;
-            }
-            registerError(classTypeElement);
-        }
-    }
+  @Override
+  protected boolean isValidReferent(@NotNull PsiClass referentClass, @Nullable PsiClass annotatedClass) {
+    return GuiceUtils.isInstantiable(referentClass);
+  }
 }

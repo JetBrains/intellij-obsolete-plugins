@@ -5,13 +5,16 @@ import com.intellij.guice.constants.GuiceAnnotations;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiElement;
 
-public class ToggleInjectionRequiredPredicate implements PsiElementPredicate{
-    @Override
-    public boolean satisfiedBy(PsiElement element){
-        if(!(element instanceof PsiAnnotation)){
-            return false;
-        }
-        final String name = ((PsiAnnotation) element).getQualifiedName();
-        return name != null && GuiceAnnotations.INJECTS.contains(name);
+/**
+ * Accepts a {@code com.google.inject.Inject} annotation. Only this annotation has the {@code optional}
+ * attribute; {@code javax.inject.Inject} and {@code jakarta.inject.Inject} do not.
+ */
+public class ToggleInjectionRequiredPredicate implements PsiElementPredicate {
+  @Override
+  public boolean satisfiedBy(PsiElement element) {
+    if (!(element instanceof PsiAnnotation annotation)) {
+      return false;
     }
+    return GuiceAnnotations.INJECT.equals(annotation.getQualifiedName());
+  }
 }
