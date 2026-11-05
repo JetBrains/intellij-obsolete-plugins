@@ -454,6 +454,84 @@ public class GuiceModelUpdateTest extends GuiceTestBase {
   }
 
   /**
+   * Two modules whose qualifiers use each other's constants read each other's PSI, so each is a dependent
+   * registrar of the other (by class name, see {@link GuiceNavigationIndex#getDependentRegistrarFilesByClassName}). An edit of one re-extracts the other once; the other's own PSI did not change,
+   * so it must not queue the edited file again, or the drain would ping-pong between the two forever.
+   */
+  public void testDependentRegistrarsInACycleDoNotRequeueEachOther() {
+    PsiFile aModule = myFixture.addFileToProject("AModule.java", """
+      import com.google.inject.AbstractModule;
+      import com.google.inject.Provides;
+      import com.google.inject.name.Named;
+      public class AModule extends AbstractModule {
+        public static final String NAME = "a";
+        @Provides @Named(BModule.NAME) MyKey key() { return null; }
+      }
+      """);
+    PsiFile bModule = myFixture.configureByText("BModule.java", """
+      import com.google.inject.AbstractModule;
+      import com.google.inject.Provides;
+      import com.google.inject.name.Named;
+      public class BModule extends AbstractModule {
+        public static final String NAME = "b";
+        @Provides @Named(AModule.NAME) MyService service() { return null; }
+      }
+      """);
+    GuiceNavigationIndex index = getNavigationIndex();
+    GuiceProjectModel model = model();
+    VirtualFile aFile = aModule.getVirtualFile();
+    VirtualFile bFile = bModule.getVirtualFile();
+    assertThat(index.getDependentRegistrarFilesByClassName("AModule")).containsExactly(bFile.getPath());
+    assertThat(index.getDependentRegistrarFilesByClassName("BModule")).containsExactly(aFile.getPath());
+    assertThat(model.hasDirtyFiles()).isFalse();
+
+    // A real edit of BModule (the open file): AModule reads BModule's PSI and is re-extracted.
+    replaceClientText(bModule.getText().replace("public static final", "// edited\n  public static final"));
+    assertThat(model.collectDirtyFiles()).containsExactly(bFile);
+    processClientNow(bFile);
+    assertThat(model.collectDirtyFiles()).containsExactly(aFile);
+
+    // AModule's PSI did not change: BModule, which reads it, has nothing new to read.
+    processClientNow(aFile);
+    assertThat(model.collectDirtyFiles()).isEmpty();
+  }
+
+  /**
+   * The same cycle through the drain: it must end.
+   */
+  public void testDrainEndsWithDependentRegistrarsInACycle() throws Exception {
+    myFixture.addFileToProject("AModule.java", """
+      import com.google.inject.AbstractModule;
+      import com.google.inject.Provides;
+      import com.google.inject.name.Named;
+      public class AModule extends AbstractModule {
+        public static final String NAME = "a";
+        @Provides @Named(BModule.NAME) MyKey key() { return null; }
+      }
+      """);
+    PsiFile bModule = myFixture.configureByText("BModule.java", """
+      import com.google.inject.AbstractModule;
+      import com.google.inject.Provides;
+      import com.google.inject.name.Named;
+      public class BModule extends AbstractModule {
+        public static final String NAME = "b";
+        @Provides @Named(AModule.NAME) MyService service() { return null; }
+      }
+      """);
+    getNavigationIndex();
+    GuiceProjectModel model = model();
+    replaceClientText(bModule.getText().replace("public static final", "// edited\n  public static final"));
+    assertThat(model.hasDirtyFiles()).isTrue();
+
+    // The drain runs on another thread so that a regression shows up as a timeout, not as a hung test.
+    var drained = CompletableFuture.runAsync(
+      () -> ReadAction.run(() -> model.getBackgroundUpdater().processDirtyFilesNow()),
+      AppExecutorUtil.getAppExecutorService());
+    drained.get(30, TimeUnit.SECONDS);
+    assertThat(model.hasDirtyFiles()).isFalse();
+  }
+
+  /**
    * T1: the production pipeline end to end. A module edit in background mode goes through the debounced drain,
    * and the next highlighting of the client shows the new binding; no test-only drain is involved.
    */

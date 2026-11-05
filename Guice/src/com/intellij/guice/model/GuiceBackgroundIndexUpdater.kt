@@ -20,6 +20,9 @@ import com.intellij.platform.ide.progress.withBackgroundProgress
 import com.intellij.platform.util.progress.reportRawProgress
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.LibraryEntity
+import com.intellij.platform.workspace.jps.entities.LibraryRoot
+import com.intellij.platform.workspace.jps.entities.LibraryRootTypeId
+import com.intellij.platform.workspace.storage.EntityChange
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import kotlinx.coroutines.CancellationException
@@ -32,6 +35,8 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.TestOnly
 import java.util.concurrent.atomic.AtomicBoolean
@@ -78,6 +83,18 @@ class GuiceBackgroundIndexUpdater(
 
         /** Debounce delay: wait this long after the last dirty event before processing. */
         private val DEBOUNCE = 300L.milliseconds
+
+        /**
+         * Tells if the roots of a library differ only in their source roots: the class roots (and every other
+         * root type) are the same before and after, and at least one source root was added or removed.
+         */
+        @JvmStatic
+        @ApiStatus.Internal
+        fun onlySourceRootsDiffer(before: List<LibraryRoot>, after: List<LibraryRoot>): Boolean {
+            fun List<LibraryRoot>.byType(sources: Boolean) = filter { (it.type == LibraryRootTypeId.SOURCES) == sources }.toSet()
+            return before.byType(sources = false) == after.byType(sources = false) &&
+                   before.byType(sources = true) != after.byType(sources = true)
+        }
     }
 
     @Volatile
@@ -91,6 +108,13 @@ class GuiceBackgroundIndexUpdater(
     private val dirtyRequests = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     private val populationRequests = MutableSharedFlow<Module>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+
+    /**
+     * One pass at a time. The population loop drains the dirty files at its end, and the dirty collector
+     * drains them on its own: without the lock the two passes process the same files at the same time,
+     * each with its own progress task.
+     */
+    private val passMutex = Mutex()
 
     init {
         if (!synchronous) {
@@ -114,15 +138,36 @@ class GuiceBackgroundIndexUpdater(
         cs.launch {
             workspaceModel.eventLog.collect { event ->
                 if (event.storageAfter === snapshotAtSubscription) return@collect
-                val structureChanged = event.getChanges(LibraryEntity::class.java).isNotEmpty() ||
+                val libraryChanges = event.getChanges(LibraryEntity::class.java)
+                val sourcesOnlyChanges = libraryChanges.filter { isSourceRootsOnlyChange(it) }
+                val structureChanged = libraryChanges.size != sourcesOnlyChanges.size ||
                                        event.getChanges(ModuleEntity::class.java).isNotEmpty() ||
                                        event.getChanges(ContentRootEntity::class.java).isNotEmpty() ||
                                        event.getChanges(SourceRootEntity::class.java).isNotEmpty()
                 if (structureChanged) {
                     model.markStructureChanged()
                 }
+                else if (sourcesOnlyChanges.isNotEmpty()) {
+                    // Sources attached to or detached from a library, which the IDE can also do lazily, per file,
+                    // after a navigation into the library. The class roots stay, so the index stays: only the
+                    // files of that library are re-extracted, so that their entries point into the sources.
+                    val classRootUrls = sourcesOnlyChanges.flatMap { change ->
+                        change.newEntity!!.roots.filter { it.type == LibraryRootTypeId.COMPILED }.map { it.url.url }
+                    }
+                    model.markLibraryClassesDirty(classRootUrls)
+                }
             }
         }
+    }
+
+    private fun isSourceRootsOnlyChange(change: EntityChange<LibraryEntity>): Boolean {
+        if (change !is EntityChange.Replaced) return false
+        val before = change.oldEntity
+        val after = change.newEntity
+        return before.name == after.name &&
+               before.typeId == after.typeId &&
+               before.excludedRoots.map { it.url } == after.excludedRoots.map { it.url } &&
+               onlySourceRootsDiffer(before.roots, after.roots)
     }
 
     /**
@@ -164,13 +209,13 @@ class GuiceBackgroundIndexUpdater(
         if (startDirtyCollector) {
             jobs += cs.launch {
                 dirtyRequests.debounce(DEBOUNCE).collect {
-                    runGuarded("dirty files") { processDirtyFilesInBackground() }
+                    runGuarded("dirty files") { passMutex.withLock { processDirtyFilesInBackground() } }
                 }
             }
         }
         jobs += cs.launch {
             populationRequests.collect { module ->
-                runGuarded("population") { runPopulationLoop(module) }
+                runGuarded("population") { passMutex.withLock { runPopulationLoop(module) } }
             }
         }
         synchronized(collectorJobs) { collectorJobs += jobs }

@@ -56,6 +56,7 @@ import org.jetbrains.annotations.TestOnly;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.openapi.vfs.VfsUtilCore;
+import com.intellij.util.containers.ContainerUtil;
 import com.intellij.openapi.util.Disposer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -145,6 +146,14 @@ public final class GuiceProjectModel implements Disposable {
    * Processed asynchronously on a background thread via {@link #myBackgroundUpdater}.
    */
   private final Set<VirtualFile> myDirtyFiles = ConcurrentHashMap.newKeySet();
+
+  /**
+   * The dirty files that are dirty only because a file they read changed (a dependent registrar, see
+   * {@link #queueForcedReextraction}). Such a file is re-extracted although its own stamp is unchanged, and it
+   * does not queue its own dependents: its PSI did not change, so they have nothing new to read. Without this
+   * distinction two registrars that read each other would queue each other forever.
+   */
+  private final Set<VirtualFile> myForcedDirtyFiles = ConcurrentHashMap.newKeySet();
 
   /**
    * Directories that a VFS event (create, copy, move, rename) made dirty as a whole. The listener records only
@@ -357,6 +366,7 @@ public final class GuiceProjectModel implements Disposable {
     myFilesByPath.remove(path);
     myFileStamps.remove(path);
     myDirtyFiles.remove(file);
+    myForcedDirtyFiles.remove(file);
 
     if (file.isDirectory()) {
       String prefix = path + "/";
@@ -368,20 +378,22 @@ public final class GuiceProjectModel implements Disposable {
       myFilesByPath.keySet().removeIf(p -> p.startsWith(prefix));
       myFileStamps.keySet().removeIf(p -> p.startsWith(prefix));
       myDirtyFiles.removeIf(vf -> vf.getPath().startsWith(prefix));
+      myForcedDirtyFiles.removeIf(vf -> vf.getPath().startsWith(prefix));
     }
 
+    boolean queued = false;
     for (String registrarPath : dependentRegistrars) {
       if (registrarPath.equals(path) || (file.isDirectory() && registrarPath.startsWith(path + "/"))) {
         continue;
       }
-      myFileStamps.remove(registrarPath);
       VirtualFile registrarVf = resolveVirtualFile(registrarPath);
       if (registrarVf != null && registrarVf.isValid()) {
-        markFileDirty(registrarVf);
+        myFilesByPath.put(registrarPath, registrarVf);
+        queued |= queueForcedReextraction(registrarVf);
       }
     }
-    if (changed) {
-      // Let the background updater re-highlight the files that lost counterparts.
+    if (changed || queued) {
+      // Let the background updater re-extract the registrars and re-highlight the files that lost counterparts.
       myBackgroundUpdater.scheduleDirtyProcessing();
     }
     return changed;
@@ -412,6 +424,34 @@ public final class GuiceProjectModel implements Disposable {
     myStructureGeneration.incrementAndGet();
     if (!ApplicationManager.getApplication().isUnitTestMode() && !myProject.isDisposed()) {
       DaemonCodeAnalyzer.getInstance(myProject).restart("Guice project structure changed");
+    }
+  }
+
+  /**
+   * Reacts to sources attached to or detached from a library whose class roots did not change. The entries of
+   * the library's classes were extracted from the compiled files or from the old sources; they are re-extracted
+   * once (see {@link #myForcedDirtyFiles}), so that they point into the current sources. The rest of the index
+   * is current: no structure generation bump, no full rebuild.
+   *
+   * @param classRootUrls the URLs of the class roots of the libraries ({@code jar://…!/} or {@code file://…})
+   */
+  void markLibraryClassesDirty(@NotNull Collection<String> classRootUrls) {
+    List<String> prefixes = new ArrayList<>(classRootUrls.size());
+    for (String url : classRootUrls) {
+      String rootPath = VfsUtilCore.urlToPath(url);
+      prefixes.add(rootPath.endsWith("/") ? rootPath : rootPath + "/");
+    }
+    if (prefixes.isEmpty()) return;
+    boolean queued = false;
+    for (String path : myFileStamps.keySet()) {
+      if (!ContainerUtil.exists(prefixes, path::startsWith)) continue;
+      VirtualFile vf = myFilesByPath.get(path);
+      if (vf != null && vf.isValid()) {
+        queued |= queueForcedReextraction(vf);
+      }
+    }
+    if (queued) {
+      myBackgroundUpdater.scheduleDirtyProcessing();
     }
   }
 
@@ -455,6 +495,7 @@ public final class GuiceProjectModel implements Disposable {
     myNavigationIndex.clear();
     myFileStamps.clear();
     myDirtyFiles.clear();
+    myForcedDirtyFiles.clear();
     myFilesByPath.clear();
     myDirtyDirectories.clear();
     myPopulatedGeneration = NOT_POPULATED;
@@ -795,7 +836,8 @@ public final class GuiceProjectModel implements Disposable {
 
     FileStamp currentStamp = new FileStamp(fileForExtraction.getModificationStamp(), generation);
     FileStamp recordedStamp = myFileStamps.get(path);
-    if (currentStamp.equals(recordedStamp)) {
+    boolean forced = fromDirtySet && myForcedDirtyFiles.contains(vf);
+    if (!forced && currentStamp.equals(recordedStamp)) {
       if (fromDirtySet) {
         myDirtyFiles.remove(vf);
       }
@@ -826,20 +868,25 @@ public final class GuiceProjectModel implements Disposable {
     myFileStamps.put(path, currentStamp);
     if (fromDirtySet) {
       myDirtyFiles.remove(vf);
+      myForcedDirtyFiles.remove(vf);
     }
 
     // Queue the registrar files that read this file, even when this file's own entries did not change:
     // a registrar extracts its entries from the PSI of this file, so any edit here can change them.
-    if (fromDirtySet || recordedStamp != null) {
+    // A file that was re-extracted only because a file it reads changed (forced) has the same PSI as
+    // before: its readers have nothing new to read, and are not queued. This ends a dependency cycle.
+    boolean psiChanged = recordedStamp != null
+                         ? recordedStamp.psiStamp() != currentStamp.psiStamp()
+                         : fromDirtySet && !forced;
+    if (psiChanged) {
       Set<String> dependentRegistrars = new LinkedHashSet<>(myNavigationIndex.getDependentRegistrarFiles(path));
       dependentRegistrars.addAll(myNavigationIndex.getDependentRegistrarFilesByClassName(vf.getNameWithoutExtension()));
       dependentRegistrars.remove(path);
       boolean queued = false;
       for (String registrarPath : dependentRegistrars) {
-        myFileStamps.remove(registrarPath);
         VirtualFile registrarVf = myFilesByPath.get(registrarPath);
         if (registrarVf != null) {
-          queued |= myDirtyFiles.add(registrarVf);
+          queued |= queueForcedReextraction(registrarVf);
         }
       }
       if (queued) {
@@ -849,6 +896,17 @@ public final class GuiceProjectModel implements Disposable {
       }
     }
     return changed;
+  }
+
+  /**
+   * Queues a registrar file for re-extraction because a file it reads changed. Its own stamp stays: the file
+   * is re-extracted once ({@link #myForcedDirtyFiles}), and its readers are not queued in turn.
+   *
+   * @return whether the file was not dirty before
+   */
+  private boolean queueForcedReextraction(@NotNull VirtualFile registrarVf) {
+    myForcedDirtyFiles.add(registrarVf);
+    return myDirtyFiles.add(registrarVf);
   }
 
   // -----------------------------------------------------------------------
