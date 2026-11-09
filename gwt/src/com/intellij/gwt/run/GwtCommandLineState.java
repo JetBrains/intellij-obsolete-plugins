@@ -19,6 +19,7 @@ import com.intellij.execution.DefaultExecutionResult;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.Executor;
+import com.intellij.execution.ShortenCommandLine;
 import com.intellij.execution.configurations.JavaParameters;
 import com.intellij.execution.configurations.ParametersList;
 import com.intellij.execution.executors.DefaultDebugExecutor;
@@ -66,6 +67,7 @@ import com.intellij.openapi.components.PathMacroManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.projectRoots.JdkUtil;
 import com.intellij.openapi.roots.OrderEnumerator;
 import com.intellij.openapi.roots.libraries.ui.OrderRoot;
 import com.intellij.openapi.util.Disposer;
@@ -312,13 +314,10 @@ public final class GwtCommandLineState extends JavaCommandLineStateEx {
     }
     params.setMainClass(sdkVersion.getDevModeClass());
 
-    // Always shorten a potentially long classpath via a classpath file rather than passing it literally: otherwise a
-    // classpath exceeding the OS command-line limit (~33k chars) is silently truncated and tail dependencies such as
-    // cern.colt.map.OpenIntObjectHashMap end up missing at runtime (IDEA-380767). Never use the 'manifest JAR' method:
-    // the GWT dev/compiler manually searches for resources in URLs returned by URLClassLoader#getURLs, which does not
-    // work with a manifest JAR. This mirrors the JPS compiler side (GwtBuilder#buildJavaCommandLine, useClasspathJar=false).
-    params.setClasspathFile(true);
-    params.setUseDynamicClasspath(true);
+    // Java 9+ supports @argfiles. Use a classpath file on older JDKs to avoid command-line limits.
+    // A manifest JAR hides classpath entries from GWT's URLClassLoader-based resource lookup.
+    params.setShortenCommandLine(JdkUtil.isModularRuntime(params.getJdkPath())
+                                ? ShortenCommandLine.ARGS_FILE : ShortenCommandLine.CLASSPATH_FILE);
 
     myServer.patchParameters(params, getOutputDir().getAbsolutePath(), myFacet);
     return params;
