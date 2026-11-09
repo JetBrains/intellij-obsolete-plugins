@@ -87,7 +87,7 @@ public final class GwtJUnitPatcher extends JUnitPatcher {
       }
 
       return true;
-    }, GwtBundle.message("notification.content.unable.to.configure.gwt.unit.tests.during.index.update"), DumbModeBlockedFunctionality.Gwt);
+    }, GwtBundle.message("notification.content.unable.to.configure.gwt.unit.tests.during.index.update"), DumbModeBlockedFunctionality.Other);
     if (!Boolean.TRUE.equals(success)) {
       return;
     }

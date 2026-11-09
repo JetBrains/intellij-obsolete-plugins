@@ -257,7 +257,7 @@ public final class GwtRunConfigurationEditor extends SettingsEditor<GwtRunConfig
       @Override
       public void actionPerformed(ActionEvent e) {
         if (DumbService.isDumb(project)) {
-          DumbModeBlockedFunctionalityCollector.INSTANCE.logFunctionalityBlocked(project, DumbModeBlockedFunctionality.Gwt);
+          DumbModeBlockedFunctionalityCollector.INSTANCE.logFunctionalityBlocked(project, DumbModeBlockedFunctionality.Other);
           Messages.showErrorDialog(myMainPanel,
                                    GwtBundle.message("message.text.gwt.module.chooser.isn.t.available.while.updating.indices"));
           return;
