@@ -186,7 +186,7 @@ final class GwtFileUrlMapper extends FileUrlMapper {
         return task.get();
       }
       catch (IndexNotReadyException e) {
-        DumbService.getInstance(project).showDumbModeNotificationForFunctionality(notification, DumbModeBlockedFunctionality.Gwt);
+        DumbService.getInstance(project).showDumbModeNotificationForFunctionality(notification, DumbModeBlockedFunctionality.Other);
         return null;
       }
     }
